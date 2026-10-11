@@ -1837,6 +1837,9 @@
 "family_content_block_card_status_off" = "Policy off";
 "main_family_tariff_label" = "Plan:";
 "main_family_header_member_slots" = "%d of %d";
+"tariffs_trial_cooldown_minutes" = "Trial is temporarily unavailable. Try again in %d min.";
+"tariffs_trial_activate_failed" = "Could not activate trial. Check the network and try again.";
+"tariffs_trial_activated_slots" = "Trial active: up to %d devices in the family.";
 "main_family_subscription_valid_until" = "Valid until:";
 "main_family_manage" = "Manage";
 "main_family_add_member" = "Add member";

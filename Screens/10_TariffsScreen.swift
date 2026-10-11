@@ -374,6 +374,25 @@ struct TariffsScreen: View {
                         await SubscriptionManager.shared.forceSync()
                         SubscriptionManager.shared.bumpSubscriptionDisplayEpoch()
                         let level = SubscriptionManager.shared.getCurrentLevel().rawValue
+                        let trialNowActive = SubscriptionManager.shared.trialStatus?.isActive == true
+                            || SubscriptionManager.shared.getCurrentLevel() == .trial
+
+                        // Honest UX: cooldown / server fail → toast, не притворяемся что trial включился.
+                        if !wasAlreadyActive && !trialNowActive {
+                            let cooldown = SubscriptionManager.shared.remainingTrialActivationCooldownSeconds()
+                            if cooldown > 0 {
+                                let minutes = max(1, (cooldown + 59) / 60)
+                                ToastManager.shared.showWarning(
+                                    localizationManager.localized("tariffs_trial_cooldown_minutes", minutes)
+                                )
+                            } else {
+                                ToastManager.shared.showError(
+                                    localizationManager.localized("tariffs_trial_activate_failed")
+                                )
+                            }
+                            return
+                        }
+
                         NotificationCenter.default.post(
                             name: NSNotification.Name("SubscriptionUpdated"),
                             object: nil,
@@ -403,6 +422,10 @@ struct TariffsScreen: View {
                             )
                             return
                         }
+
+                        ToastManager.shared.showSuccess(
+                            localizationManager.localized("tariffs_trial_activated_slots", 3)
+                        )
 
                         // Registration только после свеже выданного trial, если на сервере реально нет семьи.
                         if FamilyLocalStore.needsServerFamilyCreation() {

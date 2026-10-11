@@ -638,26 +638,36 @@ struct MainScreen: View {
                                 Text("👨‍👩‍👧‍👦")
                                     .font(.system(size: 18))
                                 
-                                VStack(alignment: .leading, spacing: 2) {
+                                VStack(alignment: .leading, spacing: 4) {
                                     Text(localizationManager.localized("main_family_header_title"))
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundColor(.black)
-                                    // Лимит по тарифу — та же формула, что на экране «Семья».
-                                    let quotaUsed = subscriptionManager.effectiveFamilyQuotaUsed()
-                                    let quotaMax = max(0, subscriptionManager.familyQuotaSnapshot.max)
+                                    // Чип слотов: «N из M» (название тарифа — строка «Тариф: …» в теле; цвет = градиент карточки).
+                                    let quotaMax = familySlotLimitForCurrentTariff
+                                    let quotaUsed = min(
+                                        subscriptionManager.effectiveFamilyQuotaUsed(),
+                                        max(quotaMax, 0)
+                                    )
                                     Text(
                                         localizationManager.localized(
                                             "main_family_header_member_slots",
-                                            min(quotaUsed, quotaMax),
+                                            quotaUsed,
                                             quotaMax
                                         )
                                     )
                                     .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(.black.opacity(0.82))
+                                    .foregroundColor(.black.opacity(0.88))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.black.opacity(0.14))
+                                    )
+                                    .id("family_tariff_chip_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
                                     .accessibilityLabel(
                                         localizationManager.localized(
                                             "main_family_header_member_slots",
-                                            min(quotaUsed, quotaMax),
+                                            quotaUsed,
                                             quotaMax
                                         )
                                     )
@@ -740,8 +750,15 @@ struct MainScreen: View {
                             }
                             
                             // Информация о семье - ДИНАМИЧЕСКАЯ из MainViewModel
+                            // N из M: used + лимит тарифа (free=1 · trial=3 · personal=2 · family=6 · premium=10)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(localizationManager.localized("main_family_info", mainViewModel.familyMembers, mainViewModel.devicesProtected))
+                                Text(localizationManager.localized(
+                                    "main_family_info",
+                                    mainViewModel.familyMembers,
+                                    familySlotLimitForCurrentTariff,
+                                    mainViewModel.devicesProtected,
+                                    familySlotLimitForCurrentTariff
+                                ))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
                                 
@@ -754,22 +771,13 @@ struct MainScreen: View {
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
 
-                                // ✅ IMPROVED: Dynamic tariff name with color accent and icon
-                                // layoutPriority + minimumScaleFactor: на узких ширинах HStack не должен сжимать название тарифа до нуля.
-                                HStack(spacing: 4) {
-                                    Image(systemName: tariffIconForCurrentLevel())
-                                        .font(.system(size: 10))
-                                        .foregroundColor(currentTariffColor)
-                                    Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
-                                        .font(.system(size: 9, weight: .semibold))
-                                        .foregroundColor(.black)
-                                        .lineLimit(2)
-                                        .minimumScaleFactor(0.72)
-                                        .multilineTextAlignment(.leading)
-                                        .layoutPriority(1)
-                                }
-                                // epoch: гарантированный refresh строки тарифа после trial/IAP/синка на реальном устройстве
-                                .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
+                                // Подпись тарифа (канон): цвет карточки + эта строка; слоты — чип в шапке.
+                                Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(.black)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
 
                                 if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
@@ -979,6 +987,13 @@ struct MainScreen: View {
         let trialOn = subscriptionManager.trialStatus?.isActive == true
         let lang = localizationManager.currentLanguage.rawValue
         return "\(level.rawValue)|trial:\(trialOn)|\(lang)"
+    }
+
+    /// Лимит слотов семьи/устройств по текущему effective-тарифу (SSOT).
+    private var familySlotLimitForCurrentTariff: Int {
+        let fromQuota = subscriptionManager.familyQuotaSnapshot.max
+        if fromQuota > 0 { return fromQuota }
+        return SubscriptionManager.familyMemberLimitStatic(for: subscriptionManager.getCurrentLevel())
     }
     
     private var currentTariffDisplayName: String {

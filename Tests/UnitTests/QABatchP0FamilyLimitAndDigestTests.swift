@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import ALADDIN
 
 /// P0 QA batch: roster limit detection + Safety Week raw-key filter.
@@ -10,6 +11,21 @@ final class QABatchP0FamilyLimitAndDigestTests: XCTestCase {
         XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .personal), 2)
         XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .family), 6)
         XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .premium), 10)
+    }
+
+    /// Palette: каждый платный tier визуально отличим от free/trial (канон Shyam).
+    func testTariffAccentPalettePaidDistinctFromTrialAndFree() {
+        let free = TariffAccentPalette.color(for: .free)
+        let trial = TariffAccentPalette.color(for: .trial)
+        let personal = TariffAccentPalette.color(for: .personal)
+        let family = TariffAccentPalette.color(for: .family)
+        let premium = TariffAccentPalette.color(for: .premium)
+        XCTAssertNotEqual(free, trial)
+        XCTAssertNotEqual(trial, family)
+        XCTAssertNotEqual(family, premium)
+        XCTAssertNotEqual(personal, family)
+        XCTAssertNotEqual(personal, premium)
+        XCTAssertNotEqual(trial, premium)
     }
 
     func testIsFamilyMemberLimitErrorDetectsRUAndEN() {

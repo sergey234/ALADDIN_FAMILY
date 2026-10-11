@@ -1722,6 +1722,9 @@
 "family_content_block_card_status_off" = "Политика выключена";
 "main_family_tariff_label" = "Тариф:";
 "main_family_header_member_slots" = "%d из %d";
+"tariffs_trial_cooldown_minutes" = "Пробный период временно недоступен. Повторите через %d мин.";
+"tariffs_trial_activate_failed" = "Не удалось активировать пробный период. Проверьте сеть и попробуйте снова.";
+"tariffs_trial_activated_slots" = "Пробный активен: до %d устройств в семье.";
 "main_family_subscription_valid_until" = "Действует до:";
 "main_family_manage" = "Управлять";
 "main_family_add_member" = "Добавить участника";

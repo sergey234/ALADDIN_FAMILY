@@ -1,0 +1,42 @@
+---
+description: Never rewrite/truncate LocalizationManager or other mega-files; keys via strings + surgical StrReplace
+alwaysApply: true
+---
+
+# Mega-file safety (LocalizationManager)
+
+Инцидент 2026-10-12: агент перезаписал `Core/Localization/LocalizationManager.swift` (~21k строк) через Python `write_text` → файл **обрезан**, EN/методы исчезли, сборка мертва. Это **не** «git откатил фичи» и не баг Trial/cooldown.
+
+## Запрещено
+
+- `Path.write_text` / перезапись **всего** `LocalizationManager.swift`
+- «dedupe» / «normalize» / regex-rewrite всего словаря одним скриптом
+- `git restore` mega-file **без** явного GO владельца и без отчёта «что потеряем из uncommitted»
+- Закрывать задачу локализации, если `wc -l` упал на тысячи строк vs `HEAD`
+
+## Как добавлять ключи (канон)
+
+1. **Сначала** `Resources/Localization/{ru,en}.lproj/Localizable.strings`  
+   (`localized()` читает **strings раньше** встроенного dict).
+2. Dict в `LocalizationManager.swift` — только **точечный** `StrReplace` рядом с якорем  
+   (напр. после `tariffs_trial_already_active_until` / `main_family_tariff_label`), **RU и EN отдельно**.
+3. Один ключ = одна вставка; не трогать соседние тысячи строк.
+
+## Обязательный verify после любой правки LocManager
+
+```bash
+./scripts/verify_localization_manager_integrity.sh
+```
+
+Ожидаемо: `OK` (ends `}`, баланс скобок, есть `func localized`, блоки `.russian` / `.english`, lines ≥ 15000, work не ниже HEAD на >500 строк).  
+Смотреть также `git diff --stat` — **STOP**, если deletions ≫ insertions (тысячи строк) или скрипт FAIL.  
+Починка обрыва: только с **GO** владельца (`git restore` + отчёт о потере uncommitted ключей).
+
+## Другие mega-files (тот же дух)
+
+Не переписывать целиком файлы **>3000 строк** / **>500KB**. Только surgical edit. Сомнение → спросить пилота.
+
+## Диагностика «фича не применилась»
+
+Сначала: логика (cooldown, level, API) + `git diff --stat` целевых файлов.  
+Не чинить Trial/UI «через пересборку словаря локализации».

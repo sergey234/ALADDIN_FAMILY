@@ -5,7 +5,9 @@
 **Business / метрики / рост:** [`docs/business/ML_SYSTEM_BUSINESS_START_HERE.md`](docs/business/ML_SYSTEM_BUSINESS_START_HERE.md).  
 **Mech Pilot:** rule `.cursor/rules/mech-pilot.mdc` · skill `@aladdin-mech-pilot` · GATES `@aladdin-gates`.  
 **Pilot stack / Bonsai draft:** [`docs/ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md`](docs/ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md) · `@aladdin-local-llm` · START_HERE §0B.  
-**Tailscale admin (не продукт):** [`docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md`](docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md).
+**Tailscale admin (не продукт):** [`docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md`](docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md).  
+**SSH агентам:** prefer `ssh aladdin-server-ts` / `aladdin-contabo-ts`; IP Hosts — break-glass ([`ADMIN_MESH_TAILSCALE_STEPS_2_5_DONE`](docs/ADMIN_MESH_TAILSCALE_STEPS_2_5_DONE_2026-09-21.md)).  
+**Hermes keys file:** [`docs/HERMES_KEYS_FILE_RUNBOOK.md`](docs/HERMES_KEYS_FILE_RUNBOOK.md) · ops habits [`docs/ops-memory/OPS_AGENT_HABITS_CHECKLIST.md`](docs/ops-memory/OPS_AGENT_HABITS_CHECKLIST.md).
 
 Рабочий корень (единственный):
 
@@ -16,6 +18,8 @@
 1. `git rev-parse --show-toplevel` — должен совпадать с путём выше
 2. `git branch --show-current`
 3. `git status --short`
+
+iOS-коммиты только на ветке **`master`**. Если текущая ветка другая — остановиться и не коммитить. Rule: `.cursor/rules/ios-commit-on-master.mdc`. Канон номера сборки: `docs/RELEASE_BUILD_PROMPT.md`.
 
 ---
 
@@ -47,7 +51,7 @@ Cursor rule (alwaysApply): `.cursor/rules/vpn-handoff-secrets-never-push.mdc`
 | **`common-security.mdc`** | Security checks + запрет push VPN secrets handoff |
 | **Hooks** (`hooks.json`) | Старт чата → ветка и прошлый summary; конец → сохранение в `.cursor/session/`; предупреждения при `.env` и секретах в промпте |
 | **`.cursorignore`** | Cursor не индексирует 35k backup-файлов — быстрый поиск |
-| **Repowise MCP** (self-host, free) | Два slim-индекса: **`repowise-bot`** → `../aladdin_repowise_index` (Stars/VPN/Premium); **`repowise-ios`** → `../aladdin_repowise_ios` (Core/Screens/…). CLI: `.venv-repowise/bin/repowise`. Rule: `repowise-first.mdc`. После commit — фоновый `update` обоих. |
+| **Repowise MCP** (self-host, free) | Два slim-индекса: **`repowise-bot`** / **`repowise-ios`**. Rule: `repowise-first.mdc` (ритуал + Graft narrow CLI). Hygiene: `./scripts/refresh_code_graphs.sh --update` (`--all` + graft slim iOS). |
 | **Skills с хорошим `description`** | Cursor может сам подключить skill по смыслу задачи (bypass, Figma, бот) |
 
 ### Подключать явно (когда нужно усилить)
@@ -94,6 +98,7 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 | **Глушилки — Dendi + Frosty + Aim (three-way, серверы, rollout)** | **`aladdin_shop_vpn_api/deploy/VPN_JAMMING_THREE_WAY_DENDI_FROSTY_AIMONKEY_2026-08-26.md`** · Dendi: `…/VPN_JAMMING_DENDI_VS_AIMONKEY_…2026-08-20.md` · registry `.cursor/VPN_JAMMING_TASK_REGISTRY.md` · **P9 REG:** `…/ML_SYSTEM_HANDOFF_P9_REG_RU_LTE_NIGHT_2026-08-29.md` · rule `vpn-jamming-dendi-todo-ssot.mdc` |
 | **Инцидент deploy 2026-08-19 (LAVA + restore витрины)** | **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_INCIDENT_2026-08-19_LAVA_DEPLOY_RESTORE.md`** · rule `telegram-shop-bot-deploy-safe.mdc` |
 | Figma ↔ iOS онбординг | Rules `figma-mcp-onboarding-main.mdc`, `onboarding-figma-ios-sync-mandatory.mdc` + skill `figma-use` (prerequisite) |
+| Правки локализации / LocManager | Rule `localization-megafile-safe.mdc` (alwaysApply) + `./scripts/verify_localization_manager_integrity.sh` — без полного rewrite mega-file |
 | Перед релизом / merge | Skill `verification-loop` + smoke на сервере |
 | Security audit `.cursor/` | `npx ecc-agentshield scan -p .cursor --supply-chain` |
 | Чистый бэкап iOS | `./scripts/create_clean_mobile_backup.sh` + rule `aladdin-clean-backup.mdc` |
@@ -104,6 +109,27 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 | **Assistant write-tools** | Design only: `telegram_stars_shop_bot/docs/DESIGN_ASSISTANT_WRITE_TOOLS_2026-08-02.md` — **не ship** |
 | **Weekly web hygiene (Nuclei + ZAP)** | `docs/security/web/ZAP_NUCLEI_RUNBOOK_RU.md` · `./scripts/security/web/run_weekly_web_hygiene.sh` · reports in `docs/security/web/reports/` |
 | **OpenAPI snapshot / drift** | `python3 scripts/openapi_snapshot_diff.py` → `docs/openapi-snapshots/` |
+| **ASO / App Store listing** | `@aladdin-aso` |
+| **AEO / цитаты LLM (сайт)** | `@aladdin-aeo` · `landing/docs/SEO_LOOP_RUNBOOK.md` |
+| **SEO + schema сайта** | `@aladdin-seo-site` |
+| **Чужой skill до install** | `@aladdin-skillspector` · sandbox · `.cursor/CLAUDE_SKILLS_REZVANI_PLAN.md` |
+| **Вопросы до кода (grill)** | `@aladdin-ask-then-build` |
+| **CRO сайта** | `@aladdin-cro-web` |
+| **Launch / соцпосты** | `@aladdin-launch-social` |
+| **Playwright сайт** | `@aladdin-playwright-web` |
+| **API контракт :8002** | `@aladdin-api-contract` |
+| **Deps / runbook** | `@aladdin-deps-runbook` |
+| **Obs / инцидент** | `@aladdin-ops-observe` |
+| **Цены / реферал / churn** | `@aladdin-commerce-retention` |
+| **Конкуренты / changelog** | `@aladdin-compete-changelog` |
+| **Строгий coding loop** | `@aladdin-zero-hallucination` |
+| **Roast идеи** | `@aladdin-roast` |
+| **Метрики эксперимента** | `@aladdin-product-analytics` |
+| **Family privacy / GDPR-minded** | `@aladdin-family-compliance` |
+| **Deal / vendor ops** | `@aladdin-deal-ops` |
+| **Market research (разово)** | `@aladdin-market-research` |
+| **MD→HTML внутренний** | `@aladdin-md-html` |
+| **Rezvani HARD SKIP** | `.cursor/CLAUDE_SKILLS_REZVANI_HARD_SKIP.md` |
 
 **Отложено (не вызывать по умолчанию):** `council`, `santa-method`, `mcp-server-patterns`.
 
@@ -118,6 +144,10 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 | `aladdin-ios-release` | релизный коммит iOS |
 | `aladdin-clean-backup` | бэкап iOS и бота раздельно |
 | `aladdin-principal-ios-architect` | базовая роль эксперта (дублирует always-on rule) |
+| `aladdin-aso` | App Store metadata / keywords |
+| `aladdin-aeo` | цитирование в LLM / E-E-A-T сайта |
+| `aladdin-seo-site` | SEO audit + JSON-LD landing |
+| `aladdin-skillspector` | аудит внешнего skill (W1+) |
 
 Доменные `.mdc` остаются каноном; skills — быстрый вход для агента.
 

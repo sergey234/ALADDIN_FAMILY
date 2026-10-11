@@ -208,6 +208,10 @@ final class SubscriptionManager: ObservableObject {
     private let trialAttemptTimestampsKey = "trial_attempt_timestamps_v1"
     private let trialRiskSaltKey = "trial_risk_salt_v1"
     private let trialRiskSaltCreatedAtKey = "trial_risk_salt_created_at_v1"
+#if DEBUG
+    /// QA: сервер вернул inactive trial (уже использован) — держим локальное 14d окно, пока не Базовый/не сброс.
+    private let debugQALocalTrialOverrideKey = "debug_qa_local_trial_override_v1"
+#endif
 
     private var cancellables = Set<AnyCancellable>()
     private let logger = MasterLogger.shared
@@ -600,19 +604,9 @@ final class SubscriptionManager: ObservableObject {
         return access
     }
 
-    /// Get current effective subscription level
+    /// Get current effective subscription level (same priority as `getCurrentLevel`: paid > trial > free).
     private func getCurrentEffectiveLevel() -> SubscriptionLevel {
-        // Trial takes precedence
-        if let trial = trialStatus, trial.isActive {
-            return .trial
-        }
-
-        // Then subscription level
-        guard let subscription = currentSubscription else {
-            return .free // Default to free if no subscription
-        }
-
-        return subscription.level
+        getCurrentLevel()
     }
 
     /// 📊 Check if user can use specific resource (with usage tracking)
@@ -640,8 +634,8 @@ final class SubscriptionManager: ObservableObject {
             return false
         }
 
-        // For trial, check if resource is allowed
-        if let trial = trialStatus, trial.isActive {
+        // Trial resource gate only when effective level is trial (not leftover trial under paid plan).
+        if getCurrentLevel() == .trial, trialStatus?.isActive == true {
             let allowed = checkTrialResourceAccess(resource, amount: amount, subscription: subscription)
             if !allowed {
                 trackEvent(.resourceUsed, resourceType: resource.rawValue, amount: amount, metadata: ["denied": "true", "reason": "trial_limit"])
@@ -670,6 +664,18 @@ final class SubscriptionManager: ObservableObject {
 
     /// 🎯 Get current subscription level
     func getCurrentLevel() -> SubscriptionLevel {
+        let subLevel = currentSubscription?.level
+        let tokenLevel = currentToken?.subscriptionLevel
+        let paid: Set<SubscriptionLevel> = [.personal, .family, .premium]
+
+        // Платный тариф важнее leftover/active trial — иначе после покупки Family/Premium
+        // карточка оставалась бы peacock «Пробный» вместо золота/лотоса.
+        if let s = subLevel, paid.contains(s) { return s }
+        if let t = tokenLevel, paid.contains(t) {
+            if subLevel == nil || subLevel == .free || subLevel == .trial { return t }
+            return t
+        }
+
         if let trial = trialStatus, trial.isActive {
             return .trial
         }
@@ -679,8 +685,6 @@ final class SubscriptionManager: ObservableObject {
         if currentSubscription?.level == .free, trialStatus?.isActive != true {
             return .free
         }
-        let subLevel = currentSubscription?.level
-        let tokenLevel = currentToken?.subscriptionLevel
         // Апгрейд: JWT обновился раньше Keychain `subscription_status` — доверяем токену, если триал не активен.
         if let s = subLevel, let t = tokenLevel, s != t {
             if s == .free && t != .free { return t }
@@ -863,6 +867,10 @@ final class SubscriptionManager: ObservableObject {
                 }
                 trialStatus = nil
                 deleteFromKeychain(key: trialKey)
+#if DEBUG
+                UserDefaults.standard.removeObject(forKey: debugQALocalTrialOverrideKey)
+                logger.business("🧪 DEBUG: QA local trial override cleared (downgradeToFree)")
+#endif
 
                 let freeSubscription = self.createSubscriptionStatus(
                     level: .free,
@@ -910,9 +918,15 @@ final class SubscriptionManager: ObservableObject {
 
         let localCooldown = localTrialCooldownSeconds()
         if localCooldown > 0 {
+#if DEBUG
+            // QA/Simulator: anti-abuse cooldown блокировал Trial после 3 тапов — сбрасываем и продолжаем.
+            logger.business("🧪 DEBUG: clearing trial cooldown (\(localCooldown)s) so QA can activate Trial")
+            UserDefaults.standard.removeObject(forKey: trialAttemptTimestampsKey)
+#else
             logger.business("⏳ Trial activation temporarily throttled: cooldown=\(localCooldown)s")
             lastError = .serverError("Trial activation cooldown is active. Please try again later.")
             return
+#endif
         }
 
         // We provide a requested window, but backend must be idempotent and the source of truth.
@@ -926,11 +940,17 @@ final class SubscriptionManager: ObservableObject {
 
             // Backend will return either: trial (active or not), free, or paid — without resetting trial endlessly.
             let jwtToken = try await registerDeviceWithTrial(trialInfo: requestedTrialInfo)
+            logger.business(
+                "📊 register-device-trial JWT plan=\(jwtToken.subscriptionLevel.rawValue) trial_days=\(jwtToken.trialInfo?.daysRemaining ?? -1) trial_active=\(jwtToken.trialInfo?.isActive ?? false)"
+            )
 
             if let serverTrial = jwtToken.trialInfo {
                 updateTrialStatus(serverTrial)
 
                 if serverTrial.isActive {
+#if DEBUG
+                    UserDefaults.standard.removeObject(forKey: debugQALocalTrialOverrideKey)
+#endif
                     trackEvent(.trialActivated, metadata: [
                         "duration_days": String(serverTrial.durationDays),
                         "days_remaining": String(serverTrial.daysRemaining)
@@ -940,8 +960,18 @@ final class SubscriptionManager: ObservableObject {
                     logger.business("📊 TRIAL_TARIFF_PIPELINE trial_activated plan=\(currentSubscription?.level.rawValue ?? "nil") effective=\(getCurrentLevel().rawValue) trial_end=\(serverTrial.endDate)")
                     FamilyLocalStore.postFamilyCreationRequired(source: "trial_activated")
                 } else {
-                    logger.business("ℹ️ Server trial is not active anymore. App should behave as free/paid.")
+                    logger.business("ℹ️ Server trial is not active anymore (days=\(serverTrial.daysRemaining), end=\(serverTrial.endDate)). App should behave as free/paid.")
+#if DEBUG
+                    // Device/user already consumed trial on MAIN — JWT stays free. For Simulator QA only:
+                    // apply requested 14d locally so card color (peacock) + slots 1/3 are testable.
+                    applyDebugQALocalTrialIfNeeded(requestedTrialInfo, reason: "server_trial_inactive")
+#endif
                 }
+            } else {
+                logger.business("ℹ️ register-device-trial: no trial_info in JWT (plan=\(jwtToken.subscriptionLevel.rawValue))")
+#if DEBUG
+                applyDebugQALocalTrialIfNeeded(requestedTrialInfo, reason: "server_trial_info_nil")
+#endif
             }
         } catch {
             logger.error("❌ Failed to activate trial: \(error)")
@@ -1377,6 +1407,43 @@ final class SubscriptionManager: ObservableObject {
         return Int(remaining.rounded(.up))
     }
 
+    /// Публично для UI тарифов: сколько секунд ещё нельзя жать «Пробный» (anti-abuse).
+    func remainingTrialActivationCooldownSeconds() -> Int {
+        localTrialCooldownSeconds()
+    }
+
+#if DEBUG
+    /// Сброс локального anti-abuse cooldown trial (только DEBUG / симулятор QA).
+    func debugClearTrialActivationCooldown() {
+        UserDefaults.standard.removeObject(forKey: trialAttemptTimestampsKey)
+        logger.business("🧪 DEBUG: trial_attempt_timestamps_v1 cleared")
+    }
+
+    /// Сервер уже «сжёг» trial для device → JWT free/inactive. Для QA UI (цвет peacock + слоты 3).
+    @MainActor
+    private func applyDebugQALocalTrialIfNeeded(_ requested: TrialInfo, reason: String) {
+        guard requested.isActive else { return }
+        UserDefaults.standard.set(true, forKey: debugQALocalTrialOverrideKey)
+        logger.business("🧪 DEBUG: QA local trial override ON reason=\(reason) end=\(requested.endDate)")
+        updateTrialStatus(requested)
+        trackEvent(.trialActivated, metadata: [
+            "duration_days": String(requested.durationDays),
+            "days_remaining": String(requested.daysRemaining),
+            "qa_local_override": "1",
+            "reason": reason
+        ])
+        NotificationManager.shared.scheduleTrialNotifications(trialEndDate: requested.endDate)
+        logger.business(
+            "📊 TRIAL_TARIFF_PIPELINE debug_qa_local plan=\(currentSubscription?.level.rawValue ?? "nil") effective=\(getCurrentLevel().rawValue) slots=\(Self.familyMemberLimitStatic(for: .trial))"
+        )
+        FamilyLocalStore.postFamilyCreationRequired(source: "trial_activated_debug_qa")
+    }
+
+    private var isDebugQALocalTrialOverrideActive: Bool {
+        UserDefaults.standard.bool(forKey: debugQALocalTrialOverrideKey)
+    }
+#endif
+
     private func buildTrialAntiAbuseSignals(deviceId: String, now: Date = Date()) -> TrialAntiAbuseSignals {
         let timestamps = trialAttemptTimestamps(now: now)
         let velocity1h = timestamps.filter { now.timeIntervalSince1970 - $0 <= 3600 }.count
@@ -1473,12 +1540,22 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// Level used only for **family roster size cap** (not for billing UI).
-    /// Server may keep `plan_level` at free while `trial_info` is still active — then cap must be trial (3).
+    /// Server may keep `plan_level` at free while trial is active — then cap must be trial (3).
+    /// Важно: в `status.trialInfo` часто лежит **просроченный** снимок с JWT, а живой trial — в `trialStatus`
+    /// (DEBUG QA / локальный Keychain). Старый код требовал `status.trialInfo == nil` → при inactive
+    /// server trial + active `trialStatus` кап оставался free(1), тогда как цвет/подпись уже были trial.
+    /// Платные personal/family/premium всегда берут кап с `status.level` (2/6/10), не trial(3).
     private func subscriptionLevelForFamilyMemberCap(_ status: SubscriptionStatus) -> SubscriptionLevel {
-        if let t = status.trialInfo, t.isActive {
+        switch status.level {
+        case .personal, .family, .premium:
+            return status.level
+        case .free, .trial:
+            break
+        }
+        if trialStatus?.isActive == true {
             return .trial
         }
-        if status.trialInfo == nil, trialStatus?.isActive == true {
+        if let t = status.trialInfo, t.isActive {
             return .trial
         }
         return status.level
@@ -1494,6 +1571,21 @@ final class SubscriptionManager: ObservableObject {
         currentSubscription = status
         persistSubscriptionStatus(status)
         logger.business("📊 Subscription updated: \(status.level)")
+
+        // Paid upgrade: снять leftover trial, иначе слоты/цвет могут остаться на trial.
+        switch status.level {
+        case .personal, .family, .premium:
+            if trialStatus != nil {
+                NotificationManager.shared.cancelTrialNotifications()
+                trialStatus = nil
+                deleteFromKeychain(key: trialKey)
+            }
+#if DEBUG
+            UserDefaults.standard.removeObject(forKey: debugQALocalTrialOverrideKey)
+#endif
+        case .free, .trial:
+            break
+        }
 
         // ✅ SINGLE SOURCE OF TRUTH: Update both UserDefaults (for legacy) and published properties
         // Uses mapping aligned with prod limits: free=1, trial=3, personal=2, family=6, premium=10
@@ -2219,6 +2311,32 @@ extension SubscriptionManager {
 
         // Update local state
         currentSubscription = subscriptionStatus
+#if DEBUG
+        let serverIsPaid: Bool = {
+            switch subscriptionLevel {
+            case .personal, .family, .premium: return true
+            case .free, .trial: return false
+            }
+        }()
+        if !serverIsPaid,
+           isDebugQALocalTrialOverrideActive,
+           let local = trialStatus, local.isActive,
+           serverStatus.trialInfo?.isActive != true {
+            logger.business("🧪 DEBUG: keeping QA local trial despite server inactive/nil (sync)")
+            // Keep local trialStatus; still persist subscription snapshot from server.
+            persistSubscriptionStatus(subscriptionStatus)
+            persistTrialStatus(local)
+            if let sub = currentSubscription {
+                updateSubscriptionStatus(sub)
+            }
+            bumpSubscriptionDisplayEpoch()
+            logger.business("📥 Updated subscription from server: \(subscriptionLevel.rawValue) (QA trial kept)")
+            await MainActor.run {
+                rescheduleLocalSubscriptionNotifications(afterSync: serverStatus)
+            }
+            return
+        }
+#endif
         trialStatus = serverStatus.trialInfo
 
         // Persist updated data

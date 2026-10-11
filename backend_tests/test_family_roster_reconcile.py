@@ -16,7 +16,11 @@ class TestMaxSlots(unittest.TestCase):
         self.assertEqual(max_family_slots_for_subscription_level(None), 1)
         self.assertEqual(max_family_slots_for_subscription_level(""), 1)
         self.assertEqual(max_family_slots_for_subscription_level("Trial"), 3)
+        self.assertEqual(max_family_slots_for_subscription_level("personal"), 2)
         self.assertEqual(max_family_slots_for_subscription_level("family"), 6)
+        self.assertEqual(max_family_slots_for_subscription_level("premium"), 10)
+        self.assertEqual(max_family_slots_for_subscription_level("FAMILY"), 6)
+        self.assertEqual(max_family_slots_for_subscription_level("unknown_tier"), 1)
 
 
 class TestReconcile(unittest.TestCase):
