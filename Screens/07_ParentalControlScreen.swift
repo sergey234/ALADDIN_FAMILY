@@ -99,6 +99,8 @@ struct ParentalControlScreen: View {
     
     @State private var isStatsLoading: Bool = false
     @State private var statsErrorMessage: String?
+    /// qa-14: keep last successful stats so 429 doesn't blank the screen
+    @State private var lastGoodParentalStats: ParentalControlStatsResponse?
     
     // MARK: - Control States
     // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для синхронизации с FamilyScreen
@@ -1091,11 +1093,25 @@ struct ParentalControlScreen: View {
                 // Не снимаем флаг здесь, так как мы еще ждем ответа от getBypassStats
                 switch result {
                 case .success(let stats):
+                    self.lastGoodParentalStats = stats
                     self.applyStats(stats)
+                    self.statsErrorMessage = nil
                 case .failure(let error):
                     self.isStatsLoading = false
-                    let message = String(format: localizationManager.localized("parental_stats_error_generic"), error.localizedDescription)
-                    self.statsErrorMessage = message
+                    let ns = error as NSError
+                    let isRateLimited = ns.domain == "ParentalControlManager" && ns.code == 429
+                        || error.localizedDescription.lowercased().contains("слишком много")
+                        || error.localizedDescription.lowercased().contains("too many")
+                        || error.localizedDescription.lowercased().contains("rate")
+                    // qa-14: keep last OK stats; short human copy — no “throttle”
+                    if isRateLimited, let cached = self.lastGoodParentalStats {
+                        self.applyStats(cached)
+                        self.statsErrorMessage = localizationManager.localized("parental_stats_rate_limited")
+                    } else if isRateLimited {
+                        self.statsErrorMessage = localizationManager.localized("parental_stats_rate_limited")
+                    } else {
+                        self.statsErrorMessage = localizationManager.localized("parental_stats_error_short")
+                    }
                     print("❌ Ошибка загрузки статистики: \(error.localizedDescription)")
                 }
             }

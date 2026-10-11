@@ -55,7 +55,7 @@ struct VoiceNoteCard: View {
             }
 
             HStack {
-                Text("AI \(localizationManager.localized("voice_notes_summary_confidence")): \(Int(note.summaryConfidence * 100))%")
+                Text(summaryQualityLabel)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Text("v\(max(note.summaryVersion, 1))")
@@ -161,6 +161,18 @@ struct VoiceNoteCard: View {
 }
 
 private extension VoiceNoteCard {
+    /// QA #11: human draft labels instead of raw confidence %.
+    var summaryQualityLabel: String {
+        let c = note.summaryConfidence
+        if c < 0.55 {
+            return localizationManager.localized("voice_notes_summary_draft")
+        }
+        if c < 0.85 {
+            return localizationManager.localized("voice_notes_summary_review")
+        }
+        return localizationManager.localized("voice_notes_summary_ready")
+    }
+
     func shareAudioFile(path: String) {
         DispatchQueue.main.async {
             let url = URL(fileURLWithPath: path)

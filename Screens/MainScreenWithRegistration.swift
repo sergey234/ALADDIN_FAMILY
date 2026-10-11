@@ -429,21 +429,33 @@ struct MainScreenWithRegistration: View {
                 .foregroundColor(.white.opacity(0.9))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
-            Button(localizationManager.localized("common_retry")) {
-                // Повторяем создание семьи
-                if let _ = registrationVM.selectedRole,
-                   let _ = registrationVM.selectedAgeGroup,
-                   let letter = registrationVM.selectedLetter {
+
+            // qa-16: limit → tariffs; network → retry add/create; never wipe via createFamily on limit.
+            switch registrationVM.registrationErrorKind {
+            case .tariffLimit:
+                Button(localizationManager.localized("family_add_view_tariffs")) {
                     registrationVM.errorMessage = nil
+                    registrationVM.registrationErrorKind = .none
+                    navigationManager.navigateTo(.tariffs)
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 10)
+            case .networkRetryable:
+                Button(localizationManager.localized("common_retry")) {
+                    registrationVM.errorMessage = nil
+                    registrationVM.registrationErrorKind = .none
+                    // createFamily() routes by admin_add_mode → add vs create; never auto-wipe on limit.
                     registrationVM.createFamily()
                 }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 10)
+            case .nonRetryable, .none:
+                EmptyView()
             }
-            .buttonStyle(.borderedProminent)
-            .padding(.top, 10)
             
             Button(localizationManager.localized("common_cancel")) {
                 registrationVM.errorMessage = nil
+                registrationVM.registrationErrorKind = .none
                 print("✅ [MainScreenWithRegistration] Отмена из ошибки")
                 completeRegistration(isSuccess: false)
             }

@@ -69,7 +69,17 @@ struct CompanionHubScreen: View {
                     if isLoading {
                         ProgressView().tint(.white)
                     } else if let errorText {
-                        Text(errorText).foregroundColor(.orange)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(errorText)
+                                .foregroundColor(.orange)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Button(localizationManager.localized("common_retry")) {
+                                Task { await loadHub() }
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                            .accessibilityIdentifier("companion_hub_heroes_retry")
+                        }
                     } else if characters.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(localizationManager.localized("companion_hub_no_heroes_title"))
@@ -268,12 +278,19 @@ struct CompanionHubScreen: View {
             }
             CompanionAnalytics.track(.open, characterId: selectedCharacterId)
         } catch {
+            let cachedChars = CompanionOfflineStore.loadCharacters()
+            if !cachedChars.isEmpty {
+                let allowed = Set(caps.allowedCharactersFromCapabilities)
+                characters = cachedChars.filter { allowed.contains($0.id) }
+                showingOfflineCache = true
+            }
             let cached = CompanionOfflineStore.loadThreads()
             if !cached.isEmpty {
                 threads = cached
                 showingOfflineCache = true
-            } else {
-                errorText = error.localizedDescription
+            }
+            if characters.isEmpty && cached.isEmpty {
+                errorText = localizationManager.localized("companion_heroes_load_failed")
             }
         }
     }

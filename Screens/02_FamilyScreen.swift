@@ -2189,7 +2189,7 @@ struct FamilyScreen: View {
                                             .clipShape(Capsule())
                                     }
                                 } else {
-                                    VStack(spacing: 4) {
+                                    VStack(spacing: 8) {
                                         Text(localizationManager.localized("family_add_member"))
                                             .font(.system(size: 16, weight: .bold))
                                             .foregroundColor(.white.opacity(0.4))
@@ -2203,11 +2203,22 @@ struct FamilyScreen: View {
                                                 )
                                             )
                                             .clipShape(Capsule())
-                                        Text(isRussian3
-                                             ? "Достигнут лимит (\(capacityText3)). Обновите тариф."
-                                             : "Limit reached (\(capacityText3)). Upgrade your plan.")
+                                        Text(String(
+                                            format: localizationManager.localized("family_add_limit_reached_capacity_fmt"),
+                                            capacityText3
+                                        ))
                                             .font(.caption)
                                             .foregroundColor(.secondaryGold)
+                                            .multilineTextAlignment(.center)
+                                        Button(localizationManager.localized("family_add_view_tariffs")) {
+                                            navigationManager.navigateTo(.tariffs)
+                                        }
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.black)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 8)
+                                        .background(Color.secondaryGold)
+                                        .clipShape(Capsule())
                                     }
                                 }
                             }
@@ -2489,8 +2500,6 @@ struct FamilyScreen: View {
                         // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
                         if canManageFamilyRoster {
                             parentalControlsSection
-                            AntifakeFamilyCDParentCard()
-                                .environmentObject(localizationManager)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -7216,7 +7225,12 @@ struct GeofencesSettingsModal: View {
                 // Форма добавления
                 if showAddForm {
                     VStack(spacing: Spacing.m) {
-                        TextField(localizationManager.localized("geofences_name_placeholder"), text: $newGeofenceName)
+                        TextField(
+                            "",
+                            text: $newGeofenceName,
+                            prompt: Text(localizationManager.localized("geofences_name_placeholder"))
+                                .foregroundColor(Color.white.opacity(0.55))
+                        )
                             .font(.body)
                             .foregroundColor(.white)
                             .accentColor(.secondaryGold)
@@ -7228,7 +7242,12 @@ struct GeofencesSettingsModal: View {
                             )
                             .cornerRadius(CornerRadius.medium)
                         
-                        TextField(localizationManager.localized("geofences_address_placeholder"), text: $newGeofenceAddress)
+                        TextField(
+                            "",
+                            text: $newGeofenceAddress,
+                            prompt: Text(localizationManager.localized("geofences_address_placeholder"))
+                                .foregroundColor(Color.white.opacity(0.55))
+                        )
                             .font(.body)
                             .foregroundColor(.white)
                             .accentColor(.secondaryGold)

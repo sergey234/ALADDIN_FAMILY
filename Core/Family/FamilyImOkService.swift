@@ -217,6 +217,7 @@ enum FamilyImOkService {
         case .success:
             return .success(())
         case .failure(let error):
+            FamilyImOkOfflineQueue.enqueue(message: message, kind: "im_ok")
             return .failure(error)
         }
     }
@@ -288,6 +289,7 @@ enum FamilyImOkService {
         case .success:
             return .success(())
         case .failure(let error):
+            FamilyImOkOfflineQueue.enqueue(message: message, kind: "need_help")
             return .failure(error)
         }
     }

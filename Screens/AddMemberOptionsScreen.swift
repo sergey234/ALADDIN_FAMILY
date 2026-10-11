@@ -98,17 +98,33 @@ struct AddMemberOptionsScreen: View {
                             }
                             .padding(.top, 8)
 
-                            // Limit banner using single source of truth
+                            // Limit banner + tariffs CTA (qa-18) — cards stay visible (qa-20).
                             let currentCount = cachedFamilyMemberCount
                             let (canAddHere, limitMessage, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
                             if !canAddHere, let msg = limitMessage {
-                                Text(msg)
-                                    .font(.caption)
-                                    .foregroundColor(.orange)
-                                    .multilineTextAlignment(.center)
-                                    .padding()
-                                    .background(Color.orange.opacity(0.1))
-                                    .cornerRadius(8)
+                                VStack(spacing: 10) {
+                                    Text(msg)
+                                        .font(.caption)
+                                        .foregroundColor(Color(red: 1.0, green: 0.84, blue: 0.35))
+                                        .multilineTextAlignment(.center)
+                                    Button(localizationManager.localized("family_add_view_tariffs")) {
+                                        navigationManager.navigateTo(.tariffs)
+                                    }
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(Color(red: 1.0, green: 0.84, blue: 0.35))
+                                    .cornerRadius(10)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.orange.opacity(0.18))
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.orange.opacity(0.55), lineWidth: 1)
+                                )
                             }
 
                             // Варианты добавления
@@ -123,8 +139,8 @@ struct AddMemberOptionsScreen: View {
                                         description: localizationManager.localized(
                                             hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
                                         ),
-                                        color: .orange,
-                                        enabled: !hasExistingFamilyOnDevice || canManageFamilyRosterFromCache
+                                        color: Color(red: 1.0, green: 0.84, blue: 0.35), // gold
+                                        enabled: (!hasExistingFamilyOnDevice || canManageFamilyRosterFromCache) && canAddHere
                                     ) {
                                         // ✅ FIXED: Pure navigation - no internal modals
                                         guard !isProcessingCreateFamily else {
@@ -156,45 +172,45 @@ struct AddMemberOptionsScreen: View {
                                     }
                                 }
 
-                                // Вариант 2: Сканировать QR-код
+                                // Вариант 2: Сканировать QR-код (синий — всегда виден)
                                 optionButton(
                                     icon: "qrcode.viewfinder",
                                     title: localizationManager.localized("add_member_scan_qr"),
                                     description: localizationManager.localized("add_member_scan_qr_desc"),
-                                    color: .blue
+                                    color: Color(red: 0.35, green: 0.65, blue: 1.0)
                                 ) {
                                     navigationManager.navigateTo(.qrCode)
                                 }
 
-                                // Вариант 3: Ввести код приглашения
+                                // Вариант 3: Ввести код приглашения (зелёный — всегда виден)
                                 optionButton(
                                     icon: "textformat.123",
                                     title: localizationManager.localized("add_member_enter_code"),
                                     description: localizationManager.localized("add_member_enter_code_desc"),
-                                    color: .green
+                                    color: Color(red: 0.35, green: 0.85, blue: 0.55)
                                 ) {
                                     navigationManager.navigateTo(.invitationCode)
                                 }
                             }
 
-                            // Текст о конфиденциальности
+                            // Текст о конфиденциальности — светлый на storm background
                             VStack(spacing: 8) {
                                 HStack {
                                     Image(systemName: "lock.shield.fill")
                                         .font(.system(size: 16))
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(Color(red: 0.55, green: 0.78, blue: 1.0))
                                     Text(localizationManager.localized("add_member_privacy_title"))
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(.white)
                                 }
 
                                 Text(localizationManager.localized("add_member_privacy_text"))
                                     .font(.system(size: 12))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.white.opacity(0.78))
                                     .multilineTextAlignment(.center)
                             }
                             .padding(16)
-                            .background(Color.blue.opacity(0.05))
+                            .background(Color.white.opacity(0.08))
                             .cornerRadius(12)
                             .padding(.bottom, 10)
                         }
@@ -231,10 +247,10 @@ struct AddMemberOptionsScreen: View {
                 navigationManager.goBack()
             }
             .font(.system(size: 16, weight: .medium))
-            .foregroundColor(.secondary)
+            .foregroundColor(.white.opacity(0.9))
             .frame(maxWidth: .infinity)
             .frame(height: 44)
-            .background(Color.gray.opacity(0.12))
+            .background(Color.white.opacity(0.12))
             .cornerRadius(12)
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
@@ -289,31 +305,32 @@ struct AddMemberOptionsScreen: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.white)
                     
                     Text(description)
                         .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.78))
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.55))
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.05))
+                    .fill(Color.white.opacity(0.10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(color.opacity(0.3), lineWidth: 1)
+                            .stroke(color.opacity(0.65), lineWidth: 1.5)
                     )
             )
             .opacity(enabled ? 1 : 0.48)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityHint(enabled ? "" : localizationManager.localized("family_add_limit_reached_a11y"))
     }
 }
 

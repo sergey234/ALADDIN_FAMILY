@@ -665,7 +665,7 @@ private struct VoiceNotesSummaryService {
         let confidence: Double
 
         if hasPlaceholder || cleaned.isEmpty {
-            summaryText = "Локальное резюме недоступно: сначала завершите транскрипцию."
+            summaryText = LocalizationManager.shared.localized("voice_notes_summary_need_transcript")
             confidence = 0.35
         } else {
             summaryText = preview + (tokens.count > 28 ? "..." : "")

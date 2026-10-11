@@ -3,6 +3,7 @@ import Foundation
 /// P1-21 — локальный кэш последних thread + черновик сообщения (без push).
 enum CompanionOfflineStore {
     private static let threadsKey = "companion_offline_threads_v1"
+    private static let charactersKey = "companion_offline_characters_v1"
     private static let messagesPrefix = "companion_offline_thread_msgs_v1_"
     private static let draftPrefix = "companion_draft_v1_"
 
@@ -21,6 +22,20 @@ enum CompanionOfflineStore {
     static func loadThreads() -> [CompanionThreadSummary] {
         guard let data = UserDefaults.standard.data(forKey: threadsKey),
               let rows = try? JSONDecoder().decode([CompanionThreadSummary].self, from: data) else {
+            return []
+        }
+        return rows
+    }
+
+    /// qa-04: disk cache for heroes list (survives cold start).
+    static func saveCharacters(_ characters: [CompanionCharacterDTO]) {
+        guard let data = try? JSONEncoder().encode(characters) else { return }
+        UserDefaults.standard.set(data, forKey: charactersKey)
+    }
+
+    static func loadCharacters() -> [CompanionCharacterDTO] {
+        guard let data = UserDefaults.standard.data(forKey: charactersKey),
+              let rows = try? JSONDecoder().decode([CompanionCharacterDTO].self, from: data) else {
             return []
         }
         return rows

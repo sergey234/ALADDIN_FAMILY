@@ -82,7 +82,7 @@ struct TariffCardView: View {
                             .font(.body)
                             .foregroundColor(card.color)
                         
-                        if !card.price.contains("0 ₽") {
+                        if card.tariffType != .trial && card.tariffType != .free {
                             Text(card.tariffType.period(localizationManager: localizationManager))
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)

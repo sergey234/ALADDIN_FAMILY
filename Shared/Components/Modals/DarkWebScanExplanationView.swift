@@ -12,7 +12,7 @@ struct DarkWebScanExplanationView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: Spacing.l) {
                     // Безопасное сканирование
                     explanationSection(

@@ -396,21 +396,22 @@ struct PrivacyPolicyScreen: View {
 struct WebView: UIViewRepresentable {
     
     let url: URL
+    var accessibilityLabelText: String = LocalizationManager.shared.localized("privacy_policy_webview_a11y")
+    var accessibilityHintText: String = LocalizationManager.shared.localized("privacy_policy_webview_hint")
     
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.backgroundColor = .clear
         webView.isOpaque = false
-        // Note: LocalizationManager недоступен в UIViewRepresentable, используем дефолтные значения
-        // В будущем можно передать через параметр, но для accessibility это не критично
-        webView.accessibilityLabel = "Веб-страница политики конфиденциальности"
-        webView.accessibilityHint = "Прокрутите для просмотра содержимого политики конфиденциальности"
+        webView.accessibilityLabel = accessibilityLabelText
+        webView.accessibilityHint = accessibilityHintText
         webView.load(URLRequest(url: url))
         return webView
     }
     
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        // No updates needed
+        uiView.accessibilityLabel = accessibilityLabelText
+        uiView.accessibilityHint = accessibilityHintText
     }
 }
 

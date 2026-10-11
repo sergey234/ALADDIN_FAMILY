@@ -154,6 +154,15 @@ class FamilyRegistrationViewModel: ObservableObject {
     
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    /// qa-16: drives Retry vs Tariffs CTA — never wipe family via Retry on limit/403.
+    @Published var registrationErrorKind: RegistrationErrorKind = .none
+
+    enum RegistrationErrorKind: Equatable {
+        case none
+        case tariffLimit
+        case nonRetryable
+        case networkRetryable
+    }
     
     // MARK: - Registration Steps
     
@@ -420,8 +429,13 @@ class FamilyRegistrationViewModel: ObservableObject {
                 let limit = SubscriptionManager.currentFamilyLimit
                 logger.business("🚫 TARIFF LIMIT REACHED in admin_add_mode: \(currentCount)/\(limit)")
                 VisualLogger.shared.log("🚫 TARIFF LIMIT: cannot add more members (\(currentCount)/\(limit))", level: .warning, category: "FAMILY")
-                self.errorMessage = message ?? "Лимит участников для вашего тарифа достигнут. Обновите тариф."
+                self.errorMessage = message ?? String(
+                    format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
+                    limit
+                )
+                self.registrationErrorKind = .tariffLimit
                 self.isLoading = false
+                self.currentStep = .idle
                 UserDefaults.standard.set(false, forKey: "admin_add_mode")
                 UserDefaults.standard.synchronize()
                 return
@@ -464,21 +478,19 @@ class FamilyRegistrationViewModel: ObservableObject {
                         let errorDesc = error.localizedDescription.lowercased()
                         logger.business("❌ addFamilyMember failed: \(error.localizedDescription)")
                         
-                        // ✅ CRITICAL RECOVERY: If "Family not found" during what should be initial registration,
-                        // fallback to createFamily (this is the root cause of the 404 error)
-                        if errorDesc.contains("family not found") || errorDesc.contains("404") || errorDesc.contains("not found") {
-                            VisualLogger.shared.log("🔄 FAMILY_NOT_FOUND detected during add - falling back to createFamily()", level: .warning, category: "FAMILY")
-                            logger.business("🔄 Auto-fallback: Family not found → calling createFamily() instead")
-                            
-                            // Reset flag and retry with proper family creation path
+                        // qa-16: NEVER auto-createFamily on add failure when family already exists /
+                        // limit / forbidden — that wiped the old member on Retry.
+                        if Self.isFamilyMemberLimitError(error) {
+                            let limit = SubscriptionManager.currentFamilyLimit
+                            self.errorMessage = String(
+                                format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
+                                limit
+                            )
+                            self.registrationErrorKind = .tariffLimit
                             UserDefaults.standard.set(false, forKey: "admin_add_mode")
                             UserDefaults.standard.synchronize()
-                            
                             self.currentStep = .idle
-                            // Retry with create path
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                self.createFamily()
-                            }
+                            VisualLogger.shared.log("🚫 FAMILY_ADD tariff limit — no createFamily fallback", level: .warning, category: "FAMILY")
                             return
                         }
 
@@ -487,26 +499,36 @@ class FamilyRegistrationViewModel: ObservableObject {
                             || errorDesc.contains("forbidden")
                             || errorDesc.contains("доступ запрещен")
                             || errorDesc.contains("403")
-                        if isStaleFamilyContext || isForbiddenAdminAdd {
-                            VisualLogger.shared.log(
-                                "🔄 FAMILY_ADD \(isStaleFamilyContext ? "409 stale" : "403"): clearing local context and createFamily()",
-                                level: .warning,
-                                category: "FAMILY"
-                            )
-                            logger.business("🔄 Auto-fallback: \(isStaleFamilyContext ? "409 stale" : "403") on add → clear family_id → createFamily()")
-                            FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                        // Soft recovery only when device has NO confirmed family (true first registration).
+                        let canFallbackCreate = FamilyLocalStore.needsServerFamilyCreation()
+                        if canFallbackCreate,
+                           (errorDesc.contains("family not found") || errorDesc.contains("404") || errorDesc.contains("not found")
+                            || isStaleFamilyContext) {
+                            VisualLogger.shared.log("🔄 FAMILY_ADD no local family → createFamily()", level: .warning, category: "FAMILY")
                             UserDefaults.standard.set(false, forKey: "admin_add_mode")
                             UserDefaults.standard.synchronize()
                             self.currentStep = .idle
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                self.createFamily()
+                            Task { @MainActor [weak self] in
+                                try? await Task.sleep(nanoseconds: 500_000_000)
+                                self?.createFamily()
                             }
                             return
                         }
-                        
+
+                        if isForbiddenAdminAdd || isStaleFamilyContext {
+                            self.errorMessage = LocalizationManager.shared.localized("family_add_forbidden_or_stale")
+                            self.registrationErrorKind = .nonRetryable
+                            UserDefaults.standard.set(false, forKey: "admin_add_mode")
+                            UserDefaults.standard.synchronize()
+                            self.currentStep = .idle
+                            VisualLogger.shared.log("❌ FAMILY_ADD forbidden/stale — no createFamily wipe", level: .error, category: "FAMILY")
+                            return
+                        }
+
                         self.errorMessage = Self.userFacingFamilyErrorMessage(from: error)
+                        self.registrationErrorKind = .networkRetryable
                         self.currentStep = .idle
-                        VisualLogger.shared.log("❌ Oшибка добавления участника: \(error.localizedDescription)", level: .error, category: "FAMILY")
+                        VisualLogger.shared.log("❌ Ошибка добавления участника: \(error.localizedDescription)", level: .error, category: "FAMILY")
                     }
                 }
             }
@@ -642,10 +664,21 @@ class FamilyRegistrationViewModel: ObservableObject {
                     let networkError = NetworkError.from(error)
                     switch networkError {
                     case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
-                        self?.errorMessage = "Сессия истекла. Обновите вход и попробуйте снова."
+                        self?.errorMessage = LocalizationManager.shared.localized("family_session_expired")
+                        self?.registrationErrorKind = .nonRetryable
                         VisualLogger.shared.log("⚠️ FAMILY CREATE unauthorized/session-expired", level: .warning, category: "FAMILY")
                     default:
-                        self?.errorMessage = Self.userFacingFamilyErrorMessage(from: error)
+                        if Self.isFamilyMemberLimitError(error) {
+                            let limit = SubscriptionManager.currentFamilyLimit
+                            self?.errorMessage = String(
+                                format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
+                                limit
+                            )
+                            self?.registrationErrorKind = .tariffLimit
+                        } else {
+                            self?.errorMessage = Self.userFacingFamilyErrorMessage(from: error)
+                            self?.registrationErrorKind = .networkRetryable
+                        }
                     }
                     self?.isLoading = false
                     self?.currentStep = .idle  // ✅ ИСПРАВЛЕНИЕ: Возвращаемся в idle при ошибке
@@ -1449,11 +1482,48 @@ class FamilyRegistrationViewModel: ObservableObject {
     private static func userFacingFamilyErrorMessage(from error: Error) -> String {
         switch NetworkError.from(error) {
         case .serviceUnavailable(let message):
-            return message ?? "Сервис семьи временно недоступен. Попробуйте позже."
+            return message ?? LocalizationManager.shared.localized("family_service_temporarily_unavailable")
         case .endpointFeatureUnavailable:
-            return "Сервис семьи на сервере недоступен. Нужен деплой backend (main.py) или проверка PostgreSQL."
+            return LocalizationManager.shared.localized("family_service_unavailable_deploy")
         default:
-            return error.localizedDescription
+            let raw = error.localizedDescription
+            // Never surface raw English server jargon for limit/forbidden.
+            if isFamilyMemberLimitError(error) {
+                let limit = SubscriptionManager.currentFamilyLimit
+                return String(
+                    format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
+                    limit
+                )
+            }
+            return raw
+        }
+    }
+
+    /// Server/client signals that the tariff roster cap was hit (never createFamily).
+    static func isFamilyMemberLimitError(_ error: Error) -> Bool {
+        let desc = error.localizedDescription.lowercased()
+        if desc.contains("лимит участников")
+            || desc.contains("member limit")
+            || desc.contains("limit reached")
+            || desc.contains("достигнут лимит")
+            || desc.contains("обновите тариф")
+            || desc.contains("upgrade your plan")
+            || desc.contains("upgrade your subscription")
+            || desc.contains("family_roster_full")
+            || desc.contains("roster_full")
+            || desc.contains("max_slots")
+            || desc.contains("no slots")
+            || desc.contains("0 slots") {
+            return true
+        }
+        switch NetworkError.from(error) {
+        case .badRequest(let msg), .forbidden(let msg), .conflict(let msg):
+            let m = (msg ?? "").lowercased()
+            return m.contains("limit") || m.contains("лимит") || m.contains("roster") || m.contains("slots")
+        case .httpError(let code) where code == 409 || code == 402:
+            return desc.contains("limit") || desc.contains("лимит") || desc.contains("roster") || desc.contains("slots")
+        default:
+            return false
         }
     }
 }

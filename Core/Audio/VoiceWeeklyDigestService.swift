@@ -59,17 +59,29 @@ enum VoiceWeeklyDigestService {
             }
             let line = note.summary.isEmpty ? note.transcriptPreview : note.summary
             let cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !cleaned.isEmpty,
-               !cleaned.hasPrefix("voice_notes_"),
-               top.count < 5 {
-                top.append(String(cleaned.prefix(100)))
-            }
+            guard !cleaned.isEmpty, top.count < 5 else { continue }
+            // qa-22: never show raw localization keys in Safety Week «Главное»
+            if Self.looksLikeLocalizationKey(cleaned) { continue }
+            top.append(String(cleaned.prefix(100)))
         }
         let fmt = DateFormatter()
         fmt.dateStyle = .medium
         fmt.timeStyle = .none
         let weekLabel = "\(fmt.string(from: start)) – \(fmt.string(from: now))"
         return VoiceWeeklyDigestResult(weekLabel: weekLabel, stats: stats, topLines: top)
+    }
+
+    /// Raw keys like `ai_assistant_voice_empty_result` must never appear in digest UI.
+    static func looksLikeLocalizationKey(_ text: String) -> Bool {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.hasPrefix("voice_notes_") || t.hasPrefix("ai_assistant_") || t.hasPrefix("voice_weekly_") {
+            return true
+        }
+        // snake_case token without spaces → likely a key
+        if t.contains("_"), !t.contains(" "), t.range(of: #"^[a-z0-9_.]+$"#, options: .regularExpression) != nil {
+            return true
+        }
+        return false
     }
 
     /// Schedule Sunday 19:00 local repeating reminder (idempotent replace).

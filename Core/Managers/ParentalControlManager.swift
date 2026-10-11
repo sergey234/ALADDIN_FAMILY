@@ -859,14 +859,22 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         if let backoffUntil = statsBackoffUntil, now < backoffUntil {
             DispatchQueue.main.async {
                 self.isLoading = false
-                completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Запрос отклонен из-за лимита (backoff). Повторите позже."])))
+                completion(.failure(NSError(
+                    domain: "ParentalControlManager",
+                    code: 429,
+                    userInfo: [NSLocalizedDescriptionKey: LocalizationManager.shared.localized("parental_stats_rate_limited")]
+                )))
             }
             return
         }
         if let lastRequest = lastStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
             DispatchQueue.main.async {
                 self.isLoading = false
-                completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Слишком частые запросы (throttle). Повторите позже."])))
+                completion(.failure(NSError(
+                    domain: "ParentalControlManager",
+                    code: 429,
+                    userInfo: [NSLocalizedDescriptionKey: LocalizationManager.shared.localized("parental_stats_rate_limited")]
+                )))
             }
             return
         }
@@ -917,7 +925,11 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         if let lastRequest = lastBypassStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
             DispatchQueue.main.async {
                 self.isLoading = false
-                completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Слишком частые запросы (throttle). Повторите позже."])))
+                completion(.failure(NSError(
+                    domain: "ParentalControlManager",
+                    code: 429,
+                    userInfo: [NSLocalizedDescriptionKey: LocalizationManager.shared.localized("parental_stats_rate_limited")]
+                )))
             }
             return
         }

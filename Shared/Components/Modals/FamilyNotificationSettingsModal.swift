@@ -26,7 +26,7 @@ struct FamilyNotificationSettingsModal: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Channels
                         channelsSection
@@ -73,27 +73,30 @@ struct FamilyNotificationSettingsModal: View {
                 .foregroundColor(.textPrimary)
             
             VStack(spacing: Spacing.s) {
-                Toggle(
-                    localizationManager.localized("family_notifications_channel_push"),
-                    isOn: Binding(
-                        get: { channels["push"] ?? false },
-                        set: { channels["push"] = $0 }
-                    )
-                )
-                Toggle(
-                    localizationManager.localized("family_notifications_channel_email"),
-                    isOn: Binding(
-                        get: { channels["email"] ?? false },
-                        set: { channels["email"] = $0 }
-                    )
-                )
-                Toggle(
-                    localizationManager.localized("family_notifications_channel_sms"),
-                    isOn: Binding(
-                        get: { channels["sms"] ?? false },
-                        set: { channels["sms"] = $0 }
-                    )
-                )
+                Toggle(isOn: Binding(
+                    get: { channels["push"] ?? false },
+                    set: { channels["push"] = $0 }
+                )) {
+                    Text(localizationManager.localized("family_notifications_channel_push"))
+                        .foregroundColor(.textPrimary)
+                }
+                .tint(.secondaryGold)
+                Toggle(isOn: Binding(
+                    get: { channels["email"] ?? false },
+                    set: { channels["email"] = $0 }
+                )) {
+                    Text(localizationManager.localized("family_notifications_channel_email"))
+                        .foregroundColor(.textPrimary)
+                }
+                .tint(.secondaryGold)
+                Toggle(isOn: Binding(
+                    get: { channels["sms"] ?? false },
+                    set: { channels["sms"] = $0 }
+                )) {
+                    Text(localizationManager.localized("family_notifications_channel_sms"))
+                        .foregroundColor(.textPrimary)
+                }
+                .tint(.secondaryGold)
             }
         }
         .padding(Spacing.m)

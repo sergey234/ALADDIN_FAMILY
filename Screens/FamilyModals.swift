@@ -2914,14 +2914,24 @@ struct GeofencesSettingsModal: View {
                 // Форма добавления
                 if showAddForm {
                     VStack(spacing: Spacing.m) {
-                        TextField(localizationManager.localized("geofences_name_placeholder"), text: $newGeofenceName)
+                        TextField(
+                            "",
+                            text: $newGeofenceName,
+                            prompt: Text(localizationManager.localized("geofences_name_placeholder"))
+                                .foregroundColor(Color.white.opacity(0.55))
+                        )
                             .font(.body)
                             .foregroundColor(.textPrimary)
                             .padding(Spacing.m)
                             .background(Color.backgroundMedium.opacity(0.5))
                             .cornerRadius(CornerRadius.medium)
                         
-                        TextField(localizationManager.localized("geofences_address_placeholder"), text: $newGeofenceAddress)
+                        TextField(
+                            "",
+                            text: $newGeofenceAddress,
+                            prompt: Text(localizationManager.localized("geofences_address_placeholder"))
+                                .foregroundColor(Color.white.opacity(0.55))
+                        )
                             .font(.body)
                             .foregroundColor(.textPrimary)
                             .padding(Spacing.m)

@@ -84,6 +84,9 @@ struct FamilyChatScreen: View {
     @State private var wsRealtimeUnavailable: Bool = false
     /// После успешной отправки (текст/медиа/голос): защита silent-poll от пустого GET, пока бэкенд не отдал сообщения в ленту.
     @State private var lastOutboundChatCompletedAt: Date?
+    /// qa-02: user chose «писать без E2E» after setup timeout — unlock composer, plaintext path.
+    @State private var allowComposerWithoutE2EE: Bool = false
+    @State private var e2eeSetupStartedAt: Date?
 
     private let familyMembersKey = "family_members_list"
     
@@ -122,7 +125,7 @@ struct FamilyChatScreen: View {
                 familyChatWebSocketBanner
             }
 
-            if AppConfig.isFamilyChatE2EEEnabled && !e2eeManager.isReady {
+            if AppConfig.isFamilyChatE2EEEnabled && !e2eeManager.isReady && !allowComposerWithoutE2EE {
                 familyChatE2EEBanner
             }
 
@@ -187,6 +190,28 @@ struct FamilyChatScreen: View {
                         .font(.caption2)
                         .foregroundColor(.orange)
                         .fixedSize(horizontal: false, vertical: true)
+                }
+                if showE2EETimeoutActions {
+                    HStack(spacing: 12) {
+                        Button(localizationManager.localized("common_retry")) {
+                            guard let fid = getFamilyId(), !fid.isEmpty else { return }
+                            e2eeSetupStartedAt = Date()
+                            allowComposerWithoutE2EE = false
+                            Task { await e2eeManager.bootstrap(familyId: fid) }
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                        .accessibilityIdentifier("family_chat_e2ee_retry")
+
+                        Button(localizationManager.localized("family_chat_e2ee_write_without")) {
+                            allowComposerWithoutE2EE = true
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.orange)
+                        .accessibilityIdentifier("family_chat_e2ee_write_without")
+                    }
+                }
+                if let err = e2eeManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines), !err.isEmpty {
                     Button(localizationManager.localized("family_chat_e2ee_recreate")) {
                         guard let fid = getFamilyId(), !fid.isEmpty else { return }
                         Task { await e2eeManager.recreateChatProtection(familyId: fid) }
@@ -203,10 +228,20 @@ struct FamilyChatScreen: View {
         .background(Color.secondaryGold.opacity(0.10))
     }
 
+    /// After ~10s of setup, offer retry / write without E2E (qa-02).
+    private var showE2EETimeoutActions: Bool {
+        guard AppConfig.isFamilyChatE2EEEnabled, !e2eeManager.isReady, !allowComposerWithoutE2EE else {
+            return false
+        }
+        if e2eeManager.lastError != nil { return true }
+        guard let started = e2eeSetupStartedAt else { return false }
+        return Date().timeIntervalSince(started) >= 10
+    }
+
     /// Composer locked until family context + E2EE (when flag on) are ready.
     private var isFamilyChatComposerLocked: Bool {
         if chatFamilyContextInvalid { return true }
-        if AppConfig.isFamilyChatE2EEEnabled && !e2eeManager.isReady { return true }
+        if AppConfig.isFamilyChatE2EEEnabled && !e2eeManager.isReady && !allowComposerWithoutE2EE { return true }
         return false
     }
 
@@ -306,7 +341,8 @@ struct FamilyChatScreen: View {
             .contextMenu {
                 MessageContextMenu(
                     message: message,
-                    onDelete: { deleteMessage(message) },
+                    onDeleteForMe: { deleteMessageForMe(message) },
+                    onDeleteForEveryone: { deleteMessageForEveryone(message) },
                     onEdit: { startEditing(message) },
                     onReply: { replyToMessage = message },
                     onCopy: { copyMessage(message) },
@@ -374,8 +410,10 @@ struct FamilyChatScreen: View {
                 let hadCachedSnapshot = !messages.isEmpty
                 loadMessages(silent: hadCachedSnapshot)
                 if AppConfig.isFamilyChatE2EEEnabled, let fid = getFamilyId(), !fid.isEmpty {
+                    e2eeSetupStartedAt = Date()
                     await e2eeManager.bootstrap(familyId: fid)
                 }
+                await FamilyImOkOfflineQueue.flush()
                 setupWebSocket()
                 setupPushNotifications()
             }
@@ -413,7 +451,8 @@ struct FamilyChatScreen: View {
                     if let message = selectedMessage {
                         MessageActionsMenu(
                             message: message,
-                            onDelete: { deleteMessage(message) },
+                            onDeleteForMe: { deleteMessageForMe(message) },
+                            onDeleteForEveryone: { deleteMessageForEveryone(message) },
                             onEdit: { startEditing(message) },
                             onReply: { replyToMessage = message },
                             onCopy: { copyMessage(message) },
@@ -943,7 +982,7 @@ struct FamilyChatScreen: View {
                     if let fid = getFamilyId(), !fid.isEmpty {
                         offlineManager.cacheMessages(responses, familyId: fid)
                     }
-                    let serverList = responses.map { convertToMessage($0) }
+                    let serverList = excludingLocallyHidden(responses.map { convertToMessage($0) })
                     if silent {
                         // Пустой ответ после отправки часто затирал оптимистичные пузыри (сервер ещё не отдал запись в GET).
                         if serverList.isEmpty, !messages.isEmpty {
@@ -956,7 +995,7 @@ struct FamilyChatScreen: View {
                         }
                         let serverIds = Set(serverList.map(\.id))
                         let pendingExtras = messages.filter { $0.id.hasPrefix("pending-") && !serverIds.contains($0.id) }
-                        messages = serverList + pendingExtras
+                        messages = excludingLocallyHidden(serverList + pendingExtras)
                     } else {
                         messages = serverList
                     }
@@ -1444,24 +1483,28 @@ struct FamilyChatScreen: View {
         pushService.requestAuthorization()
     }
     
-    /// E2EE обязателен — без silent plaintext fallback.
+    /// E2EE preferred; qa-02 allows explicit «писать без E2E» bypass (no silent wipe of delete/send).
     private func requireE2EEReady(context: String) -> Bool {
-        guard !AppConfig.isFamilyChatE2EEEnabled || e2eeManager.isReady else {
-            presentChatError(
-                localizationManager.localized("family_chat_e2ee_not_ready"),
-                context: context
-            )
-            return false
+        if !AppConfig.isFamilyChatE2EEEnabled || e2eeManager.isReady || allowComposerWithoutE2EE {
+            return true
         }
-        return true
+        presentChatError(
+            localizationManager.localized("family_chat_e2ee_not_ready"),
+            context: context
+        )
+        return false
     }
 
     /// Загрузка кэшированных сообщений
     private func loadCachedMessages() {
         let cached = offlineManager.loadCachedMessages(familyId: getFamilyId())
         if messages.isEmpty && !cached.isEmpty {
-            messages = cached.map { convertToMessage($0) }
+            messages = excludingLocallyHidden(cached.map { convertToMessage($0) })
         }
+    }
+
+    private func excludingLocallyHidden(_ list: [FamilyChatMessage]) -> [FamilyChatMessage] {
+        list.filter { !FamilyChatLocalHiddenStore.isHidden($0.id) }
     }
     
     /// Отправка голосового: загрузка через MediaUploadManager, затем регистрация сообщения на сервере
@@ -1704,25 +1747,46 @@ struct FamilyChatScreen: View {
         }
     }
     
-    /// Удаление сообщения
-    private func deleteMessage(_ message: FamilyChatMessage) {
+    /// qa-01: hide only on this device
+    private func deleteMessageForMe(_ message: FamilyChatMessage) {
+        FamilyChatLocalHiddenStore.hide(messageId: message.id)
+        messages.removeAll { $0.id == message.id }
+        showMessageActions = false
+        selectedMessage = nil
+    }
+
+    /// qa-01: server delete for everyone — own messages within 24h
+    private func deleteMessageForEveryone(_ message: FamilyChatMessage) {
+        guard FamilyChatLocalHiddenStore.canDeleteForEveryone(
+            isCurrentUser: message.isCurrentUser,
+            rawTimestamp: message.rawTimestamp
+        ) else {
+            presentChatError(
+                localizationManager.localized("family_chat_message_delete_everyone_expired"),
+                context: "deleteForEveryone.window"
+            )
+            return
+        }
         apiService.deleteFamilyChatMessage(messageId: message.id) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):
+                    FamilyChatLocalHiddenStore.hide(messageId: message.id)
                     messages.removeAll { $0.id == message.id }
+                    showMessageActions = false
+                    selectedMessage = nil
                 case .failure(let error):
                     let description = error.localizedDescription.lowercased()
                     if description.contains("invalid user_id") || description.contains("invalid user id") {
                         presentChatError(
                             localizationManager.localized("family_chat_error_auth"),
-                            context: "deleteMessage.invalidUser",
+                            context: "deleteForEveryone.invalidUser",
                             underlying: error
                         )
                     } else {
                         presentChatError(
                             localizedLoadFailureMessage(for: error),
-                            context: "deleteMessage",
+                            context: "deleteForEveryone",
                             underlying: error
                         )
                     }
@@ -2624,7 +2688,8 @@ struct ChatBubbleView: View {
 
 struct MessageContextMenu: View {
     let message: FamilyChatMessage
-    let onDelete: () -> Void
+    let onDeleteForMe: () -> Void
+    let onDeleteForEveryone: () -> Void
     let onEdit: () -> Void
     let onReply: () -> Void
     let onCopy: () -> Void
@@ -2641,6 +2706,13 @@ struct MessageContextMenu: View {
             return true
         }
         return message.messageType == .image || message.mediaType == .image
+    }
+
+    private var canDeleteForEveryone: Bool {
+        FamilyChatLocalHiddenStore.canDeleteForEveryone(
+            isCurrentUser: message.isCurrentUser,
+            rawTimestamp: message.rawTimestamp
+        )
     }
     
     var body: some View {
@@ -2698,10 +2770,16 @@ struct MessageContextMenu: View {
             }
             
             if message.isCurrentUser {
-                Button(role: .destructive, action: onDelete) {
-                    Label(localizationManager.localized("family_chat_message_delete"), systemImage: "trash")
+                Button(role: .destructive, action: onDeleteForMe) {
+                    Label(localizationManager.localized("family_chat_message_delete_for_me"), systemImage: "eye.slash")
                 }
-                .accessibilityIdentifier("family_chat_delete_action")
+                .accessibilityIdentifier("family_chat_delete_for_me_action")
+                if canDeleteForEveryone {
+                    Button(role: .destructive, action: onDeleteForEveryone) {
+                        Label(localizationManager.localized("family_chat_message_delete_for_everyone"), systemImage: "trash")
+                    }
+                    .accessibilityIdentifier("family_chat_delete_for_everyone_action")
+                }
             }
         }
     }

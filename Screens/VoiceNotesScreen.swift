@@ -16,6 +16,7 @@ struct VoiceNotesScreen: View {
     @State private var structureResult: VoiceNotesStructureResult?
     @State private var isStructuring = false
     @State private var structureErrorKey: String?
+    @State private var lastStructureTranscript: String = ""
     @State private var dayRecapResult: VoiceDayRecapResult?
     @State private var isDayRecapping = false
     @State private var dayRecapErrorKey: String?
@@ -149,11 +150,18 @@ struct VoiceNotesScreen: View {
                 set: { if !$0 { structureErrorKey = nil } }
             )
         ) {
-            Button(localizationManager.localized("common_ok"), role: .cancel) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
                 structureErrorKey = nil
             }
+            Button(localizationManager.localized("voice_structure_retry")) {
+                let retry = lastStructureTranscript
+                structureErrorKey = nil
+                if !retry.isEmpty {
+                    runStructure(transcript: retry)
+                }
+            }
         } message: {
-            Text(localizationManager.localized(structureErrorKey ?? "voice_structure_error"))
+            Text(localizationManager.localized(structureErrorKey ?? "voice_structure_soft_fail"))
         }
         .alert(
             localizationManager.localized("voice_day_recap_error_title"),
@@ -189,12 +197,17 @@ struct VoiceNotesScreen: View {
         guard !isStructuring else { return }
         isStructuring = true
         structureErrorKey = nil
+        lastStructureTranscript = transcript
         Task { @MainActor in
             defer { isStructuring = false }
             do {
                 structureResult = try await VoiceNotesStructureService.structure(transcript: transcript)
             } catch {
-                structureErrorKey = "voice_structure_error"
+                // Soft-fail: keep prior structureResult; toast + retry alert, no wipe.
+                ToastManager.shared.showWarning(
+                    localizationManager.localized("voice_structure_soft_fail")
+                )
+                structureErrorKey = "voice_structure_soft_fail"
             }
         }
     }
@@ -387,22 +400,62 @@ private extension VoiceNotesScreen {
     }
 
     var callAssistantSection: some View {
-        DisclosureGroup(
-            isExpanded: $isCallAssistantExpanded,
-            content: {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(localizationManager.localized("call_assistant_section_subtitle"))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isCallAssistantExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localizationManager.localized("call_assistant_section_title"))
+                            .font(.headline.weight(.bold))
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("call_assistant_section_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer()
+                    Image(systemName: isCallAssistantExpanded ? "chevron.up" : "chevron.down")
+                        .foregroundColor(.secondaryGold)
+                }
+            }
+            .buttonStyle(.plain)
 
-                    TextField(localizationManager.localized("call_assistant_goal_placeholder"), text: $callGoalText)
-                        .textFieldStyle(.roundedBorder)
-                    TextField(localizationManager.localized("call_assistant_postcall_placeholder"), text: $callPostText)
-                        .textFieldStyle(.roundedBorder)
-                    TextField(localizationManager.localized("call_assistant_outcome_placeholder"), text: $callOutcomeText)
-                        .textFieldStyle(.roundedBorder)
+            if isCallAssistantExpanded {
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(localizationManager.localized("call_assistant_before_label"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                        TextField(localizationManager.localized("call_assistant_goal_placeholder"), text: $callGoalText)
+                            .font(.body)
+                            .foregroundColor(.textPrimary)
+                            .padding(Spacing.s)
+                            .background(Color.white.opacity(0.12))
+                            .cornerRadius(CornerRadius.medium)
+                    }
 
-                    Button(localizationManager.localized("call_assistant_save_note")) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(localizationManager.localized("call_assistant_after_label"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                        TextField(localizationManager.localized("call_assistant_postcall_placeholder"), text: $callPostText)
+                            .font(.body)
+                            .foregroundColor(.textPrimary)
+                            .padding(Spacing.s)
+                            .background(Color.white.opacity(0.12))
+                            .cornerRadius(CornerRadius.medium)
+                        TextField(localizationManager.localized("call_assistant_outcome_placeholder"), text: $callOutcomeText)
+                            .font(.body)
+                            .foregroundColor(.textPrimary)
+                            .padding(Spacing.s)
+                            .background(Color.white.opacity(0.12))
+                            .cornerRadius(CornerRadius.medium)
+                    }
+
+                    Button {
                         viewModel.createCallAssistantNote(
                             goal: callGoalText,
                             postCallNote: callPostText,
@@ -411,22 +464,27 @@ private extension VoiceNotesScreen {
                         callGoalText = ""
                         callPostText = ""
                         callOutcomeText = ""
+                    } label: {
+                        Text(localizationManager.localized("call_assistant_save_note"))
+                            .font(.bodyBold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(Spacing.s)
+                            .background(Color.secondaryGold)
+                            .cornerRadius(CornerRadius.medium)
                     }
-                    .buttonStyle(.borderedProminent)
                     .disabled(
                         callGoalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
                         callPostText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
                         callOutcomeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     )
                 }
-                .padding(.top, 6)
-            },
-            label: {
-                Text(localizationManager.localized("call_assistant_section_title"))
-                    .font(.headline)
             }
-        )
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .secondaryGold)
         .padding(.horizontal)
+        .withToast()
     }
 
     var emptyTitleKey: String {

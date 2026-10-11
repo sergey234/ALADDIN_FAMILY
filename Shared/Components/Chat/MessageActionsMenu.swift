@@ -8,7 +8,8 @@ import SwiftUI
 struct MessageActionsMenu: View {
     let message: FamilyChatMessage
     @EnvironmentObject private var localizationManager: LocalizationManager
-    let onDelete: () -> Void
+    let onDeleteForMe: () -> Void
+    let onDeleteForEveryone: () -> Void
     let onEdit: () -> Void
     let onReply: () -> Void
     let onCopy: () -> Void
@@ -18,7 +19,14 @@ struct MessageActionsMenu: View {
     let onRestrictSender: () -> Void
     let canRestrictSender: Bool
     let onCheckSafety: () -> Void
-    @State private var showDeleteConfirm: Bool = false
+    @State private var showDeleteEveryoneConfirm: Bool = false
+
+    private var canDeleteForEveryone: Bool {
+        FamilyChatLocalHiddenStore.canDeleteForEveryone(
+            isCurrentUser: message.isCurrentUser,
+            rawTimestamp: message.rawTimestamp
+        )
+    }
 
     private var canCheckSafety: Bool {
         if let text = message.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
@@ -102,19 +110,27 @@ struct MessageActionsMenu: View {
                 }
             }
             
-            // Удалить (только свои сообщения)
+            // qa-01: delete for me (any own) + delete for everyone (own + ≤24h)
             if message.isCurrentUser {
                 Divider()
-                
+
                 ActionButton(
-                    icon: "trash",
-                    title: localizationManager.localized("family_chat_message_delete"),
-                    action: {
-                        showDeleteConfirm = true
-                    },
+                    icon: "eye.slash",
+                    title: localizationManager.localized("family_chat_message_delete_for_me"),
+                    action: onDeleteForMe,
                     isDestructive: true
                 )
-                .accessibilityIdentifier("family_chat_delete_action")
+                .accessibilityIdentifier("family_chat_delete_for_me_action")
+
+                if canDeleteForEveryone {
+                    ActionButton(
+                        icon: "trash",
+                        title: localizationManager.localized("family_chat_message_delete_for_everyone"),
+                        action: { showDeleteEveryoneConfirm = true },
+                        isDestructive: true
+                    )
+                    .accessibilityIdentifier("family_chat_delete_for_everyone_action")
+                }
             }
         }
         .padding(Spacing.m)
@@ -124,15 +140,15 @@ struct MessageActionsMenu: View {
         )
         .cornerRadius(CornerRadius.medium)
         .alert(
-            localizationManager.localized("family_chat_message_delete_confirm_title"),
-            isPresented: $showDeleteConfirm
+            localizationManager.localized("family_chat_message_delete_everyone_confirm_title"),
+            isPresented: $showDeleteEveryoneConfirm
         ) {
             Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
-            Button(localizationManager.localized("family_chat_message_delete"), role: .destructive) {
-                onDelete()
+            Button(localizationManager.localized("family_chat_message_delete_for_everyone"), role: .destructive) {
+                onDeleteForEveryone()
             }
         } message: {
-            Text(localizationManager.localized("family_chat_message_delete_confirm"))
+            Text(localizationManager.localized("family_chat_message_delete_everyone_confirm"))
         }
     }
 }

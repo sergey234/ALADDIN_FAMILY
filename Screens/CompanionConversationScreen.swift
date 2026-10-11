@@ -273,6 +273,11 @@ struct CompanionConversationScreen: View {
                 }
                 Spacer(minLength: 0)
                 Button {
+                    // qa-03: X on PDF-only gate turns the mode OFF (not just hide the banner)
+                    let pdfRequired = localizationManager.localized("companion_family_pdf_required")
+                    if self.errorText == pdfRequired {
+                        familyPdfOnly = false
+                    }
                     self.errorText = nil
                     showAssistantBusyHint = false
                 } label: {

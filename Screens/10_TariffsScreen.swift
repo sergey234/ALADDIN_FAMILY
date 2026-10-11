@@ -55,7 +55,7 @@ struct TariffsScreen: View {
             switch self {
             case .trial: return [
                 localizationManager.localized("tariffs_trial_features_1"),
-                localizationManager.localized("tariffs_trial_features_2"),
+                familyMemberLimitFeatureText(for: .trial, localizationManager: localizationManager),
                 localizationManager.localized("tariffs_trial_features_3"),
                 localizationManager.localized("tariffs_trial_features_4"),
                 localizationManager.localized("tariffs_trial_features_5")

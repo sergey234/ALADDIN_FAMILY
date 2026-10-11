@@ -127,17 +127,38 @@ final class CompanionAPIService {
            now.timeIntervalSince(cached.fetchedAt) < charactersCacheTTL {
             return cached.response
         }
-        // No nested Task: @MainActor + Task{@await value can abort/deadlock on iOS 15 sim.
-        let characters: [CompanionCharacterDTO] = try await withCheckedThrowingContinuation { continuation in
-            network.get(
-                endpoint: AppConfig.Endpoint.aiCompanionCharacters,
-                requiresAuth: true,
-                additionalHeaders: familyScopeHeaders()
-            ) { (result: Result<CompanionCharactersResponse, Error>) in
-                continuation.resume(with: result.map(\.characters))
+        // qa-04: 10s timeout → memory/disk cache; avoid hanging Heroes tab forever.
+        let characters: [CompanionCharacterDTO]
+        do {
+            characters = try await withThrowingTaskGroup(of: [CompanionCharacterDTO].self) { group in
+                // Child tasks are nonisolated by default — hop back to MainActor for NetworkManager.
+                group.addTask { @MainActor in
+                    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[CompanionCharacterDTO], Error>) in
+                        self.network.get(
+                            endpoint: AppConfig.Endpoint.aiCompanionCharacters,
+                            requiresAuth: true,
+                            additionalHeaders: self.familyScopeHeaders()
+                        ) { (result: Result<CompanionCharactersResponse, Error>) in
+                            continuation.resume(with: result.map(\.characters))
+                        }
+                    }
+                }
+                group.addTask {
+                    try await Task.sleep(nanoseconds: 10_000_000_000)
+                    throw URLError(.timedOut)
+                }
+                let first = try await group.next()!
+                group.cancelAll()
+                return first
             }
+        } catch {
+            if let mem = charactersCache?.response, !mem.isEmpty { return mem }
+            let disk = CompanionOfflineStore.loadCharacters()
+            if !disk.isEmpty { return disk }
+            throw error
         }
         charactersCache = (characters, now)
+        CompanionOfflineStore.saveCharacters(characters)
         return characters
     }
 

@@ -206,7 +206,12 @@ struct CompanionHomeScreen: View {
 
     private func loadCharacters() async {
         await caps.refresh()
-        let fetched = (try? await CompanionAPIService.shared.fetchCharacters()) ?? []
+        let fetched: [CompanionCharacterDTO]
+        do {
+            fetched = try await CompanionAPIService.shared.fetchCharacters()
+        } catch {
+            fetched = CompanionOfflineStore.loadCharacters()
+        }
         let allowed = Set(caps.allowedCharactersFromCapabilities)
         availableCharacters = fetched.filter { allowed.contains($0.id) }
         if initialCharacterId == nil || initialCharacterId?.isEmpty == true {

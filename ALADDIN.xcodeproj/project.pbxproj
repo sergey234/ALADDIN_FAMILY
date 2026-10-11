@@ -375,6 +375,8 @@
 		VSLW0412F90000100C7D34B /* VoiceWeeklyDigestSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */; };
 		VSLW0612F90000100C7D34B /* VoiceRemindScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */; };
 		VSLW0812F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */; };
+		QAP022F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */; };
+		QAH042F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */; };
 
 		WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		WDGT0302F90000100C7D34B /* ALADDINWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */; };
@@ -619,6 +621,8 @@
 		FWS4W0612F90000100C7D34B /* WellnessStudentModeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */; };
 		FWS4W0812F90000100C7D34B /* CompanionDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */; };
 		FWSW0122F90000100C7D34B /* FamilySafeWordHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */; };
+		QAH022F90000100C7D34B /* FamilyChatLocalHiddenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */; };
+		QAH062F90000100C7D34B /* FamilyImOkOfflineQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */; };
 		FWSW0222F90000100C7D34B /* FamilySafeWordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */; };
 		FWSW0322F90000100C7D34B /* FamilySafeWordViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */; };
 		FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */; };
@@ -1424,6 +1428,8 @@
 		FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessStudentModeCard.swift; path = Shared/Components/WellnessStudentModeCard.swift; sourceTree = "<group>"; };
 		FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionDeepLinkRouter.swift; path = Core/Companion/CompanionDeepLinkRouter.swift; sourceTree = "<group>"; };
 		FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordHasher.swift; path = Core/Family/FamilySafeWordHasher.swift; sourceTree = "<group>"; };
+		QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatLocalHiddenStore.swift; path = Core/Family/FamilyChatLocalHiddenStore.swift; sourceTree = "<group>"; };
+		QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkOfflineQueue.swift; path = Core/Family/FamilyImOkOfflineQueue.swift; sourceTree = "<group>"; };
 		FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordService.swift; path = Core/Family/FamilySafeWordService.swift; sourceTree = "<group>"; };
 		FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordViews.swift; path = Shared/Components/FamilySafeWordViews.swift; sourceTree = "<group>"; };
 		FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySafeWordHasherTests.swift; sourceTree = "<group>"; };
@@ -1552,6 +1558,8 @@
 		VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestSheet.swift; path = Shared/Components/VoiceNotes/VoiceWeeklyDigestSheet.swift; sourceTree = "<group>"; };
 		VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceRemindScheduler.swift; path = Core/Voice/VoiceRemindScheduler.swift; sourceTree = "<group>"; };
 		VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceWeeklyDigestServiceTests.swift; sourceTree = "<group>"; };
+		QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QABatchP0FamilyLimitAndDigestTests.swift; sourceTree = "<group>"; };
+		QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyChatLocalHiddenStoreTests.swift; sourceTree = "<group>"; };
 		WDGT0092F90000100C7D34B /* ALADDINWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINWidgets.entitlements; sourceTree = "<group>"; };
 		WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets.swift; sourceTree = "<group>"; };
@@ -1971,6 +1979,8 @@
 				GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */,
 				GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */,
 				FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */,
+				QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */,
+				QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */,
 				FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */,
 				FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */,
 				FWS20112F90000100C7D34B /* FamilyHabitRemindersModels.swift */,
@@ -2407,6 +2417,8 @@
 				VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */,
 				VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */,
 				VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */,
+				QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */,
+				QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */,
 				AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */,
 				DPAUSE_T12F90000100C7D34B /* DevicePauseSchedulerTests.swift */,
 				E7B800012F730011 /* ParentDashboardReportExporterTests.swift */,
@@ -3043,6 +3055,8 @@
 				C0MPHDR22F90000100C7D34B /* CompanionHeroRouter.swift in Sources */,
 				FWS4W0812F90000100C7D34B /* CompanionDeepLinkRouter.swift in Sources */,
 				FWSW0122F90000100C7D34B /* FamilySafeWordHasher.swift in Sources */,
+				QAH022F90000100C7D34B /* FamilyChatLocalHiddenStore.swift in Sources */,
+				QAH062F90000100C7D34B /* FamilyImOkOfflineQueue.swift in Sources */,
 				FWSW0222F90000100C7D34B /* FamilySafeWordService.swift in Sources */,
 				FWSW0322F90000100C7D34B /* FamilySafeWordViews.swift in Sources */,
 				FWS20222F90000100C7D34B /* FamilyHabitRemindersModels.swift in Sources */,
@@ -3411,6 +3425,8 @@
 				VSLR0412F90000100C7D34B /* VoiceIntentRouterTests.swift in Sources */,
 				VSLN0A12F90000100C7D34B /* VoiceDayIntentStatsTests.swift in Sources */,
 				VSLW0812F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift in Sources */,
+				QAP022F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift in Sources */,
+				QAH042F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift in Sources */,
 				E7B800012F730012 /* ParentDashboardReportExporterTests.swift in Sources */,
 				A3C000012F740022 /* W3W4DigestAndLimitsTests.swift in Sources */,
 				PBUD0004 /* PerformanceBudgetTests.swift in Sources */,
