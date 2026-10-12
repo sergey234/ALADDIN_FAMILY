@@ -429,10 +429,12 @@ class FamilyRegistrationViewModel: ObservableObject {
                 let limit = SubscriptionManager.currentFamilyLimit
                 logger.business("🚫 TARIFF LIMIT REACHED in admin_add_mode: \(currentCount)/\(limit)")
                 VisualLogger.shared.log("🚫 TARIFF LIMIT: cannot add more members (\(currentCount)/\(limit))", level: .warning, category: "FAMILY")
-                self.errorMessage = message ?? String(
-                    format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
-                    limit
-                )
+                // Hybrid-B: prefer canAdd message with server used/max — never a lone inflated "3".
+                self.errorMessage = message
+                    ?? SubscriptionManager.shared.familyRosterLimitReachedUserMessage(
+                        used: currentCount,
+                        limit: limit
+                    )
                 self.registrationErrorKind = .tariffLimit
                 self.isLoading = false
                 self.currentStep = .idle
@@ -481,11 +483,11 @@ class FamilyRegistrationViewModel: ObservableObject {
                         // qa-16: NEVER auto-createFamily on add failure when family already exists /
                         // limit / forbidden — that wiped the old member on Retry.
                         if Self.isFamilyMemberLimitError(error) {
-                            let limit = SubscriptionManager.currentFamilyLimit
-                            self.errorMessage = String(
-                                format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
-                                limit
-                            )
+                            // Hybrid-B: keep API/server capacity text (used/max), do not remap to lone local "3".
+                            let apiText = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+                            self.errorMessage = apiText.isEmpty
+                                ? SubscriptionManager.shared.familyRosterLimitReachedUserMessage()
+                                : apiText
                             self.registrationErrorKind = .tariffLimit
                             UserDefaults.standard.set(false, forKey: "admin_add_mode")
                             UserDefaults.standard.synchronize()
@@ -669,11 +671,10 @@ class FamilyRegistrationViewModel: ObservableObject {
                         VisualLogger.shared.log("⚠️ FAMILY CREATE unauthorized/session-expired", level: .warning, category: "FAMILY")
                     default:
                         if Self.isFamilyMemberLimitError(error) {
-                            let limit = SubscriptionManager.currentFamilyLimit
-                            self?.errorMessage = String(
-                                format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
-                                limit
-                            )
+                            let apiText = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+                            self?.errorMessage = apiText.isEmpty
+                                ? SubscriptionManager.shared.familyRosterLimitReachedUserMessage()
+                                : apiText
                             self?.registrationErrorKind = .tariffLimit
                         } else {
                             self?.errorMessage = Self.userFacingFamilyErrorMessage(from: error)
@@ -1489,11 +1490,11 @@ class FamilyRegistrationViewModel: ObservableObject {
             let raw = error.localizedDescription
             // Never surface raw English server jargon for limit/forbidden.
             if isFamilyMemberLimitError(error) {
-                let limit = SubscriptionManager.currentFamilyLimit
-                return String(
-                    format: LocalizationManager.shared.localized("family_add_limit_reached_fmt"),
-                    limit
-                )
+                let apiText = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !apiText.isEmpty, apiText.lowercased().contains("/") || apiText.lowercased().contains("сервер") || apiText.lowercased().contains("server") {
+                    return apiText
+                }
+                return SubscriptionManager.shared.familyRosterLimitReachedUserMessage()
             }
             return raw
         }

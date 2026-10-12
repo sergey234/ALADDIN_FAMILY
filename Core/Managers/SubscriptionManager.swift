@@ -741,6 +741,7 @@ final class SubscriptionManager: ObservableObject {
 
     /// Central guard for adding family members. Used by FamilyScreen, FamilyRegistrationViewModel, AddMemberOptionsScreen.
     /// Returns whether allowed, user-facing message if blocked, and whether upgrade is suggested.
+    /// Hybrid-B: limit = `familyQuotaSnapshot` (serverStats wins over local/DEBUG tariff).
     func canAddFamilyMember(currentCount: Int) -> (allowed: Bool, message: String?, upgradeSuggested: Bool) {
         let limit = familyQuotaSnapshot.max
         // Persisted cache can become stale after reinstall/login switch or partial sync.
@@ -753,24 +754,31 @@ final class SubscriptionManager: ObservableObject {
         }
         let remaining = max(0, limit - effectiveUsed)
 
-        // ✅ Локализованные сообщения о лимитах (без хардкода)
-        let isRussian = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"
-        
         if limit > 0 && currentCount >= limit {
-            let msg = isRussian
-                ? "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф чтобы добавить больше участников."
-                : "Member limit for your plan (\(limit)) reached. Upgrade your plan to add more members."
-            return (false, msg, true)
+            return (false, familyRosterLimitReachedUserMessage(used: effectiveUsed, limit: limit), true)
         }
 
         if remaining <= 0 && limit > 0 {
-            let msg = isRussian
-                ? "Осталось 0 мест по тарифу (\(limit)). Обновите подписку."
-                : "0 slots remaining on your plan (\(limit)). Upgrade your subscription."
-            return (false, msg, true)
+            return (false, familyRosterLimitReachedUserMessage(used: effectiveUsed, limit: limit), true)
         }
 
         return (true, nil, false)
+    }
+
+    /// User-facing roster full copy: always show server-ish used/max (not a lone inflated "3").
+    func familyRosterLimitReachedUserMessage(used: Int? = nil, limit: Int? = nil) -> String {
+        let maxSlots = max(0, limit ?? familyQuotaSnapshot.max)
+        let usedSlots = max(0, used ?? familyQuotaSnapshot.used)
+        let isRussian = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"
+        if maxSlots > 0 {
+            let capacity = "\(min(usedSlots, maxSlots))/\(maxSlots)"
+            return isRussian
+                ? "Лимит участников на сервере (\(capacity)) достигнут. Обновите тариф, чтобы добавить больше."
+                : "Server member limit (\(capacity)) reached. Upgrade your plan to add more members."
+        }
+        return isRussian
+            ? "Нельзя добавить участника: ростер заполнен по данным сервера."
+            : "Cannot add a member: the family roster is full on the server."
     }
 
     /// Единая формула «X из Y» для главной и экрана «Семья».
@@ -793,7 +801,8 @@ final class SubscriptionManager: ObservableObject {
         bumpSubscriptionDisplayEpoch()
     }
 
-    /// Выравнивает лимит ростера с `GET /api/family/stats` (кап владельца в БД), чтобы UI не расходился с gate на `add`.
+    /// Hybrid-B authority: `GET /api/family/stats.familyRosterMax` = owner DB cap (same as POST /add gate).
+    /// Chip + `canAddFamilyMember` must follow this; tariffFallback must not inflate above it.
     func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
         guard let cap = stats.familyRosterMax, cap > 0 else { return }
         let used = stats.familyRosterUsed ?? stats.totalMembers
@@ -807,6 +816,9 @@ final class SubscriptionManager: ObservableObject {
             level: .info,
             category: "FAMILY"
         )
+        logger.business(
+            "🔒 Hybrid-B serverStats applied rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")"
+        )
     }
 
     /// Safe, non-isolated access to current family limit for use in completion handlers, error paths, and non-MainActor contexts.
@@ -814,7 +826,8 @@ final class SubscriptionManager: ObservableObject {
     /// Marked nonisolated to satisfy Swift 6 concurrency rules when called from APIService completion blocks.
     nonisolated static var currentFamilyLimit: Int {
         let fromDefaults = UserDefaults.standard.integer(forKey: "family_limit")
-        return fromDefaults > 0 ? fromDefaults : 3 // default to personal/trial limit
+        // Hybrid-B: default free=1 (never imply trial/personal 3/2 before server stats).
+        return fromDefaults > 0 ? fromDefaults : 1
     }
 
     /// 🔑 Get current JWT token for API requests
@@ -1542,8 +1555,9 @@ final class SubscriptionManager: ObservableObject {
     /// Level used only for **family roster size cap** (not for billing UI).
     /// Server may keep `plan_level` at free while trial is active — then cap must be trial (3).
     /// Важно: в `status.trialInfo` часто лежит **просроченный** снимок с JWT, а живой trial — в `trialStatus`
-    /// (DEBUG QA / локальный Keychain). Старый код требовал `status.trialInfo == nil` → при inactive
-    /// server trial + active `trialStatus` кап оставался free(1), тогда как цвет/подпись уже были trial.
+    /// Roster **fallback** tier when `family/stats` ещё не принёс `familyRosterMax`.
+    /// Hybrid-B: цвет/подпись — `getCurrentLevel()`; слоты add-gate — serverStats, иначе этот кап.
+    /// DEBUG QA local trial красит peacock, но **не** раздувает cap до 3 (сервер остаётся free).
     /// Платные personal/family/premium всегда берут кап с `status.level` (2/6/10), не trial(3).
     private func subscriptionLevelForFamilyMemberCap(_ status: SubscriptionStatus) -> SubscriptionLevel {
         switch status.level {
@@ -1552,6 +1566,12 @@ final class SubscriptionManager: ObservableObject {
         case .free, .trial:
             break
         }
+#if DEBUG
+        // Visual trial only — slots stay on plan until real server trial / stats.
+        if isDebugQALocalTrialOverrideActive {
+            return status.level == .trial ? .trial : .free
+        }
+#endif
         if trialStatus?.isActive == true {
             return .trial
         }
@@ -1560,6 +1580,51 @@ final class SubscriptionManager: ObservableObject {
         }
         return status.level
     }
+
+    /// Hybrid-B lock: `GET /api/family/stats` → `.serverStats` не затирается tariffFallback
+    /// (кроме paid upgrade и смены familyId). Не даёт DEBUG/local trial поднять max выше сервера.
+    private func shouldPreserveServerRosterQuota(
+        status: SubscriptionStatus,
+        familyId: String?,
+        tariffBasedLimit: Int
+    ) -> Bool {
+        guard familyQuotaSnapshot.source == .serverStats, familyQuotaSnapshot.max > 0 else {
+            return false
+        }
+        switch status.level {
+        case .personal, .family, .premium:
+            // Optimistic paid raise; next stats confirms.
+            return false
+        case .free, .trial:
+            break
+        }
+        let snapFid = (familyQuotaSnapshot.familyId ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let incoming = (familyId ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        // Family switched or cleared → allow fresh tariffFallback / next stats.
+        if snapFid != incoming {
+            return false
+        }
+        // Block inflate (e.g. local trial 3 > server free 1). Allow deflate after cancel.
+        if tariffBasedLimit > familyQuotaSnapshot.max {
+            return true
+        }
+        if tariffBasedLimit < familyQuotaSnapshot.max {
+            return false
+        }
+        // Equal max — keep server used/source authority.
+        return true
+    }
+
+#if DEBUG
+    /// Main: peacock может быть от QA local trial, слоты — только server/free cap.
+    var showsDebugQALocalTrialBanner: Bool {
+        guard isDebugQALocalTrialOverrideActive else { return false }
+        let plan = currentSubscription?.level
+        return plan == nil || plan == .free
+    }
+#endif
 
     /// 🔄 Update subscription status
     /// ✅ ИСПРАВЛЕНО: Изменено с private на internal для использования в TokenHealthMonitor
@@ -1587,41 +1652,71 @@ final class SubscriptionManager: ObservableObject {
             break
         }
 
-        // ✅ SINGLE SOURCE OF TRUTH: Update both UserDefaults (for legacy) and published properties
-        // Uses mapping aligned with prod limits: free=1, trial=3, personal=2, family=6, premium=10
-        // When JWT `plan_level` is still "free" but trial is active, cap must follow trial (3), not free (1).
+        // Hybrid-B: slots SSOT = last `familyRosterMax` from stats when present; tariffFallback only otherwise.
+        // Matrix unchanged: free=1 · trial=3 · personal=2 · family=6 · premium=10
         let levelForFamilyCap = subscriptionLevelForFamilyMemberCap(status)
         let tariffBasedLimit = familyMemberLimit(for: levelForFamilyCap)
-        let currentUsed = familyQuotaSnapshot.used
-        let cappedUsed = max(0, min(currentUsed, tariffBasedLimit))
-        let calculatedRemaining = max(0, tariffBasedLimit - cappedUsed)
-
-        // Update legacy storage for backward compatibility with FamilyScreen and VM
-        UserDefaults.standard.set(tariffBasedLimit, forKey: "family_limit")
-        UserDefaults.standard.set(calculatedRemaining, forKey: "family_remaining")
-        UserDefaults.standard.synchronize()
-
-        // Update reactive published properties (new single source)
         let trimmedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
-        publishFamilyQuotaSnapshot(used: cappedUsed, maxSlots: tariffBasedLimit, source: .tariffFallback, familyId: familyId)
 
-        VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: plan_level=\(status.level), cap_level=\(levelForFamilyCap), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
-        logger.business("🔄 Tariff sync: family_limit=\(tariffBasedLimit) for cap_level=\(levelForFamilyCap.rawValue) (plan_level=\(status.level.rawValue))")
+        let effectiveLimit: Int
+        let effectiveUsed: Int
+        let quotaSource: FamilyQuotaSource
+        if shouldPreserveServerRosterQuota(
+            status: status,
+            familyId: familyId,
+            tariffBasedLimit: tariffBasedLimit
+        ) {
+            effectiveLimit = familyQuotaSnapshot.max
+            effectiveUsed = familyQuotaSnapshot.used
+            quotaSource = .serverStats
+            logger.business(
+                "🔄 Tariff sync: preserve serverStats family_limit=\(effectiveLimit) (tariff_would=\(tariffBasedLimit) cap_level=\(levelForFamilyCap.rawValue) plan=\(status.level.rawValue))"
+            )
+            VisualLogger.shared.log(
+                "🔒 TARIFF→FAMILY PRESERVE serverStats max=\(effectiveLimit) (blocked inflate to \(tariffBasedLimit))",
+                level: .info,
+                category: "FAMILY"
+            )
+        } else {
+            let currentUsed = familyQuotaSnapshot.used
+            effectiveLimit = tariffBasedLimit
+            effectiveUsed = max(0, min(currentUsed, tariffBasedLimit))
+            quotaSource = .tariffFallback
+            publishFamilyQuotaSnapshot(
+                used: effectiveUsed,
+                maxSlots: effectiveLimit,
+                source: .tariffFallback,
+                familyId: familyId
+            )
+            logger.business(
+                "🔄 Tariff sync: family_limit=\(effectiveLimit) for cap_level=\(levelForFamilyCap.rawValue) (plan_level=\(status.level.rawValue))"
+            )
+            VisualLogger.shared.log(
+                "🔄 TARIFF→FAMILY SYNC: plan_level=\(status.level), cap_level=\(levelForFamilyCap), family_limit=\(effectiveLimit), source=\(quotaSource.rawValue)",
+                level: .info,
+                category: "FAMILY"
+            )
+        }
+
+        let calculatedRemaining = max(0, effectiveLimit - effectiveUsed)
+        UserDefaults.standard.set(effectiveLimit, forKey: "family_limit")
+        UserDefaults.standard.set(calculatedRemaining, forKey: "family_remaining")
+        UserDefaults.standard.synchronize()
 
         let subscriptionMeaningfullyChanged =
             previousSubscription?.level != status.level
             || previousSubscription?.expiresAt != status.expiresAt
             || previousSubscription?.trialInfo != status.trialInfo
-            || previousFamilyLimit != tariffBasedLimit
+            || previousFamilyLimit != effectiveLimit
 
         // Не шлём уведомление при идентичном снимке — иначе MainScreen коалесцирует лишний loadDashboardData и дубли GET /api/devices.
         if subscriptionMeaningfullyChanged {
             NotificationCenter.default.post(
                 name: Notification.Name("SubscriptionUpdated"),
                 object: nil,
-                userInfo: ["level": status.level.rawValue, "limit": tariffBasedLimit]
+                userInfo: ["level": status.level.rawValue, "limit": effectiveLimit]
             )
         }
 

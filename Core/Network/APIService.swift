@@ -633,21 +633,21 @@ class APIService: ObservableObject {
     }
 
     private func familyAddRosterLimitUserMessage(networkError: NetworkError) -> String {
+        // Hybrid-B: always surface server used/max (UserDefaults aligned with familyQuotaSnapshot).
         let limit = SubscriptionManager.currentFamilyLimit
+        let used = UserDefaults.standard.integer(forKey: "family_roster_used_last")
         if case .conflict(let detail) = networkError,
            let d = detail?.lowercased(),
            d.contains("family_roster") {
-            let used = UserDefaults.standard.integer(forKey: "family_roster_used_last")
-            if used > 0, limit > 0 {
-                return "Семья уже заполнена по тарифу владельца на сервере (\(used)/\(limit)). Обновите тариф или удалите участника."
-            }
             if limit > 0 {
-                return "Лимит участников для вашего тарифа на сервере (\(limit)) достигнут. Обновите тариф, чтобы добавить больше участников."
+                let capacity = "\(max(used, 0))/\(limit)"
+                return "Лимит участников на сервере (\(capacity)) достигнут. Обновите тариф или удалите участника."
             }
             return "Нельзя добавить участника: ростер заполнен по данным сервера."
         }
         if limit > 0 {
-            return "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф, чтобы добавить больше участников."
+            let capacity = "\(max(used, 0))/\(limit)"
+            return "Лимит участников на сервере (\(capacity)) достигнут. Обновите тариф, чтобы добавить больше."
         }
         return "Нельзя добавить участника: достигнут лимит для текущего тарифа."
     }

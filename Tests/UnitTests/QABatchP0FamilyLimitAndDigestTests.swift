@@ -32,12 +32,12 @@ final class QABatchP0FamilyLimitAndDigestTests: XCTestCase {
         let ru = NSError(
             domain: "API",
             code: 403,
-            userInfo: [NSLocalizedDescriptionKey: "Лимит участников для вашего тарифа (1) достигнут. Обновите тариф."]
+            userInfo: [NSLocalizedDescriptionKey: "Лимит участников на сервере (1/1) достигнут. Обновите тариф."]
         )
         let en = NSError(
             domain: "API",
             code: 403,
-            userInfo: [NSLocalizedDescriptionKey: "Member limit for your plan (2) reached. Upgrade your plan."]
+            userInfo: [NSLocalizedDescriptionKey: "Server member limit (2/2) reached. Upgrade your plan."]
         )
         let other = NSError(
             domain: "API",

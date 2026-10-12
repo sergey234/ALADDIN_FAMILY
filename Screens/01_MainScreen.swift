@@ -779,6 +779,17 @@ struct MainScreen: View {
                                     .minimumScaleFactor(0.8)
                                     .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
 
+#if DEBUG
+                                // Hybrid-B: DEBUG QA local trial — цвет peacock, слоты только с сервера.
+                                if subscriptionManager.showsDebugQALocalTrialBanner {
+                                    Text("QA: цвет trial · слоты с сервера (\(familySlotLimitForCurrentTariff))")
+                                        .font(.system(size: 8, weight: .semibold))
+                                        .foregroundColor(.black.opacity(0.7))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.75)
+                                }
+#endif
+
                                 if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
                                         .font(.system(size: 9))

@@ -19,6 +19,18 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         UserDefaults.standard.removeObject(forKey: FamilyLocalStore.lastResolvedFamilyIdKey)
         UserDefaults.standard.removeObject(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey)
         UserDefaults.standard.removeObject(forKey: "current_user_role")
+        UserDefaults.standard.removeObject(forKey: "debug_qa_local_trial_override_v1")
+        // Reset in-memory Hybrid-B snapshot (singleton) to tariffFallback free=1.
+        let reset = SubscriptionStatus(
+            level: .free,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: nil,
+            limits: SubscriptionLimits.freeLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(reset)
     }
     
     override func tearDownWithError() throws {
@@ -31,6 +43,7 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         UserDefaults.standard.removeObject(forKey: FamilyLocalStore.lastResolvedFamilyIdKey)
         UserDefaults.standard.removeObject(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey)
         UserDefaults.standard.removeObject(forKey: "current_user_role")
+        UserDefaults.standard.removeObject(forKey: "debug_qa_local_trial_override_v1")
         subscriptionManager = nil
         try super.tearDownWithError()
     }
@@ -198,4 +211,128 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         XCTAssertEqual(UserDefaults.standard.string(forKey: "auth_token"), "jwt-keep")
         XCTAssertEqual(UserDefaults.standard.string(forKey: "trial_status"), "trial-keep")
     }
+
+    // MARK: - Hybrid-B lock (serverStats > local/DEBUG inflate)
+
+    func testServerStatsBlocksLocalTrialInflate() {
+        UserDefaults.standard.set("FAM_HYBRID_B", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.synchronize()
+
+        let stats = FamilyStatsResponse(
+            totalMembers: 1,
+            totalDevices: 0,
+            totalThreats: 0,
+            protectionLevel: 80,
+            familyStatus: "protected",
+            familyStatusMessage: nil,
+            familyRosterUsed: 1,
+            familyRosterMax: 1,
+            ownerSubscriptionTier: "free"
+        )
+        subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
+        XCTAssertEqual(subscriptionManager.familyQuotaSnapshot.source, .serverStats)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 1)
+
+        let trial = TrialInfo(
+            startDate: Date().addingTimeInterval(-86_400),
+            endDate: Date().addingTimeInterval(86_400 * 7),
+            durationDays: 14
+        )
+        let status = SubscriptionStatus(
+            level: .free,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: trial,
+            limits: SubscriptionLimits.freeLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(status)
+
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 1, "Hybrid-B: server free=1 must win over local trial inflate to 3")
+        XCTAssertEqual(subscriptionManager.familyQuotaSnapshot.source, .serverStats)
+        let (allowed, message, upgrade) = subscriptionManager.canAddFamilyMember(currentCount: 1)
+        XCTAssertFalse(allowed)
+        XCTAssertTrue(upgrade)
+        XCTAssertNotNil(message)
+        XCTAssertTrue(message!.contains("1/1"), "Limit message must show server capacity, got: \(message!)")
+    }
+
+    func testPaidUpgradeMayOverwriteServerStatsOptimistically() {
+        UserDefaults.standard.set("FAM_HYBRID_PAID", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.synchronize()
+
+        let stats = FamilyStatsResponse(
+            totalMembers: 1,
+            totalDevices: 0,
+            totalThreats: 0,
+            protectionLevel: 80,
+            familyStatus: "protected",
+            familyStatusMessage: nil,
+            familyRosterUsed: 1,
+            familyRosterMax: 1,
+            ownerSubscriptionTier: "free"
+        )
+        subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 1)
+
+        let paid = SubscriptionStatus(
+            level: .family,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: nil,
+            limits: SubscriptionLimits.familyLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(paid)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 6)
+        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 1)
+        XCTAssertTrue(allowed)
+    }
+
+    func testRosterLimitMessageUsesUsedOverMax() {
+        UserDefaults.standard.set("FAM_MSG", forKey: FamilyLocalStore.familyIdKey)
+        let stats = FamilyStatsResponse(
+            totalMembers: 1,
+            totalDevices: 0,
+            totalThreats: 0,
+            protectionLevel: 80,
+            familyStatus: "protected",
+            familyStatusMessage: nil,
+            familyRosterUsed: 1,
+            familyRosterMax: 1,
+            ownerSubscriptionTier: "free"
+        )
+        subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
+        let msg = subscriptionManager.familyRosterLimitReachedUserMessage()
+        XCTAssertTrue(msg.contains("1/1"), msg)
+    }
+
+#if DEBUG
+    func testDebugQALocalTrialOverrideDoesNotInflateTariffFallbackCap() {
+        UserDefaults.standard.set(true, forKey: "debug_qa_local_trial_override_v1")
+        let trial = TrialInfo(
+            startDate: Date(),
+            endDate: Date().addingTimeInterval(86_400 * 14),
+            durationDays: 14
+        )
+        let status = SubscriptionStatus(
+            level: .free,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: trial,
+            limits: SubscriptionLimits.freeLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(status)
+        XCTAssertEqual(
+            subscriptionManager.currentFamilyLimit,
+            1,
+            "DEBUG QA trial paints UI only; tariffFallback cap stays free=1"
+        )
+        XCTAssertTrue(subscriptionManager.showsDebugQALocalTrialBanner)
+    }
+#endif
 }
