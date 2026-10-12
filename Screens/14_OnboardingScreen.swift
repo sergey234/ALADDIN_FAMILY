@@ -1198,7 +1198,11 @@ struct OnboardingScreen: View {
             #if DEBUG
             applyDebugOnboardingPageIfRequested()
             #endif
+            AnalyticsManager.shared.trackOnboardingStep(currentPage, action: "view")
             print("✅ OnboardingScreen: Pages loaded (minimal or full depending on localization)")
+        }
+        .onChange(of: currentPage) { newPage in
+            AnalyticsManager.shared.trackOnboardingStep(newPage, action: "view")
         }
         .onChange(of: localizationManager.currentLanguage) { newLang in
             if LocalizationManager.Language.userSelectableLanguages.contains(newLang) {
@@ -1283,6 +1287,7 @@ struct OnboardingScreen: View {
 
                     Button(action: {
                         guard !pages.isEmpty else { return }
+                        AnalyticsManager.shared.trackOnboardingStep(currentPage, action: "skip")
                         if currentPage < lastTabIndex {
                             withAnimation(.easeInOut(duration: 0.22)) {
                                 currentPage = lastTabIndex
@@ -1388,6 +1393,8 @@ struct OnboardingScreen: View {
                             UserDefaults.standard.set(now, forKey: "onboarding_terms_of_service_accepted_at")
                             UserDefaults.standard.set("1.0", forKey: "onboarding_privacy_policy_version")
                             UserDefaults.standard.set("1.0", forKey: "onboarding_terms_of_service_version")
+
+                            AnalyticsManager.shared.trackOnboardingStep(currentPage, action: "complete")
                             
                             // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                             hasCompletedOnboarding = true

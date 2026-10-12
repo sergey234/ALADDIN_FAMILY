@@ -33,7 +33,7 @@ struct VoiceControlView: View {
                     onBack: { dismiss() }
                 )
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Activation Word
                         activationWordSection

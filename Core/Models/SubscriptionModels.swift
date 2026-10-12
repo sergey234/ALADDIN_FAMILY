@@ -1166,7 +1166,7 @@ struct FeatureRegistry {
         AppFeature(id: "phone_number_exposure", name: "Разглашение номеров телефона", description: "Защита телефонных номеров", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "social_security_monitoring", name: "Мониторинг соцсетей", description: "Защита аккаунтов в соцсетях", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "database_breach_scanning", name: "Сканирование breach баз", description: "Проверка утечек в базах данных", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
-        AppFeature(id: "dark_web_monitoring", name: "Мониторинг dark web", description: "Поиск данных в даркнете", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
+        AppFeature(id: "dark_web_monitoring", name: "Проверка утечек", description: "Поиск пароля и почты в известных утечках", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "data_broker_protection", name: "Защита от data brokers", description: "Предотвращение продажи данных", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "identity_theft_alerts", name: "feature_identity_theft_alerts_name", description: "feature_identity_theft_alerts_desc", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "credit_report_monitoring", name: "Мониторинг кредитных отчетов", description: "Защита кредитной истории", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
@@ -1289,7 +1289,7 @@ struct FeatureRegistry {
         AppFeature(id: "browser_security_bot", name: "Browser Security Bot", description: "Защищает веб-браузер", requiredLevel: .family, category: .premiumComponents, module: .messagingApps, isEnabled: true),
 
         // Приватность (1 компонент)
-        AppFeature(id: "location_bubble_agent", name: "Location Bubble", description: "Скрывает точное местоположение пользователя", requiredLevel: .family, category: .premiumComponents, module: .advancedThreatProtection, isEnabled: true),
+        AppFeature(id: "location_bubble_agent", name: "Приблизительное место", description: "Скрывает точный адрес", requiredLevel: .family, category: .premiumComponents, module: .advancedThreatProtection, isEnabled: true),
 
         // Регуляторные (2 компонента)
         AppFeature(id: "russian_child_protection_compliance_manager", name: "Защита детей РФ", description: "Соответствие закону о защите детей", requiredLevel: .family, category: .premiumComponents, module: .messagingApps, isEnabled: true),
@@ -1317,7 +1317,7 @@ struct FeatureRegistry {
 
         // Расширенная приватность (8 компонентов) - ТОЛЬКО PREMIUM
         AppFeature(id: "personal_data_cleanup_agent", name: "Очистка персональных данных", description: "Автоматически очищает персональные данные из сети", requiredLevel: .premium, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),
-        AppFeature(id: "dark_web_monitoring_agent", name: "Мониторинг Dark Web", description: "Мониторит упоминания данных в даркнете", requiredLevel: .premium, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),
+        AppFeature(id: "dark_web_monitoring_agent", name: "Проверка утечек", description: "Проверяет, не попали ли пароль или почта в известные утечки", requiredLevel: .premium, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),
         AppFeature(id: "russian_identity_theft_protection_agent", name: "Защита от кражи личности РФ", description: "Защищает от кражи документов в РФ", requiredLevel: .premium, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),
         AppFeature(id: "ai_categories_agent", name: "AI категоризация", description: "ИИ анализирует и категоризирует угрозы", requiredLevel: .premium, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),
         AppFeature(id: "driving_reports_agent", name: "Отчеты о вождении", description: "Анализирует стиль вождения и предоставляет отчеты", requiredLevel: .premium, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),

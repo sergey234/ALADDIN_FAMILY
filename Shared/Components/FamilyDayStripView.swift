@@ -11,21 +11,10 @@ struct FamilyDayStripView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            // ux-01 — полоска дня на виду (крупный заголовок + подпись)
-            HStack {
-                Text(localizationManager.localized("day_strip_title"))
-                    .font(.title3.weight(.bold))
-                    .foregroundColor(.white)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 0)
-                Text(localizationManager.localized("day_strip_on_view_badge"))
-                    .font(.caption2.weight(.semibold))
-                    .foregroundColor(.secondaryGold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.secondaryGold.opacity(0.15))
-                    .cornerRadius(8)
-            }
+            Text(localizationManager.localized("day_strip_title"))
+                .font(.title3.weight(.bold))
+                .foregroundColor(.white)
+                .accessibilityAddTraits(.isHeader)
 
             Text(localizationManager.localized("day_strip_subtitle"))
                 .font(.subheadline)
@@ -36,7 +25,7 @@ struct FamilyDayStripView: View {
                 dayChip(
                     icon: "moon.zzz.fill",
                     title: localizationManager.localized("day_strip_sleep"),
-                    value: "\(bedtimeStart)–\(bedtimeEnd)",
+                    value: "\(bedtimeStart)-\(bedtimeEnd)",
                     active: true
                 )
                 dayChip(

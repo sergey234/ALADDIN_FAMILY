@@ -396,9 +396,21 @@ class ProtectionSettingsViewModel: ObservableObject {
         
         switch result {
         case .success:
-            toastManager.showSuccess(
-                newValue ? "Компонент включен" : "Компонент выключен"
-            )
+            let L = LocalizationManager.shared
+            let titleKey = "component_\(componentId)_title"
+            let name = L.localized(titleKey)
+            if name == titleKey || name.isEmpty {
+                toastManager.showSuccess(
+                    L.localized(newValue ? "protection_toast_generic_on" : "protection_toast_generic_off")
+                )
+            } else {
+                toastManager.showSuccess(
+                    String(
+                        format: L.localized(newValue ? "protection_toast_on_fmt" : "protection_toast_off_fmt"),
+                        name
+                    )
+                )
+            }
         case .failure(let error):
             // ✅ ЭТАП 3: Обработка unauthorized
             if case .unauthorized(let message) = error {

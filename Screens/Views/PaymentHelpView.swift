@@ -18,7 +18,7 @@ struct PaymentHelpView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: Spacing.xl) {
                     // Header
                     VStack(alignment: .leading, spacing: Spacing.m) {

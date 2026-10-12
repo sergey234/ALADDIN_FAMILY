@@ -23,7 +23,7 @@ struct AntivirusQuarantineModal: View {
                             .foregroundColor(.textSecondary)
                     }
                 } else {
-                    ScrollView {
+                    ScrollView(.vertical, showsIndicators: true) {
                         LazyVStack(spacing: Spacing.m) {
                             // Статистика карантина
                             QuarantineStatsCard()

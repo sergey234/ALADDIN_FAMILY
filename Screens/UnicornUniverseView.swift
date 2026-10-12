@@ -23,7 +23,7 @@ struct UnicornUniverseView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана единорог-вселенной")
             
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("unicorn_universe_title"))
                         .font(.h1)

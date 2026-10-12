@@ -54,7 +54,7 @@ struct FamilyTournamentView: View {
                 // Header с кнопкой "← Назад"
                 header
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Переключатель типов турнира
                         ScrollView(.horizontal, showsIndicators: false) {

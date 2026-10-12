@@ -124,6 +124,7 @@ struct AIFeedbackSheet: View {
 
                 switch result {
                 case .success:
+                    AITrustAnalytics.trackAssistantRating(rating, resolvedBy: resolvedBy)
                     showSuccess = true
                 case .failure(let error):
                     submitErrorDetail = error.localizedDescription

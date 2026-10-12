@@ -23,7 +23,7 @@ struct WellnessPhqLiteScreen: View {
         ZStack {
             StormMeshBackground(variant: .neutral)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     if isTeen {

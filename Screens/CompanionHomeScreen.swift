@@ -36,7 +36,7 @@ struct CompanionHomeScreen: View {
     @StateObject private var caps = CompanionCapabilitiesService.shared
     @AppStorage("companion_selected_character_id") private var selectedCharacterId: String = "unicorn"
     @AppStorage("companion_active_thread_id") private var activeThreadId: String = ""
-    @AppStorage("companion_home_last_tab") private var persistedTabRaw: Int = Tab.wellness.rawValue
+    @AppStorage("companion_home_last_tab") private var persistedTabRaw: Int = Tab.main.rawValue
     @State private var tab: Tab = .main
     @State private var availableCharacters: [CompanionCharacterDTO] = []
     @State private var wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
@@ -60,14 +60,14 @@ struct CompanionHomeScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear {
+            // При заходе в «Мир героев» — всегда «Главное», если навигация не задала целевую вкладку.
             if let raw = navigationManager.companionHomeTargetTab, let picked = Tab(rawValue: raw) {
                 tab = picked
                 persistedTabRaw = picked.rawValue
                 navigationManager.companionHomeTargetTab = nil
-            } else if let picked = Tab(rawValue: persistedTabRaw) {
-                tab = picked
             } else {
-                tab = initialTab
+                tab = .main
+                persistedTabRaw = Tab.main.rawValue
             }
             wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
             if let initialCharacterId, !initialCharacterId.isEmpty {

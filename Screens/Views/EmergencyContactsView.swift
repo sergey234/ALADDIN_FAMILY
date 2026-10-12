@@ -32,7 +32,7 @@ struct EmergencyContactsView: View {
                 )
                 
                 // Content
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Info Card
                         infoCard

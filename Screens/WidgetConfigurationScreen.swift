@@ -48,7 +48,7 @@ struct WidgetConfigurationScreen: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Навигационная панель настроек виджетов")
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         
                         // Header

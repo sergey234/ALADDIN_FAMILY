@@ -77,7 +77,7 @@ struct ProtectionGroupSection: View {
 #if DEBUG
 struct ProtectionGroupSection_Previews: PreviewProvider {
     static var previews: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: Spacing.l) {
                 ProtectionGroupSection(
                     group: .devices,

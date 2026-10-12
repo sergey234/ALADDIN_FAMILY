@@ -96,7 +96,7 @@ struct FamilyChatView: View {
             Divider()
 
             // Messages list
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 LazyVStack(spacing: Spacing.s) {
                     ForEach(messages) { message in
                         MessageBubble(message: message)

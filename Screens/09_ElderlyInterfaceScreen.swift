@@ -3771,41 +3771,43 @@ struct ElderlyScamCallScreen: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            VStack(spacing: 20) {
+            VStack(spacing: 18) {
                 Text(localizationManager.localized("elderly_scam_call_title"))
-                    .font(.system(size: 36, weight: .bold))
+                    .font(.system(size: 34, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.85)
+                    .lineLimit(1)
 
-                // call-01 — три крупных шага для 60+
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(localizationManager.localized("elderly_scam_call_step1"))
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("elderly_scam_call_step2"))
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("elderly_scam_call_step3"))
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.white)
+                // Три шага — каждый в 1 строку (RU/EN), без обрезки «…»
+                VStack(alignment: .leading, spacing: 12) {
+                    scamStepLine(localizationManager.localized("elderly_scam_call_step1"))
+                    scamStepLine(localizationManager.localized("elderly_scam_call_step2"))
+                    scamStepLine(localizationManager.localized("elderly_scam_call_step3"))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 16)
                 .background(Color.white.opacity(0.12))
                 .cornerRadius(16)
                 .accessibilityIdentifier("elderly_scam_call_steps")
 
                 Text(localizationManager.localized("elderly_scam_call_hint"))
-                    .font(.system(size: 20))
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(2)
 
                 Button(action: sendAlert) {
                     Text(localizationManager.localized("elderly_scam_call_money"))
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 26)
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 12)
                         .background(Color.red)
                         .cornerRadius(16)
                 }
@@ -3814,10 +3816,12 @@ struct ElderlyScamCallScreen: View {
 
                 Button(action: calm) {
                     Text(localizationManager.localized("elderly_scam_call_calm"))
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 26)
+                        .padding(.vertical, 24)
                         .background(Color.green)
                         .cornerRadius(16)
                 }
@@ -3825,9 +3829,10 @@ struct ElderlyScamCallScreen: View {
 
                 if let errorText {
                     Text(errorText)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.orange)
                         .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.85)
                 }
                 Spacer()
                 Button(action: openRecording) {
@@ -3837,8 +3842,18 @@ struct ElderlyScamCallScreen: View {
                 }
                 .accessibilityIdentifier("elderly_scam_call_recording")
             }
-            .padding(24)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 24)
         }
+    }
+
+    private func scamStepLine(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundColor(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.72)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func calm() {

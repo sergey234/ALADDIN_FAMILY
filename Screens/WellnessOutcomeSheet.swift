@@ -148,6 +148,11 @@ struct WellnessOutcomeSheet: View {
             } else if choice == .worse {
                 followUpHint = localizationManager.localized("wellness_outcome_worse_hint")
             }
+            AITrustAnalytics.trackWellnessOutcome(
+                choice: choice.rawValue,
+                helpful: choice.helpfulScore,
+                pillar: pillar
+            )
             submitted = true
             try? await Task.sleep(nanoseconds: followUpHint == nil ? 900_000_000 : 1_800_000_000)
             close()

@@ -214,7 +214,7 @@ class ParentalControlSyncUITests: XCTestCase {
         navigateToParentalControl()
         navigateToGeofences()
         
-        let addButton = app.buttons["Добавить геозону"]
+        let addButton = app.buttons["Добавить место"]
         if waitForElementToAppear(addButton) {
             addButton.tap()
             

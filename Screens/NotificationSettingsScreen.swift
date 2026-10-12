@@ -623,7 +623,7 @@ struct NotificationSettingsScreen: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "moon.zzz.fill")
-                    Text("1. Спокойный вечер — как «Проверить напоминание»")
+                    Text("1. Перед сном (как «Проверить напоминание»)")
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundColor(.white)

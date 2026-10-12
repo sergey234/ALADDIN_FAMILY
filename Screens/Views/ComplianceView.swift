@@ -57,7 +57,7 @@ struct ComplianceView: View {
                     onBack: { dismiss() }
                 )
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         if section == .childProtection {
                             childProtectionContent

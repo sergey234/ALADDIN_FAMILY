@@ -191,13 +191,14 @@ struct AntifakeQuickAccessCard: View {
 
 struct AntifakeAppleLimitsSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
         NavigationView {
             ZStack {
                 StormMeshBackground(variant: .shield)
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: Spacing.l) {
                         Text(localizationManager.localized("antifake_apple_limits_intro"))
                             .font(.subheadline)
@@ -253,6 +254,65 @@ struct AntifakeAppleLimitsSheet: View {
                             ],
                             accent: .secondaryGold
                         )
+
+                        Button {
+                            guard let url = URL(string: AppConfig.supportAssistantURL) else { return }
+                            openURL(url)
+                        } label: {
+                            HStack(spacing: Spacing.m) {
+                                Image(systemName: "sparkles")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundColor(.secondaryGold)
+                                    .accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(localizationManager.localized("support_ask_assistant"))
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(.white)
+                                    Text(localizationManager.localized("support_ask_assistant_antifake_subtitle"))
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                Spacer(minLength: 0)
+                                Image(systemName: "arrow.up.right")
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .accessibilityHidden(true)
+                            }
+                            .padding(Spacing.m)
+                            .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .secondaryGold)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("antifake_help_ask_assistant_cta")
+                        .accessibilityLabel(localizationManager.localized("support_ask_assistant"))
+
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            Text(localizationManager.localized("antifake_apple_limits_website_title"))
+                                .font(.headline)
+                                .foregroundColor(.secondaryGold)
+                            Text(localizationManager.localized("antifake_apple_limits_website_body"))
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.88))
+                                .fixedSize(horizontal: false, vertical: true)
+                            Button {
+                                guard let url = URL(string: AppConfig.antifakeWebURL) else { return }
+                                openURL(url)
+                            } label: {
+                                HStack {
+                                    Image(systemName: "safari")
+                                    Text(localizationManager.localized("antifake_open_website_button"))
+                                        .font(.subheadline.bold())
+                                }
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.s)
+                                .background(Color.secondaryGold)
+                                .cornerRadius(CornerRadius.medium)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("antifake_open_website_button")
+                        }
+                        .padding(Spacing.m)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .secondaryGold)
                     }
                     .padding(Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)

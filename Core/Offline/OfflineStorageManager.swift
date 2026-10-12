@@ -248,7 +248,7 @@ enum SyncStatus {
     var displayName: String {
         switch self {
         case .idle:
-            return "Ожидание"
+            return "Готово"
         case .syncing:
             return "Синхронизация"
         case .completed:

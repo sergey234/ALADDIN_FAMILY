@@ -16,7 +16,7 @@ struct WellnessReflectiveModeScreen: View {
         ZStack {
             StormMeshBackground(variant: .warm)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     infoBlock

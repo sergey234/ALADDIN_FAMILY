@@ -72,7 +72,7 @@ struct UnicornPetView: View {
                 // Header с кнопкой "← Назад"
                 header
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Питомец
                         petView

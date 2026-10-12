@@ -92,7 +92,7 @@ struct EmptyStateView_Previews: PreviewProvider {
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
             
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     // Пример 1: С кнопкой
                     EmptyStateView(

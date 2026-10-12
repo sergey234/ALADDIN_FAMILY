@@ -32,4 +32,23 @@ final class AntifakeSharePayloadStoreTests: XCTestCase {
         XCTAssertEqual(AntifakeSharePayloadStore.load()?.mode, .url)
         XCTAssertEqual(AntifakeSharePayloadStore.load()?.value, "https://example.com/phish")
     }
+
+    func testDocumentInboxRoundTrip() throws {
+        let bytes = Data("fake-pdf-bytes".utf8)
+        try AntifakeSharePayloadStore.saveDocument(data: bytes, filename: "bill.pdf")
+
+        let payload = AntifakeSharePayloadStore.consume()
+        XCTAssertEqual(payload?.mode, .document)
+        XCTAssertEqual(payload?.value, "bill.pdf")
+
+        let file = AntifakeSharePayloadStore.consumeDocumentFile(relativeName: "bill.pdf")
+        XCTAssertEqual(file?.data, bytes)
+        XCTAssertEqual(file?.filename, "bill.pdf")
+        XCTAssertNil(AntifakeShareFileInbox.loadData(relativeName: "bill.pdf"))
+    }
+
+    func testDocumentRejectsOversizedFile() {
+        let oversized = Data(repeating: 0x41, count: AntifakeShareConstants.maxDocumentBytes + 1)
+        XCTAssertThrowsError(try AntifakeSharePayloadStore.saveDocument(data: oversized, filename: "big.pdf"))
+    }
 }

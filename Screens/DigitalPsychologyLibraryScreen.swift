@@ -13,7 +13,7 @@ struct DigitalPsychologyLibraryScreen: View {
     var body: some View {
         ZStack {
             StormMeshBackground(variant: .warm)
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 14) {
                     header
                     Text(localizationManager.localized(disclaimerKey))

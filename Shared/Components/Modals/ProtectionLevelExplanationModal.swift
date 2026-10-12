@@ -11,7 +11,7 @@ struct ProtectionLevelExplanationModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     // Заголовок
                     VStack(spacing: Spacing.s) {

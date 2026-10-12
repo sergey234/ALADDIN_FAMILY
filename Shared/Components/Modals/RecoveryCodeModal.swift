@@ -30,7 +30,7 @@ struct RecoveryCodeModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 30) {
                     // Иконка успеха
                     Image(systemName: "checkmark.circle.fill")

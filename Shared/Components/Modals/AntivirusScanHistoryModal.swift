@@ -34,7 +34,7 @@ struct AntivirusScanHistoryModal: View {
                             .foregroundColor(.textSecondary)
                     }
                 } else {
-                    ScrollView {
+                    ScrollView(.vertical, showsIndicators: true) {
                         LazyVStack(spacing: Spacing.m) {
                             ForEach(scanHistory, id: \.id) { session in
                                 ScanHistoryRow(session: session)

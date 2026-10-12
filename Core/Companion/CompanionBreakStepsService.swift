@@ -47,7 +47,7 @@ enum CompanionBreakStepsService {
         \(text)
         """
         let characterId = UserDefaults.standard.string(forKey: "companion_selected_character_id") ?? "aladdin"
-        let response = try await CompanionAPIService.shared.sendChat(
+        let response = try await AICoordinator.sendCompanionChat(
             message: prompt,
             characterId: characterId,
             sessionId: nil,

@@ -101,16 +101,13 @@ class StoreManager: ObservableObject {
         
         // ✅ ЗАЩИТА: Проверяем симулятор перед загрузкой
         // Для локального теста IAP: Xcode → Scheme → Run → Options → StoreKit Configuration (файл .storekit с ID из `ProductID`).
-        #if targetEnvironment(simulator)
-        print("⚠️ StoreManager.startLoading: Симулятор - пропускаем загрузку продуктов")
-        return
-        #else
         Task { @MainActor in
             await loadProducts()
+            #if !targetEnvironment(simulator)
             await updatePurchasedProducts()
             await listenForTransactions()
+            #endif
         }
-        #endif
     }
     
     // MARK: - Load Products
@@ -139,12 +136,8 @@ class StoreManager: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        #if targetEnvironment(simulator)
-        // Симулятор без StoreKit Configuration даёт sim2host/507 и забивает лог; реальный IAP тестируем на устройстве.
-        isLoading = false
-        print("⚠️ [StoreManager.loadProducts] Симулятор — пропуск StoreKit (без Product.products), продуктов: 0")
-        return
-        #endif
+        // Симулятор: грузим StoreKit, если в Scheme включён StoreKit Configuration
+        // (`ALADDIN/StoreKit/ALADDINSubscriptions.storekit`). Без конфига список будет пустым — UI покажет «—».
         
         // ✅ ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ: Выводим информацию о попытке загрузки
         let productIDs = ProductID.paidSubscriptions.map { $0.rawValue }

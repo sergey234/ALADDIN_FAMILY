@@ -26,7 +26,7 @@ struct MnemoBaselineAssessmentView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 14) {
                     switch phase {
                     case .study:

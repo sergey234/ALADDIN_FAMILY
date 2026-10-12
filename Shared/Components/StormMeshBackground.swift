@@ -317,7 +317,7 @@ struct StormMeshBackground: View {
 #if DEBUG
 struct StormMeshBackground_Previews: PreviewProvider {
     static var previews: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 ForEach(StormMeshVariant.allCases) { variant in
                     ZStack {

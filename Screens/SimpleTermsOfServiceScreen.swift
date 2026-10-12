@@ -38,7 +38,7 @@ struct SimpleTermsOfServiceScreen: View {
                 .padding(.top, Spacing.s)
                 
                 // Content
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("terms_title"))
                             .font(.h3)

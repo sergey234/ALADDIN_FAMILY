@@ -245,7 +245,7 @@ struct FamilyProtectorView: View {
                 // Header с кнопкой "← Назад"
                 navigationHeader
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Прогресс-карточка
                         progressCard

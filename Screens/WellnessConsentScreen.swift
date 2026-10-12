@@ -13,7 +13,7 @@ struct WellnessConsentScreen: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 20) {
                 Text(WellnessAgeL10n.text(localizationManager, key: "wellness_consent_title", ageBand: ageBand))
                     .font(.title2.bold())

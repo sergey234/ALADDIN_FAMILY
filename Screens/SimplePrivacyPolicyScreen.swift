@@ -38,7 +38,7 @@ struct SimplePrivacyPolicyScreen: View {
                 .padding(.top, Spacing.s)
                 
                 // Content
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("privacy_policy_title"))
                             .font(.h3)

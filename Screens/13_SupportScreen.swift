@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoreImage.CIFilterBuiltins
 
 struct UnifiedFAQItem: Identifiable {
@@ -267,6 +268,7 @@ struct SupportScreen: View {
                     }
                     .padding(.top, 12)
                 }
+                .aladdinChatKeyboardDismiss()
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(localizationManager.localized("support_content"))
             }
@@ -333,6 +335,17 @@ struct SupportScreen: View {
         .background(Color(.secondarySystemBackground).opacity(0.92))
         .cornerRadius(8)
         .padding(.horizontal, 20)
+        .aladdinKeyboardDoneToolbar(
+            title: localizationManager.localized("companion_conversation_done"),
+            action: {
+                UIApplication.shared.sendAction(
+                    #selector(UIResponder.resignFirstResponder),
+                    to: nil,
+                    from: nil,
+                    for: nil
+                )
+            }
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel(localizationManager.localized("support_search_label"))
     }

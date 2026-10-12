@@ -44,7 +44,7 @@ struct WellnessAssessmentFlowScreen: View {
         ZStack {
             StormMeshBackground(variant: .neutral)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     if let result {
@@ -103,8 +103,11 @@ struct WellnessAssessmentFlowScreen: View {
         .navigationBarHidden(true)
         .task { await loadSchema() }
         .sheet(isPresented: $showReferralSheet) {
-            WellnessReferralSheet(level: referralLevel)
-                .environmentObject(localizationManager)
+            WellnessReferralSheet(
+                level: referralLevel,
+                allowDismiss: true
+            )
+            .environmentObject(localizationManager)
         }
     }
 
@@ -221,7 +224,7 @@ struct WellnessAssessmentsHubScreen: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Button { navigationManager.wellnessGoBack() } label: {

@@ -1,8 +1,9 @@
 import AVFoundation
 import AVKit
 import SwiftUI
+import UIKit
 
-/// fws-05 — on-device preview before upload (audio/video only).
+/// fws-05 — on-device preview before upload (audio/video/document image).
 struct AntifakeMediaPreviewView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     let previewURL: URL
@@ -26,7 +27,24 @@ struct AntifakeMediaPreviewView: View {
                 case .audio, .call:
                     audioPreviewControls
                 case .document:
-                    EmptyView()
+                    if let uiImage = UIImage(contentsOfFile: previewURL.path) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 220)
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                            .accessibilityLabel(localizationManager.localized("antifake_document_title"))
+                    } else {
+                        Label(
+                            previewURL.lastPathComponent,
+                            systemImage: "doc.richtext"
+                        )
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.9))
+                        .padding(Spacing.m)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    }
                 }
             }
         }

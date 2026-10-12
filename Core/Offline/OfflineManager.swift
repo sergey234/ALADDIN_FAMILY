@@ -341,7 +341,7 @@ extension SyncState {
         let isRussian = localizationManager.currentLanguage == .russian
         switch self {
         case .idle:
-            return isRussian ? "Ожидание" : "Idle"
+            return isRussian ? "Готово" : "Ready"
         case .local:
             return isRussian ? "Локально" : "Local"
         case .pending:

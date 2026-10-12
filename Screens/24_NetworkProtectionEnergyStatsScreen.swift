@@ -20,7 +20,7 @@ struct NetworkProtectionEnergyStatsScreen: View {
     var body: some View {
         ZStack {
             StormMeshBackground(variant: .shield)
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: Spacing.l) {
                 ALADDINNavigationBar(
                     title: localizationManager.localized("network_protection_energy_title"),

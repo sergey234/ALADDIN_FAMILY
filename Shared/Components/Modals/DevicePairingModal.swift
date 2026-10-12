@@ -36,7 +36,7 @@ struct DevicePairingModal: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         VStack(spacing: Spacing.s) {
                             Text(localizationManager.localized("device_pairing_title"))

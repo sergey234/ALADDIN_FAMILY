@@ -7225,39 +7225,51 @@ struct GeofencesSettingsModal: View {
                 // Форма добавления
                 if showAddForm {
                     VStack(spacing: Spacing.m) {
-                        TextField(
-                            "",
-                            text: $newGeofenceName,
-                            prompt: Text(localizationManager.localized("geofences_name_placeholder"))
-                                .foregroundColor(Color.white.opacity(0.55))
+                        // Кастомный placeholder: SwiftUI `prompt` на dark часто остаётся tertiary/нечитаемым.
+                        ZStack(alignment: .leading) {
+                            if newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(localizationManager.localized("geofences_name_placeholder"))
+                                    .font(.body)
+                                    .foregroundColor(Color.white.opacity(0.78))
+                            }
+                            TextField("", text: $newGeofenceName)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .accentColor(.secondaryGold)
+                        }
+                        .padding(Spacing.m)
+                        .background(Color.white.opacity(0.14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.white.opacity(0.45), lineWidth: 1)
                         )
-                            .font(.body)
-                            .foregroundColor(.white)
-                            .accentColor(.secondaryGold)
-                            .padding(Spacing.m)
-                            .background(Color.white.opacity(0.12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                    .stroke(Color.white.opacity(0.35), lineWidth: 1)
-                            )
-                            .cornerRadius(CornerRadius.medium)
+                        .cornerRadius(CornerRadius.medium)
                         
-                        TextField(
-                            "",
-                            text: $newGeofenceAddress,
-                            prompt: Text(localizationManager.localized("geofences_address_placeholder"))
-                                .foregroundColor(Color.white.opacity(0.55))
+                        // Адрес — 2 строки (TextEditor), placeholder читаемый на dark.
+                        ZStack(alignment: .topLeading) {
+                            if newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(localizationManager.localized("geofences_address_placeholder"))
+                                    .font(.body)
+                                    .foregroundColor(Color.white.opacity(0.78))
+                                    .padding(.top, 8)
+                                    .padding(.leading, 5)
+                            }
+                            TextEditor(text: $newGeofenceAddress)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .accentColor(.secondaryGold)
+                                .frame(minHeight: 64)
+                                .wellnessScrollContentBackgroundHidden()
+                                .background(Color.clear)
+                        }
+                        .padding(.horizontal, Spacing.m - 4)
+                        .padding(.vertical, Spacing.s)
+                        .background(Color.white.opacity(0.14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.white.opacity(0.45), lineWidth: 1)
                         )
-                            .font(.body)
-                            .foregroundColor(.white)
-                            .accentColor(.secondaryGold)
-                            .padding(Spacing.m)
-                            .background(Color.white.opacity(0.12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                    .stroke(Color.white.opacity(0.35), lineWidth: 1)
-                            )
-                            .cornerRadius(CornerRadius.medium)
+                        .cornerRadius(CornerRadius.medium)
                         
                         VStack(alignment: .leading, spacing: Spacing.s) {
                             HStack {
@@ -7294,11 +7306,15 @@ struct GeofencesSettingsModal: View {
                                 showAddForm = false
                             }) {
                                 Text(localizationManager.localized("edit_profile_cancel"))
-                                    .font(.body)
-                                    .foregroundColor(.textSecondary)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundColor(Color.white.opacity(0.88))
                                     .frame(maxWidth: .infinity)
                                     .padding(Spacing.m)
-                                    .background(Color.backgroundMedium.opacity(0.5))
+                                    .background(Color.white.opacity(0.14))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                            .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                    )
                                     .cornerRadius(CornerRadius.medium)
                             }
                             

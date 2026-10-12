@@ -22,7 +22,7 @@ struct UnifiedTimeLimitsScreen: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 20) {
                     localSection
                     extensionRequestsSection

@@ -118,6 +118,7 @@ struct AdvancedProtectionSettingsScreen: View {
         .onAppear {
             loadScreenDataIfNeeded()
         }
+        .withToast()
         .withVisualLogger()
         .alert(localizationManager.localized("advanced_safari_status_error"), isPresented: Binding(
             get: { safariApplyErrorMessage != nil },
@@ -518,7 +519,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 isExpanded: $privacyExpanded
             ) {
                 VStack(spacing: Spacing.m) {
-                    // Location Bubble
+                    // Approximate location (location_bubble_agent)
                     ComponentToggleCard(
                         componentId: "location_bubble_agent",
                         title: localizationManager.localized("component_location_bubble_agent_title"),

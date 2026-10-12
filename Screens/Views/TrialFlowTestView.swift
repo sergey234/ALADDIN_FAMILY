@@ -42,7 +42,7 @@ struct TrialFlowTestView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.xl) {
                     // Header
                     VStack(spacing: Spacing.m) {

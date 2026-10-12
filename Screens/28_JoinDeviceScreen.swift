@@ -29,7 +29,7 @@ struct JoinDeviceScreen: View {
                     }
                 )
 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         Button(action: {
                             let gen = UIImpactFeedbackGenerator(style: .medium)

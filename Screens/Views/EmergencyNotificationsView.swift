@@ -31,7 +31,7 @@ struct EmergencyNotificationsView: View {
                     onBack: { dismiss() }
                 )
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Message Templates
                         messageTemplatesSection

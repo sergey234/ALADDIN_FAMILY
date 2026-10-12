@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// p2-20 — dream notes (Jung lite; server gate FEATURE_WELLNESS_JUNG).
 struct WellnessDreamJournalScreen: View {
@@ -16,7 +17,7 @@ struct WellnessDreamJournalScreen: View {
         ZStack {
             StormMeshBackground(variant: .warm)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     disclaimerRow
@@ -58,6 +59,18 @@ struct WellnessDreamJournalScreen: View {
                 }
                 .padding()
             }
+            .aladdinChatKeyboardDismiss()
+            .aladdinKeyboardDoneToolbar(
+                title: localizationManager.localized("companion_conversation_done"),
+                action: {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                }
+            )
         }
         .navigationBarHidden(true)
         .accessibilityIdentifier("wellness_dream_journal_screen")

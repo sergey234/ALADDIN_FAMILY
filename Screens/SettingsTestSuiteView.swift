@@ -20,7 +20,7 @@ struct SettingsTestSuiteView: View {
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 15) {
                     testSection("Тест 1: Базовый View", "Простой VStack") {
                         basicViewTest()

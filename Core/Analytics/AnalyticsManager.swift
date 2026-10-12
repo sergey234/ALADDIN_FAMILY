@@ -103,6 +103,20 @@ class AnalyticsManager {
     // MARK: - Predefined Events
     
     /**
+     * Онбординг: шаг TabView (0 = язык, 1…7 = OB_01…OB_07).
+     * Firebase не включаем — событие только в локальный лог AnalyticsManager.
+     */
+    func trackOnboardingStep(_ step: Int, action: String = "view") {
+        let safeStep = max(0, step)
+        UserDefaults.standard.set(safeStep, forKey: "onboarding_last_step")
+        UserDefaults.standard.set(action, forKey: "onboarding_last_action")
+        trackEvent("onboarding_step", parameters: [
+            "step": safeStep,
+            "action": action
+        ])
+    }
+
+    /**
      * Отследить вход пользователя
      */
     func trackLogin(method: String) {

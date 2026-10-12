@@ -77,6 +77,8 @@ final class AntifakeTextCheckViewModel: ObservableObject {
     }
 
     func applySharePayload(_ payload: AntifakeSharePayload) {
+        // Document shares go to Hub document tab — never into text field.
+        guard payload.mode != .document else { return }
         // VSL-C: always through ClipboardSafety choke point (Share / deep link too).
         applyPastedContent(payload.value)
     }

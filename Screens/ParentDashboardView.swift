@@ -28,7 +28,7 @@ struct ParentDashboardView: View {
                 StormMeshBackground(variant: .grow)
                     .ignoresSafeArea()
 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     LazyVStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("parent_dashboard_title"))

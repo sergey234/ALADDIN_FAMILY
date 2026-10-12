@@ -138,7 +138,8 @@ final class AladdinOutboundQueueTests: XCTestCase {
         await queue.enqueueCheckin(WellnessCheckinDraft(mood: "sad", sleepHours: 5, stressLevel: 4, savedAt: Date()))
         let remaining = await queue.flush()
         XCTAssertEqual(remaining, 1)
-        XCTAssertTrue(await queue.hasPendingCheckin())
+        let hasPending = await queue.hasPendingCheckin()
+        XCTAssertTrue(hasPending)
     }
 
     func testHabitConfigLastWriteWins() async {
@@ -155,7 +156,8 @@ final class AladdinOutboundQueueTests: XCTestCase {
         second.setSchedule(wind, for: .windDown)
         await queue.enqueueHabitConfig(first)
         await queue.enqueueHabitConfig(second)
-        XCTAssertEqual(await queue.pendingCount(), 1)
+        let pending = await queue.pendingCount()
+        XCTAssertEqual(pending, 1)
         _ = await queue.flush()
         XCTAssertEqual(mock.habits.count, 1)
         XCTAssertTrue(mock.habits[0].schedule(for: .windDown).enabled)
@@ -167,7 +169,8 @@ final class AladdinOutboundQueueTests: XCTestCase {
         await queue.enqueueCheckin(WellnessCheckinDraft(mood: "ok", sleepHours: 7, stressLevel: 1, savedAt: Date()))
         let remaining = await queue.flush()
         XCTAssertEqual(remaining, 0)
-        XCTAssertFalse(await queue.hasPendingCheckin())
+        let hasPending = await queue.hasPendingCheckin()
+        XCTAssertFalse(hasPending)
     }
 
     func testErrorPolicy_authIsNotEnqueueable() {
@@ -191,7 +194,8 @@ final class AladdinOutboundQueueTests: XCTestCase {
         let t0 = Date(timeIntervalSince1970: 1_700_000_000)
         await queue.enqueueCheckin(WellnessCheckinDraft(mood: "ok", sleepHours: 7, stressLevel: 1, savedAt: t0))
         _ = await queue.flush(now: t0)
-        XCTAssertNotNil(await queue.backoffUntil(now: t0))
+        let backoff = await queue.backoffUntil(now: t0)
+        XCTAssertNotNil(backoff)
         mock.failCheckin = false
         let stillPending = await queue.flush(now: t0.addingTimeInterval(0.5))
         XCTAssertEqual(stillPending, 1)
