@@ -2235,3 +2235,49 @@
 "voice_notes_summary_need_transcript" = "Сначала завершите распознавание речи, затем можно продолжить.";
 
 "ai_consent_turn_on_settings" = "Включите умный помощник в Настройках, чтобы задавать вопросы.";
+
+/* Calls memory hub 2026-10-13 */
+"calls_hub_title" = "Звонки";
+"calls_hub_settings_subtitle" = "Память разговоров и выжимки";
+"calls_hub_empty_title" = "Пока нет сохранённых звонков";
+"calls_hub_empty_subtitle" = "Подготовьте звонок заранее или сохраните суть после разговора.";
+"calls_disclaimer_short" = "ALADDIN не пишет линию оператора. Запись — с микрофона при громкой связи, если вы её включили.";
+"calls_disclaimer_full" = "ALADDIN может записать звук с микрофона телефона, если вы включите громкую связь. Это не запись линии, как у оператора. Предупредите собеседника. Доступно в пробном периоде и на Family/Premium. ALADDIN не несёт ответственности за сбои записи, ущерб от мошенников и претензии собеседника.";
+"privacy_policy_section_calls_memory" = "Память звонков и запись";
+"privacy_policy_section_calls_memory_subtitle" = "Микрофон, локальное хранение, ваша ответственность";
+"privacy_policy_section_calls_memory_content_1" = "ALADDIN не записывает линию оператора. Запись возможна только через микрофон телефона, если вы сами включили запись (обычно с громкой связью).";
+"privacy_policy_section_calls_memory_content_2" = "Запись не начинается сама. Нужны ваши действия в разделе «Звонки» или Диктофон.";
+"privacy_policy_section_calls_memory_content_3" = "Аудио и выжимка по умолчанию хранятся на устройстве. На сервер — только если вы сами отправите (например, проверка antifake).";
+"privacy_policy_section_calls_memory_content_4" = "Вы сами решаете, предупреждать ли собеседника, и соблюдаете законы своей страны о записи разговоров.";
+"privacy_policy_section_calls_memory_content_5" = "Качество записи не гарантируется: система iOS может прервать микрофон во время звонка.";
+"privacy_policy_section_calls_memory_content_6" = "Кнопки «спокойно» / «деньги» после звонка — ваш ручной сигнал семье, не автоматическое доказательство мошенничества.";
+"privacy_policy_section_calls_memory_content_7" = "ALADDIN не несёт ответственности за ущерб от мошенников, пропущенных угроз, сбоев записи, неправильного использования или претензий собеседника из‑за записи.";
+"privacy_policy_section_calls_memory_content_8" = "Удалить записи можно в приложении или удалив приложение; локально они хранятся, пока вы их не удалите.";
+"terms_section_liability_content_6" = "Запись звонков — только по вашей инициативе; вы отвечаете за согласие собеседника и законность";
+"terms_section_liability_content_7" = "Мы не гарантируем полноту и качество записи и распознавания речи";
+"terms_section_liability_content_8" = "Мы не несём ответственности за убытки от телефонного мошенничества и за решения по выжимке или кнопкам после звонка";
+"terms_section_liability_content_9" = "Раздел «Звонки» — вспомогательный инструмент, не юридическая или банковская консультация и не услуга оператора связи";
+"terms_section_liability_content_10" = "Используя запись и память звонков, вы принимаете эти ограничения";
+"calls_prep_title" = "Подготовка к звонку";
+"calls_prep_cta" = "Подготовить звонок";
+"calls_prep_goal_section" = "Цель";
+"calls_prep_goal_placeholder" = "Зачем звоню";
+"calls_prep_mic_toggle" = "Записать с динамика (Диктофон)";
+"calls_prep_mic_hint" = "После старта включите громкую связь и позвоните. Если запись оборвётся — после звонка сохраните суть.";
+"calls_prep_start" = "Начать и открыть Телефон";
+"calls_consent_checkbox" = "Понимаю условия записи";
+"calls_after_title" = "О чём договорились?";
+"calls_after_subtitle" = "Короткая заметка после звонка. Потом можно проверить на мошенников.";
+"calls_after_note_placeholder" = "Что сказал собеседник / что решили";
+"calls_after_save" = "Сохранить в Звонки";
+"calls_after_nav_title" = "После звонка";
+"calls_after_antifake_cta" = "Проверить на мошенников";
+"calls_after_antifake_note" = "Проверка после звонка";
+"calls_card_untitled" = "Звонок";
+"calls_paywall_title" = "Звонки — для Family и Premium";
+"calls_paywall_body" = "Память звонков доступна в пробном периоде 14 дней и на тарифах Family/Premium.";
+"calls_paywall_open_tariffs" = "Открыть тарифы";
+
+"calls_safety_prompt_toggle" = "Защита от телефонных мошенников";
+"calls_safety_prompt_toggle_subtitle" = "Красная и зелёная кнопки после звонка по телефону";
+"calls_safety_prompt_toggle_a11y_hint" = "После звонка Phone или FaceTime. WhatsApp и Telegram iOS не видит — откройте раздел Звонки вручную.";

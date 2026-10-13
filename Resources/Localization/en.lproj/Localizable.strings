@@ -2325,3 +2325,49 @@
 "voice_notes_summary_need_transcript" = "Finish speech recognition first, then you can continue.";
 
 "ai_consent_turn_on_settings" = "Turn on the smart assistant in Settings to send questions.";
+
+/* Calls memory hub 2026-10-13 */
+"calls_hub_title" = "Calls";
+"calls_hub_settings_subtitle" = "Call memory and summaries";
+"calls_hub_empty_title" = "No saved calls yet";
+"calls_hub_empty_subtitle" = "Prepare before a call or save the key points after.";
+"calls_disclaimer_short" = "ALADDIN does not record the carrier line. Mic capture on speaker only if you start it.";
+"calls_disclaimer_full" = "ALADDIN can record from the phone microphone if you use speakerphone. This is not carrier-line recording. Tell the other person. Available during the 14-day trial and on Family/Premium. ALADDIN is not liable for failed recordings, scam losses, or claims about recording.";
+"privacy_policy_section_calls_memory" = "Call memory and recording";
+"privacy_policy_section_calls_memory_subtitle" = "Microphone, on-device storage, your responsibility";
+"privacy_policy_section_calls_memory_content_1" = "ALADDIN does not record the carrier phone line. Capture is only via the phone microphone if you start recording (usually with speakerphone).";
+"privacy_policy_section_calls_memory_content_2" = "Recording never starts by itself. You must start it in Calls or Voice Notes.";
+"privacy_policy_section_calls_memory_content_3" = "Audio and summaries stay on device by default. Upload only if you send them (for example, an antifake check).";
+"privacy_policy_section_calls_memory_content_4" = "You decide whether to tell the other party and must follow local call-recording laws.";
+"privacy_policy_section_calls_memory_content_5" = "Recording quality is not guaranteed: iOS may interrupt the microphone during a call.";
+"privacy_policy_section_calls_memory_content_6" = "Post-call calm / money buttons are your manual family signal, not automatic fraud proof.";
+"privacy_policy_section_calls_memory_content_7" = "ALADDIN is not liable for scam losses, missed threats, failed recordings, misuse, or claims from the other party about recording.";
+"privacy_policy_section_calls_memory_content_8" = "Delete recordings in the app or by deleting the app; they stay on device until you delete them.";
+"terms_section_liability_content_6" = "Call recording is only by your action; you are responsible for the other party’s consent and legality";
+"terms_section_liability_content_7" = "We do not guarantee completeness or quality of recordings or speech recognition";
+"terms_section_liability_content_8" = "We are not liable for phone-scam losses or decisions based on summaries or post-call safety buttons";
+"terms_section_liability_content_9" = "Calls is a helper tool, not legal or banking advice and not a carrier recording service";
+"terms_section_liability_content_10" = "By using call recording and call memory you accept these limits";
+"calls_prep_title" = "Call prep";
+"calls_prep_cta" = "Prepare a call";
+"calls_prep_goal_section" = "Goal";
+"calls_prep_goal_placeholder" = "Why I am calling";
+"calls_prep_mic_toggle" = "Record via speaker (Voice Notes)";
+"calls_prep_mic_hint" = "After start, turn on speaker and place the call. If recording stops, save the gist after the call.";
+"calls_prep_start" = "Start and open Phone";
+"calls_consent_checkbox" = "I understand the recording terms";
+"calls_after_title" = "What did we agree?";
+"calls_after_subtitle" = "A short note after the call. You can also run an antifake check.";
+"calls_after_note_placeholder" = "What they said / what we decided";
+"calls_after_save" = "Save to Calls";
+"calls_after_nav_title" = "After the call";
+"calls_after_antifake_cta" = "Check for scams";
+"calls_after_antifake_note" = "Post-call check";
+"calls_card_untitled" = "Call";
+"calls_paywall_title" = "Calls — Family and Premium";
+"calls_paywall_body" = "Call memory is available during the 14-day trial and on Family/Premium.";
+"calls_paywall_open_tariffs" = "Open plans";
+
+"calls_safety_prompt_toggle" = "Phone scam protection";
+"calls_safety_prompt_toggle_subtitle" = "Red and green buttons after Phone calls";
+"calls_safety_prompt_toggle_a11y_hint" = "After Phone or FaceTime. iOS cannot see WhatsApp or Telegram — open Calls manually.";

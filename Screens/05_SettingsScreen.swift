@@ -36,6 +36,7 @@ struct SettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var showVoiceNotesScreen: Bool = false
+    @State private var showCallsHubScreen: Bool = false
 
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
@@ -340,6 +341,36 @@ struct SettingsScreen: View {
                     logger.buttonTap("Open Voice Notes", screen: "Settings")
                     showVoiceNotesScreen = true
                 }
+
+                Divider()
+
+                appNavigationRow(
+                    icon: "phone.fill",
+                    title: localizationManager.localized("calls_hub_title"),
+                    subtitle: localizationManager.localized("calls_hub_settings_subtitle")
+                ) {
+                    logger.buttonTap("Open Calls Hub", screen: "Settings")
+                    showCallsHubScreen = true
+                }
+
+                Divider()
+
+                settingRow(
+                    icon: "exclamationmark.shield.fill",
+                    title: localizationManager.localized("calls_safety_prompt_toggle"),
+                    subtitle: localizationManager.localized("calls_safety_prompt_toggle_subtitle"),
+                    isEnabled: Binding(
+                        get: { AppConfig.isPostCallSafetyPromptEnabled },
+                        set: { newValue in
+                            logger.toggleChanged("PostCallSafety", newValue: newValue, screen: "Settings")
+                            UserDefaults.standard.set(newValue, forKey: AppConfig.UserDefaultsKeys.postCallSafetyPromptEnabled)
+                        }
+                    ),
+                    titleSingleLine: true,
+                    subtitleSingleLine: true
+                )
+                .accessibilityIdentifier("calls_safety_prompt_toggle")
+                .accessibilityHint(localizationManager.localized("calls_safety_prompt_toggle_a11y_hint"))
 
                 Divider()
 
@@ -708,8 +739,12 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $showVoiceNotesScreen) {
             VoiceNotesScreen()
-                .environmentObject(navigationManager)
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $showCallsHubScreen) {
+            CallsHubScreen()
                 .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
                 .aladdinSheetPresentation()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToVoiceDayRecap"))) { _ in
@@ -790,7 +825,9 @@ struct SettingsScreen: View {
         title: String,
         subtitle: String,
         isEnabled: Binding<Bool>,
-        isBiometric: Bool = false
+        isBiometric: Bool = false,
+        titleSingleLine: Bool = false,
+        subtitleSingleLine: Bool = false
     ) -> some View {
         let binding: Binding<Bool> = isBiometric
             ? Binding(
@@ -819,14 +856,20 @@ struct SettingsScreen: View {
                 Text(title)
                     .font(.body)
                     .foregroundColor(.textPrimary)
+                    .lineLimit(titleSingleLine ? 1 : nil)
+                    .minimumScaleFactor(titleSingleLine ? 0.72 : 1)
+                    .allowsTightening(titleSingleLine)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(subtitle)
                     .font(.caption)
                     .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+                    .lineLimit(subtitleSingleLine ? 1 : 2)
+                    .minimumScaleFactor(subtitleSingleLine ? 0.75 : 1)
+                    .allowsTightening(subtitleSingleLine)
             }
 
-            Spacer()
+            Spacer(minLength: Spacing.xs)
 
             Toggle("", isOn: binding)
                 .labelsHidden()

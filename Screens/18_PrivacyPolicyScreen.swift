@@ -458,6 +458,7 @@ enum PrivacyMainSection: String, CaseIterable {
     case contacts = "Контакты"
     case wellness = "Эмоциональная поддержка (Wellness)"
     case antifake = "Проверка подлинности (Antifake)"
+    case callsMemory = "Память звонков и запись"
     case final = "Заключительные положения"
     
     var emoji: String {
@@ -477,6 +478,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .contacts: return "📞"
         case .wellness: return "💜"
         case .antifake: return "🛡️"
+        case .callsMemory: return "📞"
         case .final: return "📜"
         }
     }
@@ -498,6 +500,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .contacts: return localizationManager.localized("privacy_policy_section_contacts")
         case .wellness: return localizationManager.localized("privacy_policy_section_wellness")
         case .antifake: return localizationManager.localized("privacy_policy_section_antifake")
+        case .callsMemory: return localizationManager.localized("privacy_policy_section_calls_memory")
         case .final: return localizationManager.localized("privacy_policy_section_final")
         }
     }
@@ -519,6 +522,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .contacts: return localizationManager.localized("privacy_policy_section_contacts_subtitle")
         case .wellness: return localizationManager.localized("privacy_policy_section_wellness_subtitle")
         case .antifake: return localizationManager.localized("privacy_policy_section_antifake_subtitle")
+        case .callsMemory: return localizationManager.localized("privacy_policy_section_calls_memory_subtitle")
         case .final: return localizationManager.localized("privacy_policy_section_final_subtitle")
         }
     }
@@ -545,6 +549,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .contacts: return "Техподдержка и вопросы"
         case .wellness: return "Самопомощь и цифровой друг (ИИ)"
         case .antifake: return "Звонки, проверки и Call Directory"
+        case .callsMemory: return "Микрофон, локальное хранение, ваша ответственность"
         case .final: return "Вступление в силу"
         }
     }
@@ -667,6 +672,17 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_antifake_content_3"),
                 localizationManager.localized("privacy_policy_section_antifake_content_4"),
                 localizationManager.localized("privacy_policy_section_antifake_content_5")
+            ]
+        case .callsMemory:
+            return [
+                localizationManager.localized("privacy_policy_section_calls_memory_content_1"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_2"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_3"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_4"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_5"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_6"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_7"),
+                localizationManager.localized("privacy_policy_section_calls_memory_content_8")
             ]
         case .final:
             return [
@@ -794,6 +810,17 @@ enum PrivacyMainSection: String, CaseIterable {
                 "Call Directory — локальная метка на экране входящего звонка после синхронизации",
                 "Медиа для проверки загружается только с вашего согласия и удаляется после обработки",
                 "Мы не собираем и не продаём вашу телефонную книгу"
+            ]
+        case .callsMemory:
+            return [
+                "ALADDIN не записывает линию оператора. Запись — только с микрофона, если вы сами её включили (обычно громкая связь).",
+                "Запись не начинается сама — только ваши действия в разделе «Звонки» / Диктофон.",
+                "Аудио и выжимка по умолчанию на устройстве; на сервер — только если вы отправите сами.",
+                "Вы предупреждаете собеседника и соблюдаете законы о записи разговоров.",
+                "Качество записи не гарантируется: iOS может прервать микрофон во время звонка.",
+                "Кнопки после звонка — ваш ручной сигнал семье, не автодоказательство мошенничества.",
+                "ALADDIN не несёт ответственности за ущерб от мошенников, сбоев записи и претензий из‑за записи.",
+                "Удалить записи можно в приложении или удалив приложение."
             ]
         case .final:
             return [

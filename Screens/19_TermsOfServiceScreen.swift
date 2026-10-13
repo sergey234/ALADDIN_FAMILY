@@ -338,7 +338,12 @@ enum TermsSection: String, CaseIterable {
                 "Не гарантируем 100% защиту от всех угроз",
                 "Не несем ущерб от действий третьих лиц",
                 "Вы несете ответственность за свои действия",
-                "Используйте приложение на свой риск"
+                "Используйте приложение на свой риск",
+                "Запись звонков — только по вашей инициативе; вы отвечаете за согласие собеседника и законность",
+                "Мы не гарантируем полноту и качество записи и распознавания речи",
+                "Мы не несём ответственности за убытки от телефонного мошенничества и за решения по выжимке или кнопкам после звонка",
+                "Раздел «Звонки» — вспомогательный инструмент, не юр./банковская консультация и не услуга оператора",
+                "Используя запись и память звонков, вы принимаете эти ограничения"
             ]
         case .termination:
             return [
@@ -506,7 +511,12 @@ extension TermsSection {
                 localizationManager.localized("terms_section_liability_content_2"),
                 localizationManager.localized("terms_section_liability_content_3"),
                 localizationManager.localized("terms_section_liability_content_4"),
-                localizationManager.localized("terms_section_liability_content_5")
+                localizationManager.localized("terms_section_liability_content_5"),
+                localizationManager.localized("terms_section_liability_content_6"),
+                localizationManager.localized("terms_section_liability_content_7"),
+                localizationManager.localized("terms_section_liability_content_8"),
+                localizationManager.localized("terms_section_liability_content_9"),
+                localizationManager.localized("terms_section_liability_content_10")
             ]
         case .termination:
             return [

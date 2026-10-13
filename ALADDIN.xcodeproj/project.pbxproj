@@ -412,6 +412,8 @@
 		B5001200 /* ALADDINUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001100 /* ALADDINUnitTests.swift */; };
 		B5001201 /* APIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001101 /* APIServiceTests.swift */; };
 		B5001202 /* AppConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001102 /* AppConfigTests.swift */; };
+		B70002122F90000100ABC001 /* CallSessionsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */; };
+		B70002142F90000100ABC001 /* PostCallSafetyPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */; };
 		B5001203 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001103 /* AppDelegateTests.swift */; };
 		B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001104 /* FamilyRegistrationViewModelTests.swift */; };
 		B5001206 /* LocalizationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001106 /* LocalizationManagerTests.swift */; };
@@ -442,6 +444,13 @@
 		B70001082F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001072F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift */; };
 		B70001102F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700010F2F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift */; };
 		B70001122F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001112F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift */; };
+		B70002022F90000100ABC001 /* Core/Models/CallSessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002012F90000100ABC001 /* CallSessionModels.swift */; };
+		B70002042F90000100ABC001 /* Core/Storage/CallSessionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002032F90000100ABC001 /* CallSessionsStore.swift */; };
+		B70002062F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002052F90000100ABC001 /* CallsAccessPolicy.swift */; };
+		B70002082F90000100ABC001 /* Core/Security/CallsLifecycleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002072F90000100ABC001 /* CallsLifecycleService.swift */; };
+		B700020A2F90000100ABC001 /* Core/Audio/CallSummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002092F90000100ABC001 /* CallSummaryService.swift */; };
+		B700020C2F90000100ABC001 /* Screens/CallsHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700020B2F90000100ABC001 /* CallsHubScreen.swift */; };
+		B700020E2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700020D2F90000100ABC001 /* CallsAfterMemorySheet.swift */; };
 		B70001142F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001132F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift */; };
 		B70001162F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001152F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift */; };
 		B70001182F90000100ABC001 /* Core/Audio/SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001172F90000100ABC001 /* Core/Audio/SpeechManager.swift */; };
@@ -1218,6 +1227,8 @@
 		B5001100 /* ALADDINUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINUnitTests.swift; sourceTree = "<group>"; };
 		B5001101 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
 		B5001102 /* AppConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigTests.swift; sourceTree = "<group>"; };
+		B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallSessionsStoreTests.swift; sourceTree = "<group>"; };
+		B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostCallSafetyPolicyTests.swift; sourceTree = "<group>"; };
 		B5001103 /* AppDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateTests.swift; sourceTree = "<group>"; };
 		B5001104 /* FamilyRegistrationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyRegistrationViewModelTests.swift; sourceTree = "<group>"; };
 		B5001105 /* IoTSecurityModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModuleTests.swift; sourceTree = "<group>"; };
@@ -1250,6 +1261,13 @@
 		B70001072F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/VoiceNoteCard.swift; sourceTree = "<group>"; };
 		B700010F2F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesRecorderService.swift; sourceTree = "<group>"; };
 		B70001112F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/VoiceNotesStore.swift; sourceTree = "<group>"; };
+		B70002012F90000100ABC001 /* CallSessionModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/CallSessionModels.swift; sourceTree = "<group>"; };
+		B70002032F90000100ABC001 /* CallSessionsStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/CallSessionsStore.swift; sourceTree = "<group>"; };
+		B70002052F90000100ABC001 /* CallsAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Security/CallsAccessPolicy.swift; sourceTree = "<group>"; };
+		B70002072F90000100ABC001 /* CallsLifecycleService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Security/CallsLifecycleService.swift; sourceTree = "<group>"; };
+		B70002092F90000100ABC001 /* CallSummaryService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/CallSummaryService.swift; sourceTree = "<group>"; };
+		B700020B2F90000100ABC001 /* CallsHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/CallsHubScreen.swift; sourceTree = "<group>"; };
+		B700020D2F90000100ABC001 /* CallsAfterMemorySheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/CallsAfterMemorySheet.swift; sourceTree = "<group>"; };
 		B70001132F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesTranscriptionService.swift; sourceTree = "<group>"; };
 		B70001152F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechRecognizerFactory.swift; sourceTree = "<group>"; };
 		B70001172F90000100ABC001 /* Core/Audio/SpeechManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechManager.swift; sourceTree = "<group>"; };
@@ -2066,6 +2084,13 @@
 				B700011F2F90000100ABC001 /* Core/Audio/VoiceNotePlaybackController.swift */,
 				B70001212F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceLevelBarsView.swift */,
 				B70001112F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift */,
+				B70002012F90000100ABC001 /* CallSessionModels.swift */,
+				B70002032F90000100ABC001 /* CallSessionsStore.swift */,
+				B70002052F90000100ABC001 /* CallsAccessPolicy.swift */,
+				B70002072F90000100ABC001 /* CallsLifecycleService.swift */,
+				B70002092F90000100ABC001 /* CallSummaryService.swift */,
+				B700020B2F90000100ABC001 /* CallsHubScreen.swift */,
+				B700020D2F90000100ABC001 /* CallsAfterMemorySheet.swift */,
 				5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */,
 				E1E2EE0102F1E40000E2EE01 /* FamilyE2EEManager.swift */,
 				E1E2EE0302F1E40000E2EE01 /* FamilyE2EECryptoEngine.swift */,
@@ -2379,6 +2404,8 @@
 				MNEM0091B2C3D4E5F6070846 /* MnemoCoreV3Tests.swift */,
 				B5001101 /* APIServiceTests.swift */,
 				B5001102 /* AppConfigTests.swift */,
+				B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */,
+				B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */,
 				B5001103 /* AppDelegateTests.swift */,
 				B5001104 /* FamilyRegistrationViewModelTests.swift */,
 				B5001105 /* IoTSecurityModuleTests.swift */,
@@ -3209,6 +3236,13 @@
 				VSLN0412F90000100C7D34B /* VoiceSafetyNowChip.swift in Sources */,
 				VSLW0412F90000100C7D34B /* VoiceWeeklyDigestSheet.swift in Sources */,
 				B70001122F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift in Sources */,
+				B70002022F90000100ABC001 /* Core/Models/CallSessionModels.swift in Sources */,
+				B70002042F90000100ABC001 /* Core/Storage/CallSessionsStore.swift in Sources */,
+				B70002062F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift in Sources */,
+				B70002082F90000100ABC001 /* Core/Security/CallsLifecycleService.swift in Sources */,
+				B700020A2F90000100ABC001 /* Core/Audio/CallSummaryService.swift in Sources */,
+				B700020C2F90000100ABC001 /* Screens/CallsHubScreen.swift in Sources */,
+				B700020E2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */,
 				B198A0142F9800100B198A0 /* FamilyReferralInviteRouter.swift in Sources */,
@@ -3381,6 +3415,8 @@
 				5E7056D12F597D0C0065BDC4 /* DEFENSIVEJWTTests.swift in Sources */,
 				B5001201 /* APIServiceTests.swift in Sources */,
 				B5001202 /* AppConfigTests.swift in Sources */,
+				B70002122F90000100ABC001 /* CallSessionsStoreTests.swift in Sources */,
+				B70002142F90000100ABC001 /* PostCallSafetyPolicyTests.swift in Sources */,
 				B5001203 /* AppDelegateTests.swift in Sources */,
 				B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */,
 				5E6F39242F15AEF200CEC103 /* ComponentStatusServiceTests.swift in Sources */,

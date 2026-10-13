@@ -269,6 +269,7 @@ struct ALADDINApp: App {
     /// Единый источник статистики главной / профиля (семья, устройства, угрозы).
     @StateObject private var mainViewModel = MainViewModel()
     @StateObject private var elderlyScamCallGate = ElderlyScamCallGate.shared
+    @StateObject private var callsLifecycle = CallsLifecycleService.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "light"
     /// VisualLogger overlay (симулятор/устройство). По умолчанию выкл — логи в Xcode Console.
     @AppStorage("enable_visual_logging") private var enableVisualLogging: Bool = false
@@ -429,6 +430,11 @@ struct ALADDINApp: App {
                 }
                 .fullScreenCover(isPresented: $elderlyScamCallGate.isPresented) {
                     ElderlyScamCallScreen()
+                        .environmentObject(localizationManager)
+                        .environmentObject(navigationManager)
+                }
+                .sheet(isPresented: $callsLifecycle.showAfterSheet) {
+                    CallsAfterMemorySheet()
                         .environmentObject(localizationManager)
                         .environmentObject(navigationManager)
                 }

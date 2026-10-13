@@ -882,6 +882,17 @@ extension AppConfig {
         static let antifakeTransferCheckEntry = "antifake_transfer_check_entry_v1"
         /// fws-06 — cached voice fraud threshold (%).
         static let antifakeVoiceFraudThresholdPercent = "antifake_voice_fraud_threshold_percent_v1"
+        /// Calls memory hub — post-call after sheet.
+        static let pendingCallsAfterSheet = "pending_calls_after_sheet"
+        static let callsPrepArmed = "calls_prep_armed"
+        static let callsPrepGoal = "calls_prep_goal"
+        static let callsPrepWantMic = "calls_prep_want_mic"
+        /// Phase 0 spike: pending | green | yellow | red
+        static let callsSpikeResult = "calls_spike_result"
+        /// Post-call red/green safety prompt for all users (default on).
+        static let postCallSafetyPromptEnabled = "post_call_safety_prompt_enabled"
+        /// Last time red/green safety UI was shown (cooldown).
+        static let postCallSafetyLastShownAt = "post_call_safety_last_shown_at"
     }
 
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).
@@ -893,6 +904,14 @@ extension AppConfig {
     static var isAntifakePostCallReminderEnabled: Bool {
         if UserDefaults.standard.object(forKey: UserDefaultsKeys.antifakePostCallReminderEnabled) != nil {
             return UserDefaults.standard.bool(forKey: UserDefaultsKeys.antifakePostCallReminderEnabled)
+        }
+        return true
+    }
+
+    /// Red/green «просили деньги / всё спокойно» after Phone/FaceTime CallKit end (default on for everyone).
+    static var isPostCallSafetyPromptEnabled: Bool {
+        if UserDefaults.standard.object(forKey: UserDefaultsKeys.postCallSafetyPromptEnabled) != nil {
+            return UserDefaults.standard.bool(forKey: UserDefaultsKeys.postCallSafetyPromptEnabled)
         }
         return true
     }
