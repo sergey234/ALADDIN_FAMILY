@@ -3,26 +3,39 @@ import Combine
 import Foundation
 import UserNotifications
 
-/// Post-call local notification → Antifake Hub (af-4-03).
+/// Post-call: red/green safety → Calls memory sheet → Antifake reminder push (af-4-03 / eld).
 @MainActor
 final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
     static let shared = AntifakeCallObserverService()
 
     private let observer = CXCallObserver()
     private var activeConnectedCalls: Set<UUID> = []
+    /// Dedupes end events (CallKit can fire multiple `hasEnded` for one UUID).
+    private var handledEndedCalls: Set<UUID> = []
 
     private override init() {
         super.init()
     }
 
     func startIfNeeded() {
-        let safetyOn = ElderlyScamCallPolicy.shouldPresentSafetyPrompt(
-            role: UserDefaults.standard.string(forKey: "current_user_role")
-        )
+        let safetyOn = AppConfig.isPostCallSafetyPromptEnabled
         let callsOn = CallsAccessPolicy.isAvailable()
         guard safetyOn || callsOn || AntifakeAccessPolicy.isHubAvailable() else { return }
         observer.setDelegate(self, queue: nil)
         requestNotificationAuthorizationIfNeeded()
+        // If Phone ended while we were backgrounded, show safety as soon as we can.
+        presentPendingSafetyIfNeeded()
+    }
+
+    /// Call from `scenePhase == .active` so fullScreenCover can attach after return from Phone.app.
+    func presentPendingSafetyIfNeeded() {
+        guard UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt) else { return }
+        guard AppConfig.isPostCallSafetyPromptEnabled else {
+            UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
+            return
+        }
+        UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
+        ElderlyScamCallGate.shared.isPresented = true
     }
 
     private func requestNotificationAuthorizationIfNeeded() {
@@ -34,10 +47,19 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
             if call.hasConnected, !call.hasEnded {
                 activeConnectedCalls.insert(call.uuid)
             }
-            if call.hasEnded, activeConnectedCalls.contains(call.uuid) {
-                activeConnectedCalls.remove(call.uuid)
-                await schedulePostCallCheckNotification()
+            guard call.hasEnded else { return }
+
+            // Important: after Phone.app, we often only see the end event in-process.
+            // `hasConnected` stays true on a connected call even when `hasEnded` is true.
+            let wasTracked = activeConnectedCalls.remove(call.uuid) != nil
+            let connected = call.hasConnected || wasTracked
+            guard connected else { return }
+            guard !handledEndedCalls.contains(call.uuid) else { return }
+            handledEndedCalls.insert(call.uuid)
+            if handledEndedCalls.count > 40 {
+                handledEndedCalls.removeAll(keepingCapacity: true)
             }
+            await schedulePostCallCheckNotification()
         }
     }
 
@@ -48,7 +70,12 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
         // 1) Safety first (red/green) — for everyone when toggle is on. Avoid stacking with memory sheet.
         if ElderlyScamCallPolicy.shouldPresentSafetyPrompt(role: role, now: now) {
             UserDefaults.standard.set(now, forKey: AppConfig.UserDefaultsKeys.postCallSafetyLastShownAt)
+            // Arm pending so return-from-Phone still shows the cover if SwiftUI skipped it in background.
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
             ElderlyScamCallGate.shared.isPresented = true
+            #if DEBUG
+            print("🛡️ POST_CALL_SAFETY: armed red/green screen (CallKit end)")
+            #endif
             return
         }
 

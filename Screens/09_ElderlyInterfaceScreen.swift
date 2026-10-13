@@ -3858,12 +3858,18 @@ struct ElderlyScamCallScreen: View {
 
     private func calm() {
         errorText = nil
+        UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
         gate.isPresented = false
+        // After «всё спокойно» — optional call-memory note (trial/Family/Premium).
+        if CallsAccessPolicy.isAvailable() {
+            CallsLifecycleService.shared.handleCallEnded()
+        }
     }
 
     private func sendAlert() {
         let now = Date().timeIntervalSince1970
         guard ElderlyScamCallPolicy.allowsAnotherSend(lastSentAt: lastSentAt, now: now) else {
+            UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
             gate.isPresented = false
             return
         }
@@ -3876,6 +3882,7 @@ struct ElderlyScamCallScreen: View {
                 case .success(let response):
                     if response.ok && (response.parentsNotified > 0 || response.deduped) {
                         lastSentAt = Date().timeIntervalSince1970
+                        UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
                         gate.isPresented = false
                     } else if response.reason == "no_other_parent" {
                         errorText = localizationManager.localized("elderly_scam_call_no_parent")
@@ -3890,6 +3897,7 @@ struct ElderlyScamCallScreen: View {
     }
 
     private func openRecording() {
+        UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
         gate.isPresented = false
         if AntifakeAccessPolicy.isHubAvailable() {
             navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)

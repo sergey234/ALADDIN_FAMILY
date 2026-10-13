@@ -893,6 +893,8 @@ extension AppConfig {
         static let postCallSafetyPromptEnabled = "post_call_safety_prompt_enabled"
         /// Last time red/green safety UI was shown (cooldown).
         static let postCallSafetyLastShownAt = "post_call_safety_last_shown_at"
+        /// Safety UI armed while app was backgrounded (Phone.app) — show on next `.active`.
+        static let pendingPostCallSafetyPrompt = "pending_post_call_safety_prompt"
     }
 
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).

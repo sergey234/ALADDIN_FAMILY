@@ -724,6 +724,9 @@ struct ALADDINApp: App {
                 if newPhase == .active {
                     UserDefaults.standard.set(false, forKey: LifecycleKeys.lifecycleCheckpointMarker)
                     print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
+                    // Post-call red/green often arms while Phone.app is foreground — present on return.
+                    AntifakeCallObserverService.shared.presentPendingSafetyIfNeeded()
+                    CallsLifecycleService.shared.consumePendingAfterIfNeeded()
                     Task { @MainActor in
                         await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
                         await AladdinOutboundQueue.shared.startPathMonitor()
