@@ -1839,13 +1839,13 @@
 "voice_notes_empty_subtitle" = "Нажмите «Начать запись», чтобы создать первую заметку.";
 "voice_notes_empty_search_title" = "Ничего не найдено";
 "voice_notes_empty_search_subtitle" = "Измените запрос или переключите фильтр.";
-"voice_notes_local_only_disclaimer" = "Записи хранятся только на этом устройстве. Ничего не отправляется на сервер.";
+"voice_notes_local_only_disclaimer" = "Записи остаются на этом iPhone. Распознавание речи — средствами Apple на устройстве.";
 "voice_notes_summary_local_soon" = "AI-резюме скоро (локально)";
 "call_assistant_section_title" = "Помощник по звонкам";
-"call_assistant_section_subtitle" = "До звонка: цель. После звонка: заметка и итоги.";
-"call_assistant_goal_placeholder" = "Цель звонка";
-"call_assistant_postcall_placeholder" = "Заметка после звонка";
-"call_assistant_outcome_placeholder" = "Итоги звонка";
+"call_assistant_section_subtitle" = "Короткие заметки о звонке для вас и семьи";
+"call_assistant_goal_placeholder" = "Зачем звоню";
+"call_assistant_postcall_placeholder" = "Что важно запомнить";
+"call_assistant_outcome_placeholder" = "Чем закончился разговор";
 "call_assistant_save_note" = "Сохранить как заметку";
 "call_assistant_toast_saved" = "Заметка помощника по звонкам сохранена";
 "voice_safety_coach_tip" = "Скопируйте подозрительную ссылку, затем скажите «ссылка» или «проверка» — откроем проверку и подставим скопированное. Также: тревога / идея / не забыть.";
@@ -2281,3 +2281,339 @@
 "calls_safety_prompt_toggle" = "Защита от телефонных мошенников";
 "calls_safety_prompt_toggle_subtitle" = "Красная и зелёная кнопки после звонка по телефону";
 "calls_safety_prompt_toggle_a11y_hint" = "После звонка Phone или FaceTime. WhatsApp и Telegram iOS не видит — откройте раздел Звонки вручную.";
+
+/* ux36-w1 */
+"wellness_guide_talk_gently" = "Поговорить спокойно";
+
+/* ux36-w1 */
+"wellness_mode_presence" = "Просто побудь рядом";
+
+/* ux36-w1 */
+"wellness_mode_presence_hint" = "Тёплая поддержка, без разбора по полочкам";
+
+/* ux36-w1 */
+"wellness_mode_deep" = "Давай разберёмся";
+
+/* ux36-w1 */
+"wellness_mode_deep_hint" = "Спокойно посмотрим, что происходит";
+
+/* ux36-w1 */
+"wellness_mode_structured" = "Взгляд со стороны";
+
+/* ux36-w1 */
+"wellness_mode_structured_hint" = "Другими словами, что я слышу";
+
+/* ux36-w1 */
+"wellness_mode_blind_spots" = "Что я могу не замечать";
+
+/* ux36-w1 */
+"wellness_mode_blind_spots_hint" = "Мягко про привычные реакции";
+
+/* ux36-w1 */
+"wellness_mode_one_question" = "Один вопрос";
+
+/* ux36-w1 */
+"wellness_mode_one_question_hint" = "Задам один важный вопрос — без лишнего";
+
+/* ux36-w1 */
+"wellness_deep_explore_subtitle" = "Выберите, как герой ответит. Разговор тот же — меняется только стиль.";
+
+/* ux36-w1 */
+"wellness_reflective_info_body" = "Выберите, как герой ответит. Разговор тот же — меняется только стиль.";
+
+/* ux36-w1 */
+"companion_consent_parent_decides" = "Вы решаете: может ли ребёнок писать героям";
+
+/* ux36-w1 */
+"companion_consent_memory_subtitle" = "Короткие заметки героя. Ниже можно выгрузить или удалить";
+
+/* ux36-w1 */
+"companion_memory_section_desc" = "Короткие заметки героя. Ниже можно выгрузить или удалить";
+
+/* ux36-w1 */
+"companion_wisdom_toggle_subtitle" = "Иногда короткая добрая мысль";
+
+/* ux36-w1 */
+"companion_wisdom_toggle_subtitle_child" = "Для детского профиля добрые цитаты включены";
+
+/* ux36-w1 */
+"companion_personality_grok_hint" = "Задайте, как герой говорит со всей семьёй.";
+
+/* ux36-w1 */
+"companion_personality_security_expert" = "Сразу отвечать в режиме помощника по безопасности";
+
+/* ux36-w1 */
+"companion_personality_custom_instructions" = "Ваши правила для героя (до 500 символов)";
+
+/* ux36-w1 */
+"companion_ai_may_be_wrong" = "Герой может ошибаться. Это подсказка.";
+
+/* ux36-w1 */
+"companion_emotion_alert" = "Подсказка";
+
+/* ux36-w1 */
+"ai_trust_disclaimer" = "AI может ошибаться. Это подсказка. Если сомневаетесь — перепроверьте или спросите взрослого.";
+
+/* ux36-w1 */
+"voice_notes_privacy_stt_disclaimer" = "В чат с героем текст отсюда сам не копируется.";
+
+/* ux36-w1 */
+"family_safe_word_title" = "Семейная секретная фраза";
+
+/* ux36-w1 */
+"family_safe_word_subtitle" = "Если звонят «от родных» и просят деньги — спросите эту фразу. Чужой её не знает.";
+
+/* ux36-w1 */
+"family_safe_word_not_recovery_hint" = "Это не пароль входа в семью.";
+
+/* ux36-w1 */
+"family_homework_desc" = "Режим учёбы: меньше отвлечений на время домашки";
+
+/* ux36-w1 */
+"data_deletion_desc" = "Будут удалены локальные копии. Действие необратимо.";
+
+/* ux36-w1 */
+"family_age_restriction" = "Возрастные ограничения для YouTube";
+
+/* ux36-w1 */
+"day_strip_screen_hours_format" = "%d ч в день";
+
+/* ux36-w1 */
+"day_strip_tap_hint" = "Нажмите, чтобы открыть правила дня";
+
+/* ux36-w1 */
+"geofence_noshow_section_hint" = "Если к сроку человека нет на месте — придёт мягкое уведомление.";
+
+/* ux36-w2 */
+"threat_card_what" = "Что это";
+
+/* ux36-w2 */
+"threat_card_where" = "Где";
+
+/* ux36-w2 */
+"threat_card_action" = "Что сделать";
+
+/* ux36-w2 */
+"threat_eicar_title" = "Тестовая проверка антивируса";
+
+/* ux36-w2 */
+"threat_eicar_what" = "Учебный тестовый файл. Он не вирус, но антивирус должен его заметить.";
+
+/* ux36-w2 */
+"threat_eicar_where" = "В карантине на этом телефоне";
+
+/* ux36-w2 */
+"threat_eicar_action" = "Можно оставить в карантине или удалить. Для обычных угроз — не открывайте файл.";
+
+/* ux36-w2 */
+"threat_unknown_title" = "Подозрительный файл";
+
+/* ux36-w2 */
+"threat_unknown_what" = "Файл выглядит подозрительно. Лучше не открывать его.";
+
+/* ux36-w2 */
+"threat_unknown_where" = "В карантине или в результатах проверки на этом телефоне";
+
+/* ux36-w2 */
+"threat_unknown_action" = "Оставьте в карантине или удалите. Если не уверены — спросите взрослого.";
+
+/* ux36-w2 */
+"component_status_active" = "Работает";
+
+/* ux36-w2 */
+"component_status_fallback_active" = "Работает в упрощённом режиме";
+
+/* ux36-w2 */
+"component_status_error" = "Сбой. Откройте модуль и повторите";
+
+/* ux36-w2 */
+"component_status_disabled" = "Выключено";
+
+/* ux36-w2 */
+"component_status_threat_found" = "Найдена угроза";
+
+/* ux36-w2 */
+"component_status_unknown" = "Статус уточняется";
+
+/* ux36-w2 */
+"family_member_status_protected" = "Защищён";
+
+/* ux36-w2 */
+"family_member_status_warning" = "Внимание";
+
+/* ux36-w2 */
+"family_member_status_danger" = "Угроза";
+
+/* ux36-w2 */
+"family_member_status_offline" = "Оффлайн";
+
+/* ux36-w2 */
+"day_strip_screen_hours_unknown" = "Лимит экрана";
+
+/* ux36-w2 */
+"antivirus_quarantine_restore" = "Восстановить";
+
+/* ux36-w2 */
+"antivirus_quarantine_delete" = "Удалить навсегда";
+
+/* ux36-w2 */
+"home_map_subtitle" = "Управление защитой телефона в семье";
+
+/* ux36-w2 */
+"home_map_pause_1h" = "Пауза защиты на 1 час";
+
+/* ux36-w2 */
+"home_map_pause_honest" = "Пауза на 1 час через защиту ALADDIN на устройстве.";
+
+/* ux36-w4 reliability */
+"companion_loading_hero" = "Открываем чат с героем…";
+"companion_error_load_timeout" = "Долго нет ответа — попробуем ещё раз";
+"companion_error_hero_unavailable" = "Герой сейчас не отвечает. Попробуйте чуть позже";
+"companion_error_retry" = "Повторить";
+"companion_attach_hint" = "Можно фото или PDF";
+"companion_attach_menu" = "Вложения";
+"referral_soft_stats_unavailable" = "Пока не удалось загрузить награды. Приглашать можно — цифры появятся чуть позже.";
+"referral_soft_retry" = "Обновить";
+"psych_library_load_failed" = "Каталог сейчас не загрузился. Попробуйте ещё раз.";
+"psych_library_retry" = "Повторить";
+"psych_library_cached_hint" = "Показан сохранённый каталог. Можно обновить.";
+"im_ok_sent_local" = "Сохранили на телефоне. Как только связь появится — отправим семье.";
+"need_help_sent_local" = "Сохранили на телефоне. Как только связь появится — отправим семье.";
+"crash_detection_error_accelerometer" = "На этом устройстве нет датчика движения для защиты при аварии.";
+"crash_detection_error_location" = "Нужна геолокация для защиты при аварии.";
+"crash_detection_error_location_settings" = "Не удалось включить защиту при аварии. Разрешите геолокацию в настройках iPhone и нажмите ещё раз.";
+"crash_detection_error_server" = "Не удалось включить защиту при аварии. Попробуйте ещё раз.";
+"crash_detection_error_monitoring" = "Не удалось включить защиту при аварии. Попробуйте ещё раз.";
+"crash_detection_error_retry" = "Не удалось включить защиту при аварии. Попробуйте ещё раз.";
+"crash_detection_open_settings" = "Открыть настройки iPhone";
+"device_hub_iot_scan" = "Сканировать умный дом";
+"device_hub_iot_empty" = "Пока не к чему подключиться. Добавьте дом или повторите позже.";
+"device_hub_iot_not_found" = "Пока не к чему подключиться. Добавьте дом или повторите позже.";
+"device_hub_iot_enable_failed" = "Не удалось обновить защиту умного дома. Попробуйте ещё раз.";
+"device_hub_iot_load_failed" = "Не удалось загрузить устройства. Попробуйте ещё раз.";
+"device_hub_scan_timeout" = "Сканирование заняло слишком много времени. Попробуйте ещё раз.";
+"ai_error_gateway_retry" = "Сейчас не удалось получить ответ. Попробуйте ещё раз или напишите в поддержку.";
+"ai_error_service_unavailable" = "Сейчас не удалось получить ответ. Попробуйте ещё раз или напишите в поддержку.";
+"ai_assistant_error_unknown_processing" = "Сейчас не удалось получить ответ. Попробуйте ещё раз.";
+"ai_assistant_error_stream" = "Сейчас не удалось получить ответ. Попробуйте ещё раз.";
+"common_done" = "Готово";
+
+/* ux36-w5 geo+APNs+crash hybrid */
+"geofence_place_push_title" = "Место семьи";
+"geofence_place_arrived_body" = "Вы у места: %@";
+"geofence_place_left_body" = "Вы ушли из места: %@";
+"geofence_family_chat_arrived" = "%@: пришёл(а) — %@";
+"geofence_family_chat_left" = "%@: ушёл(а) — %@";
+"geofence_why_no_push_title" = "Почему нет уведомлений?";
+"geofence_why_no_push_body" = "Нужны три вещи: доступ к месту «Всегда», уведомления ALADDIN и интернет. Даже если пуш не пришёл — событие видно в «Уведомлениях» и в ленте мест.";
+"geofence_why_no_push_enable_notifications" = "Включить уведомления";
+"im_ok_queue_delivered_title" = "Сообщение семье отправлено";
+"im_ok_queue_delivered_body" = "Связь появилась — семья получила ваше сообщение.";
+"crash_checklist_title" = "Перед включением";
+"crash_checklist_location" = "• Геолокация — чтобы понять, где вы, если сработала защита";
+"crash_checklist_motion" = "• Датчик движения — на этом iPhone должен быть акселерометр";
+"crash_checklist_notifications" = "• Уведомления — чтобы семья и вы увидели сигнал";
+
+/* ux36-w6 registration date SSOT */
+"profile_member_since_fmt" = "Вы с нами с %@";
+"profile_member_since_label" = "Вы с нами с";
+"profile_registration_pending_sync" = "Дата появится после синхронизации";
+
+/* UX-36 #3 security toast */
+"security_settings_toast_saved" = "Настройки сохранены";
+"security_settings_toast_saved_local" = "Сохранено на этом устройстве";
+"security_settings_toast_network_error" = "Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.";
+"security_settings_toast_no_permission" = "Нет доступа. Войдите снова.";
+
+/* UX-36 W7 Call Filter */
+"antifake_call_directory_setup_title" = "Включить подпись на звонках";
+"antifake_call_directory_setup_intro" = "Пройдите путь в Настройках iPhone:";
+"antifake_call_directory_setup_step1" = "1. Настройки";
+"antifake_call_directory_setup_step2" = "2. Телефон";
+"antifake_call_directory_setup_step3" = "3. Блокировка и опознавание вызовов";
+"antifake_call_directory_setup_step4" = "4. Включите «ALADDIN Call Filter»";
+"antifake_call_directory_setup_step2_ios18" = "2. Приложения";
+"antifake_call_directory_setup_step3_ios18" = "3. Телефон → Блокировка и опознавание";
+"antifake_call_directory_setup_step4_ios18" = "4. Включите «ALADDIN Call Filter»";
+"antifake_call_directory_setup_animation_accessibility" = "Анимация: Настройки → Телефон → ALADDIN Call Filter";
+"antifake_call_directory_setup_retry_title" = "Если переключателя нет";
+"antifake_call_directory_setup_retry_body" = "Обновите приложение, перезагрузите iPhone, нажмите «Синхронизировать». Ищите «ALADDIN Call Filter».";
+"antifake_call_directory_setup_done" = "Готово";
+"antifake_call_directory_setup_step5_retry" = "Если переключателя нет — обновите приложение и перезагрузите iPhone";
+
+/* UX-36 W8 elderly seed cards */
+"content_seed_subtitle_everyday" = "Короткие советы на каждый день";
+"content_seed_body_generic" = "Откройте карточку, чтобы прочитать простой совет.";
+"content_seed_generic_1" = "Базовый совет";
+"content_seed_generic_2" = "Ещё один совет";
+"content_seed_generic_3" = "Практический блок";
+"elderly_lesson_got_it" = "Понятно";
+"elderly_seed_safety_1" = "Как распознать мошенников";
+"elderly_seed_safety_2" = "Проверка подозрительных звонков";
+"elderly_seed_safety_3" = "Безопасный интернет для 60+";
+"elderly_seed_safety_sub_1" = "Короткие советы на каждый день";
+"elderly_seed_safety_sub_2" = "Перед тем как ответить";
+"elderly_seed_safety_sub_3" = "Сайты и ссылки";
+"elderly_seed_safety_body_1" = "Не называйте код из SMS и не переводите деньги по просьбе незнакомца. Перезвоните близким сами по номеру из телефонной книги.";
+"elderly_seed_safety_body_2" = "Если звонят «из банка» или «от родственника» и торопят — положите трубку. Нажмите «Хотят перевод или код», чтобы семья узнала.";
+"elderly_seed_safety_body_3" = "Не открывайте ссылки из неизвестных сообщений. Спросите у семьи, если не уверены.";
+"elderly_seed_memory_1" = "Лёгкие упражнения для ума";
+"elderly_seed_memory_2" = "Тренировка памяти 10 минут";
+"elderly_seed_memory_3" = "Дневник самочувствия";
+"elderly_seed_memory_sub_1" = "5 минут в день";
+"elderly_seed_memory_sub_2" = "Без спешки";
+"elderly_seed_memory_sub_3" = "Короткие записи";
+"elderly_seed_memory_body_1" = "Решите одну простую задачу или вспомните три добрых момента дня. Без оценок и без «диагнозов».";
+"elderly_seed_memory_body_2" = "Повторите имена близких или названия улиц. Можно с кем-то из семьи.";
+"elderly_seed_memory_body_3" = "Запишите, как вы себя чувствуете сегодня — одной фразой.";
+"elderly_seed_activity_1" = "Мягкая зарядка дома";
+"elderly_seed_activity_2" = "Пешая активность без перегрузки";
+"elderly_seed_activity_3" = "Режим сна и восстановления";
+"elderly_seed_activity_sub_1" = "Без инвентаря";
+"elderly_seed_activity_sub_2" = "В удобном темпе";
+"elderly_seed_activity_sub_3" = "Спокойный вечер";
+"elderly_seed_activity_body_1" = "Потянитесь сидя или стоя. Остановитесь, если появилась боль.";
+"elderly_seed_activity_body_2" = "Короткая прогулка рядом с домом лучше длинной «через силу».";
+"elderly_seed_activity_body_3" = "Ложитесь в привычное время. Экраны — потише за час до сна.";
+"elderly_seed_health_1" = "Памятка по лекарствам";
+"elderly_seed_health_2" = "Ежедневный контроль давления";
+"elderly_seed_health_3" = "План визита к врачу";
+"elderly_seed_health_sub_1" = "По расписанию";
+"elderly_seed_health_sub_2" = "Одна отметка в день";
+"elderly_seed_health_sub_3" = "Что взять с собой";
+"elderly_seed_health_body_1" = "Принимайте лекарства как назначил врач. Если сомневаетесь — спросите у семьи или врача, не у незнакомца по телефону.";
+"elderly_seed_health_body_2" = "Измерьте давление и отметьте результат в приложении, если пользуетесь журналом.";
+"elderly_seed_health_body_3" = "Список вопросов врачу и список лекарств — на бумаге или в заметках.";
+
+/* UX-36 W10–W11 Family second hand */
+"family_second_hand_pack_title" = "Защита родителей 60+";
+"family_second_hand_pack_subtitle" = "Семейная вторая рука: звонки и доверие в семье.";
+"family_second_hand_pack_has_elderly" = "В семье есть участник 60+";
+"family_second_hand_pack_add_elderly_hint" = "Добавьте маму или папу в семью, чтобы подключить защиту";
+"family_second_hand_pack_cta" = "Подключить родителям";
+"family_second_hand_check_scam" = "Сигнал «просили деньги / код»";
+"family_second_hand_check_safeword" = "Семейное кодовое слово";
+"family_second_hand_check_callfilter" = "Подпись опасных номеров (Call Filter)";
+"family_second_hand_check_needhelp" = "Кнопка «Нужна помощь»";
+"family_second_hand_check_places" = "Места семьи (пришёл / ушёл)";
+"family_second_hand_setup_title" = "На телефоне родителей";
+"family_second_hand_setup_intro" = "Сделайте эти шаги на телефоне мамы или папы. Вы помогаете — без доступа к счёту.";
+"family_second_hand_step_1" = "Откройте интерфейс 60+ и включите уведомления семьи.";
+"family_second_hand_step_2" = "Включите ALADDIN Call Filter в Настройках iPhone → Телефон.";
+"family_second_hand_step_3" = "Задайте семейное кодовое слово вместе.";
+"family_second_hand_step_4" = "Покажите кнопку «Хотят перевод или код».";
+"family_second_hand_open_elderly" = "Открыть экран 60+";
+"family_second_hand_setup_done" = "Готово";
+"family_second_hand_teen_title" = "Если бабушке или деду звонят";
+"family_second_hand_teen_subtitle" = "Вы свидетель и помощник — не единственный админ семьи.";
+"family_second_hand_teen_tip_1" = "Не диктуйте коды из SMS";
+"family_second_hand_teen_tip_2" = "Перезвоните сами по номеру из контактов";
+"family_second_hand_teen_tip_3" = "Позовите взрослого из семьи";
+"family_second_hand_teen_not_admin" = "Критические настройки включают родители, не вы в одиночку.";
+"family_second_hand_ask_title" = "Хотят перевод или код";
+"family_second_hand_ask_subtitle" = "Напишем семье. Звонок мы не слушали.";
+"family_second_hand_ask_hint" = "Открывает экран сигнала семье";
+"family_second_hand_push_checklist_1" = "Не диктуйте код из SMS";
+"family_second_hand_push_checklist_2" = "Перезвоните сами по своему номеру";
+"family_second_hand_push_checklist_3" = "Не переводите деньги за родственника по телефону";
+

@@ -51,6 +51,7 @@ struct ElderlyInterfaceScreen: View {
     // Данные семьи (синхронизируются с family_members_list)
     @State private var familyMembers: [ElderlyFamilyMember] = []
     @State private var elderlyFeedItems: [ContentItem] = []
+    @State private var selectedElderlyLesson: ContentItem?
     
     private var emergencyContacts: [ElderlyFamilyMember] {
         familyMembers.filter { member in
@@ -404,15 +405,28 @@ struct ElderlyInterfaceScreen: View {
                     ForEach(elderlyFeedItems, id: \.id) { item in
                         bigElderlyButton(
                             icon: "📘",
-                            title: item.metadata.title,
-                            subtitle: item.metadata.subtitle ?? localizationManager.localized("elderly_interface_view_records"),
-                            color: .secondaryGold
+                            title: localizedContentField(item.metadata.title),
+                            subtitle: localizedContentField(
+                                item.metadata.subtitle ?? "elderly_interface_view_records"
+                            ),
+                            color: .secondaryGold,
+                            accessibilityHint: localizationManager.localized("elderly_a11y_opens_details_hint"),
+                            action: { selectedElderlyLesson = item }
                         )
                     }
                 }
                 .padding(.horizontal, Spacing.screenPadding)
             }
         }
+        .sheet(item: $selectedElderlyLesson) { item in
+            ElderlyLessonDetailSheet(item: item)
+                .environmentObject(localizationManager)
+        }
+    }
+
+    private func localizedContentField(_ raw: String) -> String {
+        let localized = localizationManager.localized(raw)
+        return localized == raw ? raw : localized
     }
     
     // MARK: - Health Section
@@ -814,7 +828,20 @@ struct ElderlyInterfaceScreen: View {
             )
             .environmentObject(localizationManager)
             
-            // fws-03: перед переводом
+            // UX-36 W11 / SH-2: «Хотят перевод / код» → канал scam-call (не antifake %)
+            bigElderlyButton(
+                icon: "💸",
+                title: localizationManager.localized("family_second_hand_ask_title"),
+                subtitle: localizationManager.localized("family_second_hand_ask_subtitle"),
+                color: .dangerRed,
+                accessibilityHint: localizationManager.localized("family_second_hand_ask_hint"),
+                action: {
+                    ElderlyScamCallGate.shared.isPresented = true
+                    HapticFeedback.notification(.warning)
+                }
+            )
+
+            // fws-03: antifake «перед переводом» (проверка текста) — отдельно от SH-2
             AntifakeTransferCheckCTA(style: .elderlyButton)
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
@@ -892,14 +919,16 @@ struct ElderlyInterfaceScreen: View {
                     Text(title)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.75)
+                        .fixedSize(horizontal: false, vertical: true)
                     
                     Text(subtitle)
                         .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
+                        .foregroundColor(.white.opacity(0.92))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.75)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 
                 Spacer()
@@ -2519,6 +2548,7 @@ struct SafetyInstructionsModal: View {
                     .padding()
                     .background(Color.purple.opacity(0.1))
                     .cornerRadius(CornerRadius.medium)
+
                 }
                 .padding()
             }
@@ -3738,6 +3768,67 @@ struct DangerousContactsModal: View {
     }
 }
 
+/// UX-36 W8 — мини-урок по тапу карточки 60+.
+private struct ElderlyLessonDetailSheet: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+    let item: ContentItem
+
+    var body: some View {
+        WellnessNavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.l) {
+                    Text(localizedField(item.metadata.title))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let subtitle = item.metadata.subtitle {
+                        Text(localizedField(subtitle))
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Text(localizedField(item.metadata.description ?? "content_seed_body_generic"))
+                        .font(.system(size: 20))
+                        .foregroundColor(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, Spacing.s)
+
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text(localizationManager.localized("elderly_lesson_got_it"))
+                            .font(.system(size: 22, weight: .bold))
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.secondaryGold.opacity(0.3))
+                            .cornerRadius(CornerRadius.large)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, Spacing.l)
+                    .accessibilityIdentifier("elderly_lesson_got_it")
+                }
+                .padding(Spacing.l)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(localizationManager.localized("elderly_protection_done")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func localizedField(_ raw: String) -> String {
+        let localized = localizationManager.localized(raw)
+        return localized == raw ? raw : localized
+    }
+}
+
 struct ElderlyScamCallAlertResponse: Decodable {
     let ok: Bool
     let parentsNotified: Int
@@ -3779,11 +3870,11 @@ struct ElderlyScamCallScreen: View {
                     .minimumScaleFactor(0.85)
                     .lineLimit(1)
 
-                // Три шага — каждый в 1 строку (RU/EN), без обрезки «…»
+                // W11 / SH-2b: чеклист семье — не диктуйте код · перезвоните
                 VStack(alignment: .leading, spacing: 12) {
-                    scamStepLine(localizationManager.localized("elderly_scam_call_step1"))
-                    scamStepLine(localizationManager.localized("elderly_scam_call_step2"))
-                    scamStepLine(localizationManager.localized("elderly_scam_call_step3"))
+                    scamStepLine(localizationManager.localized("family_second_hand_push_checklist_1"))
+                    scamStepLine(localizationManager.localized("family_second_hand_push_checklist_2"))
+                    scamStepLine(localizationManager.localized("family_second_hand_push_checklist_3"))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14)

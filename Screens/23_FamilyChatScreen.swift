@@ -896,7 +896,11 @@ struct FamilyChatScreen: View {
                 id: member.id,
                 serverMemberId: member.id,
                 localOnly: false,
-                name: member.name,
+                name: FamilyMemberDisplayNameFormatter.displayName(
+                    storedName: member.name,
+                    role: role,
+                    localization: localizationManager
+                ),
                 role: role,
                 avatar: avatar,
                 status: protectionStatus,
@@ -2141,7 +2145,7 @@ struct FamilyChatScreen: View {
 
                     pushService.sendChatNotification(
                         message: messageToSend,
-                        sender: "You", // TODO: Получить реальное имя
+                        sender: localizationManager.localized("family_chat_you"),
                         familyId: familyId
                     )
 
@@ -2541,7 +2545,10 @@ struct MessageBubbleView: View {
                         
                         VStack(alignment: message.isCurrentUser ? .trailing : .leading, spacing: Spacing.xxs) {
                             if !message.isCurrentUser {
-                                Text(message.sender)
+                                Text(FamilyMemberDisplayNameFormatter.displayName(
+                                    storedName: message.sender,
+                                    localization: localizationManager
+                                ))
                                     .font(.captionBold)
                                     .foregroundColor(.secondaryGold)
                             }

@@ -154,10 +154,11 @@ final class ContentManager: ObservableObject {
             return true
         }
 
-        // Force migration from legacy local seed snapshots.
+        // Force migration from legacy local seed snapshots (v4 had "фаза 2" subtitles).
         if manifest.checksumSHA256 == "seed-manifest-v1"
             || manifest.checksumSHA256 == "seed-manifest-v2"
-            || manifest.checksumSHA256 == "seed-manifest-v3" {
+            || manifest.checksumSHA256 == "seed-manifest-v3"
+            || manifest.checksumSHA256 == "seed-manifest-v4" {
             return true
         }
 

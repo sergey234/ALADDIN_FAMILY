@@ -371,9 +371,16 @@ class NotificationManager: NSObject, ObservableObject {
         category: NotificationCategory,
         userInfo: [String: Any]
     ) {
-        guard category == .security else { return }
-        let type = (userInfo["type"] as? String ?? "security_alert").trimmingCharacters(in: .whitespacesAndNewlines)
+        // W5: also keep family place / ImOK / NeedHelp in in-app inbox when APNs is quiet.
+        let type = (userInfo["type"] as? String ?? (category == .security ? "security_alert" : ""))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !type.isEmpty else { return }
+        let persistFamilyHybrid = category == .family && (
+            type.hasPrefix("geofence_")
+            || type.hasPrefix("im_ok")
+            || type.hasPrefix("need_help")
+        )
+        guard category == .security || persistFamilyHybrid else { return }
 
         let correlationId = (userInfo["correlation_id"] as? String)
             ?? (userInfo["event_id"] as? String)

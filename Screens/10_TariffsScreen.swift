@@ -553,15 +553,12 @@ struct TariffsScreen: View {
                     return
                 }
 
-                #if targetEnvironment(simulator)
-                viewModel.errorMessage = localizationManager.localized("store_error_simulator_not_supported")
-                #else
+                // Симулятор: покупка через StoreKit Configuration (.storekit в Scheme).
                 let localTariffObj = tariffObj
 
                 Task { @MainActor in
                     await viewModel.purchaseSelectedTariff(tariff: localTariffObj)
                 }
-                #endif
             }) {
                 VStack(spacing: Spacing.xs) {
                     // ✅ Ссылки на Privacy Policy и Terms of Use (требование Apple)

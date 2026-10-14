@@ -67,19 +67,28 @@ struct VoiceNotesScreen: View {
                 }
             }
             .navigationTitle(localizationManager.localized("voice_notes_title"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(localizationManager.localized("voice_notes_title"))
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.white)
+                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("common_close")) {
                         dismiss()
                     }
+                    .foregroundColor(.secondaryGold)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("voice_weekly_digest_button")) {
                         weeklyDigestResult = viewModel.makeWeeklyDigest()
                     }
+                    .foregroundColor(.secondaryGold)
                     .accessibilityIdentifier("voice_weekly_digest_button")
                 }
             }
+            .compatibleToolbarColorScheme(.dark)
         }
         .onAppear {
             viewModel.markVoiceSessionStable()
@@ -413,7 +422,7 @@ private extension VoiceNotesScreen {
                             .foregroundColor(.textPrimary)
                         Text(localizationManager.localized("call_assistant_section_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.9))
                             .multilineTextAlignment(.leading)
                     }
                     Spacer()
@@ -429,30 +438,66 @@ private extension VoiceNotesScreen {
                         Text(localizationManager.localized("call_assistant_before_label"))
                             .font(.caption.weight(.semibold))
                             .foregroundColor(.secondaryGold)
-                        TextField(localizationManager.localized("call_assistant_goal_placeholder"), text: $callGoalText)
-                            .font(.body)
-                            .foregroundColor(.textPrimary)
-                            .padding(Spacing.s)
-                            .background(Color.white.opacity(0.12))
-                            .cornerRadius(CornerRadius.medium)
+                        ZStack(alignment: .leading) {
+                            if callGoalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(localizationManager.localized("call_assistant_goal_placeholder"))
+                                    .font(.body)
+                                    .foregroundColor(.white.opacity(0.72))
+                                    .padding(.horizontal, Spacing.s)
+                            }
+                            TextField("", text: $callGoalText)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .padding(Spacing.s)
+                        }
+                        .background(Color.white.opacity(0.14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                        )
+                        .cornerRadius(CornerRadius.medium)
                     }
 
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(localizationManager.localized("call_assistant_after_label"))
                             .font(.caption.weight(.semibold))
                             .foregroundColor(.secondaryGold)
-                        TextField(localizationManager.localized("call_assistant_postcall_placeholder"), text: $callPostText)
-                            .font(.body)
-                            .foregroundColor(.textPrimary)
-                            .padding(Spacing.s)
-                            .background(Color.white.opacity(0.12))
-                            .cornerRadius(CornerRadius.medium)
-                        TextField(localizationManager.localized("call_assistant_outcome_placeholder"), text: $callOutcomeText)
-                            .font(.body)
-                            .foregroundColor(.textPrimary)
-                            .padding(Spacing.s)
-                            .background(Color.white.opacity(0.12))
-                            .cornerRadius(CornerRadius.medium)
+                        ZStack(alignment: .leading) {
+                            if callPostText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(localizationManager.localized("call_assistant_postcall_placeholder"))
+                                    .font(.body)
+                                    .foregroundColor(.white.opacity(0.72))
+                                    .padding(.horizontal, Spacing.s)
+                            }
+                            TextField("", text: $callPostText)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .padding(Spacing.s)
+                        }
+                        .background(Color.white.opacity(0.14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                        )
+                        .cornerRadius(CornerRadius.medium)
+                        ZStack(alignment: .leading) {
+                            if callOutcomeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(localizationManager.localized("call_assistant_outcome_placeholder"))
+                                    .font(.body)
+                                    .foregroundColor(.white.opacity(0.72))
+                                    .padding(.horizontal, Spacing.s)
+                            }
+                            TextField("", text: $callOutcomeText)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .padding(Spacing.s)
+                        }
+                        .background(Color.white.opacity(0.14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                        )
+                        .cornerRadius(CornerRadius.medium)
                     }
 
                     Button {

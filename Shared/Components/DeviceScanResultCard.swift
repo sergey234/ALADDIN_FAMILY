@@ -41,18 +41,37 @@ struct DeviceScanResultCard: View {
                     .foregroundColor(accentColor)
             }
 
+            if let status = result.status, !status.isEmpty {
+                Text(ComponentStatusCopy.localized(status, localization: localizationManager))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+            }
+
             if !result.threats.isEmpty {
                 ForEach(result.threats) { threat in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(threat.name ?? threat.id)
+                    let card = DeviceThreatPresentation.present(
+                        id: threat.id,
+                        name: threat.name,
+                        description: threat.description,
+                        localization: localizationManager
+                    )
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(card.title)
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.white)
-                        if let description = threat.description {
-                            Text(description)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.75))
-                        }
+                        Text("\(localizationManager.localized("threat_card_what")): \(card.what)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("\(localizationManager.localized("threat_card_where")): \(card.whereText)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                        Text("\(localizationManager.localized("threat_card_action")): \(card.action)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.top, 4)
                 }
             }
         }
@@ -80,9 +99,9 @@ struct DeviceIncidentResultCard: View {
                     .foregroundColor(.white.opacity(0.85))
             }
             if let status = result.status {
-                Text("\(localizationManager.localized("device_hub_incident_status")): \(status)")
+                Text("\(localizationManager.localized("device_hub_incident_status")): \(ComponentStatusCopy.localized(status, localization: localizationManager))")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.85))
             }
         }
         .padding(Spacing.m)

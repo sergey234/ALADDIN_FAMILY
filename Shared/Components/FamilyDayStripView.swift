@@ -3,6 +3,7 @@ import SwiftUI
 /// fsl-07 — одна полоска дня: сон / учёба / экран. Без календаря.
 struct FamilyDayStripView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    var onOpenTimeRules: (() -> Void)? = nil
 
     @AppStorage("parental_bedtime_start") private var bedtimeStart: String = "22:00"
     @AppStorage("parental_bedtime_end") private var bedtimeEnd: String = "07:00"
@@ -10,55 +11,70 @@ struct FamilyDayStripView: View {
     @AppStorage("parental_screen_time_limit") private var screenTimeLimit: String = "3h/day"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(localizationManager.localized("day_strip_title"))
-                .font(.title3.weight(.bold))
-                .foregroundColor(.white)
-                .accessibilityAddTraits(.isHeader)
+        Button {
+            onOpenTimeRules?()
+        } label: {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text(localizationManager.localized("day_strip_title"))
+                    .font(.title3.weight(.bold))
+                    .foregroundColor(.white)
+                    .accessibilityAddTraits(.isHeader)
 
-            Text(localizationManager.localized("day_strip_subtitle"))
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.85))
-                .fixedSize(horizontal: false, vertical: true)
+                Text(localizationManager.localized("day_strip_subtitle"))
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: Spacing.s) {
-                dayChip(
-                    icon: "moon.zzz.fill",
-                    title: localizationManager.localized("day_strip_sleep"),
-                    value: "\(bedtimeStart)-\(bedtimeEnd)",
-                    active: true
-                )
-                dayChip(
-                    icon: "book.fill",
-                    title: localizationManager.localized("day_strip_study"),
-                    value: localizationManager.localized(
-                        isHomeworkModeEnabled ? "day_strip_on" : "day_strip_off"
-                    ),
-                    active: isHomeworkModeEnabled
-                )
-                dayChip(
-                    icon: "iphone",
-                    title: localizationManager.localized("day_strip_screen"),
-                    value: screenTimeLimit,
-                    active: true
-                )
+                HStack(spacing: Spacing.s) {
+                    dayChip(
+                        icon: "moon.zzz.fill",
+                        title: localizationManager.localized("day_strip_sleep"),
+                        value: "\(bedtimeStart)-\(bedtimeEnd)",
+                        active: true
+                    )
+                    dayChip(
+                        icon: "book.fill",
+                        title: localizationManager.localized("day_strip_study"),
+                        value: localizationManager.localized(
+                            isHomeworkModeEnabled ? "day_strip_on" : "day_strip_off"
+                        ),
+                        active: isHomeworkModeEnabled
+                    )
+                    dayChip(
+                        icon: "iphone",
+                        title: localizationManager.localized("day_strip_screen"),
+                        value: screenLimitDisplay,
+                        active: true
+                    )
+                }
+
+                Text(localizationManager.localized("day_strip_tap_hint"))
+                    .font(.caption2)
+                    .foregroundColor(.secondaryGold.opacity(0.95))
             }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
         }
-        .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
+        .buttonStyle(.plain)
         .accessibilityIdentifier("family_day_strip")
+        .accessibilityHint(localizationManager.localized("day_strip_tap_hint"))
+    }
+
+    /// Formats legacy `"3h/day"` / `"3h"` into a localized hours phrase.
+    private var screenLimitDisplay: String {
+        ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: localizationManager)
     }
 
     private func dayChip(icon: String, title: String, value: String, active: Bool) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: icon)
                 .font(.caption.weight(.semibold))
-                .foregroundColor(active ? .secondaryGold : .white.opacity(0.55))
+                .foregroundColor(active ? .secondaryGold : .white.opacity(0.7))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Text(value)
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.85))
+                .foregroundColor(.white.opacity(0.92))
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
         }

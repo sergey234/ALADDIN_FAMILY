@@ -439,7 +439,7 @@ class ProtectionSettingsViewModel: ObservableObject {
                 // Не показываем ошибку пользователю - статус сохранен локально
             } else {
                 errorMessage = error.localizedDescription
-                toastManager.showError("Не удалось обновить настройки. Попробуйте позже.")
+                SecuritySettingsFeedback.networkError(toast: toastManager)
             }
         }
     }

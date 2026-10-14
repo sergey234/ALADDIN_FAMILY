@@ -25,9 +25,23 @@ enum CompanionErrorMapper {
         if case .httpError(409) = networkError {
             return localizationManager.localized("companion_error_conflict")
         }
+        // W4: never show raw HTTP 504 / gateway codes in companion UI.
+        if case .httpError(let code) = networkError, [502, 503, 504].contains(code) {
+            return localizationManager.localized("companion_error_hero_unavailable")
+        }
+        if case .timeout = networkError {
+            return localizationManager.localized("companion_error_hero_unavailable")
+        }
         let raw = (networkError.localizedDescription ?? error.localizedDescription).lowercased()
         if raw.contains("409") || raw.contains("conflict") {
             return localizationManager.localized("companion_error_conflict")
+        }
+        if raw.contains("504") || raw.contains("502") || raw.contains("503")
+            || raw.contains("gateway") || raw.contains("timed out") || raw.contains("timeout") {
+            return localizationManager.localized("companion_error_hero_unavailable")
+        }
+        if raw.contains("http ") || raw.contains("status code") {
+            return localizationManager.localized("companion_error_hero_unavailable")
         }
 
         return networkError.localizedDescription ?? error.localizedDescription

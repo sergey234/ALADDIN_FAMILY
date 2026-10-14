@@ -165,7 +165,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
                     lastSavedState = state
                     hasChanges = false
                     isApplyingState = false
-                    toastManager.showSuccess("Настройки сохранены")
+                    SecuritySettingsFeedback.saved(toast: toastManager)
                 }
 
                 log("✅ Настройки incident response успешно сохранены")
@@ -181,13 +181,13 @@ class IncidentResponseSettingsViewModel: ObservableObject {
                         state = lastSaved
                         hasChanges = false
                         isApplyingState = false
-                        toastManager.showError("Ошибка сохранения. Изменения отменены.")
+                        SecuritySettingsFeedback.networkError(toast: toastManager)
                     }
                     log("🔄 Rollback выполнен - возвращены последние сохраненные настройки")
                 } else {
                     await MainActor.run {
                         isApplyingState = false
-                        toastManager.showError("Ошибка сохранения настроек")
+                        SecuritySettingsFeedback.networkError(toast: toastManager)
                     }
                 }
             }

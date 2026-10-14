@@ -9,6 +9,9 @@ struct DigitalPsychologyLibraryScreen: View {
     @State private var disclaimerKey = "psych_library_disclaimer"
     @State private var isLoading = true
     @State private var errorText: String?
+    @State private var showingCachedHint = false
+
+    private static let cacheKey = "wellness_psych_library_manifest_cache_v1"
 
     var body: some View {
         ZStack {
@@ -22,9 +25,27 @@ struct DigitalPsychologyLibraryScreen: View {
 
                     if isLoading {
                         ProgressView().tint(.white)
-                    } else if let errorText {
-                        Text(errorText).foregroundStyle(.orange)
+                    } else if let errorText, methods.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(errorText).foregroundStyle(.orange)
+                            Button(localizationManager.localized("psych_library_retry")) {
+                                Task { await load() }
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                            .accessibilityIdentifier("psych_library_retry")
+                        }
                     } else {
+                        if showingCachedHint {
+                            Text(localizationManager.localized("psych_library_cached_hint"))
+                                .font(.caption)
+                                .foregroundColor(.orange.opacity(0.95))
+                            Button(localizationManager.localized("psych_library_retry")) {
+                                Task { await load() }
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                        }
                         ForEach(methods) { method in
                             methodCard(method)
                         }
@@ -97,13 +118,37 @@ struct DigitalPsychologyLibraryScreen: View {
     @MainActor
     private func load() async {
         isLoading = true
+        errorText = nil
+        showingCachedHint = false
         defer { isLoading = false }
         do {
             let payload = try await WellnessAPIService.shared.fetchPsychLibraryManifest()
             methods = payload.methods
             if let key = payload.disclaimerKey { disclaimerKey = key }
+            Self.cacheManifest(payload)
         } catch {
-            errorText = localizationManager.localized("psych_library_load_failed")
+            if let cached = Self.loadCachedManifest() {
+                methods = cached.methods
+                if let key = cached.disclaimerKey { disclaimerKey = key }
+                showingCachedHint = true
+            } else {
+                methods = []
+                errorText = localizationManager.localized("psych_library_load_failed")
+            }
         }
+    }
+
+    private static func cacheManifest(_ payload: WellnessPsychLibraryResponse) {
+        guard let data = try? JSONEncoder().encode(payload) else { return }
+        UserDefaults.standard.set(data, forKey: cacheKey)
+    }
+
+    private static func loadCachedManifest() -> WellnessPsychLibraryResponse? {
+        guard let data = UserDefaults.standard.data(forKey: cacheKey),
+              let payload = try? JSONDecoder().decode(WellnessPsychLibraryResponse.self, from: data),
+              !payload.methods.isEmpty else {
+            return nil
+        }
+        return payload
     }
 }

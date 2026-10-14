@@ -76,11 +76,12 @@ struct FamilyMemberCard: View {
         case offline     // ⚫ Оффлайн
         
         var label: String {
+            let loc = LocalizationManager.shared
             switch self {
-            case .protected: return "Защищён"
-            case .warning: return "Внимание"
-            case .danger: return "Угроза"
-            case .offline: return "Оффлайн"
+            case .protected: return loc.localized("family_member_status_protected")
+            case .warning: return loc.localized("family_member_status_warning")
+            case .danger: return loc.localized("family_member_status_danger")
+            case .offline: return loc.localized("family_member_status_offline")
             }
         }
         
@@ -156,7 +157,11 @@ struct FamilyMemberCard: View {
                     Text(avatar)
                         .font(.system(size: 16))
                     
-                    Text(name)
+                    Text(FamilyMemberDisplayNameFormatter.displayName(
+                        storedName: name,
+                        role: role,
+                        localization: localizationManager
+                    ))
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(Color(red: 0.96, green: 0.62, blue: 0.04))
                         .lineLimit(1)

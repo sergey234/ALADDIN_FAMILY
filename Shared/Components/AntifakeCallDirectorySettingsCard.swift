@@ -227,7 +227,7 @@ private struct AntifakeCallDirectorySetupSheet: View {
                             setupStep(localizationManager.localized("antifake_call_directory_setup_step3"))
                             setupStep(localizationManager.localized("antifake_call_directory_setup_step4"))
                         }
-                        setupStep(localizationManager.localized("antifake_call_directory_setup_step5_retry"))
+                        // W7: no duplicate step5 (= step4). Tip lives in retry card below.
                     }
                     .padding(Spacing.m)
                     .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .primaryBlue)

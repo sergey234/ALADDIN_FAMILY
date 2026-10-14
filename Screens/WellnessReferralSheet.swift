@@ -85,7 +85,7 @@ struct WellnessReferralSheet: View {
                 sheetBody
                     .navigationTitle(localizationManager.localized("wellness_referral_title"))
                     .navigationBarTitleDisplayMode(.inline)
-                    .toolbarColorScheme(.dark, for: .navigationBar)
+                    .compatibleToolbarColorScheme(.dark)
             } else {
                 sheetBody
                     .navigationTitle(localizationManager.localized("wellness_referral_title"))

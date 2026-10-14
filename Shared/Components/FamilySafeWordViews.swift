@@ -31,7 +31,7 @@ struct FamilySafeWordCard: View {
 
                     Text(localizationManager.localized("family_safe_word_subtitle"))
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(.white.opacity(0.92))
                         .fixedSize(horizontal: false, vertical: true)
 
                     statusBadge
@@ -79,7 +79,7 @@ struct FamilySafeWordCard: View {
 
             Text(localizationManager.localized("family_safe_word_not_recovery_hint"))
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.white.opacity(0.85))
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)

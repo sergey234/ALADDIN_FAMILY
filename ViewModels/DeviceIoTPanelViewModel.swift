@@ -57,7 +57,7 @@ final class DeviceIoTPanelViewModel: ObservableObject {
             threatsCount = module.threatsDetected.count
             protectionLevel = module.protectionLevel
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = humanIoTError(error)
         }
     }
 
@@ -76,19 +76,19 @@ final class DeviceIoTPanelViewModel: ObservableObject {
                 try await self.apiService.startIoTScan(homeId: self.homeId)
             }
             guard started.success else {
-                errorMessage = started.message
-                    ?? localizationManager.localized("device_hub_iot_enable_failed")
+                errorMessage = localizationManager.localized("device_hub_iot_enable_failed")
                 return
             }
             await refresh()
-            if threats.isEmpty, started.threatsFound == 0 {
-                // Explicit success path so the tap never feels like a no-op.
+            if devicesCount == 0, threats.isEmpty, started.threatsFound == 0 {
+                errorMessage = localizationManager.localized("device_hub_iot_empty")
+            } else {
                 errorMessage = nil
             }
         } catch is AsyncTimeoutError {
             errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = humanIoTError(error)
         }
     }
 
@@ -101,7 +101,19 @@ final class DeviceIoTPanelViewModel: ObservableObject {
             _ = try await module.fixThreat(threatId: threatId)
             await refresh()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = humanIoTError(error)
+        }
+    }
+
+    /// W4: never surface raw HTTP / server jargon in IoT panel.
+    private func humanIoTError(_ error: Error) -> String {
+        switch NetworkError.from(error) {
+        case .notFound, .httpError(404):
+            return localizationManager.localized("device_hub_iot_not_found")
+        case .timeout, .httpError(504), .httpError(503), .httpError(502):
+            return localizationManager.localized("device_hub_scan_timeout")
+        default:
+            return localizationManager.localized("device_hub_iot_load_failed")
         }
     }
 

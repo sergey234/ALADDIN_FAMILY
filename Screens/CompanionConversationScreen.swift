@@ -134,19 +134,22 @@ struct CompanionConversationScreen: View {
             conversationBodyCore
             if isLoadingState {
                 // Dim only the conversation stage — do not eat home tab bar / back hits.
-                Color.black.opacity(0.25)
+                // Hero stage underneath stays visible (skeleton / local PNG).
+                Color.black.opacity(0.18)
                     .accessibilityIdentifier("companion_loading_dim")
+                    .allowsHitTesting(false)
                 VStack(spacing: 12) {
                     ProgressView()
-                        .scaleEffect(1.2)
+                        .scaleEffect(1.1)
                     Text(localizationManager.localized("companion_loading_hero"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
                 }
-                .padding(24)
-                .background(Color.black.opacity(0.45))
+                .padding(20)
+                .background(Color.black.opacity(0.4))
                 .cornerRadius(16)
                 .accessibilityIdentifier("companion_loading_overlay")
+                .allowsHitTesting(false)
             }
         }
             .background {
@@ -269,6 +272,15 @@ struct CompanionConversationScreen: View {
                             .font(.caption)
                             .foregroundStyle(.orange)
                             .fixedSize(horizontal: false, vertical: true)
+                        if shouldOfferCompanionLoadRetry(errorText) {
+                            Button(localizationManager.localized("companion_error_retry")) {
+                                self.errorText = nil
+                                Task { await loadState() }
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.secondaryGold)
+                            .accessibilityIdentifier("companion_error_retry")
+                        }
                     }
                 }
                 Spacer(minLength: 0)
@@ -838,11 +850,11 @@ struct CompanionConversationScreen: View {
                                 Task { await loadState() }
                             } label: {
                                 HStack(spacing: 6) {
-                                    // Full PNG thumb — emoji 🦄 clips in Capsule (App Review).
+                                    // Full-body PNG thumb (W3): fit — never crop unicorn legs/horn in 22pt circle.
                                     if let ui = CompanionHeroRiveHost.bundledMasterUIImage(characterId: hero.id) {
                                         Image(uiImage: ui)
                                             .resizable()
-                                            .scaledToFill()
+                                            .scaledToFit()
                                             .frame(width: 22, height: 22)
                                             .clipShape(Circle())
                                     } else {
@@ -1360,6 +1372,7 @@ struct CompanionConversationScreen: View {
 
     private var attachmentPickerMenu: some View {
         Menu {
+            Text(localizationManager.localized("companion_attach_hint"))
             Button {
                 showPhotoPicker = true
             } label: {
@@ -1402,6 +1415,7 @@ struct CompanionConversationScreen: View {
             Image(systemName: "paperclip")
         }
         .accessibilityLabel(localizationManager.localized("companion_attach_menu"))
+        .accessibilityHint(localizationManager.localized("companion_attach_hint"))
     }
 
     private func toggleFamilyPdfOnly() async {
@@ -1479,12 +1493,18 @@ struct CompanionConversationScreen: View {
         return .purple
     }
 
+    private func shouldOfferCompanionLoadRetry(_ text: String) -> Bool {
+        let timeout = localizationManager.localized("companion_error_load_timeout")
+        let unavailable = localizationManager.localized("companion_error_hero_unavailable")
+        return text == timeout || text == unavailable
+    }
+
     private func loadState() async {
         isLoadingState = true
 
-        // Soft timeout: don’t leave “Loading your hero chat…” forever on nginx 504 / slow upstream.
+        // W4: soft timeout 3s — show hero underneath; then human soft-fail + retry.
         let loadTimeoutTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
             guard !Task.isCancelled else { return }
             if isLoadingState {
                 isLoadingState = false
@@ -1520,6 +1540,10 @@ struct CompanionConversationScreen: View {
             trustScore = state.trustScore
             usageSnapshot = state.usage
             heroEmotion = CompanionHeroEmotion(rawValue: state.emotionDefault) ?? .idle
+            // Clear soft timeout banner if fetch finished after the 3s soft-fail.
+            if errorText == localizationManager.localized("companion_error_load_timeout") {
+                errorText = nil
+            }
         } catch is CancellationError {
             loadTimeoutTask.cancel()
             isLoadingState = false

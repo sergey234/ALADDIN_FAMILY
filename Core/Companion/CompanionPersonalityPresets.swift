@@ -103,13 +103,12 @@ enum WellnessAgeBandResolver {
 enum CompanionSettings {
     private static let vedicWisdomKey = "companion_vedic_wisdom_enabled_v1"
 
-    /// Child profiles never receive wisdom snippets (hero-x-51).
+    /// Owner W1 2026-10-14: kind quotes enabled for child profiles (default on).
     static func defaultVedicWisdomEnabled(ageBand: String) -> Bool {
-        ageBand != "child"
+        true
     }
 
     static func cachedVedicWisdomEnabled(ageBand: String) -> Bool {
-        if ageBand == "child" { return false }
         guard UserDefaults.standard.object(forKey: vedicWisdomKey) != nil else {
             return defaultVedicWisdomEnabled(ageBand: ageBand)
         }
@@ -117,8 +116,7 @@ enum CompanionSettings {
     }
 
     static func setCachedVedicWisdomEnabled(_ enabled: Bool, ageBand: String) {
-        let value = ageBand == "child" ? false : enabled
-        UserDefaults.standard.set(value, forKey: vedicWisdomKey)
+        UserDefaults.standard.set(enabled, forKey: vedicWisdomKey)
     }
 
     static func humorHintKey(for characterId: String) -> String {

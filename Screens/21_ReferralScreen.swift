@@ -1134,6 +1134,11 @@ struct ReferralScreen: View {
         
         group.notify(queue: .main) {
             isLoading = false
+            // W4: auto-retry once before showing soft banner (avoids flash on brief blips).
+            if softFailCount > 0 && !isRetry {
+                loadReferralData(isRetry: true)
+                return
+            }
             if softFailCount > 0 {
                 softWarningMessage = localizationManager.localized("referral_soft_stats_unavailable")
             }

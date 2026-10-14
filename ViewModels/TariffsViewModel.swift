@@ -302,14 +302,7 @@ class TariffsViewModel: ObservableObject {
         print("   - storeManager.isLoading: \(storeManager.isLoading)")
         print("   - storeManager.purchasedProductIDs: \(storeManager.purchasedProductIDs)")
         
-        // ✅ КРИТИЧЕСКАЯ ПРОВЕРКА: StoreKit может быть недоступен
-        // Проверяем доступность StoreKit перед использованием
-        #if targetEnvironment(simulator)
-        print("❌ КРИТИЧЕСКАЯ ОШИБКА: StoreKit вызывается в симуляторе!")
-        let localizationManager = LocalizationManager.shared
-        errorMessage = localizationManager.localized("store.error.simulator.not.supported")
-        return
-        #else
+        // Симулятор: IAP работает при StoreKit Configuration в Scheme; иначе products пустые.
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что StoreManager не выполняет другую операцию
         guard !storeManager.isLoading else {
             let localizationManager = LocalizationManager.shared
@@ -525,7 +518,6 @@ class TariffsViewModel: ObservableObject {
             print("💡 Проверьте маппинг в функции findProductID")
             print("💡 Текущий ID тарифа: '\(tariff.id)'")
         }
-        #endif
     }
     
     /**

@@ -198,4 +198,21 @@ final class SecurityVerdictModelsTests: XCTestCase {
     func testCompanionHeroStateMachineContract() {
         XCTAssertEqual(CompanionHeroRiveHost.stateMachineName, "HeroSM")
     }
+
+    /// W3 UX36: runtime artboard path is Hero360 only — never *_crop_*.
+    func testCompanionHeroArtboardCandidatesExcludeCrop() {
+        for id in ["unicorn", "aladdin", "genie"] {
+            let names = CompanionHeroRiveHost.artboardNameCandidates(for: id).compactMap { $0 }
+            XCTAssertEqual(names, ["Hero360"], "expected only Hero360 for \(id)")
+            for name in names {
+                XCTAssertFalse(
+                    CompanionHeroRiveHost.forbiddenCropArtboardNames.contains(name),
+                    "crop artboard \(name) must not be a candidate"
+                )
+            }
+        }
+        XCTAssertTrue(
+            CompanionHeroRiveHost.forbiddenCropArtboardNames.contains("unicorn_master_crop_360x480")
+        )
+    }
 }

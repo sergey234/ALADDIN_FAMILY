@@ -1954,13 +1954,13 @@
 "voice_notes_empty_subtitle" = "Tap Start recording to create your first note.";
 "voice_notes_empty_search_title" = "No results found";
 "voice_notes_empty_search_subtitle" = "Try a different query or switch the filter.";
-"voice_notes_local_only_disclaimer" = "Notes are stored only on this device. Nothing is sent to the server.";
+"voice_notes_local_only_disclaimer" = "Notes stay on this iPhone. Speech recognition uses Apple on-device features.";
 "voice_notes_summary_local_soon" = "AI summary soon (local)";
 "call_assistant_section_title" = "Call Assistant";
-"call_assistant_section_subtitle" = "Before call: goal. After call: note and outcomes.";
-"call_assistant_goal_placeholder" = "Call goal";
-"call_assistant_postcall_placeholder" = "Post-call note";
-"call_assistant_outcome_placeholder" = "Call outcomes";
+"call_assistant_section_subtitle" = "Short call notes for you and your family";
+"call_assistant_goal_placeholder" = "Why I am calling";
+"call_assistant_postcall_placeholder" = "What to remember";
+"call_assistant_outcome_placeholder" = "How the call ended";
 "call_assistant_save_note" = "Save as note";
 "voice_safety_coach_tip" = "Copy a suspicious link, then say “link” or “check” — we’ll open the check and paste what you copied. Also: alert / idea / remind.";
 "voice_safety_coach_tip_dismiss" = "Got it";
@@ -2371,3 +2371,339 @@
 "calls_safety_prompt_toggle" = "Phone scam protection";
 "calls_safety_prompt_toggle_subtitle" = "Red and green buttons after Phone calls";
 "calls_safety_prompt_toggle_a11y_hint" = "After Phone or FaceTime. iOS cannot see WhatsApp or Telegram — open Calls manually.";
+
+/* ux36-w1 */
+"wellness_guide_talk_gently" = "Talk calmly";
+
+/* ux36-w1 */
+"wellness_mode_presence" = "Just stay with me";
+
+/* ux36-w1 */
+"wellness_mode_presence_hint" = "Warm support, no deep dive";
+
+/* ux36-w1 */
+"wellness_mode_deep" = "Let’s sort it out";
+
+/* ux36-w1 */
+"wellness_mode_deep_hint" = "Calm look at what’s going on";
+
+/* ux36-w1 */
+"wellness_mode_structured" = "Another point of view";
+
+/* ux36-w1 */
+"wellness_mode_structured_hint" = "What this might look like from outside";
+
+/* ux36-w1 */
+"wellness_mode_blind_spots" = "What I might miss";
+
+/* ux36-w1 */
+"wellness_mode_blind_spots_hint" = "Gently about usual patterns";
+
+/* ux36-w1 */
+"wellness_mode_one_question" = "One question";
+
+/* ux36-w1 */
+"wellness_mode_one_question_hint" = "One clear question — nothing extra";
+
+/* ux36-w1 */
+"wellness_deep_explore_subtitle" = "Choose how the hero replies. Same chat — different style.";
+
+/* ux36-w1 */
+"wellness_reflective_info_body" = "Choose how the hero replies. Same chat — different style.";
+
+/* ux36-w1 */
+"companion_consent_parent_decides" = "You decide: whether the child may write to heroes";
+
+/* ux36-w1 */
+"companion_consent_memory_subtitle" = "Short notes of the hero. Below you can export or delete";
+
+/* ux36-w1 */
+"companion_memory_section_desc" = "Short notes of the hero. Below you can export or delete";
+
+/* ux36-w1 */
+"companion_wisdom_toggle_subtitle" = "Sometimes a short kind thought";
+
+/* ux36-w1 */
+"companion_wisdom_toggle_subtitle_child" = "For a child profile kind quotes are on";
+
+/* ux36-w1 */
+"companion_personality_grok_hint" = "Set how the hero talks with the whole family.";
+
+/* ux36-w1 */
+"companion_personality_security_expert" = "Default to safety-helper answers";
+
+/* ux36-w1 */
+"companion_personality_custom_instructions" = "Your rules for the hero (up to 500 characters)";
+
+/* ux36-w1 */
+"companion_ai_may_be_wrong" = "Your hero can be wrong. It’s a suggestion.";
+
+/* ux36-w1 */
+"companion_emotion_alert" = "Hint";
+
+/* ux36-w1 */
+"ai_trust_disclaimer" = "AI can be wrong. It’s a suggestion. If unsure — double-check or ask an adult.";
+
+/* ux36-w1 */
+"voice_notes_privacy_stt_disclaimer" = "Text from here is not copied into hero chat by itself.";
+
+/* ux36-w1 */
+"family_safe_word_title" = "Family secret phrase";
+
+/* ux36-w1 */
+"family_safe_word_subtitle" = "If someone calls “from family” asking for money — ask this phrase. Strangers won’t know it.";
+
+/* ux36-w1 */
+"family_safe_word_not_recovery_hint" = "This is not your family login code.";
+
+/* ux36-w1 */
+"family_homework_desc" = "Study mode: fewer distractions during homework";
+
+/* ux36-w1 */
+"data_deletion_desc" = "Local copies will be removed. This can’t be undone.";
+
+/* ux36-w1 */
+"family_age_restriction" = "Age limits for YouTube";
+
+/* ux36-w1 */
+"day_strip_screen_hours_format" = "%d h a day";
+
+/* ux36-w1 */
+"day_strip_tap_hint" = "Tap to open day rules";
+
+/* ux36-w1 */
+"geofence_noshow_section_hint" = "If they are not at the place by the time — you get a soft notification.";
+
+/* ux36-w2 */
+"threat_card_what" = "What it is";
+
+/* ux36-w2 */
+"threat_card_where" = "Where";
+
+/* ux36-w2 */
+"threat_card_action" = "What to do";
+
+/* ux36-w2 */
+"threat_eicar_title" = "Antivirus self-check";
+
+/* ux36-w2 */
+"threat_eicar_what" = "A harmless test file. Real antivirus should detect it.";
+
+/* ux36-w2 */
+"threat_eicar_where" = "In quarantine on this phone";
+
+/* ux36-w2 */
+"threat_eicar_action" = "Keep in quarantine or delete. For real threats — do not open the file.";
+
+/* ux36-w2 */
+"threat_unknown_title" = "Suspicious file";
+
+/* ux36-w2 */
+"threat_unknown_what" = "This file looks suspicious. Better not open it.";
+
+/* ux36-w2 */
+"threat_unknown_where" = "In quarantine or in the scan results on this phone";
+
+/* ux36-w2 */
+"threat_unknown_action" = "Keep in quarantine or delete. If unsure — ask an adult.";
+
+/* ux36-w2 */
+"component_status_active" = "On";
+
+/* ux36-w2 */
+"component_status_fallback_active" = "Running in simple mode";
+
+/* ux36-w2 */
+"component_status_error" = "Problem. Open the module and try again";
+
+/* ux36-w2 */
+"component_status_disabled" = "Off";
+
+/* ux36-w2 */
+"component_status_threat_found" = "Threat found";
+
+/* ux36-w2 */
+"component_status_unknown" = "Status updating";
+
+/* ux36-w2 */
+"family_member_status_protected" = "Protected";
+
+/* ux36-w2 */
+"family_member_status_warning" = "Attention";
+
+/* ux36-w2 */
+"family_member_status_danger" = "Threat";
+
+/* ux36-w2 */
+"family_member_status_offline" = "Offline";
+
+/* ux36-w2 */
+"day_strip_screen_hours_unknown" = "Screen limit";
+
+/* ux36-w2 */
+"antivirus_quarantine_restore" = "Restore";
+
+/* ux36-w2 */
+"antivirus_quarantine_delete" = "Delete permanently";
+
+/* ux36-w2 */
+"home_map_subtitle" = "Family phone protection controls";
+
+/* ux36-w2 */
+"home_map_pause_1h" = "Pause protection for 1 hour";
+
+/* ux36-w2 */
+"home_map_pause_honest" = "1-hour pause uses ALADDIN device protection.";
+
+/* ux36-w4 reliability */
+"companion_loading_hero" = "Opening chat with your hero…";
+"companion_error_load_timeout" = "Taking too long — trying again";
+"companion_error_hero_unavailable" = "Your hero isn’t answering right now. Try again in a moment";
+"companion_error_retry" = "Try again";
+"companion_attach_hint" = "Photo or PDF is fine";
+"companion_attach_menu" = "Attachments";
+"referral_soft_stats_unavailable" = "Couldn’t load rewards yet. You can still invite — numbers will show up shortly.";
+"referral_soft_retry" = "Refresh";
+"psych_library_load_failed" = "The catalog didn’t load. Please try again.";
+"psych_library_retry" = "Try again";
+"psych_library_cached_hint" = "Showing a saved catalog. You can refresh.";
+"im_ok_sent_local" = "Saved on this phone. We’ll send it to the family when you’re back online.";
+"need_help_sent_local" = "Saved on this phone. We’ll send it to the family when you’re back online.";
+"crash_detection_error_accelerometer" = "This device has no motion sensor for crash alerts.";
+"crash_detection_error_location" = "Location is needed for crash alerts.";
+"crash_detection_error_location_settings" = "Couldn’t turn on crash alerts. Allow Location in iPhone Settings, then try again.";
+"crash_detection_error_server" = "Couldn’t turn on crash alerts. Please try again.";
+"crash_detection_error_monitoring" = "Couldn’t turn on crash alerts. Please try again.";
+"crash_detection_error_retry" = "Couldn’t turn on crash alerts. Please try again.";
+"crash_detection_open_settings" = "Open iPhone Settings";
+"device_hub_iot_scan" = "Scan smart home";
+"device_hub_iot_empty" = "Nothing to connect to yet. Add a home or try again later.";
+"device_hub_iot_not_found" = "Nothing to connect to yet. Add a home or try again later.";
+"device_hub_iot_enable_failed" = "Couldn’t update smart-home protection. Please try again.";
+"device_hub_iot_load_failed" = "Couldn’t load devices. Please try again.";
+"device_hub_scan_timeout" = "The scan took too long. Please try again.";
+"ai_error_gateway_retry" = "Couldn’t get an answer right now. Try again or contact support.";
+"ai_error_service_unavailable" = "Couldn’t get an answer right now. Try again or contact support.";
+"ai_assistant_error_unknown_processing" = "Couldn’t get an answer right now. Please try again.";
+"ai_assistant_error_stream" = "Couldn’t get an answer right now. Please try again.";
+"common_done" = "Done";
+
+/* ux36-w5 geo+APNs+crash hybrid */
+"geofence_place_push_title" = "Family place";
+"geofence_place_arrived_body" = "You’re at: %@";
+"geofence_place_left_body" = "You left: %@";
+"geofence_family_chat_arrived" = "%@: arrived — %@";
+"geofence_family_chat_left" = "%@: left — %@";
+"geofence_why_no_push_title" = "Why am I not getting alerts?";
+"geofence_why_no_push_body" = "You need three things: Always location, ALADDIN notifications, and internet. Even if a push is missed, the event still appears in Notifications and the places feed.";
+"geofence_why_no_push_enable_notifications" = "Turn on notifications";
+"im_ok_queue_delivered_title" = "Message sent to family";
+"im_ok_queue_delivered_body" = "You’re back online — the family got your message.";
+"crash_checklist_title" = "Before you turn it on";
+"crash_checklist_location" = "• Location — so we know where you are if an alert fires";
+"crash_checklist_motion" = "• Motion sensor — this iPhone needs an accelerometer";
+"crash_checklist_notifications" = "• Notifications — so you and family see the alert";
+
+/* ux36-w6 registration date SSOT */
+"profile_member_since_fmt" = "With us since %@";
+"profile_member_since_label" = "With us since";
+"profile_registration_pending_sync" = "Date will appear after sync";
+
+/* UX-36 #3 security toast */
+"security_settings_toast_saved" = "Settings saved";
+"security_settings_toast_saved_local" = "Saved on this device";
+"security_settings_toast_network_error" = "Could not save. Check the internet and try again.";
+"security_settings_toast_no_permission" = "No access. Sign in again.";
+
+/* UX-36 W7 Call Filter */
+"antifake_call_directory_setup_title" = "Enable call labels";
+"antifake_call_directory_setup_intro" = "Follow these steps in iPhone Settings:";
+"antifake_call_directory_setup_step1" = "1. Settings";
+"antifake_call_directory_setup_step2" = "2. Phone";
+"antifake_call_directory_setup_step3" = "3. Call Blocking & Identification";
+"antifake_call_directory_setup_step4" = "4. Turn on «ALADDIN Call Filter»";
+"antifake_call_directory_setup_step2_ios18" = "2. Apps";
+"antifake_call_directory_setup_step3_ios18" = "3. Phone → Call Blocking & Identification";
+"antifake_call_directory_setup_step4_ios18" = "4. Turn on «ALADDIN Call Filter»";
+"antifake_call_directory_setup_animation_accessibility" = "Animation: Settings → Phone → ALADDIN Call Filter";
+"antifake_call_directory_setup_retry_title" = "If the switch is missing";
+"antifake_call_directory_setup_retry_body" = "Update the app, restart iPhone, tap Sync. Look for «ALADDIN Call Filter».";
+"antifake_call_directory_setup_done" = "Done";
+"antifake_call_directory_setup_step5_retry" = "If the switch is missing — update the app and restart iPhone";
+
+/* UX-36 W8 elderly seed cards */
+"content_seed_subtitle_everyday" = "Short everyday tips";
+"content_seed_body_generic" = "Open the card to read a simple tip.";
+"content_seed_generic_1" = "Basic tip";
+"content_seed_generic_2" = "Another tip";
+"content_seed_generic_3" = "Practice block";
+"elderly_lesson_got_it" = "Got it";
+"elderly_seed_safety_1" = "How to spot scams";
+"elderly_seed_safety_2" = "Checking suspicious calls";
+"elderly_seed_safety_3" = "Safer internet for 60+";
+"elderly_seed_safety_sub_1" = "Short everyday tips";
+"elderly_seed_safety_sub_2" = "Before you answer";
+"elderly_seed_safety_sub_3" = "Sites and links";
+"elderly_seed_safety_body_1" = "Never share an SMS code or send money to a stranger. Call family yourself using a number from your contacts.";
+"elderly_seed_safety_body_2" = "If someone claims to be a bank or a relative and rushes you — hang up. Tap “They want a transfer or code” so family knows.";
+"elderly_seed_safety_body_3" = "Do not open links from unknown messages. Ask family if you are unsure.";
+"elderly_seed_memory_1" = "Easy mind exercises";
+"elderly_seed_memory_2" = "10-minute memory practice";
+"elderly_seed_memory_3" = "Wellness journal";
+"elderly_seed_memory_sub_1" = "5 minutes a day";
+"elderly_seed_memory_sub_2" = "No rush";
+"elderly_seed_memory_sub_3" = "Short notes";
+"elderly_seed_memory_body_1" = "Solve one simple puzzle or recall three kind moments from today. No scores and no “diagnoses”.";
+"elderly_seed_memory_body_2" = "Repeat family names or street names. You can do it with someone from the family.";
+"elderly_seed_memory_body_3" = "Write how you feel today — in one sentence.";
+"elderly_seed_activity_1" = "Gentle home exercise";
+"elderly_seed_activity_2" = "Walking without overload";
+"elderly_seed_activity_3" = "Sleep and recovery";
+"elderly_seed_activity_sub_1" = "No equipment";
+"elderly_seed_activity_sub_2" = "At your pace";
+"elderly_seed_activity_sub_3" = "Calm evening";
+"elderly_seed_activity_body_1" = "Stretch while sitting or standing. Stop if you feel pain.";
+"elderly_seed_activity_body_2" = "A short walk near home beats a long forced one.";
+"elderly_seed_activity_body_3" = "Go to bed at your usual time. Dim screens an hour before sleep.";
+"elderly_seed_health_1" = "Medication reminder";
+"elderly_seed_health_2" = "Daily blood pressure check";
+"elderly_seed_health_3" = "Doctor visit plan";
+"elderly_seed_health_sub_1" = "On schedule";
+"elderly_seed_health_sub_2" = "One mark a day";
+"elderly_seed_health_sub_3" = "What to bring";
+"elderly_seed_health_body_1" = "Take medicine as your doctor prescribed. If unsure — ask family or a doctor, not a stranger on the phone.";
+"elderly_seed_health_body_2" = "Measure blood pressure and note it in the app if you use the journal.";
+"elderly_seed_health_body_3" = "Bring a list of questions and medicines — on paper or in notes.";
+
+/* UX-36 W10–W11 Family second hand */
+"family_second_hand_pack_title" = "Protect parents 60+";
+"family_second_hand_pack_subtitle" = "Family second hand: calls and trust in the family.";
+"family_second_hand_pack_has_elderly" = "Your family has a 60+ member";
+"family_second_hand_pack_add_elderly_hint" = "Add mom or dad to the family to turn on protection";
+"family_second_hand_pack_cta" = "Set up for parents";
+"family_second_hand_check_scam" = "“Asked for money / code” signal";
+"family_second_hand_check_safeword" = "Family safe word";
+"family_second_hand_check_callfilter" = "Dangerous-number labels (Call Filter)";
+"family_second_hand_check_needhelp" = "“Need help” button";
+"family_second_hand_check_places" = "Family places (arrived / left)";
+"family_second_hand_setup_title" = "On the parents’ phone";
+"family_second_hand_setup_intro" = "Do these steps on mom’s or dad’s phone. You help — without access to their bank account.";
+"family_second_hand_step_1" = "Open the 60+ screen and turn on family notifications.";
+"family_second_hand_step_2" = "Enable ALADDIN Call Filter in iPhone Settings → Phone.";
+"family_second_hand_step_3" = "Set a family safe word together.";
+"family_second_hand_step_4" = "Show the “They want a transfer or code” button.";
+"family_second_hand_open_elderly" = "Open 60+ screen";
+"family_second_hand_setup_done" = "Done";
+"family_second_hand_teen_title" = "If grandma or grandpa get a call";
+"family_second_hand_teen_subtitle" = "You are a witness and helper — not the only family admin.";
+"family_second_hand_teen_tip_1" = "Do not dictate SMS codes";
+"family_second_hand_teen_tip_2" = "Call back yourself using a contact number";
+"family_second_hand_teen_tip_3" = "Call an adult in the family";
+"family_second_hand_teen_not_admin" = "Parents turn on critical settings — not you alone.";
+"family_second_hand_ask_title" = "They want a transfer or code";
+"family_second_hand_ask_subtitle" = "We message family. We did not listen to the call.";
+"family_second_hand_ask_hint" = "Opens the family signal screen";
+"family_second_hand_push_checklist_1" = "Do not dictate the SMS code";
+"family_second_hand_push_checklist_2" = "Call back yourself on your own number";
+"family_second_hand_push_checklist_3" = "Do not send money for a “relative” over the phone";
+

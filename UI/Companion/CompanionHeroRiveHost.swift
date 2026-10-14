@@ -15,21 +15,21 @@ enum CompanionHeroRiveHost {
     static let stateMachineName = "HeroSM"
     private static let mouthInputCandidates = ["mouth_open", "mouthOpen", "MouthOpen"]
 
-    /// Variant B export: canonical artboard `Hero360` (360×480). Legacy names kept for old `.riv` until re-export.
-    private static func artboardNameCandidates(for characterId: String) -> [String?] {
-        let legacy: String? = {
-            switch rivBaseName(characterId: characterId) {
-            case "unicorn": return "unicorn_master_crop_360x480"
-            case "aladdin": return "aladdin_master_crop_360x480"
-            case "genie": return "genie_master_crop_360x480"
-            default: return nil
-            }
-        }()
-        if let legacy {
-            return ["Hero360", legacy, nil]
-        }
+    /// Variant B export: canonical artboard `Hero360` (360×480) only.
+    /// W3 UX36: never prefer `*_master_crop_*` — cropped artboards cut the hero; PNG master is full-body fallback.
+    static func artboardNameCandidates(for characterId: String) -> [String?] {
+        _ = characterId
         return ["Hero360", nil]
     }
+
+    /// Runtime must not resolve legacy crop artboard names (verify + unit gate).
+    static let forbiddenCropArtboardNames: Set<String> = [
+        "unicorn_master_crop_360x480",
+        "aladdin_master_crop_360x480",
+        "genie_master_crop_360x480",
+        "aladdin_master_OB01_crop_360x480",
+        "genie_master_OB07_crop_360x480"
+    ]
 
     /// Симулятор iOS 15.x: известные падения Rive/Metal (`currentDrawable`, sampler binding). QA Rive — на device.
     static var isSimulatorIOS15MetalUnstable: Bool {

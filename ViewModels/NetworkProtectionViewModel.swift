@@ -47,6 +47,8 @@ class NetworkProtectionViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var crashDetectionUnavailableOnThisDevice: Bool = false
     @Published var crashDetectionUnavailableReason: String?
+    /// W4: location permission path — offer Settings deep-link.
+    @Published var crashDetectionNeedsOpenSettings: Bool = false
 
     // ✅ BUILD 104: Защита от повторной загрузки статусов
     private var hasLoadedStatuses = false
@@ -284,20 +286,33 @@ class NetworkProtectionViewModel: ObservableObject {
             try await crashDetection.startMonitoring()
             crashDetectionUnavailableOnThisDevice = false
             crashDetectionUnavailableReason = nil
+            crashDetectionNeedsOpenSettings = false
+            // W5: alerts to family need notification permission (APNs / local).
+            _ = await NotificationManager.shared.requestAuthorizationIfNeeded()
         } catch {
             crashDetectionEnabled = false
-            errorMessage = error.localizedDescription
+            let presentation: (message: String, offerOpenSettings: Bool)
+            if let crashErr = error as? CrashDetectionError {
+                presentation = crashErr.reliabilityPresentation
+            } else {
+                presentation = (
+                    LocalizationManager.shared.localized("crash_detection_error_retry"),
+                    false
+                )
+            }
+            errorMessage = presentation.message
+            crashDetectionNeedsOpenSettings = presentation.offerOpenSettings
             if case CrashDetectionError.accelerometerUnavailable = error {
                 crashDetectionUnavailableOnThisDevice = true
-                crashDetectionUnavailableReason = crashDetection.crashDetectionUnsupportedReason ?? error.localizedDescription
+                crashDetectionUnavailableReason = crashDetection.crashDetectionUnsupportedReason ?? presentation.message
             }
             #if targetEnvironment(simulator)
-            toastManager.showWarning(crashDetectionUnavailableReason ?? error.localizedDescription)
-            print("⚠️ NetworkProtectionViewModel: Crash Detection на симуляторе — \(error.localizedDescription)")
+            toastManager.showWarning(crashDetectionUnavailableReason ?? presentation.message)
+            print("⚠️ NetworkProtectionViewModel: Crash Detection на симуляторе — \(presentation.message)")
             #else
             componentAnalytics.trackComponentError(componentId: componentId, error: error)
-            toastManager.showError(error.localizedDescription)
-            print("❌ NetworkProtectionViewModel: Не удалось запустить Crash Detection на устройстве: \(error.localizedDescription)")
+            toastManager.showError(presentation.message)
+            print("❌ NetworkProtectionViewModel: Не удалось запустить Crash Detection на устройстве: \(presentation.message)")
             #endif
             return
         }
@@ -325,11 +340,11 @@ class NetworkProtectionViewModel: ObservableObject {
                 return
             }
             componentAnalytics.trackComponentToggle(componentId: componentId, enabled: true)
-            toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated"))
+            SecuritySettingsFeedback.saved(toast: toastManager)
         } else {
             AppConfig.NetworkProtectionComponentToggleStorage.writeBool(true, componentId: componentId)
             componentAnalytics.trackComponentToggle(componentId: componentId, enabled: true)
-            toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated_local"))
+            SecuritySettingsFeedback.savedLocal(toast: toastManager)
         }
     }
 
@@ -547,7 +562,7 @@ class NetworkProtectionViewModel: ObservableObject {
                 // Успешная аналитика (асинхронно)
                 DispatchQueue.main.async { [weak self] in
                     self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
-                    self?.toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated"))
+                    SecuritySettingsFeedback.saved(toast: self?.toastManager ?? .shared)
                 }
             } catch {
                 // ✅ ЭТАП 3: Обработка unauthorized
@@ -557,8 +572,7 @@ class NetworkProtectionViewModel: ObservableObject {
                     DispatchQueue.main.async { [weak self] in
                         updateClosure(!newValue)
                         let errorMessage = message ?? LocalizationManager.shared.localized("auth_session_expired_sign_in")
-                        self?.toastManager.showError(errorMessage)
-                        // Отправляем уведомление о необходимости логина
+                        SecuritySettingsFeedback.noPermission(toast: self?.toastManager ?? .shared)
                         NotificationCenter.default.post(
                             name: NSNotification.Name("SessionExpired"),
                             object: nil,
@@ -570,7 +584,7 @@ class NetworkProtectionViewModel: ObservableObject {
                     DispatchQueue.main.async { [weak self] in
                         updateClosure(!newValue)
                         self?.componentAnalytics.trackComponentError(componentId: componentId, error: error)
-                        self?.toastManager.showError(String(format: LocalizationManager.shared.localized("component_toast_error_format"), error.localizedDescription))
+                        SecuritySettingsFeedback.from(error: error, toast: self?.toastManager ?? .shared)
                     }
                 }
             }
@@ -579,7 +593,7 @@ class NetworkProtectionViewModel: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 AppConfig.NetworkProtectionComponentToggleStorage.writeBool(newValue, componentId: componentId)
                 self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
-                self?.toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated_local"))
+                SecuritySettingsFeedback.savedLocal(toast: self?.toastManager ?? .shared)
             }
         }
     }

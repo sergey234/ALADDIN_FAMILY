@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// p2-9i — accordion «Свои челленджи» on Family screen.
 struct FamilyChallengesSection: View {
@@ -12,6 +13,7 @@ struct FamilyChallengesSection: View {
     @State private var draftEmoji = "🏁"
     @State private var statusNote: String?
     @State private var medalToggles: [String: Bool] = [:]
+    @FocusState private var isChallengeFieldFocused: Bool
 
     private var canConfigure: Bool {
         FamilyAccessPolicy.hasPermission(.manageCriticalFamilySettings, members: members)
@@ -68,6 +70,21 @@ struct FamilyChallengesSection: View {
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: Color(hex: "8B5CF6"))
         .accessibilityIdentifier("family_challenges_section")
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(localizationManager.localized("common_done")) {
+                    isChallengeFieldFocused = false
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                }
+                .accessibilityIdentifier("family_challenge_keyboard_done")
+            }
+        }
         .task {
             await service.refreshFromServer()
             if let draft = FamilyChallengesStore.consumeWellnessDraft() {
@@ -186,10 +203,14 @@ struct FamilyChallengesSection: View {
             HStack {
                 TextField(localizationManager.localized("family_challenge_placeholder"), text: $draftTitle)
                     .textFieldStyle(.roundedBorder)
+                    .focused($isChallengeFieldFocused)
+                    .submitLabel(.done)
+                    .onSubmit { isChallengeFieldFocused = false }
                 TextField("🏁", text: $draftEmoji)
                     .frame(width: 44)
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.center)
+                    .focused($isChallengeFieldFocused)
             }
             Button {
                 Task { await addChallenge() }

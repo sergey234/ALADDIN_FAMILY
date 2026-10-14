@@ -253,13 +253,13 @@ struct IncidentResponseSettingsModal: View {
                 )
                 
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
-                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                SecuritySettingsFeedback.saved(toast: toastManager)
                 isPresented = false
                 vLog("✅ Settings saved via API", level: .success)
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_save_complete", state: .synced)
             } catch {
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
-                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                SecuritySettingsFeedback.savedLocal(toast: toastManager)
                 isPresented = false
                 vLog("⚠️ Save failed, UI closed with cached values", level: .warning)
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_save_error", state: .error(error.localizedDescription))

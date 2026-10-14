@@ -4,27 +4,25 @@ import Foundation
 @MainActor
 enum SubscriptionProfileCaption {
 
-    private static let registrationDateFormatterRU: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter
-    }()
-
-    private static let registrationDateFormatterEN: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "en_US")
-        return formatter
-    }()
-
-    /// Дата создания аккаунта из `registration_date`; если нет — сегодня (как в Profile).
+    /// «Вы с нами с …» / pending sync — never invents today's date.
     static func registrationDateDisplay(isRussian: Bool) -> String {
-        let formatter = isRussian ? registrationDateFormatterRU : registrationDateFormatterEN
-        if let savedDate = UserDefaults.standard.object(forKey: "registration_date") as? Date {
-            return formatter.string(from: savedDate)
+        if let formatted = AccountRegistrationDateStore.displayString(isRussian: isRussian) {
+            return formatted
         }
-        return formatter.string(from: Date())
+        return LocalizationManager.shared.localized("profile_registration_pending_sync")
+    }
+
+    /// Member-since line for capsule (clear whose date).
+    static func memberSinceLine(isRussian: Bool) -> String {
+        let dateText = registrationDateDisplay(isRussian: isRussian)
+        let pending = LocalizationManager.shared.localized("profile_registration_pending_sync")
+        if dateText == pending {
+            return pending
+        }
+        return String(
+            format: LocalizationManager.shared.localized("profile_member_since_fmt"),
+            dateText
+        )
     }
 
     /// Окончание trial или платной подписки. `nil` для free и когда даты ещё нет (показываем placeholder).

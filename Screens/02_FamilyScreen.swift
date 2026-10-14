@@ -2467,12 +2467,16 @@ struct FamilyScreen: View {
                         
                         // fws-01: семейное кодовое слово — видят все участники; настраивают parent/elderly
                         if !familyMembers.isEmpty {
-                            FamilyDayStripView()
+                            FamilyDayStripView(onOpenTimeRules: { showTimeControlModalNew = true })
                                 .environmentObject(localizationManager)
                             FamilyShieldWeekDigestCard()
                                 .environmentObject(localizationManager)
                             FamilySafeWordCard(members: familyMembers)
                                 .environmentObject(localizationManager)
+                            // UX-36 W10: «Семейная вторая рука» — пакет для parent / tip для teen
+                            FamilySecondHandPackCard(members: familyMembers)
+                                .environmentObject(localizationManager)
+                                .environmentObject(navigationManager)
                             FamilyHabitRemindersSection(members: familyMembers)
                                 .environmentObject(localizationManager)
                             FamilyChallengesSection(members: familyMembers)
@@ -3477,14 +3481,13 @@ struct FamilyContentBlockItem: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
-                    .lineLimit(2)
+                    .foregroundColor(.white)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text(description)
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+                    .foregroundColor(.white.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             Spacer(minLength: 8)
@@ -3535,29 +3538,23 @@ struct FamilyConfigButtonItem: View {
     let action: () -> Void
     
     var body: some View {
-        HStack(spacing: Spacing.m) {
-            // Иконка
-            Text(icon)
-                .font(.system(size: 28))
-                .frame(width: 40, height: 40)
-            
-            // Информация
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(alignment: .top, spacing: Spacing.m) {
+                Text(icon)
+                    .font(.system(size: 28))
+                    .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.bodyBold)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
             }
-            
-            Spacer(minLength: 8)
-            
-            // Золотая кнопка
             Button(action: {
                 HapticFeedback.impact(.medium)
                 action()
@@ -3566,7 +3563,7 @@ struct FamilyConfigButtonItem: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(.secondaryGold)
-                    .padding(.horizontal, Spacing.m)
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.secondaryGold.opacity(0.2))
                     .overlay(
@@ -3607,14 +3604,13 @@ struct FamilyBadgeItem: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                        .lineLimit(2)
+                        .foregroundColor(.white)
                         .fixedSize(horizontal: false, vertical: true)
                     
                     Text(description)
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .lineLimit(2)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 
                 Spacer(minLength: 8)
@@ -3651,29 +3647,23 @@ struct FamilyActionButtonItem: View {
     let action: () -> Void
     
     var body: some View {
-        HStack(spacing: Spacing.m) {
-            // Иконка
-            Text(icon)
-                .font(.system(size: 28))
-                .frame(width: 40, height: 40)
-            
-            // Информация
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(alignment: .top, spacing: Spacing.m) {
+                Text(icon)
+                    .font(.system(size: 28))
+                    .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.bodyBold)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
             }
-            
-            Spacer(minLength: 8)
-            
-            // Красная кнопка действия
             Button(action: {
                 HapticFeedback.impact(.medium)
                 action()
@@ -3682,10 +3672,7 @@ struct FamilyActionButtonItem: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(.dangerRed)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .padding(.horizontal, Spacing.s)
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.dangerRed.opacity(0.2))
                     .overlay(
@@ -7078,6 +7065,10 @@ struct GeofencesSettingsModal: View {
         default:
             break
         }
+        // W5: APNs / local banners need notification permission too.
+        Task { @MainActor in
+            _ = await NotificationManager.shared.requestAuthorizationIfNeeded()
+        }
         saveGeofences()
         GeofenceNoShowMonitor.resyncCalendarTriggers()
     }
@@ -7181,7 +7172,7 @@ struct GeofencesSettingsModal: View {
                         HStack {
                             Text(localizationManager.localized("geofences_radius"))
                                 .font(.caption)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.9))
                             
                             Text("\(Int(geofence.radius)) \(localizationManager.localized("geofences_radius_m"))")
                                 .font(.caption)
@@ -7220,6 +7211,34 @@ struct GeofencesSettingsModal: View {
                     .padding(Spacing.m)
                     .background(Color.secondaryGold.opacity(0.12))
                     .cornerRadius(CornerRadius.medium)
+                }
+
+                // W5 FAQ — why no push (Always + notifications + in-app inbox fallback)
+                if placesConsentAccepted {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(localizationManager.localized("geofence_why_no_push_title"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.white)
+                        Text(localizationManager.localized("geofence_why_no_push_body"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.88))
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button {
+                            Task { @MainActor in
+                                _ = await NotificationManager.shared.requestAuthorizationIfNeeded()
+                            }
+                        } label: {
+                            Text(localizationManager.localized("geofence_why_no_push_enable_notifications"))
+                                .font(.caption.weight(.bold))
+                                .foregroundColor(.secondaryGold)
+                        }
+                        .accessibilityIdentifier("geofence_why_no_push_enable")
+                    }
+                    .padding(Spacing.m)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.white.opacity(0.10))
+                    .cornerRadius(CornerRadius.medium)
+                    .accessibilityIdentifier("geofence_why_no_push_faq")
                 }
                 
                 // Форма добавления
@@ -7275,7 +7294,7 @@ struct GeofencesSettingsModal: View {
                             HStack {
                                 Text(localizationManager.localized("geofences_radius"))
                                     .font(.bodyBold)
-                                    .foregroundColor(.textPrimary)
+                                    .foregroundColor(.white)
                                 
                                 Spacer()
                                 

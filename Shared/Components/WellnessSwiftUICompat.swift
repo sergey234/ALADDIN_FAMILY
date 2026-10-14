@@ -36,6 +36,17 @@ extension View {
     func wellnessSheetDetents() -> some View {
         modifier(WellnessSheetDetentsModifier())
     }
+
+    /// `toolbarColorScheme(_:for:)` + `ToolbarPlacement` are iOS 16+; no-op on iOS 15.
+    /// Call sites need dark nav bar only — keep signature free of iOS-16-only types.
+    @ViewBuilder
+    func compatibleToolbarColorScheme(_ scheme: ColorScheme, forNavigationBar: Bool = true) -> some View {
+        if #available(iOS 16.0, *), forNavigationBar {
+            self.toolbarColorScheme(scheme, for: .navigationBar)
+        } else {
+            self
+        }
+    }
 }
 
 // MARK: - Multiline text (TextField `axis:` is iOS 16+)

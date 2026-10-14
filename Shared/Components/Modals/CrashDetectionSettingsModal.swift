@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /**
  * 🚨 Crash Detection Settings Modal
@@ -48,6 +49,36 @@ struct CrashDetectionSettingsModal: View {
                 }
                 .padding()
                 .background(Color.primaryBlue.opacity(0.08))
+                .cornerRadius(CornerRadius.medium)
+
+                // W5 — permission checklist before enable (no HTTP jargon).
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("crash_checklist_title"))
+                        .font(.h4)
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("crash_checklist_location"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                    Text(localizationManager.localized("crash_checklist_motion"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                    Text(localizationManager.localized("crash_checklist_notifications"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Text(localizationManager.localized("crash_detection_open_settings"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                    .accessibilityIdentifier("crash_checklist_open_settings")
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.08))
                 .cornerRadius(CornerRadius.medium)
 
                 VStack(alignment: .leading, spacing: Spacing.s) {

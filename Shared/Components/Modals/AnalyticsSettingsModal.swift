@@ -261,7 +261,7 @@ struct AnalyticsSettingsModal: View {
                 
                 await MainActor.run {
                     VisualLogger.shared.log("✅ analytics_settings_save success", level: .success, category: "ANALYTICS.UI")
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    SecuritySettingsFeedback.saved(toast: toastManager)
                     isSaving = false
                     dismiss()
                 }
@@ -270,7 +270,7 @@ struct AnalyticsSettingsModal: View {
                 // Даже при ошибке сохранили в UserDefaults, показываем успех
                 await MainActor.run {
                     VisualLogger.shared.log("⚠️ analytics_settings_save fallback local only", level: .warning, category: "ANALYTICS.UI")
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    SecuritySettingsFeedback.savedLocal(toast: toastManager)
                     isSaving = false
                     dismiss()
                 }

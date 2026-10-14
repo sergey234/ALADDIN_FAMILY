@@ -1170,6 +1170,8 @@ final class SubscriptionManager: ObservableObject {
         )
 
         await storeToken(jwtToken)
+        // W6: freeze account registration date (never rewrite to "today" later).
+        _ = AccountRegistrationDateStore.captureIfNeeded(response.registeredAtDate ?? jwtToken.issuedAt)
 
         // ✅ SOLUTION: Convert API model to internal SubscriptionStatus
         let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
@@ -1382,6 +1384,8 @@ final class SubscriptionManager: ObservableObject {
         )
 
         await storeToken(jwtToken)
+        // W6: freeze account registration date (never rewrite to "today" later).
+        _ = AccountRegistrationDateStore.captureIfNeeded(response.registeredAtDate ?? jwtToken.issuedAt)
 
         // Sync subscription/limits and update trial status for UI.
         let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
@@ -2000,6 +2004,8 @@ final class SubscriptionManager: ObservableObject {
 
         print("💾💾💾 STORE_TOKEN: Completed")
         persistOfflineUserIdFromJWTIfMissing()
+        // W6: if SSOT empty (reinstall / restore), freeze issuedAt once — never daily "today".
+        _ = AccountRegistrationDateStore.captureIfNeeded(token.issuedAt)
         bumpSubscriptionDisplayEpoch()
     }
 

@@ -90,31 +90,56 @@ enum GeofenceEventStore {
         }
         save(events)
 
+        if isArrival, isSchoolName(name, localization: localization) {
+            FamilyShieldWeekDigestStore.recordSchoolArrival()
+        }
+
+        // W5 hybrid: local banner for every place enter/exit (not only home/school).
+        let pushTitleKey: String
+        let pushBodyKey: String
+        let typeKey: String
         if isArrival {
             if isSchoolName(name, localization: localization) {
-                FamilyShieldWeekDigestStore.recordSchoolArrival()
-                NotificationManager.shared.sendLocalNotification(
-                    title: localization.localized("geofence_school_push_title"),
-                    body: String(format: localization.localized("geofence_school_push_body"), name),
-                    category: .family,
-                    userInfo: [
-                        "type": "geofence_school_arrival",
-                        "deepLink": "aladdin://family/location"
-                    ],
-                    delay: 0.2
-                )
+                pushTitleKey = "geofence_school_push_title"
+                pushBodyKey = "geofence_school_push_body"
+                typeKey = "geofence_school_arrival"
             } else if isHomeName(name, localization: localization) {
-                NotificationManager.shared.sendLocalNotification(
-                    title: localization.localized("geofence_home_push_title"),
-                    body: String(format: localization.localized("geofence_home_push_body"), name),
-                    category: .family,
-                    userInfo: [
-                        "type": "geofence_home_arrival",
-                        "deepLink": "aladdin://family/location"
-                    ],
-                    delay: 0.2
-                )
+                pushTitleKey = "geofence_home_push_title"
+                pushBodyKey = "geofence_home_push_body"
+                typeKey = "geofence_home_arrival"
+            } else {
+                pushTitleKey = "geofence_place_push_title"
+                pushBodyKey = "geofence_place_arrived_body"
+                typeKey = "geofence_place_arrival"
             }
+        } else {
+            pushTitleKey = "geofence_place_push_title"
+            pushBodyKey = "geofence_place_left_body"
+            typeKey = "geofence_place_departure"
+        }
+
+        let correlation = "geofence-\(regionIdentifier)-\(isArrival ? "in" : "out")-\(Int(Date().timeIntervalSince1970 / 60))"
+        NotificationManager.shared.sendLocalNotification(
+            title: localization.localized(pushTitleKey),
+            body: String(format: localization.localized(pushBodyKey), name),
+            category: .family,
+            userInfo: [
+                "type": typeKey,
+                "event_id": correlation,
+                "correlation_id": correlation,
+                "deepLink": "aladdin://family/location"
+            ],
+            delay: 0.2
+        )
+
+        // Soft server/APNs path via family chat (throttled).
+        Task { @MainActor in
+            GeofenceFamilyBridge.softNotifyFamilyIfNeeded(
+                placeName: name,
+                isArrival: isArrival,
+                regionId: regionIdentifier,
+                localization: localization
+            )
         }
 
         NotificationCenter.default.post(name: .geofenceDayEventsDidChange, object: nil)

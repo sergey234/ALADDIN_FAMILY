@@ -96,8 +96,8 @@ final class ContentSeedProvider {
                         metadata: ContentMetadata(
                             locale: "ru",
                             title: title,
-                            subtitle: "Контент-пакет фазы 2",
-                            description: "Элемент категории \(category.id)",
+                            subtitle: seedSubtitleKey(for: category.id, index: index),
+                            description: seedDescriptionKey(for: category.id, index: index),
                             tags: seedTags(for: category.id),
                             estimatedDurationSec: 300 + index * 60
                         ),
@@ -110,10 +110,10 @@ final class ContentSeedProvider {
         }
 
         return ContentManifest(
-            manifestVersion: 3,
+            manifestVersion: 5,
             generatedAt: Date(),
             minSupportedAppVersion: "1.0.0",
-            checksumSHA256: "seed-manifest-v4",
+            checksumSHA256: "seed-manifest-v5-ux36-w8",
             signature: nil,
             categories: categories,
             items: items
@@ -132,11 +132,43 @@ final class ContentSeedProvider {
     ]
 
     private func seedTags(for categoryId: String) -> [String] {
-        var tags = ["phase2", "seed", categoryId]
+        // UX-36 W8: no user-facing "phase 2" tag label; keep internal `seed` only.
+        var tags = ["seed", categoryId]
         if Self.mnemoSeedCategoryIds.contains(categoryId) {
             tags.append("mnemo")
         }
         return tags
+    }
+
+    /// Human subtitle keys (not "Контент-пакет фазы 2").
+    private func seedSubtitleKey(for categoryId: String, index: Int) -> String {
+        switch categoryId {
+        case ElderlyCategoryKey.safety:
+            return "elderly_seed_safety_sub_\(index + 1)"
+        case ElderlyCategoryKey.memory:
+            return "elderly_seed_memory_sub_\(index + 1)"
+        case ElderlyCategoryKey.activity:
+            return "elderly_seed_activity_sub_\(index + 1)"
+        case ElderlyCategoryKey.health:
+            return "elderly_seed_health_sub_\(index + 1)"
+        default:
+            return "content_seed_subtitle_everyday"
+        }
+    }
+
+    private func seedDescriptionKey(for categoryId: String, index: Int) -> String {
+        switch categoryId {
+        case ElderlyCategoryKey.safety:
+            return "elderly_seed_safety_body_\(index + 1)"
+        case ElderlyCategoryKey.memory:
+            return "elderly_seed_memory_body_\(index + 1)"
+        case ElderlyCategoryKey.activity:
+            return "elderly_seed_activity_body_\(index + 1)"
+        case ElderlyCategoryKey.health:
+            return "elderly_seed_health_body_\(index + 1)"
+        default:
+            return "content_seed_body_generic"
+        }
     }
 
     private func inferredType(for category: String) -> ContentItemType {
@@ -202,15 +234,15 @@ final class ContentSeedProvider {
         case ChildCategoryKey.movies:
             return ["child_seed_movies_1", "child_seed_movies_2", "child_seed_movies_3"]
         case ElderlyCategoryKey.health:
-            return ["Памятка по лекарствам", "Ежедневный контроль давления", "План визита к врачу"]
+            return ["elderly_seed_health_1", "elderly_seed_health_2", "elderly_seed_health_3"]
         case ElderlyCategoryKey.safety:
-            return ["Проверка подозрительных звонков", "Как распознать мошенничество", "Безопасный интернет для 60+"]
+            return ["elderly_seed_safety_1", "elderly_seed_safety_2", "elderly_seed_safety_3"]
         case ElderlyCategoryKey.memory:
-            return ["Тренировка памяти 10 минут", "Лёгкие логические задачи", "Дневник самочувствия"]
+            return ["elderly_seed_memory_1", "elderly_seed_memory_2", "elderly_seed_memory_3"]
         case ElderlyCategoryKey.activity:
-            return ["Мягкая зарядка дома", "Пешая активность без перегрузки", "Режим сна и восстановления"]
+            return ["elderly_seed_activity_1", "elderly_seed_activity_2", "elderly_seed_activity_3"]
         default:
-            return ["Базовый контент", "Дополнительный модуль", "Практический блок"]
+            return ["content_seed_generic_1", "content_seed_generic_2", "content_seed_generic_3"]
         }
     }
 }

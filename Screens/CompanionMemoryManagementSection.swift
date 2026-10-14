@@ -26,7 +26,7 @@ struct CompanionMemoryManagementSection: View {
 
             Text(localizationManager.localized("companion_memory_section_desc"))
                 .font(.caption)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.92))
 
             if isLoading {
                 ProgressView()

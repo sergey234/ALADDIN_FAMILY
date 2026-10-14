@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		IPLS001F90000300C7D34B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = IPLS000F90000300C7D34B /* InfoPlist.strings */; };
-		B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */; };
-		B198A0142F9800100B198A0 /* FamilyReferralInviteRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */; };
-
 		1C7F3E6C86E9371F36A46D11 /* ContentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C182ABADC8EA112F1D9DFCB0 /* ContentManager.swift */; };
 		22D59FAA186F6F0E18288B64 /* ContentValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B972EC304E172696F7BF77F3 /* ContentValidator.swift */; };
 		25089C2E54DD019C68DC0835 /* CharacterSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4B39C1A4FFE5FE1132F2E2 /* CharacterSystem.swift */; };
@@ -173,6 +169,8 @@
 		5E7057032FA12A010065BDC4 /* FamilyLocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */; };
 		5E7057062FA12A020065BDC4 /* FamilyReconcileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */; };
 		5E7057062FA12A070065BDC4 /* SubscriptionProfileCaption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */; };
+		UX36W602F90000100C7D34B /* AccountRegistrationDateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W601F90000100C7D34B /* AccountRegistrationDateStore.swift */; };
+		UX36W608F90000100C7D34B /* UX36W6RegistrationDateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W607F90000100C7D34B /* UX36W6RegistrationDateTests.swift */; };
 		5E8A10022FA12A100065BDC4 /* NotificationAppSettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */; };
 		5E95A0022F9B000100000001 /* RecursionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0012F9B000100000001 /* RecursionMonitor.swift */; };
 		5E95A0042F9B000200000001 /* StackSizeMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0032F9B000200000001 /* StackSizeMonitor.swift */; };
@@ -230,10 +228,8 @@
 		5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309312EA6CCBD00C7D34B /* Spacing.swift */; };
 		5EC309362EA6CCBD00C7D34B /* Fonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309322EA6CCBD00C7D34B /* Fonts.swift */; };
 		5EC309372EA6CCBD00C7D34B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309332EA6CCBD00C7D34B /* Colors.swift */; };
-		A5B1A00100000001C7D34B /* TariffAccentPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B1A00100000002C7D34B /* TariffAccentPalette.swift */; };
 		5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */; };
 		5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */; };
-		A1B2C3D4E5F60718293A0002 /* NotificationSmokeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */; };
 		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
 		5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309462EA793D900C7D34B /* CornerRadius.swift */; };
 		5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */; };
@@ -259,6 +255,7 @@
 		A11205002F900221A1120507 /* ContentExperienceRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11205002F900221A1120504 /* ContentExperienceRoute.swift */; };
 		A11205002F900221A1120508 /* ContentExperienceResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11205002F900221A1120505 /* ContentExperienceResolver.swift */; };
 		A1B2C3D41B2C3D41B2C3D412 /* ParticleSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41B2C3D41B2C3D411 /* ParticleSystem.swift */; };
+		A1B2C3D4E5F60718293A0002 /* NotificationSmokeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */; };
 		A1DEAD01B2C3D4E5F607090B /* UnifiedOfflineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD01B2C3D4E5F607090A /* UnifiedOfflineStore.swift */; };
 		A1DEAD02B2C3D4E5F607090B /* OfflineStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD02B2C3D4E5F607090A /* OfflineStorageManager.swift */; };
 		A1DEAD03B2C3D4E5F607090B /* MediaUploadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD03B2C3D4E5F607090A /* MediaUploadManager.swift */; };
@@ -315,6 +312,7 @@
 		A4BBB007 /* LocalThreatDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB006 /* LocalThreatDatabase.swift */; };
 		A4BBB101 /* RemoteNotificationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB100 /* RemoteNotificationsService.swift */; };
 		A5158D529DE1ED1DCE70BE6E /* PersonalizationSystems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F98D82A2A81A994A986F8F /* PersonalizationSystems.swift */; };
+		A5B1A00100000001C7D34B /* TariffAccentPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B1A00100000002C7D34B /* TariffAccentPalette.swift */; };
 		A7TG0002 /* TelegramLinkScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7TG0001 /* TelegramLinkScreen.swift */; };
 		AF3709C338C36C42D9768A4A /* ParentDashboardSystems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDBBBD7CDF6DB4F1892F436 /* ParentDashboardSystems.swift */; };
 		AFAN002F90000200C7D34B /* AntifakeAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFAN001F90000200C7D34B /* AntifakeAnalytics.swift */; };
@@ -323,7 +321,6 @@
 		AFCD0052F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0032F90000200C7D34B /* AntifakeCallDirectoryStore.swift */; };
 		AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */; };
-		AFMODE22F90000100C7D34B /* AntifakeTextCheckModeResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */; };
 		AFCD0332F90000200C7D34B /* AntifakeCheckHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */; };
 		AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */; };
 		AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */; };
@@ -335,18 +332,20 @@
 		AFCD0552F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0542F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift */; };
 		AFCH004F90000200C7D34B /* AntifakeCheckHistoryPDFExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCH003F90000200C7D34B /* AntifakeCheckHistoryPDFExporterTests.swift */; };
 		AFCT0492F90000200C7D34B /* AntifakeCallTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCT0482F90000200C7D34B /* AntifakeCallTabView.swift */; };
+		AFFAMSH22F90000100C7D34B /* AntifakeFamilyShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */; };
+		AFFAMSHT22F90000100C7D34B /* AntifakeFamilyShareTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */; };
 		AFHUB22F90000100C7D34B /* AntifakeHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFHUB12F90000100C7D34B /* AntifakeHubScreen.swift */; };
 		AFIPG22F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFIPG12F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift */; };
 		AFLC002F90000200C7D34B /* AntifakeLastCallContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFLC001F90000200C7D34B /* AntifakeLastCallContext.swift */; };
 		AFMED22F90000100C7D34B /* AntifakeMediaCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMED12F90000100C7D34B /* AntifakeMediaCheckView.swift */; };
 		AFMOAT22F90000100C7D34B /* AntifakeFamilyMoatViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMOAT12F90000100C7D34B /* AntifakeFamilyMoatViews.swift */; };
+		AFMODE22F90000100C7D34B /* AntifakeTextCheckModeResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */; };
 		AFMVM22F90000100C7D34B /* AntifakeMediaCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMVM12F90000100C7D34B /* AntifakeMediaCheckViewModel.swift */; };
 		AFNP002F90000200C7D34B /* AntifakePhonePrivacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP001F90000200C7D34B /* AntifakePhonePrivacy.swift */; };
 		AFNP004F90000200C7D34B /* AntifakePrivacyWipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP003F90000200C7D34B /* AntifakePrivacyWipe.swift */; };
 		AFNP006F90000200C7D34B /* AntifakePhonePrivacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */; };
 		AFNP008F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFNP007F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		AFNP010F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFNP009F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
-		APCB0022F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		AFPC002F90000200C7D34B /* AntifakePostCallPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFPC001F90000200C7D34B /* AntifakePostCallPolicy.swift */; };
 		AFPC004F90000200C7D34B /* AntifakePostCallFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFPC003F90000200C7D34B /* AntifakePostCallFlowTests.swift */; };
 		AFPR002F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
@@ -359,40 +358,15 @@
 		AFSh0072F90000100C7D34B /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0062F90000100C7D34B /* ShareViewController.swift */; };
 		AFSh0112F90000100C7D34B /* ALADDINAntifakeShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AFSh0222F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */; };
-		DPAUSE_T22F90000100C7D34B /* DevicePauseSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DPAUSE_T12F90000100C7D34B /* DevicePauseSchedulerTests.swift */; };
 		AFSh0242F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */; };
 		AFTIC22F90000100C7D34B /* AntifakeTextInputClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */; };
-		VSLS0412F90000100C7D34B /* ClipboardSafetyServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */; };
-		VSLR0412F90000100C7D34B /* VoiceIntentRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */; };
-		VSLS0212F90000100C7D34B /* ClipboardSafetyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */; };
-		VSLR0212F90000100C7D34B /* VoiceIntentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */; };
-		VSLN0A12F90000100C7D34B /* VoiceDayIntentStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */; };
-		VSLN0812F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */; };
-		VSLN0612F90000100C7D34B /* VoiceDayIntentStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */; };
-		VSLN0412F90000100C7D34B /* VoiceSafetyNowChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */; };
-		VSLN0212F90000100C7D34B /* VoiceSafetyNowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */; };
-		VSLW0212F90000100C7D34B /* VoiceWeeklyDigestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */; };
-		VSLW0412F90000100C7D34B /* VoiceWeeklyDigestSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */; };
-		VSLW0612F90000100C7D34B /* VoiceRemindScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */; };
-		VSLW0812F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */; };
-		QAP022F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */; };
-		QAH042F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */; };
-
-		WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		WDGT0302F90000100C7D34B /* ALADDINWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */; };
-		WDGT0312F90000100C7D34B /* SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* SharedDataManager.swift */; };
-		WDGT0322F90000100C7D34B /* WellnessCheckinWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */; };
-		WDGT0332F90000100C7D34B /* VoiceSafetyNowWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */; };
-		WDGT0342F90000100C7D34B /* WidgetL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0403F90000100C7D34B /* WidgetL10n.swift */; };
-
 		AFTIC42F90000100C7D34B /* AntifakeTextInputClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */; };
 		AFVMC22F90000100C7D34B /* AntifakeTextCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */; };
 		AFVPRES22F90000100C7D34B /* AntifakeVerdictPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */; };
-		AFFAMSH22F90000100C7D34B /* AntifakeFamilyShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */; };
 		AFVPREST22F90000100C7D34B /* AntifakeVerdictPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */; };
-		AFFAMSHT22F90000100C7D34B /* AntifakeFamilyShareTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */; };
 		AFVRD22F90000100C7D34B /* AntifakeVerdictCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */; };
 		AITRST22F90000100C7D34B /* AITrustAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AITRST12F90000100C7D34B /* AITrustAnalytics.swift */; };
+		APCB0022F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		B1000001 /* AddMemberOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000 /* AddMemberOptionsModal.swift */; };
 		B1000011 /* RecoveryCodeModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010 /* RecoveryCodeModal.swift */; };
 		B1000021 /* CollapsibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020 /* CollapsibleSection.swift */; };
@@ -401,6 +375,8 @@
 		B19800022F98000100B19800 /* AIAssistantResponseDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */; };
 		B19800042F98000200B19800 /* FamilyLocalStorePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */; };
 		B19800062F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800052F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift */; };
+		B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */; };
+		B198A0142F9800100B198A0 /* FamilyReferralInviteRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */; };
 		B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000100B1000100B1000100 /* ProtectionFeature.swift */; };
 		B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */; };
 		B2000120B2000120B2000120 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000120B1000120B1000120 /* Toast.swift */; };
@@ -412,8 +388,6 @@
 		B5001200 /* ALADDINUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001100 /* ALADDINUnitTests.swift */; };
 		B5001201 /* APIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001101 /* APIServiceTests.swift */; };
 		B5001202 /* AppConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001102 /* AppConfigTests.swift */; };
-		B70002122F90000100ABC001 /* CallSessionsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */; };
-		B70002142F90000100ABC001 /* PostCallSafetyPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */; };
 		B5001203 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001103 /* AppDelegateTests.swift */; };
 		B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001104 /* FamilyRegistrationViewModelTests.swift */; };
 		B5001206 /* LocalizationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001106 /* LocalizationManagerTests.swift */; };
@@ -436,21 +410,13 @@
 		B5002204 /* WidgetConfigurationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002104 /* WidgetConfigurationUITests.swift */; };
 		B6000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000 /* AppDelegate.swift */; };
 		B6000003 /* IoTSecurityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000002 /* IoTSecurityModule.swift */; };
-		DPAUSE22F90000100C7D34B /* DevicePauseScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DPAUSE12F90000100C7D34B /* DevicePauseScheduler.swift */; };
-		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* SharedDataManager.swift */; };
+		B6000201 /* SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* SharedDataManager.swift */; };
 		B70001022F90000100ABC001 /* Screens/VoiceNotesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001012F90000100ABC001 /* Screens/VoiceNotesScreen.swift */; };
 		B70001042F90000100ABC001 /* ViewModels/VoiceNotesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001032F90000100ABC001 /* ViewModels/VoiceNotesViewModel.swift */; };
 		B70001062F90000100ABC001 /* Shared/Components/VoiceNotes/QuickRecorderBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001052F90000100ABC001 /* Shared/Components/VoiceNotes/QuickRecorderBar.swift */; };
 		B70001082F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001072F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift */; };
 		B70001102F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700010F2F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift */; };
 		B70001122F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001112F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift */; };
-		B70002022F90000100ABC001 /* Core/Models/CallSessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002012F90000100ABC001 /* CallSessionModels.swift */; };
-		B70002042F90000100ABC001 /* Core/Storage/CallSessionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002032F90000100ABC001 /* CallSessionsStore.swift */; };
-		B70002062F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002052F90000100ABC001 /* CallsAccessPolicy.swift */; };
-		B70002082F90000100ABC001 /* Core/Security/CallsLifecycleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002072F90000100ABC001 /* CallsLifecycleService.swift */; };
-		B700020A2F90000100ABC001 /* Core/Audio/CallSummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002092F90000100ABC001 /* CallSummaryService.swift */; };
-		B700020C2F90000100ABC001 /* Screens/CallsHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700020B2F90000100ABC001 /* CallsHubScreen.swift */; };
-		B700020E2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700020D2F90000100ABC001 /* CallsAfterMemorySheet.swift */; };
 		B70001142F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001132F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift */; };
 		B70001162F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001152F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift */; };
 		B70001182F90000100ABC001 /* Core/Audio/SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001172F90000100ABC001 /* Core/Audio/SpeechManager.swift */; };
@@ -464,6 +430,15 @@
 		B70001282F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNotesStructureSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001272F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNotesStructureSheet.swift */; };
 		B700012A2F90000100ABC001 /* Core/Audio/VoiceDayRecapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001292F90000100ABC001 /* Core/Audio/VoiceDayRecapService.swift */; };
 		B700012C2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700012B2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift */; };
+		B70002022F90000100ABC001 /* Core/Models/CallSessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002012F90000100ABC001 /* Core/Models/CallSessionModels.swift */; };
+		B70002042F90000100ABC001 /* Core/Storage/CallSessionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002032F90000100ABC001 /* Core/Storage/CallSessionsStore.swift */; };
+		B70002062F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002052F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift */; };
+		B70002082F90000100ABC001 /* Core/Security/CallsLifecycleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002072F90000100ABC001 /* Core/Security/CallsLifecycleService.swift */; };
+		B700020A2F90000100ABC001 /* Core/Audio/CallSummaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002092F90000100ABC001 /* Core/Audio/CallSummaryService.swift */; };
+		B700020C2F90000100ABC001 /* Screens/CallsHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700020B2F90000100ABC001 /* Screens/CallsHubScreen.swift */; };
+		B700020E2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700020D2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift */; };
+		B70002122F90000100ABC001 /* CallSessionsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */; };
+		B70002142F90000100ABC001 /* PostCallSafetyPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */; };
 		BBA015D5E9934BF812A0EB4B /* ContentBackgroundSyncScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63C614AC62842AC587C5FEC /* ContentBackgroundSyncScheduler.swift */; };
 		BD26C5125CFE96566C6937C6 /* ContentSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02521A3B3B04A48D3E4FBF41 /* ContentSyncManager.swift */; };
 		BFB5BC80C5B21D5793BFD243 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE833BC78CCFCA19CB5FB223 /* AudioManager.swift */; };
@@ -524,9 +499,10 @@
 		D45B3CF25BA5F021571AAD43 /* ImplementationPlanProgressValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = C422BEE58F91FA0A69D6E136 /* ImplementationPlanProgressValues.swift */; };
 		D7C400012F71B001A0000002 /* ChildRosterReconcilePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C400012F71B001A0000001 /* ChildRosterReconcilePolicy.swift */; };
 		DCAF0B210A7CBA8CB54645CF /* AnimatedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EB6930E6F360AC9287443FA /* AnimatedButton.swift */; };
+		DPAUSE22F90000100C7D34B /* DevicePauseScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DPAUSE12F90000100C7D34B /* DevicePauseScheduler.swift */; };
+		DPAUSE_T22F90000100C7D34B /* DevicePauseSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DPAUSE_T12F90000100C7D34B /* DevicePauseSchedulerTests.swift */; };
 		DVCMP22F90000100C7D34B /* DeviceComponentsScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVCMP12F90000100C7D34B /* DeviceComponentsScanViewModel.swift */; };
 		DVCOV22F90000100C7D34B /* DeviceHubThreatCoverageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVCOV12F90000100C7D34B /* DeviceHubThreatCoverageView.swift */; };
-		HMSEC22F90000100C7D34B /* HomeMapSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = HMSEC12F90000100C7D34B /* HomeMapSection.swift */; };
 		DVCYB22F90000100C7D34B /* DeviceCyberScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVCYB12F90000100C7D34B /* DeviceCyberScanViewModel.swift */; };
 		DVEICT22F90000100C7D34B /* DeviceEicarScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVEICT12F90000100C7D34B /* DeviceEicarScanTests.swift */; };
 		DVHUB22F90000100C7D34B /* DeviceHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVHUB12F90000100C7D34B /* DeviceHubScreen.swift */; };
@@ -536,6 +512,8 @@
 		DVSRC22F90000100C7D34B /* DeviceScanResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVSRC12F90000100C7D34B /* DeviceScanResultCard.swift */; };
 		DVTHR22F90000100C7D34B /* DeviceThreatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVTHR12F90000100C7D34B /* DeviceThreatCatalog.swift */; };
 		DVTHRT22F90000100C7D34B /* DeviceThreatCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVTHRT12F90000100C7D34B /* DeviceThreatCatalogTests.swift */; };
+		UX36W208F90000100C7D34B /* UX36W2PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W207F90000100C7D34B /* UX36W2PresentationTests.swift */; };
+		UX36W408F90000100C7D34B /* UX36W4ReliabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W407F90000100C7D34B /* UX36W4ReliabilityTests.swift */; };
 		E0509DCDCFF9B0786EC86376 /* ContentCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216769616BF4C23F656C98BF /* ContentCacheManager.swift */; };
 		E12D4A8B90123456ABCD1021 /* ImplementationPlanDashboardMirror.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */; };
 		E1CACHE0202F1E40000E2EE01 /* FamilyChatCiphertextCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1CACHE0102F1E40000E2EE01 /* FamilyChatCiphertextCache.swift */; };
@@ -566,7 +544,6 @@
 		F12D4A8B90123456ABCD1031 /* PlanItem275CatalogMirror.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12D4A8B90123456ABCD1030 /* PlanItem275CatalogMirror.generated.swift */; };
 		F12D4A8B90123456ABCD1033 /* PlanItem275CatalogWorkbenchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */; };
 		F7B100012F71B001A0000002 /* FamilyAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B100012F71B001A0000001 /* FamilyAccessPolicy.swift */; };
-		PSGATE22F90000100C7D34B /* ParentSessionGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = PSGATE12F90000100C7D34B /* ParentSessionGate.swift */; };
 		F9300B2CF304E25461E26B17 /* ContentDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BFCC641FBD9CCE8D91BA6B /* ContentDownloader.swift */; };
 		FAMLIST22F90000100C7D34B /* FamilyListStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAMLIST12F90000100C7D34B /* FamilyListStore.swift */; };
 		FAMLIST42F90000100C7D34B /* FamilyListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAMLIST32F90000100C7D34B /* FamilyListScreen.swift */; };
@@ -575,6 +552,27 @@
 		FCHCV22F90000100C7D34B /* FamilyChildThreatCoverageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHCV12F90000100C7D34B /* FamilyChildThreatCoverageView.swift */; };
 		FCHLD22F90000100C7D34B /* FamilyChildThreatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHLD12F90000100C7D34B /* FamilyChildThreatCatalog.swift */; };
 		FCHLDT22F90000100C7D34B /* FamilyChildThreatCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */; };
+		FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */; };
+		FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL05112F90000100C7D34B /* GeofenceEventStore.swift */; };
+		UX36W502F90000100C7D34B /* GeofenceFamilyBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W501F90000100C7D34B /* GeofenceFamilyBridge.swift */; };
+		UX36W508F90000100C7D34B /* UX36W5GeoHybridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W507F90000100C7D34B /* UX36W5GeoHybridTests.swift */; };
+		FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL07112F90000100C7D34B /* FamilyDayStripView.swift */; };
+		UX36W206F90000100C7D34B /* ParentalScreenTimeFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */; };
+		UX36W204F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */; };
+		UX36W202F90000100C7D34B /* DeviceThreatPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W201F90000100C7D34B /* DeviceThreatPresentation.swift */; };
+		UX36W10F90000100C7D34C /* FamilySecondHandPackViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */; };
+		UX36W1T3F90000100C7D34C /* SecuritySettingsFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */; };
+		FSL13122F90000100C7D34B /* FamilyImOkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13112F90000100C7D34B /* FamilyImOkService.swift */; };
+		FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13212F90000100C7D34B /* FamilyImOkButton.swift */; };
+		FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */; };
+		FSL14222F90000100C7D34B /* FamilyShieldWeekDigestCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */; };
+		FSLBAT022F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */; };
+		FSLGEO422F90000100C7D34B /* GeofencePlacesConsentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */; };
+		FSLGEO522F90000100C7D34B /* GeofenceNoShowMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */; };
+		FSLGEO622F90000100C7D34B /* GeofenceMonitoringBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */; };
+		FSLHAB622F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */; };
+		FSLPRE622F90000100C7D34B /* PrivacyPremiumErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */; };
+		FSLSOS622F90000100C7D34B /* FamilyNeedHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */; };
 		FWS0622F90000100C7D34B /* AntifakeSettingsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS0612F90000100C7D34B /* AntifakeSettingsModels.swift */; };
 		FWS0632F90000100C7D34B /* AntifakeSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS062A2F90000100C7D34B /* AntifakeSettingsService.swift */; };
 		FWS0642F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS06412F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift */; };
@@ -582,27 +580,12 @@
 		FWS20322F90000100C7D34B /* FamilyHabitRemindersScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */; };
 		FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */; };
 		FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */; };
-		FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */; };
 		FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */; };
 		FWS20722F90000100C7D34B /* AntifakeTransferCheckCTA.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */; };
 		FWS20822F90000100C7D34B /* AntifakeConfidenceRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20812F90000100C7D34B /* AntifakeConfidenceRingView.swift */; };
 		FWS20922F90000100C7D34B /* AntifakeMediaPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20912F90000100C7D34B /* AntifakeMediaPreviewView.swift */; };
 		FWS20A22F90000100C7D34B /* FamilyIncidentFeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */; };
 		FWS20B22F90000100C7D34B /* FamilyIncidentFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */; };
-		FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL05112F90000100C7D34B /* GeofenceEventStore.swift */; };
-		FSLGEO522F90000100C7D34B /* GeofenceNoShowMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */; };
-		FSLGEO422F90000100C7D34B /* GeofencePlacesConsentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */; };
-		FSLGEO622F90000100C7D34B /* GeofenceMonitoringBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */; };
-		FSLHAB622F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */; };
-		FSLPRE622F90000100C7D34B /* PrivacyPremiumErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */; };
-		FSLBAT022F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */; };
-		FSL13122F90000100C7D34B /* FamilyImOkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13112F90000100C7D34B /* FamilyImOkService.swift */; };
-		FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13212F90000100C7D34B /* FamilyImOkButton.swift */; };
-		FSLSOS622F90000100C7D34B /* FamilyNeedHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */; };
-		FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL07112F90000100C7D34B /* FamilyDayStripView.swift */; };
-		FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */; };
-		FSL14222F90000100C7D34B /* FamilyShieldWeekDigestCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */; };
-		WDGT0352F90000100C7D34B /* CheckLinkWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0405F90000100C7D34B /* CheckLinkWidget.swift */; };
 		FWS20C22F90000100C7D34B /* FamilyIncidentFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */; };
 		FWS20D22F90000100C7D34B /* DebugSFMHealthSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20D12F90000100C7D34B /* DebugSFMHealthSection.swift */; };
 		FWS20E22F90000100C7D34B /* FamilyMomentsLocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICN04F90000100C7D34B /* FamilyMomentsLocalStore.swift */; };
@@ -630,14 +613,13 @@
 		FWS4W0612F90000100C7D34B /* WellnessStudentModeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */; };
 		FWS4W0812F90000100C7D34B /* CompanionDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */; };
 		FWSW0122F90000100C7D34B /* FamilySafeWordHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */; };
-		QAH022F90000100C7D34B /* FamilyChatLocalHiddenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */; };
-		QAH062F90000100C7D34B /* FamilyImOkOfflineQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */; };
 		FWSW0222F90000100C7D34B /* FamilySafeWordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */; };
 		FWSW0322F90000100C7D34B /* FamilySafeWordViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */; };
 		FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */; };
 		GEOGC22F90000100C7D34B /* GeofenceGeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */; };
 		GOBLIN22F90000100C7D34B /* CompanionBreakStepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */; };
 		GOBLIN42F90000100C7D34B /* CompanionBreakStepsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */; };
+		HMSEC22F90000100C7D34B /* HomeMapSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = HMSEC12F90000100C7D34B /* HomeMapSection.swift */; };
 		IDATT22F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDATT12F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift */; };
 		IDCOV22F90000100C7D34B /* IdentityHubThreatCoverageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDCOV12F90000100C7D34B /* IdentityHubThreatCoverageView.swift */; };
 		IDDET22F90000100C7D34B /* IdentityDetectViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDDET12F90000100C7D34B /* IdentityDetectViewModel.swift */; };
@@ -647,6 +629,7 @@
 		IDHUB22F90000100C7D34B /* IdentityHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDHUB12F90000100C7D34B /* IdentityHubScreen.swift */; };
 		IDMON22F90000100C7D34B /* IdentityMonitorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDMON12F90000100C7D34B /* IdentityMonitorViewModel.swift */; };
 		IDMONT22F90000100C7D34B /* IdentityMonitorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */; };
+		IPLS001F90000300C7D34B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = IPLS000F90000300C7D34B /* InfoPlist.strings */; };
 		MNEM0002B2C3D4E5F6070801 /* MnemoCategoryChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = MNEM0001B2C3D4E5F6070801 /* MnemoCategoryChrome.swift */; };
 		MNEM0004B2C3D4E5F6070802 /* MnemonicSRSStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = MNEM0003B2C3D4E5F6070802 /* MnemonicSRSStore.swift */; };
 		MNEM0006B2C3D4E5F6070803 /* MnemonicTechnique.swift in Sources */ = {isa = PBXBuildFile; fileRef = MNEM0005B2C3D4E5F6070803 /* MnemonicTechnique.swift */; };
@@ -705,9 +688,14 @@
 		PRMON22F90000100C7D34B /* ParentalMonitoringValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMON12F90000100C7D34B /* ParentalMonitoringValidation.swift */; };
 		PRMONT22F90000100C7D34B /* ParentalMonitoringValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMONT12F90000100C7D34B /* ParentalMonitoringValidationTests.swift */; };
 		PRVHUB22F90000100C7D34B /* PrivacyHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRVHUB12F90000100C7D34B /* PrivacyHubScreen.swift */; };
+		PSGATE22F90000100C7D34B /* ParentSessionGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = PSGATE12F90000100C7D34B /* ParentSessionGate.swift */; };
 		PSYCHGM22F90000100C7D34B /* WellnessGuideModeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = PSYCHGM12F90000100C7D34B /* WellnessGuideModeSheet.swift */; };
 		PSYCHGS22F90000100C7D34B /* WellnessGuideSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PSYCHGS12F90000100C7D34B /* WellnessGuideSessionStore.swift */; };
 		PSYCHSC22F90000100C7D34B /* WellnessSessionCloseSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = PSYCHSC12F90000100C7D34B /* WellnessSessionCloseSheet.swift */; };
+		QAH022F90000100C7D34B /* FamilyChatLocalHiddenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */; };
+		QAH042F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */; };
+		QAH062F90000100C7D34B /* FamilyImOkOfflineQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */; };
+		QAP022F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */; };
 		SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */; };
 		SECVRDT22F90000100C7D34B /* (null) in Sources */ = {isa = PBXBuildFile; };
 		SH0ME0022F90000100C7D34B /* SimpleHomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = SH0ME0012F90000100C7D34B /* SimpleHomeScreen.swift */; };
@@ -716,6 +704,24 @@
 		UNICN00F90000100C7D34B /* FamilyHabitDuePingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20712F90000100C7D34B /* FamilyHabitDuePingFeature.swift */; };
 		UNICN01F90000100C7D34B /* HabitStreakStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICN03F90000100C7D34B /* HabitStreakStore.swift */; };
 		UNICN02F90000100C7D34B /* WellnessBreath2MinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICN05F90000100C7D34B /* WellnessBreath2MinView.swift */; };
+		UXCOBAR22F90000100C7D34B /* AladdinComposerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */; };
+		UXCOBDL22F90000100C7D34B /* BundledSleepStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */; };
+		UXCOMTH22F90000100C7D34B /* LocalDailyReminderMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */; };
+		UXCOQ1222F90000100C7D34B /* AladdinOutboundQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */; };
+		UXCOTST22F90000100C7D34B /* AladdinComposerOfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */; };
+		VSLN0212F90000100C7D34B /* VoiceSafetyNowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */; };
+		VSLN0412F90000100C7D34B /* VoiceSafetyNowChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */; };
+		VSLN0612F90000100C7D34B /* VoiceDayIntentStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */; };
+		VSLN0812F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */; };
+		VSLN0A12F90000100C7D34B /* VoiceDayIntentStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */; };
+		VSLR0212F90000100C7D34B /* VoiceIntentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */; };
+		VSLR0412F90000100C7D34B /* VoiceIntentRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */; };
+		VSLS0212F90000100C7D34B /* ClipboardSafetyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */; };
+		VSLS0412F90000100C7D34B /* ClipboardSafetyServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */; };
+		VSLW0212F90000100C7D34B /* VoiceWeeklyDigestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */; };
+		VSLW0412F90000100C7D34B /* VoiceWeeklyDigestSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */; };
+		VSLW0612F90000100C7D34B /* VoiceRemindScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */; };
+		VSLW0812F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */; };
 		W1N000012F90000100WELL01 /* WellnessCompanionNavUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1N000002F90000100WELL01 /* WellnessCompanionNavUITests.swift */; };
 		W4C00001 /* ChildContentProgressUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = W4C00000 /* ChildContentProgressUITests.swift */; };
 		W5B20010 /* BackgroundMusicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = W5B20000 /* BackgroundMusicController.swift */; };
@@ -724,6 +730,13 @@
 		W5F20020 /* Localization in Resources */ = {isa = PBXBuildFile; fileRef = W5F20021 /* Localization */; };
 		W5F20042 /* Companion in Resources */ = {isa = PBXBuildFile; fileRef = W5F20041 /* Companion */; };
 		W5F20052 /* Wellness in Resources */ = {isa = PBXBuildFile; fileRef = W5F20051 /* Wellness */; };
+		WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		WDGT0302F90000100C7D34B /* ALADDINWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */; };
+		WDGT0312F90000100C7D34B /* SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* SharedDataManager.swift */; };
+		WDGT0322F90000100C7D34B /* WellnessCheckinWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */; };
+		WDGT0332F90000100C7D34B /* VoiceSafetyNowWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */; };
+		WDGT0342F90000100C7D34B /* WidgetL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0403F90000100C7D34B /* WidgetL10n.swift */; };
+		WDGT0352F90000100C7D34B /* CheckLinkWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0405F90000100C7D34B /* CheckLinkWidget.swift */; };
 		WELDRM22F90000100C7D34B /* WellnessDreamJournalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELDRM12F90000100C7D34B /* WellnessDreamJournalScreen.swift */; };
 		WELLAF22F90000100C7D34B /* WellnessAssessmentFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLAF12F90000100C7D34B /* WellnessAssessmentFlowScreen.swift */; };
 		WELLAPI22F90000100C7D34B /* WellnessAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLAPI12F90000100C7D34B /* WellnessAPIService.swift */; };
@@ -735,11 +748,6 @@
 		WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLMDL12F90000100C7D34B /* WellnessModels.swift */; };
 		WELLOC22F90000100C7D34B /* WellnessOutcomeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOC12F90000100C7D34B /* WellnessOutcomeSheet.swift */; };
 		WELLOF22F90000100C7D34B /* WellnessOfflineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOF12F90000100C7D34B /* WellnessOfflineStore.swift */; };
-		UXCOBAR22F90000100C7D34B /* AladdinComposerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */; };
-		UXCOQ1222F90000100C7D34B /* AladdinOutboundQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */; };
-		UXCOMTH22F90000100C7D34B /* LocalDailyReminderMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */; };
-		UXCOBDL22F90000100C7D34B /* BundledSleepStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */; };
-		UXCOTST22F90000100C7D34B /* AladdinComposerOfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */; };
 		WELLOOP22F90000100C7D34B /* WellnessLoopCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */; };
 		WELLPAY22F90000100C7D34B /* WellnessPremiumPaywallSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLPAY12F90000100C7D34B /* WellnessPremiumPaywallSheet.swift */; };
 		WELLPDF22F90000100C7D34B /* WellnessProgressPDFService.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLPDF12F90000100C7D34B /* WellnessProgressPDFService.swift */; };
@@ -757,13 +765,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		WDGT0122F90000100C7D34B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A0FFFFF6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = WDGT0172F90000100C7D34B;
-			remoteInfo = ALADDINWidgets;
-		};
 		5E61A0A52EFB38ED0039093A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A0FFFFF6 /* Project object */;
@@ -799,6 +800,13 @@
 			remoteGlobalIDString = A0FFFFFD;
 			remoteInfo = ALADDIN;
 		};
+		WDGT0122F90000100C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = WDGT0172F90000100C7D34B;
+			remoteInfo = ALADDINWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -817,9 +825,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReferralAnalytics.swift; path = Core/Analytics/FamilyReferralAnalytics.swift; sourceTree = "<group>"; };
-		B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReferralInviteRouter.swift; path = FamilyReferralInviteRouter.swift; sourceTree = "<group>"; };
-
 		02521A3B3B04A48D3E4FBF41 /* ContentSyncManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentSyncManager.swift; path = Core/Content/Sync/ContentSyncManager.swift; sourceTree = "<group>"; };
 		04BFCC641FBD9CCE8D91BA6B /* ContentDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentDownloader.swift; path = Core/Content/Sync/ContentDownloader.swift; sourceTree = "<group>"; };
 		216769616BF4C23F656C98BF /* ContentCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentCacheManager.swift; path = Core/Content/Cache/ContentCacheManager.swift; sourceTree = "<group>"; };
@@ -990,6 +995,8 @@
 		5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyLocalStore.swift; path = Core/Managers/FamilyLocalStore.swift; sourceTree = "<group>"; };
 		5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReconcileService.swift; path = Core/Managers/FamilyReconcileService.swift; sourceTree = "<group>"; };
 		5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionProfileCaption.swift; path = Core/Services/SubscriptionProfileCaption.swift; sourceTree = "<group>"; };
+		UX36W601F90000100C7D34B /* AccountRegistrationDateStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountRegistrationDateStore.swift; path = Core/Services/AccountRegistrationDateStore.swift; sourceTree = "<group>"; };
+		UX36W607F90000100C7D34B /* UX36W6RegistrationDateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UX36W6RegistrationDateTests.swift; sourceTree = "<group>"; };
 		5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationAppSettingsSync.swift; path = Core/Managers/NotificationAppSettingsSync.swift; sourceTree = "<group>"; };
 		5E95A0012F9B000100000001 /* RecursionMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecursionMonitor.swift; path = Core/Diagnostics/RecursionMonitor.swift; sourceTree = "<group>"; };
 		5E95A0032F9B000200000001 /* StackSizeMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StackSizeMonitor.swift; path = Core/Diagnostics/StackSizeMonitor.swift; sourceTree = "<group>"; };
@@ -1012,6 +1019,10 @@
 		5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 26_ActivationCodeScreen.swift; sourceTree = "<group>"; };
 		5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QuarantineManager.swift; path = Core/Antivirus/QuarantineManager.swift; sourceTree = "<group>"; };
 		5EB1A4A62F64B8050030F5C1 /* ComponentAnalyticsModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAnalyticsModels.swift; path = Core/Analytics/ComponentAnalyticsModels.swift; sourceTree = "<group>"; };
+		5EB25399307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = ALADDINSubscriptions.storekit; path = NEW_BACKUP_ALADDIN_20261012_123929/ALADDIN/StoreKit/ALADDINSubscriptions.storekit; sourceTree = "<group>"; };
+		5EB2539A307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = ALADDINSubscriptions.storekit; path = NEW_BACKUP_ALADDIN_20261012_122938/ALADDIN/StoreKit/ALADDINSubscriptions.storekit; sourceTree = "<group>"; };
+		5EB2539B307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = ALADDINSubscriptions.storekit; path = NEW_BACKUP_ALADDIN_20261012_123625/ALADDIN/StoreKit/ALADDINSubscriptions.storekit; sourceTree = "<group>"; };
+		5EB2539C307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = ALADDINSubscriptions.storekit; path = ALADDIN/StoreKit/ALADDINSubscriptions.storekit; sourceTree = "<group>"; };
 		5EBA79382F66C70B001C50E3 /* TokenManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TokenManager.swift; path = Core/Managers/TokenManager.swift; sourceTree = "<group>"; };
 		5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
 		5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
@@ -1049,10 +1060,8 @@
 		5EC309312EA6CCBD00C7D34B /* Spacing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		5EC309322EA6CCBD00C7D34B /* Fonts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
 		5EC309332EA6CCBD00C7D34B /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
-		A5B1A00100000002C7D34B /* TariffAccentPalette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TariffAccentPalette.swift; sourceTree = "<group>"; };
 		5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINNavigationBar.swift; path = Shared/Components/Navigation/ALADDINNavigationBar.swift; sourceTree = "<group>"; };
 		5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Core/Notifications/NotificationManager.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationSmokeCatalog.swift; path = Core/Notifications/NotificationSmokeCatalog.swift; sourceTree = "<group>"; };
 		5EC309422EA793A000C7D34B /* HapticFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HapticFeedback.swift; path = Shared/Components/HapticFeedback.swift; sourceTree = "<group>"; };
 		5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/ALADDINToggle.swift; sourceTree = "<group>"; };
 		5EC309462EA793D900C7D34B /* CornerRadius.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
@@ -1085,6 +1094,7 @@
 		A11205002F900221A1120505 /* ContentExperienceResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentExperienceResolver.swift; path = Core/Content/Experiences/ContentExperienceResolver.swift; sourceTree = "<group>"; };
 		A11205002F900221A1120506 /* ContentExperienceResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentExperienceResolverTests.swift; sourceTree = "<group>"; };
 		A1B2C3D41B2C3D41B2C3D411 /* ParticleSystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParticleSystem.swift; path = Core/Animation/ParticleSystem.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationSmokeCatalog.swift; path = Core/Notifications/NotificationSmokeCatalog.swift; sourceTree = "<group>"; };
 		A1DEAD01B2C3D4E5F607090A /* UnifiedOfflineStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnifiedOfflineStore.swift; path = Core/Offline/UnifiedOfflineStore.swift; sourceTree = "<group>"; };
 		A1DEAD02B2C3D4E5F607090A /* OfflineStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OfflineStorageManager.swift; path = Core/Offline/OfflineStorageManager.swift; sourceTree = "<group>"; };
 		A1DEAD03B2C3D4E5F607090A /* MediaUploadManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaUploadManager.swift; path = Core/Media/MediaUploadManager.swift; sourceTree = "<group>"; };
@@ -1140,6 +1150,7 @@
 		A4BBB004 /* ChildGoalEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildGoalEditorView.swift; sourceTree = "<group>"; };
 		A4BBB006 /* LocalThreatDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalThreatDatabase.swift; path = Core/Antivirus/LocalThreatDatabase.swift; sourceTree = "<group>"; };
 		A4BBB100 /* RemoteNotificationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RemoteNotificationsService.swift; path = Core/Notifications/RemoteNotificationsService.swift; sourceTree = "<group>"; };
+		A5B1A00100000002C7D34B /* TariffAccentPalette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TariffAccentPalette.swift; sourceTree = "<group>"; };
 		A7TG0001 /* TelegramLinkScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramLinkScreen.swift; sourceTree = "<group>"; };
 		AFAN001F90000200C7D34B /* AntifakeAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeAnalytics.swift; path = Core/Security/AntifakeAnalytics.swift; sourceTree = "<group>"; };
 		AFCD0012F90000200C7D34B /* CallDirectoryHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallDirectoryHandler.swift; sourceTree = "<group>"; };
@@ -1148,7 +1159,6 @@
 		AFCD0092F90000200C7D34B /* ALADDINCallDirectory.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINCallDirectory.entitlements; sourceTree = "<group>"; };
 		AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINCallDirectory.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeAccessPolicy.swift; path = Core/Security/AntifakeAccessPolicy.swift; sourceTree = "<group>"; };
-		AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckModeResolver.swift; path = Core/Security/AntifakeTextCheckModeResolver.swift; sourceTree = "<group>"; };
 		AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCheckHistoryStore.swift; path = Core/Security/AntifakeCheckHistoryStore.swift; sourceTree = "<group>"; };
 		AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectorySyncService.swift; path = Core/Security/AntifakeCallDirectorySyncService.swift; sourceTree = "<group>"; };
 		AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallObserverService.swift; path = Core/Security/AntifakeCallObserverService.swift; sourceTree = "<group>"; };
@@ -1160,18 +1170,20 @@
 		AFCD0542F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeCallDirectoryStoreTests.swift; sourceTree = "<group>"; };
 		AFCH003F90000200C7D34B /* AntifakeCheckHistoryPDFExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeCheckHistoryPDFExporterTests.swift; sourceTree = "<group>"; };
 		AFCT0482F90000200C7D34B /* AntifakeCallTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallTabView.swift; path = Shared/Components/AntifakeCallTabView.swift; sourceTree = "<group>"; };
+		AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyShareText.swift; path = Core/Models/AntifakeFamilyShareText.swift; sourceTree = "<group>"; };
+		AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeFamilyShareTextTests.swift; sourceTree = "<group>"; };
 		AFHUB12F90000100C7D34B /* AntifakeHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AntifakeHubScreen.swift; sourceTree = "<group>"; };
 		AFIPG12F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeInlinePremiumGateCard.swift; path = Shared/Components/AntifakeInlinePremiumGateCard.swift; sourceTree = "<group>"; };
 		AFLC001F90000200C7D34B /* AntifakeLastCallContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeLastCallContext.swift; path = Core/Security/AntifakeLastCallContext.swift; sourceTree = "<group>"; };
 		AFMED12F90000100C7D34B /* AntifakeMediaCheckView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeMediaCheckView.swift; path = Shared/Components/AntifakeMediaCheckView.swift; sourceTree = "<group>"; };
 		AFMOAT12F90000100C7D34B /* AntifakeFamilyMoatViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyMoatViews.swift; path = Shared/Components/AntifakeFamilyMoatViews.swift; sourceTree = "<group>"; };
+		AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckModeResolver.swift; path = Core/Security/AntifakeTextCheckModeResolver.swift; sourceTree = "<group>"; };
 		AFMVM12F90000100C7D34B /* AntifakeMediaCheckViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeMediaCheckViewModel.swift; path = ViewModels/AntifakeMediaCheckViewModel.swift; sourceTree = "<group>"; };
 		AFNP001F90000200C7D34B /* AntifakePhonePrivacy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakePhonePrivacy.swift; path = Core/Security/AntifakePhonePrivacy.swift; sourceTree = "<group>"; };
 		AFNP003F90000200C7D34B /* AntifakePrivacyWipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakePrivacyWipe.swift; path = Core/Security/AntifakePrivacyWipe.swift; sourceTree = "<group>"; };
 		AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakePhonePrivacyTests.swift; sourceTree = "<group>"; };
 		AFNP007F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AFNP009F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AFPC001F90000200C7D34B /* AntifakePostCallPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakePostCallPolicy.swift; path = Core/Security/AntifakePostCallPolicy.swift; sourceTree = "<group>"; };
 		AFPC003F90000200C7D34B /* AntifakePostCallFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakePostCallFlowTests.swift; sourceTree = "<group>"; };
 		AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -1182,31 +1194,18 @@
 		AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeDeepLinkRouter.swift; path = Core/Security/AntifakeDeepLinkRouter.swift; sourceTree = "<group>"; };
 		AFSh0062F90000100C7D34B /* ShareViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		AFSh0082F90000100C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		IPLS010F90000300C7D34B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		IPLS020F90000300C7D34B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AFSh0092F90000100C7D34B /* ALADDINAntifakeShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINAntifakeShare.entitlements; sourceTree = "<group>"; };
 		AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINAntifakeShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeDeepLinkRouterTests.swift; sourceTree = "<group>"; };
 		AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeSharePayloadStoreTests.swift; sourceTree = "<group>"; };
-		DPAUSE_T12F90000100C7D34B /* DevicePauseSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePauseSchedulerTests.swift; sourceTree = "<group>"; };
 		AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextInputClassifier.swift; path = Core/Security/AntifakeTextInputClassifier.swift; sourceTree = "<group>"; };
-		VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ClipboardSafetyService.swift; path = Core/Security/ClipboardSafetyService.swift; sourceTree = "<group>"; };
-		VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceIntentRouter.swift; path = Core/Voice/VoiceIntentRouter.swift; sourceTree = "<group>"; };
-		VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OpenVoiceSafetyLogIntent.swift; path = Core/Voice/OpenVoiceSafetyLogIntent.swift; sourceTree = "<group>"; };
-		VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceDayIntentStats.swift; path = Core/Audio/VoiceDayIntentStats.swift; sourceTree = "<group>"; };
-		VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceSafetyNowChip.swift; path = Shared/Components/VoiceNotes/VoiceSafetyNowChip.swift; sourceTree = "<group>"; };
-		VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceSafetyNowStore.swift; path = Core/Voice/VoiceSafetyNowStore.swift; sourceTree = "<group>"; };
 		AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeTextInputClassifierTests.swift; sourceTree = "<group>"; };
-		VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardSafetyServiceTests.swift; sourceTree = "<group>"; };
-		VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceIntentRouterTests.swift; sourceTree = "<group>"; };
-		VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDayIntentStatsTests.swift; sourceTree = "<group>"; };
 		AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckViewModel.swift; path = ViewModels/AntifakeTextCheckViewModel.swift; sourceTree = "<group>"; };
 		AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictPresentation.swift; path = Core/Models/AntifakeVerdictPresentation.swift; sourceTree = "<group>"; };
-		AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyShareText.swift; path = Core/Models/AntifakeFamilyShareText.swift; sourceTree = "<group>"; };
 		AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeVerdictPresentationTests.swift; sourceTree = "<group>"; };
-		AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeFamilyShareTextTests.swift; sourceTree = "<group>"; };
 		AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictCard.swift; path = Shared/Components/AntifakeVerdictCard.swift; sourceTree = "<group>"; };
 		AITRST12F90000100C7D34B /* AITrustAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AITrustAnalytics.swift; path = Core/Analytics/AITrustAnalytics.swift; sourceTree = "<group>"; };
+		APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B1000000 /* AddMemberOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddMemberOptionsModal.swift; path = Shared/Components/Modals/AddMemberOptionsModal.swift; sourceTree = "<group>"; };
 		B1000010 /* RecoveryCodeModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeModal.swift; path = Shared/Components/Modals/RecoveryCodeModal.swift; sourceTree = "<group>"; };
 		B1000020 /* CollapsibleSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CollapsibleSection.swift; path = Shared/Components/CollapsibleSection.swift; sourceTree = "<group>"; };
@@ -1223,12 +1222,12 @@
 		B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantResponseDiagnostics.swift; path = Core/Utilities/AIAssistantResponseDiagnostics.swift; sourceTree = "<group>"; };
 		B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyLocalStorePersistenceTests.swift; sourceTree = "<group>"; };
 		B19800052F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyAccessPolicyCaregiverTests.swift; sourceTree = "<group>"; };
+		B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReferralAnalytics.swift; path = Core/Analytics/FamilyReferralAnalytics.swift; sourceTree = "<group>"; };
+		B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyReferralInviteRouter.swift; sourceTree = "<group>"; };
 		B5001010 /* ALADDINUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALADDINUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5001100 /* ALADDINUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINUnitTests.swift; sourceTree = "<group>"; };
 		B5001101 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
 		B5001102 /* AppConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigTests.swift; sourceTree = "<group>"; };
-		B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallSessionsStoreTests.swift; sourceTree = "<group>"; };
-		B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostCallSafetyPolicyTests.swift; sourceTree = "<group>"; };
 		B5001103 /* AppDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateTests.swift; sourceTree = "<group>"; };
 		B5001104 /* FamilyRegistrationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyRegistrationViewModelTests.swift; sourceTree = "<group>"; };
 		B5001105 /* IoTSecurityModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModuleTests.swift; sourceTree = "<group>"; };
@@ -1253,7 +1252,6 @@
 		B5002104 /* WidgetConfigurationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfigurationUITests.swift; sourceTree = "<group>"; };
 		B6000000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B6000002 /* IoTSecurityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModule.swift; sourceTree = "<group>"; };
-		DPAUSE12F90000100C7D34B /* DevicePauseScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DevicePauseScheduler.swift; path = DevicePauseScheduler.swift; sourceTree = "<group>"; };
 		B6000200 /* SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDataManager.swift; sourceTree = "<group>"; };
 		B70001012F90000100ABC001 /* Screens/VoiceNotesScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/VoiceNotesScreen.swift; sourceTree = "<group>"; };
 		B70001032F90000100ABC001 /* ViewModels/VoiceNotesViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModels/VoiceNotesViewModel.swift; sourceTree = "<group>"; };
@@ -1261,13 +1259,6 @@
 		B70001072F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/VoiceNoteCard.swift; sourceTree = "<group>"; };
 		B700010F2F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesRecorderService.swift; sourceTree = "<group>"; };
 		B70001112F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/VoiceNotesStore.swift; sourceTree = "<group>"; };
-		B70002012F90000100ABC001 /* CallSessionModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/CallSessionModels.swift; sourceTree = "<group>"; };
-		B70002032F90000100ABC001 /* CallSessionsStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/CallSessionsStore.swift; sourceTree = "<group>"; };
-		B70002052F90000100ABC001 /* CallsAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Security/CallsAccessPolicy.swift; sourceTree = "<group>"; };
-		B70002072F90000100ABC001 /* CallsLifecycleService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Security/CallsLifecycleService.swift; sourceTree = "<group>"; };
-		B70002092F90000100ABC001 /* CallSummaryService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/CallSummaryService.swift; sourceTree = "<group>"; };
-		B700020B2F90000100ABC001 /* CallsHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/CallsHubScreen.swift; sourceTree = "<group>"; };
-		B700020D2F90000100ABC001 /* CallsAfterMemorySheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/CallsAfterMemorySheet.swift; sourceTree = "<group>"; };
 		B70001132F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesTranscriptionService.swift; sourceTree = "<group>"; };
 		B70001152F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechRecognizerFactory.swift; sourceTree = "<group>"; };
 		B70001172F90000100ABC001 /* Core/Audio/SpeechManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechManager.swift; sourceTree = "<group>"; };
@@ -1281,6 +1272,15 @@
 		B70001272F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNotesStructureSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/VoiceNotesStructureSheet.swift; sourceTree = "<group>"; };
 		B70001292F90000100ABC001 /* Core/Audio/VoiceDayRecapService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceDayRecapService.swift; sourceTree = "<group>"; };
 		B700012B2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift; sourceTree = "<group>"; };
+		B70002012F90000100ABC001 /* Core/Models/CallSessionModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/CallSessionModels.swift; sourceTree = "<group>"; };
+		B70002032F90000100ABC001 /* Core/Storage/CallSessionsStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/CallSessionsStore.swift; sourceTree = "<group>"; };
+		B70002052F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Security/CallsAccessPolicy.swift; sourceTree = "<group>"; };
+		B70002072F90000100ABC001 /* Core/Security/CallsLifecycleService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Security/CallsLifecycleService.swift; sourceTree = "<group>"; };
+		B70002092F90000100ABC001 /* Core/Audio/CallSummaryService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/CallSummaryService.swift; sourceTree = "<group>"; };
+		B700020B2F90000100ABC001 /* Screens/CallsHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/CallsHubScreen.swift; sourceTree = "<group>"; };
+		B700020D2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/CallsAfterMemorySheet.swift; sourceTree = "<group>"; };
+		B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallSessionsStoreTests.swift; sourceTree = "<group>"; };
+		B70002132F90000100ABC001 /* PostCallSafetyPolicyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostCallSafetyPolicyTests.swift; sourceTree = "<group>"; };
 		B972EC304E172696F7BF77F3 /* ContentValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentValidator.swift; path = Core/Content/Validation/ContentValidator.swift; sourceTree = "<group>"; };
 		BRATH012F90000100C7D34B /* BreathAmbientAudioPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BreathAmbientAudioPlayer.swift; path = Core/Audio/BreathAmbientAudioPlayer.swift; sourceTree = "<group>"; };
 		BRATH032F90000100C7D34B /* BreathAmbientAudioControls.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BreathAmbientAudioControls.swift; path = Shared/Components/BreathAmbientAudioControls.swift; sourceTree = "<group>"; };
@@ -1339,9 +1339,10 @@
 		D7C400012F71B001A0000001 /* ChildRosterReconcilePolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChildRosterReconcilePolicy.swift; path = Core/Profile/ChildRosterReconcilePolicy.swift; sourceTree = "<group>"; };
 		DB095637317CC3D261CB777C /* ContentVersionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentVersionManager.swift; path = Core/Content/Versioning/ContentVersionManager.swift; sourceTree = "<group>"; };
 		DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert_backup.cer; sourceTree = "<group>"; };
+		DPAUSE12F90000100C7D34B /* DevicePauseScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevicePauseScheduler.swift; sourceTree = "<group>"; };
+		DPAUSE_T12F90000100C7D34B /* DevicePauseSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePauseSchedulerTests.swift; sourceTree = "<group>"; };
 		DVCMP12F90000100C7D34B /* DeviceComponentsScanViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceComponentsScanViewModel.swift; path = ViewModels/DeviceComponentsScanViewModel.swift; sourceTree = "<group>"; };
 		DVCOV12F90000100C7D34B /* DeviceHubThreatCoverageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceHubThreatCoverageView.swift; path = Shared/Components/DeviceHubThreatCoverageView.swift; sourceTree = "<group>"; };
-		HMSEC12F90000100C7D34B /* HomeMapSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HomeMapSection.swift; path = Shared/Components/HomeMapSection.swift; sourceTree = "<group>"; };
 		DVCYB12F90000100C7D34B /* DeviceCyberScanViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceCyberScanViewModel.swift; path = ViewModels/DeviceCyberScanViewModel.swift; sourceTree = "<group>"; };
 		DVEICT12F90000100C7D34B /* DeviceEicarScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEicarScanTests.swift; sourceTree = "<group>"; };
 		DVHUB12F90000100C7D34B /* DeviceHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceHubScreen.swift; sourceTree = "<group>"; };
@@ -1351,6 +1352,8 @@
 		DVSRC12F90000100C7D34B /* DeviceScanResultCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceScanResultCard.swift; path = Shared/Components/DeviceScanResultCard.swift; sourceTree = "<group>"; };
 		DVTHR12F90000100C7D34B /* DeviceThreatCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceThreatCatalog.swift; path = Shared/Models/DeviceThreatCatalog.swift; sourceTree = "<group>"; };
 		DVTHRT12F90000100C7D34B /* DeviceThreatCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceThreatCatalogTests.swift; sourceTree = "<group>"; };
+		UX36W207F90000100C7D34B /* UX36W2PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UX36W2PresentationTests.swift; sourceTree = "<group>"; };
+		UX36W407F90000100C7D34B /* UX36W4ReliabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UX36W4ReliabilityTests.swift; sourceTree = "<group>"; };
 		E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImplementationPlanDashboardMirror.generated.swift; path = Core/Planning/ImplementationPlanDashboardMirror.generated.swift; sourceTree = "<group>"; };
 		E1CACHE0102F1E40000E2EE01 /* FamilyChatCiphertextCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatCiphertextCache.swift; path = Core/E2EE/FamilyChatCiphertextCache.swift; sourceTree = "<group>"; };
 		E1E2EE0102F1E40000E2EE01 /* FamilyE2EEManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EEManager.swift; path = Core/E2EE/FamilyE2EEManager.swift; sourceTree = "<group>"; };
@@ -1381,7 +1384,6 @@
 		F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlanItem275CatalogWorkbenchCard.swift; sourceTree = "<group>"; };
 		F63C614AC62842AC587C5FEC /* ContentBackgroundSyncScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBackgroundSyncScheduler.swift; path = Core/Content/Sync/ContentBackgroundSyncScheduler.swift; sourceTree = "<group>"; };
 		F7B100012F71B001A0000001 /* FamilyAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyAccessPolicy.swift; path = Core/Profile/FamilyAccessPolicy.swift; sourceTree = "<group>"; };
-		PSGATE12F90000100C7D34B /* ParentSessionGate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentSessionGate.swift; path = Core/Profile/ParentSessionGate.swift; sourceTree = "<group>"; };
 		FAMLIST12F90000100C7D34B /* FamilyListStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyListStore.swift; path = Core/Family/FamilyListStore.swift; sourceTree = "<group>"; };
 		FAMLIST32F90000100C7D34B /* FamilyListScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyListScreen.swift; path = Screens/FamilyListScreen.swift; sourceTree = "<group>"; };
 		FBDFBC9FAEED78DB6C79A412 /* ParentDashboardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParentDashboardView.swift; sourceTree = "<group>"; };
@@ -1390,6 +1392,27 @@
 		FCHCV12F90000100C7D34B /* FamilyChildThreatCoverageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChildThreatCoverageView.swift; path = Shared/Components/FamilyChildThreatCoverageView.swift; sourceTree = "<group>"; };
 		FCHLD12F90000100C7D34B /* FamilyChildThreatCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChildThreatCatalog.swift; path = Shared/Models/FamilyChildThreatCatalog.swift; sourceTree = "<group>"; };
 		FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyChildThreatCatalogTests.swift; sourceTree = "<group>"; };
+		FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitCustomRemindersBlock.swift; path = Shared/Components/FamilyHabitCustomRemindersBlock.swift; sourceTree = "<group>"; };
+		FSL05112F90000100C7D34B /* GeofenceEventStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceEventStore.swift; path = Core/Family/GeofenceEventStore.swift; sourceTree = "<group>"; };
+		UX36W501F90000100C7D34B /* GeofenceFamilyBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceFamilyBridge.swift; path = Core/Family/GeofenceFamilyBridge.swift; sourceTree = "<group>"; };
+		UX36W507F90000100C7D34B /* UX36W5GeoHybridTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UX36W5GeoHybridTests.swift; sourceTree = "<group>"; };
+		FSL07112F90000100C7D34B /* FamilyDayStripView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyDayStripView.swift; path = Shared/Components/FamilyDayStripView.swift; sourceTree = "<group>"; };
+		UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalScreenTimeFormat.swift; path = Shared/Utilities/ParentalScreenTimeFormat.swift; sourceTree = "<group>"; };
+		UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMemberDisplayNameFormatter.swift; path = Shared/Utilities/FamilyMemberDisplayNameFormatter.swift; sourceTree = "<group>"; };
+		UX36W201F90000100C7D34B /* DeviceThreatPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceThreatPresentation.swift; path = Shared/Utilities/DeviceThreatPresentation.swift; sourceTree = "<group>"; };
+		UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySecondHandPackViews.swift; path = Shared/Components/FamilySecondHandPackViews.swift; sourceTree = "<group>"; };
+		UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecuritySettingsFeedback.swift; path = Shared/Utilities/SecuritySettingsFeedback.swift; sourceTree = "<group>"; };
+		FSL13112F90000100C7D34B /* FamilyImOkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkService.swift; path = Core/Family/FamilyImOkService.swift; sourceTree = "<group>"; };
+		FSL13212F90000100C7D34B /* FamilyImOkButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkButton.swift; path = Shared/Components/FamilyImOkButton.swift; sourceTree = "<group>"; };
+		FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyShieldWeekDigestStore.swift; path = Core/Family/FamilyShieldWeekDigestStore.swift; sourceTree = "<group>"; };
+		FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyShieldWeekDigestCard.swift; path = Shared/Components/FamilyShieldWeekDigestCard.swift; sourceTree = "<group>"; };
+		FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyBatteryCriticalMonitor.swift; path = Core/Family/FamilyBatteryCriticalMonitor.swift; sourceTree = "<group>"; };
+		FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofencePlacesConsentStore.swift; path = Core/Family/GeofencePlacesConsentStore.swift; sourceTree = "<group>"; };
+		FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceNoShowMonitor.swift; path = Core/Family/GeofenceNoShowMonitor.swift; sourceTree = "<group>"; };
+		FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceMonitoringBootstrap.swift; path = Core/Family/GeofenceMonitoringBootstrap.swift; sourceTree = "<group>"; };
+		FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersBootstrap.swift; path = Core/Family/FamilyHabitRemindersBootstrap.swift; sourceTree = "<group>"; };
+		FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrivacyPremiumErrorMapper.swift; path = Core/Privacy/PrivacyPremiumErrorMapper.swift; sourceTree = "<group>"; };
+		FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyNeedHelpButton.swift; path = Shared/Components/FamilyNeedHelpButton.swift; sourceTree = "<group>"; };
 		FWS0612F90000100C7D34B /* AntifakeSettingsModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeSettingsModels.swift; path = Core/Security/AntifakeSettingsModels.swift; sourceTree = "<group>"; };
 		FWS062A2F90000100C7D34B /* AntifakeSettingsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeSettingsService.swift; path = Core/Security/AntifakeSettingsService.swift; sourceTree = "<group>"; };
 		FWS06412F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVoiceFraudThresholdCard.swift; path = Shared/Components/AntifakeVoiceFraudThresholdCard.swift; sourceTree = "<group>"; };
@@ -1397,7 +1420,6 @@
 		FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersScheduler.swift; path = Core/Family/FamilyHabitRemindersScheduler.swift; sourceTree = "<group>"; };
 		FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersService.swift; path = Core/Family/FamilyHabitRemindersService.swift; sourceTree = "<group>"; };
 		FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersSection.swift; path = Shared/Components/FamilyHabitRemindersSection.swift; sourceTree = "<group>"; };
-		FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitCustomRemindersBlock.swift; path = Shared/Components/FamilyHabitCustomRemindersBlock.swift; sourceTree = "<group>"; };
 		FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyPushRegistrar.swift; path = Core/Family/AntifakeFamilyPushRegistrar.swift; sourceTree = "<group>"; };
 		FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTransferCheckCTA.swift; path = Shared/Components/AntifakeTransferCheckCTA.swift; sourceTree = "<group>"; };
 		FWS20712F90000100C7D34B /* FamilyHabitDuePingFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitDuePingFeature.swift; path = Core/Family/FamilyHabitDuePingFeature.swift; sourceTree = "<group>"; };
@@ -1405,20 +1427,6 @@
 		FWS20912F90000100C7D34B /* AntifakeMediaPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeMediaPreviewView.swift; path = Shared/Components/AntifakeMediaPreviewView.swift; sourceTree = "<group>"; };
 		FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedModels.swift; path = Core/Family/FamilyIncidentFeedModels.swift; sourceTree = "<group>"; };
 		FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedService.swift; path = Core/Family/FamilyIncidentFeedService.swift; sourceTree = "<group>"; };
-		FSL05112F90000100C7D34B /* GeofenceEventStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceEventStore.swift; path = Core/Family/GeofenceEventStore.swift; sourceTree = "<group>"; };
-		FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceNoShowMonitor.swift; path = Core/Family/GeofenceNoShowMonitor.swift; sourceTree = "<group>"; };
-		FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofencePlacesConsentStore.swift; path = Core/Family/GeofencePlacesConsentStore.swift; sourceTree = "<group>"; };
-		FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceMonitoringBootstrap.swift; path = Core/Family/GeofenceMonitoringBootstrap.swift; sourceTree = "<group>"; };
-		FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersBootstrap.swift; path = Core/Family/FamilyHabitRemindersBootstrap.swift; sourceTree = "<group>"; };
-		FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrivacyPremiumErrorMapper.swift; path = Core/Privacy/PrivacyPremiumErrorMapper.swift; sourceTree = "<group>"; };
-		FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyBatteryCriticalMonitor.swift; path = Core/Family/FamilyBatteryCriticalMonitor.swift; sourceTree = "<group>"; };
-		FSL13112F90000100C7D34B /* FamilyImOkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkService.swift; path = Core/Family/FamilyImOkService.swift; sourceTree = "<group>"; };
-		FSL13212F90000100C7D34B /* FamilyImOkButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkButton.swift; path = Shared/Components/FamilyImOkButton.swift; sourceTree = "<group>"; };
-		FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyNeedHelpButton.swift; path = Shared/Components/FamilyNeedHelpButton.swift; sourceTree = "<group>"; };
-		FSL07112F90000100C7D34B /* FamilyDayStripView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyDayStripView.swift; path = Shared/Components/FamilyDayStripView.swift; sourceTree = "<group>"; };
-		FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyShieldWeekDigestStore.swift; path = Core/Family/FamilyShieldWeekDigestStore.swift; sourceTree = "<group>"; };
-		FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyShieldWeekDigestCard.swift; path = Shared/Components/FamilyShieldWeekDigestCard.swift; sourceTree = "<group>"; };
-		WDGT0405F90000100C7D34B /* CheckLinkWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckLinkWidget.swift; sourceTree = "<group>"; };
 		FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedView.swift; path = Shared/Components/FamilyIncidentFeedView.swift; sourceTree = "<group>"; };
 		FWS20D12F90000100C7D34B /* DebugSFMHealthSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DebugSFMHealthSection.swift; path = Shared/Components/DebugSFMHealthSection.swift; sourceTree = "<group>"; };
 		FWS20F12F90000100C7D34B /* HabitMedalSourcesSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HabitMedalSourcesSettings.swift; path = Core/Family/HabitMedalSourcesSettings.swift; sourceTree = "<group>"; };
@@ -1446,14 +1454,13 @@
 		FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessStudentModeCard.swift; path = Shared/Components/WellnessStudentModeCard.swift; sourceTree = "<group>"; };
 		FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionDeepLinkRouter.swift; path = Core/Companion/CompanionDeepLinkRouter.swift; sourceTree = "<group>"; };
 		FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordHasher.swift; path = Core/Family/FamilySafeWordHasher.swift; sourceTree = "<group>"; };
-		QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatLocalHiddenStore.swift; path = Core/Family/FamilyChatLocalHiddenStore.swift; sourceTree = "<group>"; };
-		QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkOfflineQueue.swift; path = Core/Family/FamilyImOkOfflineQueue.swift; sourceTree = "<group>"; };
 		FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordService.swift; path = Core/Family/FamilySafeWordService.swift; sourceTree = "<group>"; };
 		FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordViews.swift; path = Shared/Components/FamilySafeWordViews.swift; sourceTree = "<group>"; };
 		FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySafeWordHasherTests.swift; sourceTree = "<group>"; };
 		GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceGeocodingService.swift; path = Core/Services/GeofenceGeocodingService.swift; sourceTree = "<group>"; };
 		GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionBreakStepsService.swift; path = Core/Companion/CompanionBreakStepsService.swift; sourceTree = "<group>"; };
 		GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionBreakStepsSheet.swift; path = Shared/Components/CompanionBreakStepsSheet.swift; sourceTree = "<group>"; };
+		HMSEC12F90000100C7D34B /* HomeMapSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HomeMapSection.swift; path = Shared/Components/HomeMapSection.swift; sourceTree = "<group>"; };
 		IDATT12F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTheftAttemptsParsingTests.swift; sourceTree = "<group>"; };
 		IDCOV12F90000100C7D34B /* IdentityHubThreatCoverageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityHubThreatCoverageView.swift; path = Shared/Components/IdentityHubThreatCoverageView.swift; sourceTree = "<group>"; };
 		IDDET12F90000100C7D34B /* IdentityDetectViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityDetectViewModel.swift; path = ViewModels/IdentityDetectViewModel.swift; sourceTree = "<group>"; };
@@ -1463,6 +1470,8 @@
 		IDHUB12F90000100C7D34B /* IdentityHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdentityHubScreen.swift; sourceTree = "<group>"; };
 		IDMON12F90000100C7D34B /* IdentityMonitorViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityMonitorViewModel.swift; path = ViewModels/IdentityMonitorViewModel.swift; sourceTree = "<group>"; };
 		IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityMonitorViewModelTests.swift; sourceTree = "<group>"; };
+		IPLS010F90000300C7D34B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		IPLS020F90000300C7D34B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		MNEM0001B2C3D4E5F6070801 /* MnemoCategoryChrome.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MnemoCategoryChrome.swift; path = Core/Content/Mnemonics/MnemoCategoryChrome.swift; sourceTree = "<group>"; };
 		MNEM0003B2C3D4E5F6070802 /* MnemonicSRSStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MnemonicSRSStore.swift; path = Core/Content/Mnemonics/MnemonicSRSStore.swift; sourceTree = "<group>"; };
 		MNEM0005B2C3D4E5F6070803 /* MnemonicTechnique.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MnemonicTechnique.swift; path = Core/Content/Mnemonics/MnemonicTechnique.swift; sourceTree = "<group>"; };
@@ -1521,9 +1530,14 @@
 		PRMON12F90000100C7D34B /* ParentalMonitoringValidation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalMonitoringValidation.swift; path = Shared/Models/ParentalMonitoringValidation.swift; sourceTree = "<group>"; };
 		PRMONT12F90000100C7D34B /* ParentalMonitoringValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentalMonitoringValidationTests.swift; sourceTree = "<group>"; };
 		PRVHUB12F90000100C7D34B /* PrivacyHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivacyHubScreen.swift; sourceTree = "<group>"; };
+		PSGATE12F90000100C7D34B /* ParentSessionGate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentSessionGate.swift; path = Core/Profile/ParentSessionGate.swift; sourceTree = "<group>"; };
 		PSYCHGM12F90000100C7D34B /* WellnessGuideModeSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessGuideModeSheet.swift; path = Shared/Components/WellnessGuideModeSheet.swift; sourceTree = "<group>"; };
 		PSYCHGS12F90000100C7D34B /* WellnessGuideSessionStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessGuideSessionStore.swift; path = Core/Wellness/WellnessGuideSessionStore.swift; sourceTree = "<group>"; };
 		PSYCHSC12F90000100C7D34B /* WellnessSessionCloseSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessSessionCloseSheet.swift; path = Shared/Components/WellnessSessionCloseSheet.swift; sourceTree = "<group>"; };
+		QAH012F90000100C7D34B /* FamilyChatLocalHiddenStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatLocalHiddenStore.swift; path = Core/Family/FamilyChatLocalHiddenStore.swift; sourceTree = "<group>"; };
+		QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyChatLocalHiddenStoreTests.swift; sourceTree = "<group>"; };
+		QAH052F90000100C7D34B /* FamilyImOkOfflineQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkOfflineQueue.swift; path = Core/Family/FamilyImOkOfflineQueue.swift; sourceTree = "<group>"; };
+		QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QABatchP0FamilyLimitAndDigestTests.swift; sourceTree = "<group>"; };
 		SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityVerdictModels.swift; path = Core/Models/SecurityVerdictModels.swift; sourceTree = "<group>"; };
 		SH0ME0012F90000100C7D34B /* SimpleHomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleHomeScreen.swift; sourceTree = "<group>"; };
 		UDLNK012F90000100C7D34B /* UnicornDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnicornDeepLinkRouter.swift; path = Core/Family/UnicornDeepLinkRouter.swift; sourceTree = "<group>"; };
@@ -1531,6 +1545,24 @@
 		UNICN03F90000100C7D34B /* HabitStreakStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HabitStreakStore.swift; path = Core/Family/HabitStreakStore.swift; sourceTree = "<group>"; };
 		UNICN04F90000100C7D34B /* FamilyMomentsLocalStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMomentsLocalStore.swift; path = Core/Family/FamilyMomentsLocalStore.swift; sourceTree = "<group>"; };
 		UNICN05F90000100C7D34B /* WellnessBreath2MinView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessBreath2MinView.swift; path = Shared/Components/WellnessBreath2MinView.swift; sourceTree = "<group>"; };
+		UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinComposerBar.swift; path = Shared/Components/AladdinComposerBar.swift; sourceTree = "<group>"; };
+		UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BundledSleepStories.swift; path = Core/Wellness/BundledSleepStories.swift; sourceTree = "<group>"; };
+		UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalDailyReminderMath.swift; path = Core/Wellness/LocalDailyReminderMath.swift; sourceTree = "<group>"; };
+		UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinOutboundQueue.swift; path = Core/Services/AladdinOutboundQueue.swift; sourceTree = "<group>"; };
+		UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AladdinComposerOfflineTests.swift; sourceTree = "<group>"; };
+		VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceSafetyNowStore.swift; path = Core/Voice/VoiceSafetyNowStore.swift; sourceTree = "<group>"; };
+		VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceSafetyNowChip.swift; path = Shared/Components/VoiceNotes/VoiceSafetyNowChip.swift; sourceTree = "<group>"; };
+		VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceDayIntentStats.swift; path = Core/Audio/VoiceDayIntentStats.swift; sourceTree = "<group>"; };
+		VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OpenVoiceSafetyLogIntent.swift; path = Core/Voice/OpenVoiceSafetyLogIntent.swift; sourceTree = "<group>"; };
+		VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDayIntentStatsTests.swift; sourceTree = "<group>"; };
+		VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceIntentRouter.swift; path = Core/Voice/VoiceIntentRouter.swift; sourceTree = "<group>"; };
+		VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceIntentRouterTests.swift; sourceTree = "<group>"; };
+		VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ClipboardSafetyService.swift; path = Core/Security/ClipboardSafetyService.swift; sourceTree = "<group>"; };
+		VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardSafetyServiceTests.swift; sourceTree = "<group>"; };
+		VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestService.swift; path = Core/Audio/VoiceWeeklyDigestService.swift; sourceTree = "<group>"; };
+		VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestSheet.swift; path = Shared/Components/VoiceNotes/VoiceWeeklyDigestSheet.swift; sourceTree = "<group>"; };
+		VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceRemindScheduler.swift; path = Core/Voice/VoiceRemindScheduler.swift; sourceTree = "<group>"; };
+		VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceWeeklyDigestServiceTests.swift; sourceTree = "<group>"; };
 		W1N000002F90000100WELL01 /* WellnessCompanionNavUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellnessCompanionNavUITests.swift; sourceTree = "<group>"; };
 		W4C00000 /* ChildContentProgressUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildContentProgressUITests.swift; sourceTree = "<group>"; };
 		W5B20000 /* BackgroundMusicController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BackgroundMusicController.swift; path = Core/Audio/BackgroundMusicController.swift; sourceTree = "<group>"; };
@@ -1540,6 +1572,14 @@
 		W5F20031 /* HeroAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HeroAssets; path = Resources/HeroAssets; sourceTree = "<group>"; };
 		W5F20041 /* Companion */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Companion; path = Resources/Companion; sourceTree = "<group>"; };
 		W5F20051 /* Wellness */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Wellness; path = Resources/Wellness; sourceTree = "<group>"; };
+		WDGT0092F90000100C7D34B /* ALADDINWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINWidgets.entitlements; sourceTree = "<group>"; };
+		WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets.swift; sourceTree = "<group>"; };
+		WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellnessCheckinWidget.swift; sourceTree = "<group>"; };
+		WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSafetyNowWidget.swift; sourceTree = "<group>"; };
+		WDGT0403F90000100C7D34B /* WidgetL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetL10n.swift; sourceTree = "<group>"; };
+		WDGT0404F90000100C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		WDGT0405F90000100C7D34B /* CheckLinkWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckLinkWidget.swift; sourceTree = "<group>"; };
 		WELDRM12F90000100C7D34B /* WellnessDreamJournalScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessDreamJournalScreen.swift; sourceTree = "<group>"; };
 		WELLAF12F90000100C7D34B /* WellnessAssessmentFlowScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessAssessmentFlowScreen.swift; sourceTree = "<group>"; };
 		WELLAPI12F90000100C7D34B /* WellnessAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessAPIService.swift; path = Core/Services/WellnessAPIService.swift; sourceTree = "<group>"; };
@@ -1552,11 +1592,6 @@
 		WELLMDL12F90000100C7D34B /* WellnessModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessModels.swift; path = Core/Models/WellnessModels.swift; sourceTree = "<group>"; };
 		WELLOC12F90000100C7D34B /* WellnessOutcomeSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessOutcomeSheet.swift; sourceTree = "<group>"; };
 		WELLOF12F90000100C7D34B /* WellnessOfflineStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessOfflineStore.swift; path = Core/Services/WellnessOfflineStore.swift; sourceTree = "<group>"; };
-		UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinComposerBar.swift; path = Shared/Components/AladdinComposerBar.swift; sourceTree = "<group>"; };
-		UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinOutboundQueue.swift; path = Core/Services/AladdinOutboundQueue.swift; sourceTree = "<group>"; };
-		UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalDailyReminderMath.swift; path = Core/Wellness/LocalDailyReminderMath.swift; sourceTree = "<group>"; };
-		UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BundledSleepStories.swift; path = Core/Wellness/BundledSleepStories.swift; sourceTree = "<group>"; };
-		UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AladdinComposerOfflineTests.swift; sourceTree = "<group>"; };
 		WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessLoopCoordinator.swift; path = Core/Services/WellnessLoopCoordinator.swift; sourceTree = "<group>"; };
 		WELLPAY12F90000100C7D34B /* WellnessPremiumPaywallSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessPremiumPaywallSheet.swift; sourceTree = "<group>"; };
 		WELLPDF12F90000100C7D34B /* WellnessProgressPDFService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessProgressPDFService.swift; path = Core/Services/WellnessProgressPDFService.swift; sourceTree = "<group>"; };
@@ -1571,20 +1606,6 @@
 		WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/WellnessTogetherSession.swift; sourceTree = "<group>"; };
 		WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessValuesCardSheet.swift; sourceTree = "<group>"; };
 		WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessPremiumFunnel.swift; path = Core/Services/WellnessPremiumFunnel.swift; sourceTree = "<group>"; };
-
-		VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestService.swift; path = Core/Audio/VoiceWeeklyDigestService.swift; sourceTree = "<group>"; };
-		VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestSheet.swift; path = Shared/Components/VoiceNotes/VoiceWeeklyDigestSheet.swift; sourceTree = "<group>"; };
-		VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceRemindScheduler.swift; path = Core/Voice/VoiceRemindScheduler.swift; sourceTree = "<group>"; };
-		VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceWeeklyDigestServiceTests.swift; sourceTree = "<group>"; };
-		QAP012F90000100C7D34B /* QABatchP0FamilyLimitAndDigestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QABatchP0FamilyLimitAndDigestTests.swift; sourceTree = "<group>"; };
-		QAH032F90000100C7D34B /* FamilyChatLocalHiddenStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyChatLocalHiddenStoreTests.swift; sourceTree = "<group>"; };
-		WDGT0092F90000100C7D34B /* ALADDINWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINWidgets.entitlements; sourceTree = "<group>"; };
-		WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets.swift; sourceTree = "<group>"; };
-		WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellnessCheckinWidget.swift; sourceTree = "<group>"; };
-		WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSafetyNowWidget.swift; sourceTree = "<group>"; };
-		WDGT0403F90000100C7D34B /* WidgetL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetL10n.swift; sourceTree = "<group>"; };
-		WDGT0404F90000100C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1627,16 +1648,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		B198A0152F9800100B198A0 /* Referral */ = {
-			isa = PBXGroup;
-			children = (
-				B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */,
-			);
-			name = Referral;
-			path = Core/Referral;
-			sourceTree = "<group>";
-		};
-
 		5E0057FF2EC3B4DC00024F7E /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
@@ -1678,6 +1689,7 @@
 				AFCD0402F90000200C7D34B /* AntifakeCheckHistorySection.swift */,
 				AFCD0422F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift */,
 				AFCT0482F90000200C7D34B /* AntifakeCallTabView.swift */,
+				WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -1837,6 +1849,7 @@
 				5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */,
 				5E5978062F60A0BC00854BDE /* DateFormatterService.swift */,
 				5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */,
+				UX36W601F90000100C7D34B /* AccountRegistrationDateStore.swift */,
 				5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */,
 				5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */,
 				5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */,
@@ -2027,6 +2040,7 @@
 				FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */,
 				FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */,
 				FSL05112F90000100C7D34B /* GeofenceEventStore.swift */,
+				UX36W501F90000100C7D34B /* GeofenceFamilyBridge.swift */,
 				FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */,
 				FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */,
 				FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */,
@@ -2084,13 +2098,13 @@
 				B700011F2F90000100ABC001 /* Core/Audio/VoiceNotePlaybackController.swift */,
 				B70001212F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceLevelBarsView.swift */,
 				B70001112F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift */,
-				B70002012F90000100ABC001 /* CallSessionModels.swift */,
-				B70002032F90000100ABC001 /* CallSessionsStore.swift */,
-				B70002052F90000100ABC001 /* CallsAccessPolicy.swift */,
-				B70002072F90000100ABC001 /* CallsLifecycleService.swift */,
-				B70002092F90000100ABC001 /* CallSummaryService.swift */,
-				B700020B2F90000100ABC001 /* CallsHubScreen.swift */,
-				B700020D2F90000100ABC001 /* CallsAfterMemorySheet.swift */,
+				B70002012F90000100ABC001 /* Core/Models/CallSessionModels.swift */,
+				B70002032F90000100ABC001 /* Core/Storage/CallSessionsStore.swift */,
+				B70002052F90000100ABC001 /* Core/Security/CallsAccessPolicy.swift */,
+				B70002072F90000100ABC001 /* Core/Security/CallsLifecycleService.swift */,
+				B70002092F90000100ABC001 /* Core/Audio/CallSummaryService.swift */,
+				B700020B2F90000100ABC001 /* Screens/CallsHubScreen.swift */,
+				B700020D2F90000100ABC001 /* Screens/CallsAfterMemorySheet.swift */,
 				5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */,
 				E1E2EE0102F1E40000E2EE01 /* FamilyE2EEManager.swift */,
 				E1E2EE0302F1E40000E2EE01 /* FamilyE2EECryptoEngine.swift */,
@@ -2168,6 +2182,11 @@
 				FSL13212F90000100C7D34B /* FamilyImOkButton.swift */,
 				FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */,
 				FSL07112F90000100C7D34B /* FamilyDayStripView.swift */,
+				UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */,
+				UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */,
+				UX36W201F90000100C7D34B /* DeviceThreatPresentation.swift */,
+				UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */,
+				UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */,
 				FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */,
 				5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */,
 				B1000120B1000120B1000120 /* Toast.swift */,
@@ -2187,6 +2206,10 @@
 				5EA10D232F91A02200ABCD01 /* StormGlassCardStyle.swift */,
 				5EC308E12EA6AB8B00C7D34B /* Screens */,
 				B5001300 /* Tests */,
+				5EB2539C307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */,
+				5EB2539B307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */,
+				5EB2539A307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */,
+				5EB25399307F7C0B0020C3E0 /* ALADDINSubscriptions.storekit */,
 				A0FFFFFF,
 				5E61A09F2EFB38ED0039093A /* ALADDINContentBlocker */,
 				AFSh0212F90000100C7D34B /* ALADDINAntifakeShare */,
@@ -2382,6 +2405,15 @@
 			path = ALADDINAntifakeShare;
 			sourceTree = "<group>";
 		};
+		B198A0152F9800100B198A0 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */,
+			);
+			name = Referral;
+			path = Core/Referral;
+			sourceTree = "<group>";
+		};
 		B5001300 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -2430,6 +2462,10 @@
 				IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */,
 				IDFRDT12F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift */,
 				DVTHRT12F90000100C7D34B /* DeviceThreatCatalogTests.swift */,
+				UX36W207F90000100C7D34B /* UX36W2PresentationTests.swift */,
+				UX36W407F90000100C7D34B /* UX36W4ReliabilityTests.swift */,
+				UX36W507F90000100C7D34B /* UX36W5GeoHybridTests.swift */,
+				UX36W607F90000100C7D34B /* UX36W6RegistrationDateTests.swift */,
 				DVEICT12F90000100C7D34B /* DeviceEicarScanTests.swift */,
 				FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */,
 				PRMONT12F90000100C7D34B /* ParentalMonitoringValidationTests.swift */,
@@ -2669,9 +2705,6 @@
 					AFCD0172F90000200C7D34B = {
 						CreatedOnToolsVersion = 16.0;
 					};
-					WDGT0172F90000100C7D34B = {
-						CreatedOnToolsVersion = 16.0;
-					};
 					AFSh0172F90000100C7D34B = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -2682,6 +2715,9 @@
 					B5002000 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = A0FFFFFD;
+					};
+					WDGT0172F90000100C7D34B = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -2876,7 +2912,7 @@
 				A3000029 /* ViewModels/AnalyticsViewModel.swift in Sources */,
 				5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */,
 				5E7056C82F547C450065BDC4 /* FamilyTournamentView.swift in Sources */,
-				B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */,
+				B6000201 /* SharedDataManager.swift in Sources */,
 				1C7F3E6C86E9371F36A46D11 /* ContentManager.swift in Sources */,
 				EA89F2B5397C3C62FA6BC93A /* ContentModels.swift in Sources */,
 				E911CD0619397C5E293C41AA /* ContentDatabase.swift in Sources */,
@@ -3041,6 +3077,7 @@
 				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
 				5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */,
 				5E7057062FA12A070065BDC4 /* SubscriptionProfileCaption.swift in Sources */,
+				UX36W602F90000100C7D34B /* AccountRegistrationDateStore.swift in Sources */,
 				A4BBB001 /* YoungDefenderView.swift in Sources */,
 				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
 				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
@@ -3113,6 +3150,7 @@
 				FWS20A22F90000100C7D34B /* FamilyIncidentFeedModels.swift in Sources */,
 				FWS20B22F90000100C7D34B /* FamilyIncidentFeedService.swift in Sources */,
 				FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */,
+				UX36W502F90000100C7D34B /* GeofenceFamilyBridge.swift in Sources */,
 				FSLGEO522F90000100C7D34B /* GeofenceNoShowMonitor.swift in Sources */,
 				FSLGEO422F90000100C7D34B /* GeofencePlacesConsentStore.swift in Sources */,
 				FSLGEO622F90000100C7D34B /* GeofenceMonitoringBootstrap.swift in Sources */,
@@ -3123,6 +3161,11 @@
 				FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */,
 				FSLSOS622F90000100C7D34B /* FamilyNeedHelpButton.swift in Sources */,
 				FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */,
+				UX36W206F90000100C7D34B /* ParentalScreenTimeFormat.swift in Sources */,
+				UX36W204F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift in Sources */,
+				UX36W202F90000100C7D34B /* DeviceThreatPresentation.swift in Sources */,
+				UX36W10F90000100C7D34C /* FamilySecondHandPackViews.swift in Sources */,
+				UX36W1T3F90000100C7D34C /* SecuritySettingsFeedback.swift in Sources */,
 				FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */,
 				FSL14222F90000100C7D34B /* FamilyShieldWeekDigestCard.swift in Sources */,
 				FWS20C22F90000100C7D34B /* FamilyIncidentFeedView.swift in Sources */,
@@ -3445,6 +3488,10 @@
 				IDMONT22F90000100C7D34B /* IdentityMonitorViewModelTests.swift in Sources */,
 				IDFRDT22F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift in Sources */,
 				DVTHRT22F90000100C7D34B /* DeviceThreatCatalogTests.swift in Sources */,
+				UX36W208F90000100C7D34B /* UX36W2PresentationTests.swift in Sources */,
+				UX36W408F90000100C7D34B /* UX36W4ReliabilityTests.swift in Sources */,
+				UX36W508F90000100C7D34B /* UX36W5GeoHybridTests.swift in Sources */,
+				UX36W608F90000100C7D34B /* UX36W6RegistrationDateTests.swift in Sources */,
 				DVEICT22F90000100C7D34B /* DeviceEicarScanTests.swift in Sources */,
 				FCHLDT22F90000100C7D34B /* FamilyChildThreatCatalogTests.swift in Sources */,
 				PRMONT22F90000100C7D34B /* ParentalMonitoringValidationTests.swift in Sources */,
@@ -3573,7 +3620,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3607,7 +3654,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3766,7 +3813,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -3800,7 +3847,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -3831,7 +3878,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3857,7 +3904,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3887,7 +3934,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3921,7 +3968,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3954,7 +4001,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3980,7 +4027,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4004,7 +4051,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4029,7 +4076,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4057,7 +4104,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4091,7 +4138,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4181,7 +4228,6 @@
 				WDGT0192F90000100C7D34B /* Debug configuration for PBXNativeTarget "ALADDINWidgets" */,
 				WDGT0202F90000100C7D34B /* Release configuration for PBXNativeTarget "ALADDINWidgets" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import Combine
 import CoreMotion
 import CoreLocation
@@ -316,14 +317,34 @@ struct NetworkProtectionScreen: View {
                     onSettingsTap: { showCrashDetectionSettings = true }
                 )
                 
-                if viewModel.crashDetectionUnavailableOnThisDevice {
-                    HStack(alignment: .top, spacing: Spacing.xs) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.warningOrange)
-                        Text(viewModel.crashDetectionUnavailableReason ?? "Crash Detection недоступен на этом устройстве.")
+                if viewModel.crashDetectionUnavailableOnThisDevice
+                    || viewModel.crashDetectionNeedsOpenSettings
+                    || ((viewModel.errorMessage ?? "").isEmpty == false && !viewModel.crashDetectionEnabled) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        HStack(alignment: .top, spacing: Spacing.xs) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.warningOrange)
+                            Text(
+                                viewModel.crashDetectionUnavailableReason
+                                    ?? viewModel.errorMessage
+                                    ?? localizationManager.localized("crash_detection_error_retry")
+                            )
                             .font(.caption)
                             .foregroundColor(.warningOrange)
                             .fixedSize(horizontal: false, vertical: true)
+                        }
+                        if viewModel.crashDetectionNeedsOpenSettings {
+                            Button {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            } label: {
+                                Text(localizationManager.localized("crash_detection_open_settings"))
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundColor(.secondaryGold)
+                            }
+                            .accessibilityIdentifier("crash_detection_open_settings")
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Spacing.m)
@@ -1509,7 +1530,7 @@ struct AntivirusScanHistoryModalView: View {
                     
                     Spacer()
                     
-                    Text(session.status.capitalized)
+                    Text(ComponentStatusCopy.localized(session.status, localization: localizationManager))
                         .font(.caption)
                         .foregroundColor(statusColor(session.status))
                         .padding(.horizontal, 8)
@@ -1694,14 +1715,27 @@ struct AntivirusQuarantineModalView: View {
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(file.originalName)
+                        let card = DeviceThreatPresentation.presentQuarantine(
+                            originalName: file.originalName,
+                            threatName: file.threatName,
+                            localization: localizationManager
+                        )
+                        Text(card.title)
                             .font(.headline)
-                            .foregroundColor(.textPrimary)
-                            .lineLimit(1)
+                            .foregroundColor(.white)
+                            .fixedSize(horizontal: false, vertical: true)
                         
-                        Text(file.threatName)
+                        Text("\(localizationManager.localized("threat_card_what")): \(card.what)")
                             .font(.caption)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("\(localizationManager.localized("threat_card_where")): \(card.whereText)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                        Text("\(localizationManager.localized("threat_card_action")): \(card.action)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     
                     Spacer()
@@ -1717,7 +1751,7 @@ struct AntivirusQuarantineModalView: View {
                                 }
                             }
                         }) {
-                            Label("Восстановить", systemImage: "arrow.uturn.backward")
+                            Label(localizationManager.localized("antivirus_quarantine_restore"), systemImage: "arrow.uturn.backward")
                         }
                         
                         Button(role: .destructive, action: {
@@ -1729,18 +1763,19 @@ struct AntivirusQuarantineModalView: View {
                                 }
                             }
                         }) {
-                            Label("Удалить навсегда", systemImage: "trash")
+                            Label(localizationManager.localized("antivirus_quarantine_delete"), systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
                 
                 HStack {
-                    Label(file.threatType, systemImage: "tag")
+                    Label(file.originalName, systemImage: "doc")
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(1)
                     
                     Spacer()
                     

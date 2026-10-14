@@ -21,12 +21,12 @@ struct CompanionParentConsentSection: View {
                     .font(.title2)
                 Text(localizationManager.localized("companion_consent_title_children"))
                     .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
+                    .foregroundColor(.white)
             }
 
             Text(localizationManager.localized("companion_consent_parent_decides"))
                 .font(.caption)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.92))
 
             if isLoading {
                 ProgressView()
@@ -57,12 +57,12 @@ struct CompanionParentConsentSection: View {
 
                 Text(localizationManager.localized("companion_wisdom_toggle_subtitle_child"))
                     .font(.caption2)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.9))
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("companion_consent_allowed_heroes"))
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.textPrimary)
+                        .foregroundColor(.white)
                     heroChip(
                         id: "unicorn",
                         emoji: "🦄",
@@ -118,6 +118,9 @@ struct CompanionParentConsentSection: View {
             if !enabled {
                 memoryEnabled = false
                 vedicWisdomEnabled = false
+            } else {
+                // Owner W1: kind quotes default ON for child profiles.
+                vedicWisdomEnabled = true
             }
         }
     }
@@ -128,9 +131,10 @@ struct CompanionParentConsentSection: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.88))
             }
         }
         .tint(Color.purple)
@@ -144,13 +148,14 @@ struct CompanionParentConsentSection: View {
             HStack {
                 Text(emoji)
                 Text(title)
-                    .font(.subheadline)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
                 Spacer()
                 Image(systemName: isOn.wrappedValue ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isOn.wrappedValue ? .purple : .secondary)
+                    .foregroundColor(isOn.wrappedValue ? .secondaryGold : .white.opacity(0.55))
             }
             .padding(10)
-            .background(Color.backgroundMedium.opacity(0.35))
+            .background(Color.white.opacity(0.12))
             .cornerRadius(10)
         }
         .buttonStyle(.plain)

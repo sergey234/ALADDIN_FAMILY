@@ -20,12 +20,12 @@ struct CompanionPersonalitySection: View {
                     .font(.title2)
                 Text(localizationManager.localized("companion_personality_title"))
                     .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
+                    .foregroundColor(.white)
             }
 
             Text(localizationManager.localized("companion_personality_grok_hint"))
                 .font(.caption)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.92))
 
             if isLoading {
                 ProgressView()
@@ -34,6 +34,7 @@ struct CompanionPersonalitySection: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(localizationManager.localized("companion_personality_style"))
                         .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
                     // Wrapping chips — avoids 5-segment overlap/truncation on narrow widths.
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         ForEach(availablePresets, id: \.self) { preset in
@@ -63,17 +64,25 @@ struct CompanionPersonalitySection: View {
 
                 Toggle(isOn: $securityExpertMode) {
                     Text(localizationManager.localized("companion_personality_security_expert"))
-                        .font(.subheadline)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
                 }
+                .tint(.secondaryGold)
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(localizationManager.localized("companion_personality_custom_instructions"))
                         .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
                     TextEditor(text: $customInstructions)
                         .frame(minHeight: 88, maxHeight: 120)
                         .padding(8)
-                        .background(Color.backgroundMedium.opacity(0.25))
+                        .foregroundColor(.primary)
+                        .background(Color.white.opacity(0.95))
                         .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.secondaryGold.opacity(0.55), lineWidth: 1)
+                        )
                         .onChange(of: customInstructions) { newValue in
                             if newValue.count > 500 {
                                 customInstructions = String(newValue.prefix(500))
@@ -81,7 +90,7 @@ struct CompanionPersonalitySection: View {
                         }
                     Text("\(customInstructions.count)/500")
                         .font(.caption2)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.85))
                 }
 
                 Button {

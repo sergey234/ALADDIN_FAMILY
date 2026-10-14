@@ -99,14 +99,12 @@ class StoreManager: ObservableObject {
     func startLoading() {
         print("🔍 StoreManager.startLoading: Начало загрузки продуктов")
         
-        // ✅ ЗАЩИТА: Проверяем симулятор перед загрузкой
-        // Для локального теста IAP: Xcode → Scheme → Run → Options → StoreKit Configuration (файл .storekit с ID из `ProductID`).
+        // Локальный тест IAP: Scheme → Run → Options → StoreKit Configuration
+        // (`ALADDIN/StoreKit/ALADDINSubscriptions.storekit`). Без файла на симе каталог пустой.
         Task { @MainActor in
             await loadProducts()
-            #if !targetEnvironment(simulator)
             await updatePurchasedProducts()
             await listenForTransactions()
-            #endif
         }
     }
     
@@ -257,10 +255,11 @@ class StoreManager: ObservableObject {
         print("🔍 [StoreManager] Products loaded: \(products.count)")
         print("🔍 [StoreManager] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
         
-        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка симулятора перед вызовом purchase()
+        // Симулятор: покупка разрешена, если продукты загружены (StoreKit Configuration в Scheme).
+        // Без .storekit каталог пустой → productsNotLoaded (как на устройстве без ASC).
         #if targetEnvironment(simulator)
-        throw StoreError.simulatorNotSupported
-        #else
+        print("ℹ️ [StoreManager] Simulator purchase path (requires StoreKit Configuration in Scheme)")
+        #endif
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукт валиден
         guard !product.id.isEmpty else {
             print("❌ КРИТИЧЕСКАЯ ОШИБКА: Product ID пустой!")
@@ -428,7 +427,6 @@ class StoreManager: ObservableObject {
             print("❌ [StoreManager] ==========================================")
             throw error
         }
-        #endif
     }
     
     // MARK: - Restore Purchases

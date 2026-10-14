@@ -303,13 +303,13 @@ struct FamilyNotificationSettingsModal: View {
                 )
                 
                 await MainActor.run {
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    SecuritySettingsFeedback.saved(toast: toastManager)
                     dismiss()
                 }
                 SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    SecuritySettingsFeedback.savedLocal(toast: toastManager)
                     dismiss()
                 }
                 SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_save_error", state: .error(error.localizedDescription))

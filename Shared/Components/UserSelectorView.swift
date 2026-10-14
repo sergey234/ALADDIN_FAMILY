@@ -88,41 +88,19 @@ struct UserSelectorView: View {
     }
 
     private func localizedDisplayName(for user: UserOption) -> String {
-        let trimmed = user.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return user.displayName }
-
-        let localizedRolePrefix: String?
+        let role: FamilyMemberCard.FamilyRole?
         switch user.role.lowercased() {
-        case "parent":
-            localizedRolePrefix = localizationManager.localized("family.role.parent")
-        case "child":
-            localizedRolePrefix = localizationManager.localized("family.role.child")
-        case "teenager":
-            localizedRolePrefix = localizationManager.localized("family.role.teenager")
-        case "elderly":
-            localizedRolePrefix = localizationManager.localized("family.role.elderly")
-        default:
-            localizedRolePrefix = nil
+        case "parent": role = .parent
+        case "child": role = .child
+        case "teenager", "teen": role = .teenager
+        case "elderly", "grandparent": role = .elderly
+        default: role = nil
         }
-
-        guard let prefix = localizedRolePrefix else { return user.displayName }
-
-        let knownPrefixes = [
-            "Родитель", "Ребенок", "Ребёнок", "Подросток", "Пожилой", "Люди 60+",
-            "Parent", "Child", "Teenager", "Elderly", "People 60+"
-        ]
-
-        for known in knownPrefixes {
-            if trimmed == known {
-                return prefix
-            }
-            if trimmed.hasPrefix("\(known) ") {
-                let suffix = String(trimmed.dropFirst(known.count + 1))
-                return "\(prefix) \(suffix)"
-            }
-        }
-
-        return user.displayName
+        return FamilyMemberDisplayNameFormatter.displayName(
+            storedName: user.displayName,
+            role: role,
+            localization: localizationManager
+        )
     }
 }
 

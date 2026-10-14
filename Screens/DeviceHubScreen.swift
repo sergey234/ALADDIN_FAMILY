@@ -172,9 +172,25 @@ private struct DeviceHubCyberPanel: View {
             }
 
             if viewModel.eicarDetected {
-                Text(localizationManager.localized("device_hub_eicar_detected"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(.warningOrange)
+                let eicar = DeviceThreatPresentation.present(
+                    id: "eicar",
+                    name: "EICAR",
+                    description: nil,
+                    localization: localizationManager
+                )
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(eicar.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.warningOrange)
+                    Text("\(localizationManager.localized("threat_card_what")): \(eicar.what)")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("\(localizationManager.localized("threat_card_action")): \(eicar.action)")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             if let scan = viewModel.lastScan {
@@ -399,6 +415,13 @@ private struct DeviceHubIoTPanel: View {
                 Task { await viewModel.runHomeScan() }
             }
 
+            if viewModel.threats.isEmpty, viewModel.devicesCount == 0, !viewModel.isLoading, !viewModel.isScanning,
+               viewModel.errorMessage == nil {
+                Text(localizationManager.localized("device_hub_iot_empty"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.75))
+            }
+
             ForEach(viewModel.threats) { threat in
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -431,7 +454,11 @@ private struct DeviceHubIoTPanel: View {
             if let error = viewModel.errorMessage {
                 Text(error)
                     .font(.caption)
-                    .foregroundColor(.dangerRed)
+                    .foregroundColor(
+                        error == localizationManager.localized("device_hub_iot_empty")
+                            ? .white.opacity(0.75)
+                            : .dangerRed
+                    )
             }
         }
         .task { await viewModel.refresh() }

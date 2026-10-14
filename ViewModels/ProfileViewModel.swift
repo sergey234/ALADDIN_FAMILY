@@ -46,7 +46,10 @@ class ProfileViewModel: ObservableObject {
                     self?.userEmail = profile.safeEmail // ✅ Используем safe-проперти
                     // ✅ phone опциональный (String?), используем ?? для него
                     self?.userPhone = profile.phone ?? "+7 (999) 123-45-67"
-                    self?.registrationDate = profile.safeRegistrationDate // ✅ Используем safe-проперти
+                    _ = AccountRegistrationDateStore.captureFromServerString(profile.registrationDate)
+                    let isRussian = LocalizationManager.shared.currentLanguage == .russian
+                    self?.registrationDate = AccountRegistrationDateStore.displayString(isRussian: isRussian)
+                        ?? LocalizationManager.shared.localized("profile_registration_pending_sync")
                     self?.subscriptionType = profile.safeSubscriptionType // ✅ Используем safe-проперти
                     self?.subscriptionEndDate = profile.subscriptionEndDate ?? ""
                     self?.threatsBlocked = profile.safeThreatsBlocked // ✅ Используем safe-проперти

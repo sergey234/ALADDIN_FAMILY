@@ -151,14 +151,13 @@ struct FamilyContentBlockItem: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
-                    .lineLimit(2)
+                    .foregroundColor(.white)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text(description)
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+                    .foregroundColor(.white.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             Spacer(minLength: 8)
@@ -209,29 +208,23 @@ struct FamilyConfigButtonItem: View {
     let action: () -> Void
     
     var body: some View {
-        HStack(spacing: Spacing.m) {
-            // Иконка
-            Text(icon)
-                .font(.system(size: 28))
-                .frame(width: 40, height: 40)
-            
-            // Информация
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(alignment: .top, spacing: Spacing.m) {
+                Text(icon)
+                    .font(.system(size: 28))
+                    .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.bodyBold)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
             }
-            
-            Spacer(minLength: 8)
-            
-            // Золотая кнопка
             Button(action: {
                 HapticFeedback.impact(.medium)
                 action()
@@ -240,7 +233,7 @@ struct FamilyConfigButtonItem: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(.secondaryGold)
-                    .padding(.horizontal, Spacing.m)
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.secondaryGold.opacity(0.2))
                     .overlay(
@@ -281,14 +274,13 @@ struct FamilyBadgeItem: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                        .lineLimit(2)
+                        .foregroundColor(.white)
                         .fixedSize(horizontal: false, vertical: true)
                     
                     Text(description)
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .lineLimit(2)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 
                 Spacer(minLength: 8)
@@ -325,29 +317,23 @@ struct FamilyActionButtonItem: View {
     let action: () -> Void
     
     var body: some View {
-        HStack(spacing: Spacing.m) {
-            // Иконка
-            Text(icon)
-                .font(.system(size: 28))
-                .frame(width: 40, height: 40)
-            
-            // Информация
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(alignment: .top, spacing: Spacing.m) {
+                Text(icon)
+                    .font(.system(size: 28))
+                    .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.bodyBold)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
             }
-            
-            Spacer(minLength: 8)
-            
-            // Красная кнопка действия
             Button(action: {
                 HapticFeedback.impact(.medium)
                 action()
@@ -356,9 +342,7 @@ struct FamilyActionButtonItem: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(.dangerRed)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .padding(.horizontal, Spacing.m)
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.dangerRed.opacity(0.2))
                     .overlay(
@@ -2893,12 +2877,12 @@ struct GeofencesSettingsModal: View {
                         
                         Text(geofence.address)
                             .font(.body)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.92))
                         
                         HStack {
                             Text(localizationManager.localized("geofences_radius"))
                                 .font(.caption)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.9))
                             
                             Text("\(Int(geofence.radius)) \(localizationManager.localized("geofences_radius_m"))")
                                 .font(.caption)
@@ -2962,7 +2946,7 @@ struct GeofencesSettingsModal: View {
                             HStack {
                                 Text(localizationManager.localized("geofences_radius"))
                                     .font(.bodyBold)
-                                    .foregroundColor(.textPrimary)
+                                    .foregroundColor(.white)
                                 
                                 Spacer()
                                 

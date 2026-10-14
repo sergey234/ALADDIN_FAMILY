@@ -208,11 +208,11 @@ struct PhishingProtectionSettingsModal: View {
                     configuration: config
                 )
 
-                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                SecuritySettingsFeedback.saved(toast: toastManager)
                 vLog("✅ Settings saved via API", level: .success)
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_save_complete", state: .synced)
             } catch {
-                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                SecuritySettingsFeedback.savedLocal(toast: toastManager)
                 vLog("⚠️ Save failed: \(error.localizedDescription)", level: .warning)
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_save_error", state: .error(error.localizedDescription))
             }

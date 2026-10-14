@@ -663,15 +663,29 @@ enum CrashDetectionError: LocalizedError {
     case monitoringFailed
     
     var errorDescription: String? {
+        let L = LocalizationManager.shared
         switch self {
         case .accelerometerUnavailable:
-            return "Акселерометр недоступен на этом устройстве"
+            return L.localized("crash_detection_error_accelerometer")
         case .locationUnavailable:
-            return "Геолокация недоступна"
+            return L.localized("crash_detection_error_location")
         case .serverSetupFailed:
-            return "Не удалось настроить Crash Detection на сервере"
+            return L.localized("crash_detection_error_server")
         case .monitoringFailed:
-            return "Не удалось запустить мониторинг"
+            return L.localized("crash_detection_error_monitoring")
+        }
+    }
+
+    /// W4: user-facing copy + whether Settings deep-link is useful.
+    var reliabilityPresentation: (message: String, offerOpenSettings: Bool) {
+        let L = LocalizationManager.shared
+        switch self {
+        case .accelerometerUnavailable:
+            return (L.localized("crash_detection_error_accelerometer"), false)
+        case .locationUnavailable:
+            return (L.localized("crash_detection_error_location_settings"), true)
+        case .serverSetupFailed, .monitoringFailed:
+            return (L.localized("crash_detection_error_retry"), false)
         }
     }
 }

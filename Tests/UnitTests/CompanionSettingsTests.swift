@@ -8,9 +8,11 @@ final class CompanionSettingsTests: XCTestCase {
         super.tearDown()
     }
 
-    func testChildNeverGetsWisdom() {
-        XCTAssertFalse(CompanionSettings.defaultVedicWisdomEnabled(ageBand: "child"))
+    func testChildWisdomCanBeEnabled() {
+        XCTAssertTrue(CompanionSettings.defaultVedicWisdomEnabled(ageBand: "child"))
         CompanionSettings.setCachedVedicWisdomEnabled(true, ageBand: "child")
+        XCTAssertTrue(CompanionSettings.cachedVedicWisdomEnabled(ageBand: "child"))
+        CompanionSettings.setCachedVedicWisdomEnabled(false, ageBand: "child")
         XCTAssertFalse(CompanionSettings.cachedVedicWisdomEnabled(ageBand: "child"))
     }
 

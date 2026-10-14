@@ -140,14 +140,27 @@ struct AntivirusQuarantineModal: View {
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(file.originalName)
+                        let card = DeviceThreatPresentation.presentQuarantine(
+                            originalName: file.originalName,
+                            threatName: file.threatName,
+                            localization: localizationManager
+                        )
+                        Text(card.title)
                             .font(.headline)
-                            .foregroundColor(.textPrimary)
-                            .lineLimit(1)
+                            .foregroundColor(.white)
+                            .fixedSize(horizontal: false, vertical: true)
                         
-                        Text(file.threatName)
+                        Text("\(localizationManager.localized("threat_card_what")): \(card.what)")
                             .font(.caption)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("\(localizationManager.localized("threat_card_where")): \(card.whereText)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                        Text("\(localizationManager.localized("threat_card_action")): \(card.action)")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     
                     Spacer()
@@ -163,7 +176,7 @@ struct AntivirusQuarantineModal: View {
                                 }
                             }
                         }) {
-                            Label("Восстановить", systemImage: "arrow.uturn.backward")
+                            Label(localizationManager.localized("antivirus_quarantine_restore"), systemImage: "arrow.uturn.backward")
                         }
                         
                         Button(role: .destructive, action: {
@@ -175,18 +188,19 @@ struct AntivirusQuarantineModal: View {
                                 }
                             }
                         }) {
-                            Label("Удалить навсегда", systemImage: "trash")
+                            Label(localizationManager.localized("antivirus_quarantine_delete"), systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.7))
                     }
                 }
                 
                 HStack {
-                    Label(file.threatType, systemImage: "tag")
+                    Label(file.originalName, systemImage: "doc")
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(1)
                     
                     Spacer()
                     

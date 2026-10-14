@@ -372,7 +372,10 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         defaults.set(response.allowedApps, forKey: "parental_allowed_apps")
         defaults.set(response.blockedWebsites, forKey: "parental_blocked_websites")
         if response.screenTimeLimitHours > 0 {
-            defaults.set("\(response.screenTimeLimitHours)h/day", forKey: "parental_screen_time_limit")
+            defaults.set(
+                ParentalScreenTimeFormat.storageValue(hours: response.screenTimeLimitHours),
+                forKey: "parental_screen_time_limit"
+            )
         }
         if let bedtime = response.bedtime {
             defaults.set(bedtime, forKey: "parental_bedtime")

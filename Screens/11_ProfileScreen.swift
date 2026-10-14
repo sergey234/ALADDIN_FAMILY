@@ -273,12 +273,13 @@ struct ProfileScreen: View {
                         .font(.body.bold())
                         .foregroundColor(profileTariffAccent)
                 }
-                Text(
-                    "\(localizationManager.localized("profile_capsule_registration_label")) \(registrationDate.isEmpty ? localizationManager.localized("profile_not_set") : registrationDate)"
-                )
+                Text(SubscriptionProfileCaption.memberSinceLine(
+                    isRussian: localizationManager.currentLanguage == .russian
+                ))
                 .font(.caption)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.9))
                 .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("profile_member_since")
                 if let formattedExpiry = SubscriptionProfileCaption.subscriptionExpiryFormatted(
                     tier: tariffManager.currentTariff,
                     trialStatus: subscriptionManager.trialStatus,
@@ -397,7 +398,13 @@ struct ProfileScreen: View {
                     .buttonStyle(PlainButtonStyle())
                 }
                 
-                infoRow(icon: "calendar", label: localizationManager.localized("profile_registration_date"), value: registrationDate.isEmpty ? localizationManager.localized("profile_not_set") : registrationDate)
+                infoRow(
+                    icon: "calendar",
+                    label: localizationManager.localized("profile_member_since_label"),
+                    value: registrationDate.isEmpty
+                        ? localizationManager.localized("profile_registration_pending_sync")
+                        : registrationDate
+                )
             }
             .padding(.horizontal, Spacing.screenPadding)
         }
@@ -729,32 +736,24 @@ struct ProfileScreen: View {
     
     // MARK: - Load Registration Date
     
-    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статические форматтеры для предотвращения рекурсии
-    private static let registrationDateFormatterRU: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter
-    }()
-    
-    private static let registrationDateFormatterEN: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "en_US")
-        return formatter
-    }()
-    
     private func loadRegistrationDate() {
-        let formatter = localizationManager.currentLanguage == .russian 
-            ? Self.registrationDateFormatterRU 
-            : Self.registrationDateFormatterEN
-        
-        if let savedDate = UserDefaults.standard.object(forKey: "registration_date") as? Date {
-            // ✅ Используем статический formatter вместо создания нового каждый раз
-            registrationDate = formatter.string(from: savedDate)
+        // W6 SSOT — never invent "today"; freeze server/JWT date once.
+        let isRussian = localizationManager.currentLanguage == .russian
+        if let formatted = AccountRegistrationDateStore.displayString(isRussian: isRussian) {
+            registrationDate = formatted
         } else {
-            // Если дата не сохранена, используем текущую дату
-            registrationDate = formatter.string(from: Date())
+            registrationDate = ""
+            // Soft pull profile so pending sync can fill SSOT without fake date.
+            APIService.shared.getUserProfile { result in
+                DispatchQueue.main.async {
+                    if case .success(let profile) = result {
+                        _ = AccountRegistrationDateStore.captureFromServerString(profile.registrationDate)
+                        if let formatted = AccountRegistrationDateStore.displayString(isRussian: isRussian) {
+                            self.registrationDate = formatted
+                        }
+                    }
+                }
+            }
         }
     }
     
