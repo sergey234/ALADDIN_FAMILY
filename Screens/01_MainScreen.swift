@@ -604,7 +604,7 @@ struct MainScreen: View {
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("main_nav_settings")
 
-                            // Удобный режим — стандартная плитка справа от Настроек.
+                            // Удобный режим — прямой вход (не «Ещё»; «Защитить родителей» — внутри Удобного → Ещё).
                             Button(action: {
                                 navigationManager.navigateToSimpleHome()
                             }) {

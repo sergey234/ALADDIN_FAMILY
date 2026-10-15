@@ -3858,10 +3858,12 @@ struct ElderlyScamCallAlertResponse: Decodable {
 struct ElderlyScamCallScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject private var gate = ElderlyScamCallGate.shared
     @State private var isSending = false
     @State private var errorText: String?
     @State private var lastSentAt: TimeInterval = 0
+    @State private var showCallDirectorySheet = false
 
     var body: some View {
         ZStack {
@@ -3874,7 +3876,23 @@ struct ElderlyScamCallScreen: View {
                     .minimumScaleFactor(0.85)
                     .lineLimit(1)
 
-                // W11 / SH-2b: чеклист семье — не диктуйте код · перезвоните
+                // fvp-p1-6: банк-playbook (без deep-link банков)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(localizationManager.localized("bank_playbook_title"))
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                    scamStepLine(localizationManager.localized("bank_playbook_step_1"))
+                    scamStepLine(localizationManager.localized("bank_playbook_step_2"))
+                    scamStepLine(localizationManager.localized("bank_playbook_step_3"))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .background(Color.orange.opacity(0.22))
+                .cornerRadius(16)
+                .accessibilityIdentifier("bank_playbook_card")
+
+                // W11 / SH-2b: общий чеклист семье
                 VStack(alignment: .leading, spacing: 12) {
                     scamStepLine(localizationManager.localized("family_second_hand_push_checklist_1"))
                     scamStepLine(localizationManager.localized("family_second_hand_push_checklist_2"))
@@ -3886,6 +3904,9 @@ struct ElderlyScamCallScreen: View {
                 .background(Color.white.opacity(0.12))
                 .cornerRadius(16)
                 .accessibilityIdentifier("elderly_scam_call_steps")
+                .onAppear {
+                    FamilyScamCallFunnel.log(.checklistSeen)
+                }
 
                 Text(localizationManager.localized("elderly_scam_call_hint"))
                     .font(.system(size: 18, weight: .medium))
@@ -3929,6 +3950,23 @@ struct ElderlyScamCallScreen: View {
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.85)
                 }
+
+                Button {
+                    FamilyScamCallFunnel.log(.callDirectoryCTA)
+                    showCallDirectorySheet = true
+                } label: {
+                    VStack(spacing: 4) {
+                        Text(localizationManager.localized("elderly_scam_call_directory_cta"))
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.secondaryGold)
+                        Text(localizationManager.localized("elderly_scam_call_directory_cta_hint"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.65))
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .accessibilityIdentifier("elderly_scam_call_directory_cta")
+
                 Spacer()
                 Button(action: openRecording) {
                     Text(localizationManager.localized("elderly_scam_call_recording"))
@@ -3939,6 +3977,29 @@ struct ElderlyScamCallScreen: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 24)
+        }
+        .onAppear {
+            FamilyScamCallFunnel.log(.open, source: "scam_screen")
+        }
+        .sheet(isPresented: $showCallDirectorySheet) {
+            NavigationView {
+                ScrollView {
+                    AntifakeCallDirectorySettingsCard()
+                        .padding()
+                }
+                .background(Color.backgroundDark.ignoresSafeArea())
+                .navigationBarTitle(
+                    localizationManager.localized("elderly_scam_call_directory_cta"),
+                    displayMode: .inline
+                )
+                .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
+                    showCallDirectorySheet = false
+                })
+            }
+            .environmentObject(localizationManager)
+            .onAppear {
+                FamilyScamCallFunnel.log(.callDirectoryOpened)
+            }
         }
     }
 
@@ -3951,10 +4012,16 @@ struct ElderlyScamCallScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func closeScamScreen() {
+        gate.isPresented = false
+        dismiss()
+    }
+
     private func calm() {
         errorText = nil
+        FamilyScamCallFunnel.log(.calm)
         UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
-        gate.isPresented = false
+        closeScamScreen()
         // After «всё спокойно» — optional call-memory note (trial/Family/Premium).
         if CallsAccessPolicy.isAvailable() {
             CallsLifecycleService.shared.handleCallEnded()
@@ -3965,7 +4032,7 @@ struct ElderlyScamCallScreen: View {
         let now = Date().timeIntervalSince1970
         guard ElderlyScamCallPolicy.allowsAnotherSend(lastSentAt: lastSentAt, now: now) else {
             UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
-            gate.isPresented = false
+            closeScamScreen()
             return
         }
         isSending = true
@@ -3977,8 +4044,9 @@ struct ElderlyScamCallScreen: View {
                 case .success(let response):
                     if response.ok && (response.parentsNotified > 0 || response.deduped) {
                         lastSentAt = Date().timeIntervalSince1970
+                        FamilyScamCallFunnel.log(.alertSent)
                         UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
-                        gate.isPresented = false
+                        closeScamScreen()
                     } else if response.reason == "no_other_parent" {
                         errorText = localizationManager.localized("elderly_scam_call_no_parent")
                     } else {
@@ -3993,7 +4061,7 @@ struct ElderlyScamCallScreen: View {
 
     private func openRecording() {
         UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
-        gate.isPresented = false
+        closeScamScreen()
         if AntifakeAccessPolicy.isHubAvailable() {
             navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
         } else {

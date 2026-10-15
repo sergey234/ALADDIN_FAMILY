@@ -1,11 +1,20 @@
 import Foundation
 
-// MARK: - fws-09 Family incident feed
+// MARK: - fws-09 / fvp-p1-1 Family incident feed
 
 enum FamilyIncidentType: String, Codable, Sendable {
     case antifakeAlert = "antifake_alert"
     case wellnessCrisis = "wellness_crisis"
     case bedtimeBreach = "bedtime_breach"
+    case scamCall = "scam_call"
+    case secondHand = "second_hand"
+    /// Forward-compatible: unknown server types still render.
+    case unknown = "unknown"
+
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = FamilyIncidentType(rawValue: raw) ?? .unknown
+    }
 }
 
 enum FamilyIncidentSeverity: String, Codable, Sendable {
@@ -13,6 +22,11 @@ enum FamilyIncidentSeverity: String, Codable, Sendable {
     case medium
     case high
     case critical
+
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = FamilyIncidentSeverity(rawValue: raw) ?? .medium
+    }
 }
 
 struct FamilyIncidentItem: Codable, Equatable, Identifiable, Sendable {
@@ -36,6 +50,28 @@ struct FamilyIncidentItem: Codable, Equatable, Identifiable, Sendable {
         case createdAt = "created_at"
         case meta
         case playbookSteps = "playbook_steps"
+    }
+
+    init(
+        id: String,
+        incidentType: FamilyIncidentType,
+        severity: FamilyIncidentSeverity,
+        titleKey: String,
+        playbookKey: String,
+        memberUserId: Int,
+        createdAt: String?,
+        meta: [String: String] = [:],
+        playbookSteps: [String]
+    ) {
+        self.id = id
+        self.incidentType = incidentType
+        self.severity = severity
+        self.titleKey = titleKey
+        self.playbookKey = playbookKey
+        self.memberUserId = memberUserId
+        self.createdAt = createdAt
+        self.meta = meta
+        self.playbookSteps = playbookSteps
     }
 
     init(from decoder: Decoder) throws {

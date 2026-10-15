@@ -140,6 +140,15 @@ struct SimpleHomeScreen: View {
                 navigationManager.navigateTo(.family)
             }
             tile(
+                titleKey: "simple_home_tile_parents_title",
+                subtitleKey: "simple_home_tile_parents_subtitle",
+                systemImage: "person.2.fill",
+                identifier: "simple_home_tile_parents"
+            ) {
+                FamilyScamCallFunnel.log(.mainParentsCTA, source: "simple_home")
+                navigationManager.navigateTo(.family)
+            }
+            tile(
                 titleKey: "simple_home_tile_hero_title",
                 subtitleKey: "simple_home_tile_hero_subtitle",
                 systemImage: "bubble.left.and.bubble.right.fill",
@@ -273,6 +282,14 @@ struct SimpleHomeScreen: View {
         WellnessNavigationStack {
             List {
                 moreRow(
+                    titleKey: "main_protect_parents_cta",
+                    systemImage: "heart.circle.fill",
+                    id: "simple_home_more_protect_parents"
+                ) {
+                    FamilyScamCallFunnel.log(.mainParentsCTA, source: "simple_home_more")
+                    navigationManager.navigateTo(.family)
+                }
+                moreRow(
                     titleKey: "nav_screen_settings",
                     systemImage: "gearshape.fill",
                     id: "simple_home_more_settings"
@@ -355,12 +372,15 @@ struct SimpleHomeScreen: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(localizationManager.localized("wellness_done")) {
+                        pendingMoreNavigation = nil
                         showMoreSheet = false
                     }
+                    .accessibilityIdentifier("simple_home_more_done")
                 }
             }
         }
         .wellnessSheetDetents()
+        .interactiveDismissDisabled(false)
     }
 
     private func moreRow(

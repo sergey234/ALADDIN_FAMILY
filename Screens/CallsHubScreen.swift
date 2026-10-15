@@ -17,6 +17,8 @@ struct CallsHubScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @ObservedObject private var lifecycle = CallsLifecycleService.shared
     @Environment(\.dismiss) private var dismiss
+    /// Explicit binding from Settings sheet — `dismiss()` alone can fail under nested NavigationView.
+    var isPresented: Binding<Bool>? = nil
 
     @State private var sessions: [CallSession] = []
     @State private var showPrep = false
@@ -30,6 +32,9 @@ struct CallsHubScreen: View {
     @State private var prepNeedPhoneHint = false
     @State private var saveMode: CallSaveMode = .hybrid
     @State private var phoneOpenMessage: String?
+    @State private var expandedPrepMode: CallSaveMode? = .hybrid
+    /// Local only — do NOT set ElderlyScamCallGate (root cover + sheet = double present).
+    @State private var showLocalScamScreen = false
     @AppStorage(AppConfig.UserDefaultsKeys.postCallSafetyPromptEnabled)
     private var postCallSafetyPromptEnabled = true
     @AppStorage("calls_hub_preferred_save_mode")
@@ -41,6 +46,7 @@ struct CallsHubScreen: View {
                 StormMeshBackground(variant: .shield)
                 VStack(spacing: Spacing.m) {
                     safetyToggleCard
+                    suspiciousCallCard
                     content
                 }
 
@@ -69,9 +75,10 @@ struct CallsHubScreen: View {
             }
             .navigationBarTitle(localizationManager.localized("calls_hub_title"), displayMode: .inline)
             .navigationBarItems(
-                leading: Button(action: { dismiss() }) {
+                leading: Button(action: closeHub) {
                     Text(localizationManager.localized("common_close"))
-                },
+                }
+                .accessibilityIdentifier("calls_hub_close"),
                 trailing: Button(action: openPrimaryAction) {
                     Image(systemName: "plus.circle.fill")
                         .foregroundColor(.secondaryGold)
@@ -90,9 +97,15 @@ struct CallsHubScreen: View {
             }
             .onChange(of: saveMode) { mode in
                 preferredSaveModeRaw = mode.rawValue
+                expandedPrepMode = mode
                 print("📞 CallsHub: saveMode=\(mode.rawValue)")
             }
             .sheet(isPresented: $showPrep) { prepSheet }
+            .fullScreenCover(isPresented: $showLocalScamScreen) {
+                ElderlyScamCallScreen()
+                    .environmentObject(localizationManager)
+                    .environmentObject(navigationManager)
+            }
             .sheet(isPresented: $showAfter, onDismiss: {
                 lifecycle.showAfterSheet = false
             }) {
@@ -176,6 +189,42 @@ struct CallsHubScreen: View {
         .padding(.horizontal, Spacing.m)
         .accessibilityIdentifier("calls_hub_safety_prompt_toggle")
         .accessibilityHint(localizationManager.localized("calls_safety_prompt_toggle_a11y_hint"))
+    }
+
+    /// fvp-p0-1: manual entry into the same red/green + family alert flow (no duplicate UI).
+    private var suspiciousCallCard: some View {
+        Button {
+            FamilyScamCallFunnel.log(.hubManualEntry, source: "calls_hub")
+            FamilyScamCallFunnel.log(.open, source: "calls_hub")
+            showLocalScamScreen = true
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "phone.fill")
+                    .font(.title3)
+                    .foregroundColor(.warningOrange)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localizationManager.localized("calls_suspicious_cta"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Text(localizationManager.localized("calls_suspicious_cta_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.white.opacity(0.5))
+            }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, Spacing.m)
+        .accessibilityIdentifier("calls_hub_suspicious_cta")
+        .accessibilityHint(localizationManager.localized("calls_suspicious_cta_a11y"))
     }
 
     private var content: some View {
@@ -341,13 +390,7 @@ struct CallsHubScreen: View {
         NavigationView {
             Form {
                 Section(localizationManager.localized("calls_direction_section")) {
-                    Picker("", selection: $saveMode) {
-                        Text(localizationManager.localized("calls_option_a_title")).tag(CallSaveMode.outgoingOnly)
-                        Text(localizationManager.localized("calls_option_b_title")).tag(CallSaveMode.afterOnly)
-                        Text(localizationManager.localized("calls_option_c_title")).tag(CallSaveMode.hybrid)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
+                    prepModeAccordion
                 }
 
                 if saveMode == .hybrid {
@@ -430,10 +473,28 @@ struct CallsHubScreen: View {
             }
             .navigationBarTitle(localizationManager.localized("calls_prep_title"), displayMode: .inline)
             .navigationBarItems(leading:
-                Button(action: { showPrep = false }) {
+                Button(action: {
+                    print("📞 CallsHub: prep Close tapped")
+                    showPrep = false
+                }) {
                     Text(localizationManager.localized("common_close"))
                 }
+                .accessibilityIdentifier("calls_prep_close")
             )
+            .alert(
+                localizationManager.localized("calls_hub_title"),
+                isPresented: Binding(
+                    get: { showPrep && phoneOpenMessage != nil },
+                    set: { if !$0 { phoneOpenMessage = nil } }
+                )
+            ) {
+                Button(localizationManager.localized("common_ok"), role: .cancel) {
+                    phoneOpenMessage = nil
+                }
+            } message: {
+                Text(phoneOpenMessage ?? "")
+            }
+            .withToast()
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
@@ -500,6 +561,10 @@ struct CallsHubScreen: View {
             return
         }
         prepNeedPhoneHint = false
+        #if targetEnvironment(simulator)
+        notifyPhoneUnavailableOnSimulator()
+        return
+        #else
         CallConsentPolicy.acceptCurrent()
         lifecycle.armPrep(goal: draftGoal, wantMicRecord: wantMicRecord)
         let summary = CallSummaryService.summarize(goal: draftGoal, transcriptOrNote: "")
@@ -515,60 +580,131 @@ struct CallsHubScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             openTelURL(digits: digits)
         }
+        #endif
+    }
+
+    private var prepModeAccordion: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            ForEach(CallSaveMode.allCases) { mode in
+                let isOpen = expandedPrepMode == mode
+                VStack(alignment: .leading, spacing: 8) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            if saveMode == mode && isOpen {
+                                expandedPrepMode = nil
+                            } else {
+                                saveMode = mode
+                                expandedPrepMode = mode
+                            }
+                        }
+                    } label: {
+                        HStack(alignment: .center, spacing: 10) {
+                            Image(systemName: saveMode == mode ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(saveMode == mode ? .secondaryGold : .secondary)
+                            Text(title(for: mode))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.primary)
+                                .multilineTextAlignment(.leading)
+                            Spacer(minLength: 0)
+                            Image(systemName: isOpen ? "chevron.up" : "chevron.down")
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("calls_prep_mode_\(mode.rawValue)")
+
+                    if isOpen {
+                        Text(body(for: mode))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.leading, 28)
+                    }
+                }
+                .padding(.vertical, 6)
+            }
+        }
+    }
+
+    private func closeHub() {
+        print("📞 CallsHub: closeHub tapped")
+        showPrep = false
+        showLocalScamScreen = false
+        showContactPicker = false
+        showAfter = false
+        // Binding first (Settings sheet), then dismiss as belt-and-suspenders.
+        if let isPresented {
+            isPresented.wrappedValue = false
+        }
+        dismiss()
+    }
+
+    private func notifyPhoneUnavailableOnSimulator() {
+        let msg = localizationManager.localized("calls_phone_unavailable_sim")
+        // Always set message — prep sheet has its own .alert (parent alert is covered by sheet).
+        phoneOpenMessage = msg
+        ToastManager.shared.showWarning(msg)
+        print("⚠️ CallsHub: Simulator — Phone URL unsupported")
     }
 
     private func openPhoneAppFallback() {
         print("📞 CallsHub: Open Phone tapped")
+        #if targetEnvironment(simulator)
+        notifyPhoneUnavailableOnSimulator()
+        #else
         showPrep = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            #if targetEnvironment(simulator)
-            phoneOpenMessage = localizationManager.localized("calls_phone_unavailable_sim")
-            print("⚠️ CallsHub: Simulator — Phone URL unsupported")
-            return
-            #else
             let digits = draftPhone.filter { $0.isNumber || $0 == "+" }
             if digits.count >= 3 {
                 openTelURL(digits: digits)
                 return
             }
-            // Empty tel:// is a no-op / fails — prefer opening dial pad via telprompt with placeholder path.
             if let url = URL(string: "telprompt://"), UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url) { ok in
                     print(ok ? "✅ telprompt opened" : "⚠️ telprompt open failed")
                     if !ok {
                         phoneOpenMessage = localizationManager.localized("calls_phone_open_failed")
+                        ToastManager.shared.showWarning(localizationManager.localized("calls_phone_open_failed"))
                     }
                 }
             } else {
                 phoneOpenMessage = localizationManager.localized("calls_phone_open_failed")
+                ToastManager.shared.showWarning(localizationManager.localized("calls_phone_open_failed"))
                 print("⚠️ CallsHub: cannot open Phone (scheme / device)")
             }
-            #endif
         }
+        #endif
     }
 
     private func openTelURL(digits: String) {
         let encoded = digits.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? digits
         print("📞 CallsHub: openTelURL digits_len=\(digits.count)")
         #if targetEnvironment(simulator)
-        phoneOpenMessage = localizationManager.localized("calls_phone_unavailable_sim")
-        return
+        notifyPhoneUnavailableOnSimulator()
         #else
         if let prompt = URL(string: "telprompt://\(encoded)"), UIApplication.shared.canOpenURL(prompt) {
             UIApplication.shared.open(prompt) { ok in
                 print(ok ? "✅ telprompt:// opened" : "⚠️ telprompt:// failed")
-                if !ok { phoneOpenMessage = localizationManager.localized("calls_phone_open_failed") }
+                if !ok {
+                    phoneOpenMessage = localizationManager.localized("calls_phone_open_failed")
+                    ToastManager.shared.showWarning(localizationManager.localized("calls_phone_open_failed"))
+                }
             }
             return
         }
         if let tel = URL(string: "tel://\(encoded)") {
             UIApplication.shared.open(tel) { ok in
                 print(ok ? "✅ tel:// opened" : "⚠️ tel:// failed")
-                if !ok { phoneOpenMessage = localizationManager.localized("calls_phone_open_failed") }
+                if !ok {
+                    phoneOpenMessage = localizationManager.localized("calls_phone_open_failed")
+                    ToastManager.shared.showWarning(localizationManager.localized("calls_phone_open_failed"))
+                }
             }
             return
         }
         phoneOpenMessage = localizationManager.localized("calls_phone_open_failed")
+        ToastManager.shared.showWarning(localizationManager.localized("calls_phone_open_failed"))
         #endif
     }
 

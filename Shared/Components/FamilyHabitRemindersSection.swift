@@ -414,35 +414,38 @@ struct FamilyHabitRemindersSection: View {
             get: { draft.schedule(for: preset) },
             set: { draft.setSchedule($0, for: preset) }
         )
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Toggle(isOn: Binding(
-                get: { binding.wrappedValue.enabled },
-                set: { newValue in
-                    var value = binding.wrappedValue
-                    value.enabled = newValue
-                    binding.wrappedValue = value
-                    if preset == .water {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            waterDetailsExpanded = newValue
-                        }
-                    }
-                }
-            )) {
-                HStack(spacing: Spacing.xs) {
-                    Text(preset.emoji)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(localizationManager.localized(preset.titleKey))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-                        if preset == .water, binding.wrappedValue.enabled, !waterDetailsExpanded {
-                            Text(binding.wrappedValue.waterSummaryLine(localization: localizationManager))
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.65))
-                        }
+        let enabledBinding = Binding<Bool>(
+            get: { binding.wrappedValue.enabled },
+            set: { newValue in
+                var value = binding.wrappedValue
+                value.enabled = newValue
+                binding.wrappedValue = value
+                if preset == .water {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        waterDetailsExpanded = newValue
                     }
                 }
             }
-            .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+        )
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            // Custom switch — system Toggle on dark glass often looks like a lone white disc.
+            HStack(spacing: Spacing.xs) {
+                Text(preset.emoji)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(localizationManager.localized(preset.titleKey))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                    if preset == .water, binding.wrappedValue.enabled, !waterDetailsExpanded {
+                        Text(binding.wrappedValue.waterSummaryLine(localization: localizationManager))
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.65))
+                    }
+                }
+                Spacer(minLength: 8)
+                FamilyHabitGlassSwitch(isOn: enabledBinding)
+                    .accessibilityIdentifier("family_habit_toggle_\(preset.rawValue)")
+                    .accessibilityLabel(localizationManager.localized(preset.titleKey))
+            }
 
             if binding.wrappedValue.enabled {
                 if preset == .water {
@@ -839,5 +842,41 @@ struct FamilyHabitRemindersSection: View {
         } else {
             HapticFeedback.notification(.success)
         }
+    }
+}
+
+/// Visible switch for dark glass cards (system Toggle often renders as a lone white disc).
+private struct FamilyHabitGlassSwitch: View {
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isOn.toggle()
+            }
+            HapticFeedback.impact(.light)
+        } label: {
+            ZStack(alignment: isOn ? .trailing : .leading) {
+                Capsule()
+                    .fill(
+                        isOn
+                            ? Color.secondaryGold
+                            : Color.white.opacity(0.28)
+                    )
+                    .frame(width: 52, height: 32)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white.opacity(0.45), lineWidth: 1)
+                    )
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 26, height: 26)
+                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .padding(3)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityValue(isOn ? "on" : "off")
     }
 }

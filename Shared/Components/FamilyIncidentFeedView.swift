@@ -38,11 +38,17 @@ struct FamilyIncidentFeedView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                 } else if service.incidents.isEmpty {
-                    Text(localizationManager.localized("family_incident_feed_empty"))
+                    Text(localizationManager.localized("family_incident_empty"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.65))
+                        .accessibilityIdentifier("family_incident_feed_empty")
+                    if service.lastError != nil {
+                        Text(localizationManager.localized("family_incident_feed_load_failed"))
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.45))
+                    }
                 } else {
-                    ForEach(service.incidents) { item in
+                    ForEach(service.incidents.prefix(8)) { item in
                         incidentRow(item)
                     }
                 }
@@ -123,6 +129,9 @@ struct FamilyIncidentFeedView: View {
         case .antifakeAlert: return "shield.lefthalf.filled.slash"
         case .wellnessCrisis: return "heart.text.square.fill"
         case .bedtimeBreach: return "moon.zzz.fill"
+        case .scamCall: return "phone.down.waves.left.and.right"
+        case .secondHand: return "figure.2.and.child.holdinghands"
+        case .unknown: return "bell.fill"
         }
     }
 

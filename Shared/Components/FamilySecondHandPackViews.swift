@@ -122,13 +122,9 @@ struct FamilySecondHandSetupSheet: View {
     /// Binding — надёжнее `dismiss()` внутри NavigationView/sheet на iOS 15.
     @Binding var isPresented: Bool
 
-    private var steps: [String] {
-        [
-            "family_second_hand_step_1",
-            "family_second_hand_step_2",
-            "family_second_hand_step_3",
-            "family_second_hand_step_4"
-        ]
+    private var usesIOS18AppsPhonePath: Bool {
+        if #available(iOS 18.0, *) { return true }
+        return false
     }
 
     var body: some View {
@@ -140,19 +136,44 @@ struct FamilySecondHandSetupSheet: View {
                         .foregroundColor(.primary)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    ForEach(Array(steps.enumerated()), id: \.offset) { index, key in
+                    setupStepRow(number: 1, textKey: "family_second_hand_step_1")
+
+                    // Step 2 — same tap path as Antifake Call Filter (Settings → Phone → …)
+                    VStack(alignment: .leading, spacing: Spacing.s) {
                         HStack(alignment: .top, spacing: Spacing.s) {
-                            Text("\(index + 1).")
+                            Text("2.")
                                 .font(.headline)
                                 .foregroundColor(.secondaryGold)
-                            Text(localizationManager.localized(key))
+                            Text(localizationManager.localized("family_second_hand_step_2"))
                                 .font(.body)
                                 .foregroundColor(.primary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        VStack(alignment: .leading, spacing: 6) {
+                            callFilterSubstep("antifake_call_directory_setup_step1")
+                            if usesIOS18AppsPhonePath {
+                                callFilterSubstep("antifake_call_directory_setup_step2_ios18")
+                                callFilterSubstep("antifake_call_directory_setup_step3_ios18")
+                                callFilterSubstep("antifake_call_directory_setup_step4_ios18")
+                            } else {
+                                callFilterSubstep("antifake_call_directory_setup_step2")
+                                callFilterSubstep("antifake_call_directory_setup_step3")
+                                callFilterSubstep("antifake_call_directory_setup_step4")
+                            }
+                            Text(localizationManager.localized("antifake_call_directory_setup_step5_retry"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.leading, 28)
+                        }
+                        .padding(.leading, 4)
                     }
 
+                    setupStepRow(number: 3, textKey: "family_second_hand_step_3")
+                    setupStepRow(number: 4, textKey: "family_second_hand_step_4")
+
                     Button {
+                        FamilyScamCallFunnel.log(.secondHandSetup, source: "setup_sheet")
                         openElderlyAfterClosingSheet()
                     } label: {
                         Text(localizationManager.localized("family_second_hand_open_elderly"))
@@ -193,6 +214,26 @@ struct FamilySecondHandSetupSheet: View {
             )
         }
         .navigationViewStyle(StackNavigationViewStyle())
+    }
+
+    private func setupStepRow(number: Int, textKey: String) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Text("\(number).")
+                .font(.headline)
+                .foregroundColor(.secondaryGold)
+            Text(localizationManager.localized(textKey))
+                .font(.body)
+                .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func callFilterSubstep(_ key: String) -> some View {
+        Text(localizationManager.localized(key))
+            .font(.subheadline)
+            .foregroundColor(.primary.opacity(0.9))
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.leading, 28)
     }
 
     private func closeSheet() {

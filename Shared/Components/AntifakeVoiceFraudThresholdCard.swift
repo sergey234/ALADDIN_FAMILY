@@ -13,7 +13,7 @@ struct AntifakeVoiceFraudThresholdCard: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Label(
                 localizationManager.localized("antifake_voice_fraud_threshold_title"),
-                systemImage: "waveform.badge.magnifyingglass"
+                systemImage: "waveform"
             )
             .font(.headline)
             .foregroundColor(.white)

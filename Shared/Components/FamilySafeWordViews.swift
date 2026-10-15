@@ -128,6 +128,7 @@ struct FamilySafeWordSetupSheet: View {
     @State private var confirmPhrase = ""
     @State private var errorMessage: String?
     @State private var isSaving = false
+    @State private var isPhraseVisible = false
 
     var body: some View {
         WellnessNavigationStack {
@@ -139,14 +140,44 @@ struct FamilySafeWordSetupSheet: View {
                 }
 
                 Section(localizationManager.localized("family_safe_word_phrase_section")) {
-                    SecureField(
-                        localizationManager.localized("family_safe_word_phrase_placeholder"),
-                        text: $phrase
-                    )
-                    SecureField(
-                        localizationManager.localized("family_safe_word_confirm_placeholder"),
-                        text: $confirmPhrase
-                    )
+                    if isPhraseVisible {
+                        TextField(
+                            localizationManager.localized("family_safe_word_phrase_placeholder"),
+                            text: $phrase
+                        )
+                        .textContentType(.password)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        TextField(
+                            localizationManager.localized("family_safe_word_confirm_placeholder"),
+                            text: $confirmPhrase
+                        )
+                        .textContentType(.password)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                    } else {
+                        SecureField(
+                            localizationManager.localized("family_safe_word_phrase_placeholder"),
+                            text: $phrase
+                        )
+                        SecureField(
+                            localizationManager.localized("family_safe_word_confirm_placeholder"),
+                            text: $confirmPhrase
+                        )
+                    }
+                    Button {
+                        isPhraseVisible.toggle()
+                    } label: {
+                        Label(
+                            localizationManager.localized(
+                                isPhraseVisible
+                                    ? "family_safe_word_hide_phrase"
+                                    : "family_safe_word_show_phrase"
+                            ),
+                            systemImage: isPhraseVisible ? "eye.slash.fill" : "eye.fill"
+                        )
+                    }
+                    .accessibilityIdentifier("family_safe_word_visibility_toggle")
                 }
 
                 Section {
@@ -165,7 +196,10 @@ struct FamilySafeWordSetupSheet: View {
             .navigationTitle(localizationManager.localized("family_safe_word_setup_title"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
-                leading: Button(localizationManager.localized("common_cancel")) { dismiss() },
+                leading: Button(localizationManager.localized("common_cancel")) {
+                    print("🔐 FamilySafeWord: Cancel tapped")
+                    dismiss()
+                },
                 trailing: Button(localizationManager.localized("common_save")) {
                     Task { await savePhrase() }
                 }
@@ -236,6 +270,7 @@ struct FamilySafeWordVerifySheet: View {
     @State private var phrase = ""
     @State private var feedback: String?
     @State private var isVerifying = false
+    @State private var isPhraseVisible = false
 
     var body: some View {
         WellnessNavigationStack {
@@ -247,10 +282,33 @@ struct FamilySafeWordVerifySheet: View {
                 }
 
                 Section(localizationManager.localized("family_safe_word_phrase_section")) {
-                    SecureField(
-                        localizationManager.localized("family_safe_word_phrase_placeholder"),
-                        text: $phrase
-                    )
+                    if isPhraseVisible {
+                        TextField(
+                            localizationManager.localized("family_safe_word_phrase_placeholder"),
+                            text: $phrase
+                        )
+                        .textContentType(.password)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                    } else {
+                        SecureField(
+                            localizationManager.localized("family_safe_word_phrase_placeholder"),
+                            text: $phrase
+                        )
+                    }
+                    Button {
+                        isPhraseVisible.toggle()
+                    } label: {
+                        Label(
+                            localizationManager.localized(
+                                isPhraseVisible
+                                    ? "family_safe_word_hide_phrase"
+                                    : "family_safe_word_show_phrase"
+                            ),
+                            systemImage: isPhraseVisible ? "eye.slash.fill" : "eye.fill"
+                        )
+                    }
+                    .accessibilityIdentifier("family_safe_word_verify_visibility_toggle")
                 }
 
                 if let feedback {
@@ -263,7 +321,10 @@ struct FamilySafeWordVerifySheet: View {
             .navigationTitle(localizationManager.localized("family_safe_word_verify_title"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
-                leading: Button(localizationManager.localized("common_cancel")) { dismiss() },
+                leading: Button(localizationManager.localized("common_cancel")) {
+                    print("🔐 FamilySafeWord: Verify Cancel tapped")
+                    dismiss()
+                },
                 trailing: Button(localizationManager.localized("family_safe_word_verify_action")) {
                     Task { await verify() }
                 }

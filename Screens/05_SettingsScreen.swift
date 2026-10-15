@@ -744,7 +744,7 @@ struct SettingsScreen: View {
                 .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showCallsHubScreen) {
-            CallsHubScreen()
+            CallsHubScreen(isPresented: $showCallsHubScreen)
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
                 .aladdinSheetPresentation()
