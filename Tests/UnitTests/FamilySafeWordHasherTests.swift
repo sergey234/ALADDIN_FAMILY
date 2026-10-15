@@ -6,9 +6,11 @@ final class FamilySafeWordHasherTests: XCTestCase {
         XCTAssertEqual(FamilySafeWordHasher.normalizePhrase("  Blue   Moon  "), "blue moon")
     }
 
-    func testValidateRequiresTwoWords() {
+    func testValidateMinFourCharsOneWordOk() {
         XCTAssertEqual(FamilySafeWordHasher.validatePhrase("x"), "phrase_too_short")
-        XCTAssertEqual(FamilySafeWordHasher.validatePhrase("singleword"), "phrase_need_two_words")
+        XCTAssertEqual(FamilySafeWordHasher.validatePhrase("abc"), "phrase_too_short")
+        XCTAssertNil(FamilySafeWordHasher.validatePhrase("фанк"))
+        XCTAssertNil(FamilySafeWordHasher.validatePhrase("серый волк"))
         XCTAssertNil(FamilySafeWordHasher.validatePhrase("blue moon"))
     }
 

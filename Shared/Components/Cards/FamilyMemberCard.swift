@@ -183,16 +183,18 @@ struct FamilyMemberCard: View {
                             )
                     }
                     
-                    // Микрометка источника
+                    // Микрометка источника (локализованная; без сырых "server"/"pending")
                     if let origin = originBadge, !origin.isEmpty {
-                        // Нормализуем подпись: "local" → "pending"
-                        let originText = origin.lowercased() == "local" ? "pending" : origin
+                        let isLocal = origin.lowercased() == "local"
+                        let originText = localizationManager.localized(
+                            isLocal ? "family_member_origin_pending" : "family_member_origin_server"
+                        )
                         Text(originText)
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .font(.system(size: 9, weight: .bold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(originText.lowercased() == "server" ? Color.green.opacity(0.8) : Color.gray.opacity(0.8))
+                            .background(isLocal ? Color.gray.opacity(0.8) : Color.green.opacity(0.8))
                             .clipShape(Capsule())
                     }
                     

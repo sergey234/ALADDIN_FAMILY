@@ -112,7 +112,10 @@ final class FamilySafeWordService: ObservableObject {
     private func resolvedFamilyId(explicit: String?) -> String {
         let trimmed = (explicit ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { return trimmed }
-        return (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+        // Канон: Keychain (+ legacy UD) — тот же путь, что у FamilyScreen / API.
+        // Раньше читали только UserDefaults.familyIdKey → после persistFamilyId() UD пуст
+        // → ложный `.noFamily` при живой семье (логи: FAM_* + GET /safe-word 200).
+        return FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 

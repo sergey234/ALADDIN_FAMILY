@@ -9,10 +9,11 @@
 | **Дата снимка** | 2026-09-21 |
 | **Рабочий корень** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
 | **Перед правками** | `git rev-parse --show-toplevel` · `git branch --show-current` · `git status --short` |
+| **Ветка iOS-коммитов** | Только **`master`**. Другая ветка → стоп. Rule `ios-commit-on-master.mdc` |
 | **Общие правила репо** | [`AGENTS.md`](../AGENTS.md) |
 | **Mech Pilot** | Rule `mech-pilot.mdc` · skill `@aladdin-mech-pilot` — см. §0A |
 | **Pilot stack 2026** | §0B — Repowise / Bonsai draft / Tailscale admin (не клон статей) |
-| **Как владелец передаёт задачу** | См. §8 ниже (одна фраза + этот файл) |
+| **Как владелец передаёт задачу** | См. §8 ниже (одна фраза + этот файл) · **вставка в новое окно:** [`ML_SYSTEM_NEW_WINDOW_PASTE.md`](ML_SYSTEM_NEW_WINDOW_PASTE.md) |
 
 ---
 
@@ -46,7 +47,7 @@ Rule always-on: `.cursor/rules/mech-pilot.mdc` · Orch: `orch-basics` § Mech Pi
 
 | Слой | Что это по-простому | У нас SSOT | Статус |
 |------|---------------------|------------|--------|
-| **1. Context** | Агент быстрее находит нужный код | **Repowise** (`repowise-first.mdc`) | ✅ Есть |
+| **1. Context** | Агент быстрее находит нужный код | **Repowise** (`repowise-first.mdc`) + Graft **narrow** · опц. [context-mode план](CONTEXT_MODE_ALADDIN_PLAN_2026-09-24.md) (sandbox ✅ · install только GO) | ✅ карта есть · vibe-пятёрка (gstack/Paseo/OpenCode) **не** ставить — [план](PLAN_VIBE_AGENT_STACK_ADOPT_2026-09-29.md) |
 | **2. Compute** | Дешёвый черновик на Mac («картошка») | [`ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md`](ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md) · `@aladdin-local-llm` | 📋 План · install только с GO |
 | **3. Admin mesh** | Управлять VPS/агентами без хаоса SSH | [`ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md`](ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md) | 📋 План · **не** «закрой все порты» |
 
@@ -71,6 +72,23 @@ Rule always-on: `.cursor/rules/mech-pilot.mdc` · Orch: `orch-basics` § Mech Pi
 
 ---
 
+## 0C. Skills & Rules — куда смотреть (не выдавать пачку файлов)
+
+**Лучший способ брифывать агента:** одна фраза + этот §0C / paste §1 — **не** список из 15 md. Cursor сам подхватит `alwaysApply` rules; skills — по `@имя` или по описанию задачи.
+
+| Где | Что | Как агент видит |
+|-----|-----|-----------------|
+| `.cursor/rules/*.mdc` | Жёсткие правила | **Авто** если `alwaysApply: true`; иначе по теме / @ |
+| `.cursor/skills/aladdin-*` | Prod thin skills | `@aladdin-…` или description match |
+| `.cursor/skills_sandbox/` | Чужие клоны (Asmadey, Rezvani…) | **Только читать** после GO; не копировать в prod |
+| `AGENTS.md` | Конституция + карта skill→задача | Читать по START_HERE |
+| SEO/AEO контент | `landing/docs/SEO_LOOP_RUNBOOK.md` · `landing/scripts/seo_article_prompt.md` · `seo-aeo-studio/docs/` | Когда задача про блог/сайт |
+| **Rezvani волны** | [`.cursor/CLAUDE_SKILLS_REZVANI_PLAN.md`](../.cursor/CLAUDE_SKILLS_REZVANI_PLAN.md) · conflict [`.cursor/CLAUDE_SKILLS_REZVANI_CONFLICT_MATRIX.md`](../.cursor/CLAUDE_SKILLS_REZVANI_CONFLICT_MATRIX.md) · sandbox `claude-skills-rezvani/` | TODO `cs-w*` · **не** `install.sh` в корень |
+
+**Запрет:** полный dump 388 skills в `.cursor/skills/` · ship/human-gate (дубль Mech Pilot) · pen-test / secrets-vault без GO.
+
+---
+
 ## 0. За 60 секунд
 
 В репо живут **три продукта** (не смешивать коммиты/контекст без нужды):
@@ -89,6 +107,9 @@ Rule always-on: `.cursor/rules/mech-pilot.mdc` · Orch: `orch-basics` § Mech Pi
 | Coding Orchestrator | **115/115 ✅** | Пользоваться MASTER; новые фичи orch — только по задаче владельца |
 | Asmadey → Cursor skills | Инфра ✅ · A ✅ · B1+B2 ✅ · **C-1/C-2 fixed** | B3–B4 / ui-stress Antifake по фразе; C/E по запросу; D только с GO |
 | **Business / метрики** | Канон ✅ [`docs/business/ML_SYSTEM_BUSINESS_START_HERE.md`](business/ML_SYSTEM_BUSINESS_START_HERE.md) | По фразе: E1…E7 · **вне** iOS commits |
+| **Adopt внешних статей (A–G)** | Handoff ✅ · F1✅ · G bookmarks✅ · **B Decode✅ локально** | След.: **GO SANDBOX C** / **GO DEPLOY** Decode · TodoWrite `ado-*` |
+| **SEO / AEO сайт aladdin-ai.ru** | Hybrid loop в `landing/` ✅ | Runbook [`landing/docs/SEO_LOOP_RUNBOOK.md`](../landing/docs/SEO_LOOP_RUNBOOK.md) (**§0** — зачем статьи, кадренс, 1–12 мес) · «делай loop» · **не** Sanity/Railway |
+| **Skills radar (Best Skills)** | Bookmark only | https://linkly.ai/skills · **не** auto-install топ в `.cursor/skills/` без sandbox+GO |
 | Voice Safety Log (Variant C) | Код P0–P2 ✅ | **DEVICE QA** владельца (G6) · опционально GO на VN-UI / High |
 | Внешние skills | Шлюз ✅ | Всегда: sandbox → skillspector → **GO владельца** |
 | **Mech Pilot** | Rule + skill ✅ | Пилот задаёт GATES/GO · меха исполняет · Approve человеческий |
@@ -104,6 +125,7 @@ Rule always-on: `.cursor/rules/mech-pilot.mdc` · Orch: `orch-basics` § Mech Pi
 1. **Корень** — только путь iOS выше; не править из parent-директорий.  
 2. **Секреты** — никогда не коммитить/не вставлять в чат `.env`, токены, VPN handoff §32 (`VPN_SPEED_DEGRADATION_HANDOFF_RU.md`).  
 3. **bot ≠ iOS release** — не `git add telegram_stars_shop_bot/` в iOS-релизные коммиты.  
+3a. **Ветка** — iOS-коммиты только на `master`. Не `hide-stars-public-2026-09`. Rule `.cursor/rules/ios-commit-on-master.mdc`. Push только после **GO на push**. Номер сборки только после **GO на bump** (+1, не 247/248).  
 4. **no-mock bypass** — parental / family / antifake: без `sfm_mock` / mock_fallback в проде.  
 5. **ask-before-ops** — деплой, SSH/prod, restart, `.env`, xray: сначала спросить владельца.  
 6. **Asmadey** — не vendor весь каталог в git; не Dark Factory auto-merge; не RN/shadcn/MagicUI как стек app.  
@@ -158,18 +180,26 @@ Rule always-on: `.cursor/rules/mech-pilot.mdc` · Orch: `orch-basics` § Mech Pi
 | **Coding Orchestrator** (Mac, ночь, Telegram orch, Approve) | [`coding_orchestrator/docs/CODING_ORCHESTRATOR_MASTER.md`](../coding_orchestrator/docs/CODING_ORCHESTRATOR_MASTER.md) | `.cursor/CODING_ORCHESTRATOR_TASK_REGISTRY.md` |
 | **Asmadey / Cursor skills / волны A–F** | [`.cursor/ASMADY_SKILLS_ML_HANDOFF.md`](../.cursor/ASMADY_SKILLS_ML_HANDOFF.md) | `ASMADY_SKILLS_REMAINING_PLAN.md` · `ASMADY_WAVES_BCE_PLAN.md` · `ASMADY_PILOT_JOURNAL.md` · registry `asm-*` |
 | **Новый чужой skill** | [`.cursor/rules/external-skill-audit.mdc`](../.cursor/rules/external-skill-audit.mdc) | `@aladdin-skillspector` · `.cursor/skills_sandbox/` · ждать GO |
+| **Rezvani / claude-skills волны** | [`.cursor/CLAUDE_SKILLS_REZVANI_PLAN.md`](../.cursor/CLAUDE_SKILLS_REZVANI_PLAN.md) | conflict matrix · sandbox `claude-skills-rezvani/` · TODO `cs-w*` · §0C |
 | **Voice Safety Log** | [`docs/ML_SYSTEM_HANDOFF_VOICE_SAFETY_LOG_VARIANT_C_2026-09-18.md`](ML_SYSTEM_HANDOFF_VOICE_SAFETY_LOG_VARIANT_C_2026-09-18.md) | REVIEW_RECS companion · `VOICE_SAFETY_LOG_*_MANUAL_QA_RU.md` · код `Core/Voice/` · `ClipboardSafetyService` |
 | **Business / pricing / growth / SEO / метрики** | [`docs/business/ML_SYSTEM_BUSINESS_START_HERE.md`](business/ML_SYSTEM_BUSINESS_START_HERE.md) | KPI §2 · фокусы E1…E7 · артефакты в `docs/business/` · **не** iOS release |
 | **Общие правила iOS / карта skills** | [`AGENTS.md`](../AGENTS.md) | `.cursor/skills/aladdin-*` · rules |
 | **Antifake** | [`.cursor/ANTIFAKE_ML_HANDOFF_FOR_NEXT_AGENT.md`](../.cursor/ANTIFAKE_ML_HANDOFF_FOR_NEXT_AGENT.md) | `.cursor/ANTIFAKE_V4_TASK_REGISTRY.md` |
+| **Щит семьи + топ 50 ИИ (единый план)** | [`docs/PLAN_ALADDIN_STORE_LIFT_MASTER_2026-10-06.md`](PLAN_ALADDIN_STORE_LIFT_MASTER_2026-10-06.md) | `.cursor/ALADDIN_STORE_LIFT_TASK_REGISTRY.md` · TODO `fsl-*` + `gai-*` · код после **GO LIFT BUILD** |
+| **Аудит 14 ST + топ 50 + промпт второй ИИ** | [`docs/AUDIT_STORE_TOPS_AND_GENAI50_FOR_SECOND_AI_2026-10-06.md`](AUDIT_STORE_TOPS_AND_GENAI50_FOR_SECOND_AI_2026-10-06.md) | §6 промпт копировать в другое окно · правки реестра только после **GO LIFT ADD** |
 | **Companion / Rive** | [`docs/COMPANION_ML_HANDOFF_START_HERE.md`](COMPANION_ML_HANDOFF_START_HERE.md) | `COMPANION_ML_RIVE_HANDOFF_MASTER.md` |
 | **App Review 2.1** | [`docs/AppStore/ML_SYSTEM_HANDOFF_GUIDELINE_2_1_2026-09-09_RU.md`](AppStore/ML_SYSTEM_HANDOFF_GUIDELINE_2_1_2026-09-09_RU.md) | SHORT reply · `@aladdin-humanizer-ru` |
+| **Screen Time stats (DeviceActivity)** | [`docs/AppStore/SCREEN_TIME_STATS_COLLECTION_PLAN_2026-10-16_RU.md`](AppStore/SCREEN_TIME_STATS_COLLECTION_PLAN_2026-10-16_RU.md) | Report+Monitor · чеклист A–E · не моки · FC Distribution |
+| **Screen Time: сейчас vs после 1-й публикации** | [`docs/AppStore/SCREEN_TIME_NOW_VS_AFTER_FIRST_APPROVAL_2026-10-16_RU.md`](AppStore/SCREEN_TIME_NOW_VS_AFTER_FIRST_APPROVAL_2026-10-16_RU.md) | Без FC сейчас · заявление после Approved |
+| **Family Controls Distribution** | [`docs/AppStore/FAMILY_CONTROLS_DISTRIBUTION_IMPLEMENTATION_PLAN_2026-09-09_RU.md`](AppStore/FAMILY_CONTROLS_DISTRIBUTION_IMPLEMENTATION_PLAN_2026-09-09_RU.md) | Заявки Apple · Shield · entitlement |
 | **Telegram bot** | `telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_FINAL.md` + deploy-safe rule | **Не** в iOS commit |
 | **VPN / глушилки** | `aladdin_shop_vpn_api/deploy/VPN_RU_ENTRY_CLONE_AND_SCALE_PLAYBOOK_RU.md` §0.3 | naming rule · **не** push secrets handoff |
+| **VPN белый список / split RU / Ozon·WB мимо VPN** | `aladdin_shop_vpn_api/deploy/VPN_SPLIT_RU_DIRECT_RUNBOOK_RU.md` **§0** | `routing_ru_direct.json` · casino merge · все профили = full (2026-09-30) |
 | **Backend iOS API** | `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` | ask-before-ops |
+| **Умный бэкап MAIN (сайт+API+iOS Mac)** | [`docs/ML_SYSTEM_HANDOFF_MAIN_SMART_BACKUP_CANON_2026-10-16.md`](ML_SYSTEM_HANDOFF_MAIN_SMART_BACKUP_CANON_2026-10-16.md) | только GO · secrets отдельно · sha256 на USB |
 | **Local LLM / Bonsai (draft)** | [`docs/ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md`](ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md) | `@aladdin-local-llm` · BUDGET_POLICY · **GO** на install |
 | **Admin mesh / Tailscale** | [`docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md`](ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md) | admin-only · не закрывать продукт-порты · ask-before-ops |
-| **Карта кода (граф)** | Rule `repowise-first.mdc` · MCP `repowise-ios` / `repowise-bot` | Не путать с orch GraftQueue / trailhq Graft (§0B) |
+| **Карта кода (граф)** | Rule `repowise-first.mdc` (ритуал Repowise→Graft CLI) · `./scripts/refresh_code_graphs.sh` | Не путать GraftQueue / trailhq Graft (§0B) · verdict **narrow** |
 
 Если тема **неясна** — спроси владельца одной фразой: «Это orch / skills / Voice / antifake / **business** / bot / VPN / **Bonsai** / Tailscale admin?»  
 Не угадывай прод-действия.
@@ -191,7 +221,7 @@ Rule always-on: `.cursor/rules/mech-pilot.mdc` · Orch: `orch-basics` § Mech Pi
 Канон: [`.cursor/ASMADY_SKILLS_ML_HANDOFF.md`](../.cursor/ASMADY_SKILLS_ML_HANDOFF.md).
 
 Полезные вызовы в чате (когда уместно):  
-`@aladdin-mech-pilot` · `@aladdin-gates` · `@aladdin-quality-check` · `@aladdin-local-llm` · `@aladdin-humanizer-ru` · `@aladdin-ajtbd` · `@aladdin-skillspector` · `@aladdin-dual-review` · `@aladdin-ui-stress`.
+`@aladdin-mech-pilot` · `@aladdin-gates` · `@aladdin-quality-check` · `@aladdin-local-llm` · `@aladdin-humanizer-ru` · `@aladdin-ajtbd` · `@aladdin-skillspector` · `@aladdin-aso` · `@aladdin-aeo` · `@aladdin-seo-site` · `@aladdin-ask-then-build` · `@aladdin-dual-review` · `@aladdin-ui-stress`.
 
 ---
 
@@ -327,6 +357,8 @@ GO Bonsai runtime (Mac, draft only). Не трогай VPN/bot/порты. Ко�
 | `AGENTS.md` | Конституция репо + карта skills/rules |
 | `coding_orchestrator/docs/CODING_ORCHESTRATOR_MASTER.md` | Orch SSOT |
 | `.cursor/ASMADY_SKILLS_ML_HANDOFF.md` | Asmadey SSOT для ML |
+| `.cursor/CLAUDE_SKILLS_REZVANI_PLAN.md` | Rezvani волны W0–W3 + anti-dup |
+| `.cursor/CLAUDE_SKILLS_REZVANI_CONFLICT_MATRIX.md` | Дубли vs aladdin-* |
 | `.cursor/ASMADY_SKILLS_REMAINING_PLAN.md` | Остатки asm-r-* |
 | `.cursor/ASMADY_WAVES_BCE_PLAN.md` | Как делать волну B/C/E |
 | `.cursor/ASMADY_PILOT_JOURNAL.md` | Журнал пилотов |

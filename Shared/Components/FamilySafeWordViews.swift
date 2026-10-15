@@ -4,6 +4,7 @@ import SwiftUI
 
 struct FamilySafeWordCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @ObservedObject private var service = FamilySafeWordService.shared
 
     let members: [FamilyMemberData]
@@ -91,6 +92,7 @@ struct FamilySafeWordCard: View {
         .sheet(isPresented: $showSetupSheet) {
             FamilySafeWordSetupSheet(members: members)
                 .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
         }
         .sheet(isPresented: $showVerifySheet) {
             FamilySafeWordVerifySheet(context: "family_practice")
@@ -119,6 +121,7 @@ struct FamilySafeWordCard: View {
 
 struct FamilySafeWordSetupSheet: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var service = FamilySafeWordService.shared
 
@@ -129,14 +132,34 @@ struct FamilySafeWordSetupSheet: View {
     @State private var errorMessage: String?
     @State private var isSaving = false
     @State private var isPhraseVisible = false
+    /// Показать инструкцию: нет familyId на устройстве или ошибка `.noFamily` после Save.
+    @State private var showNoFamilyHelp = false
+
+    private var hasServerFamilyId: Bool {
+        !FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
+    }
 
     var body: some View {
         WellnessNavigationStack {
             Form {
                 Section {
-                    Text(localizationManager.localized("family_safe_word_setup_intro"))
+                    Text(localizationManager.localized("family_safe_word_setup_what"))
                         .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(localizationManager.localized("family_safe_word_setup_intro"))
+                        .font(.caption)
                         .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if showNoFamilyHelp || !hasServerFamilyId {
+                    Section {
+                        noFamilyHelpBlock
+                    }
+                    .accessibilityIdentifier("family_safe_word_no_family_help")
                 }
 
                 Section(localizationManager.localized("family_safe_word_phrase_section")) {
@@ -186,7 +209,7 @@ struct FamilySafeWordSetupSheet: View {
                         .foregroundColor(.secondary)
                 }
 
-                if let errorMessage {
+                if let errorMessage, !showNoFamilyHelp {
                     Section {
                         Text(errorMessage)
                             .foregroundColor(.dangerRed)
@@ -203,26 +226,92 @@ struct FamilySafeWordSetupSheet: View {
                 trailing: Button(localizationManager.localized("common_save")) {
                     Task { await savePhrase() }
                 }
-                .disabled(isSaving || phrase.isEmpty || confirmPhrase.isEmpty)
+                .disabled(isSaving || phrase.isEmpty || confirmPhrase.isEmpty || !hasServerFamilyId)
             )
+            .onAppear {
+                if !hasServerFamilyId {
+                    showNoFamilyHelp = true
+                }
+            }
         }
         .modifier(AntifakeMediumSheetDetentModifier())
     }
 
+    @ViewBuilder
+    private var noFamilyHelpBlock: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("family_safe_word_no_family"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.dangerRed)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(localizationManager.localized("family_safe_word_no_family_how_title"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.primary)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 6) {
+                howToStep(number: 1, key: "family_safe_word_no_family_step_1")
+                howToStep(number: 2, key: "family_safe_word_no_family_step_2")
+                howToStep(number: 3, key: "family_safe_word_no_family_step_3")
+                howToStep(number: 4, key: "family_safe_word_no_family_step_4")
+            }
+
+            Button {
+                print("🔐 FamilySafeWord: Open family connect CTA")
+                dismiss()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    navigationManager.navigateTo(.addMemberOptions)
+                }
+            } label: {
+                Text(localizationManager.localized("family_safe_word_no_family_cta"))
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.primaryBlue)
+            .padding(.top, 4)
+            .accessibilityIdentifier("family_safe_word_no_family_cta")
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func howToStep(number: Int, key: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("\(number).")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.secondary)
+                .frame(width: 18, alignment: .leading)
+            Text(localizationManager.localized(key))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     @MainActor
     private func savePhrase() async {
+        guard hasServerFamilyId else {
+            showNoFamilyHelp = true
+            errorMessage = localizationManager.localized("family_safe_word_no_family")
+            return
+        }
+
         guard FamilyAccessPolicy.hasPermission(.manageCriticalFamilySettings, members: members) else {
+            showNoFamilyHelp = false
             errorMessage = localizationManager.localized("family_safe_word_parent_only")
             return
         }
 
         let biometricsOK = await SecurityManager.shared.authenticateWithBiometrics()
         guard biometricsOK || !SecurityManager.shared.biometricAuthAvailable else {
+            showNoFamilyHelp = false
             errorMessage = localizationManager.localized("family_safe_word_biometric_required")
             return
         }
 
         guard phrase == confirmPhrase else {
+            showNoFamilyHelp = false
             errorMessage = localizationManager.localized("family_safe_word_mismatch_confirm")
             return
         }
@@ -237,8 +326,14 @@ struct FamilySafeWordSetupSheet: View {
             HapticFeedback.notification(.success)
             dismiss()
         } catch let error as FamilySafeWordError {
+            if case .noFamily = error {
+                showNoFamilyHelp = true
+            } else {
+                showNoFamilyHelp = false
+            }
             errorMessage = localizedValidation(error)
         } catch {
+            showNoFamilyHelp = false
             errorMessage = localizationManager.localized("family_safe_word_save_failed")
         }
     }

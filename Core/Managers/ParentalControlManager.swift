@@ -648,74 +648,21 @@ enum FamilyControlsAvailabilityError: LocalizedError {
     
     // MARK: - Usage Statistics
     
-    /// Получает статистику использования по приложениям
+    /// Получает статистику использования по приложениям.
+    /// Честно: без DeviceActivity Report extension / API — пустой список (не Instagram/TikTok mock).
     func getAppUsageStatistics(childId: String, period: StatisticsPeriod = .today) async -> Result<[AppUsageStatistics], Error> {
-        // TODO: Реализовать API запрос
-        // Пока возвращаем мок данные
-        let statistics = [
-            AppUsageStatistics(
-                appName: "Instagram",
-                timeSpent: 1800, // 30 минут
-                sessions: 5,
-                limit: 1800
-            ),
-            AppUsageStatistics(
-                appName: "TikTok",
-                timeSpent: 1200, // 20 минут
-                sessions: 3,
-                limit: 1200
-            )
-        ]
-        
-        return .success(statistics)
+        let fromDevice = await fetchRealScreenTimeStats()
+        return .success(fromDevice)
     }
     
-    /// Получает статистику использования по сайтам
+    /// Получает статистику использования по сайтам (без mock до реального API).
     func getWebsiteUsageStatistics(childId: String, period: StatisticsPeriod = .today) async -> Result<[WebsiteUsageStatistics], Error> {
-        // TODO: Реализовать API запрос
-        // Пока возвращаем мок данные
-        let statistics = [
-            WebsiteUsageStatistics(
-                website: "youtube.com",
-                visits: 15,
-                timeSpent: 2400, // 40 минут
-                isBlocked: false
-            ),
-            WebsiteUsageStatistics(
-                website: "example-blocked.com",
-                visits: 0,
-                timeSpent: 0,
-                isBlocked: true
-            )
-        ]
-        
-        return .success(statistics)
+        return .success([])
     }
     
-    /// Получает данные для графиков активности (без создания самих графиков)
+    /// Графики активности — пустые, пока нет реального источника (не random demo).
     func getActivityCharts(childId: String, period: StatisticsPeriod = .today) async -> Result<ActivityCharts, Error> {
-        // TODO: Реализовать API запрос
-        // Пока возвращаем мок данные для демонстрации структуры
-        let hourlyActivity = (0..<24).map { hour in
-            HourlyActivity(
-                hour: hour,
-                timeSpent: Double.random(in: 0...300) // Случайные данные для демонстрации
-            )
-        }
-        
-        let dailyActivity = (0..<7).map { day in
-            DailyActivity(
-                date: Calendar.current.date(byAdding: .day, value: -day, to: Date()) ?? Date(),
-                timeSpent: Double.random(in: 1800...7200) // Случайные данные для демонстрации
-            )
-        }
-        
-        let charts = ActivityCharts(
-            hourlyActivity: hourlyActivity,
-            dailyActivity: dailyActivity
-        )
-        
-        return .success(charts)
+        return .success(ActivityCharts(hourlyActivity: [], dailyActivity: []))
     }
     
     // MARK: - Flexible Settings

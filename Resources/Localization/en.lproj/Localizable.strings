@@ -2819,6 +2819,19 @@
 "main_simple_version_subtitle" = "Everything important on one screen";
 "family_safe_word_show_phrase" = "Show phrase";
 "family_safe_word_hide_phrase" = "Hide phrase";
+"family_safe_word_setup_what" = "A family code word (for example: “grey wolf”). If someone calls or texts “from family” asking for money, a code, or a transfer — ask for this phrase. Your people know it. Scammers don’t.";
+"family_safe_word_setup_intro" = "Only a parent or adult can set it. Only a hash is stored on the device.";
+"family_safe_word_rules" = "One word is fine. At least 4 characters, up to 120.";
+"family_safe_word_phrase_placeholder" = "Example: grey wolf";
+"family_safe_word_error_phrase_too_short" = "Use at least 4 characters.";
+"family_safe_word_error_phrase_need_two_words" = "Use at least 4 characters.";
+"family_safe_word_no_family" = "You need a family in the app first.";
+"family_safe_word_no_family_how_title" = "How to connect";
+"family_safe_word_no_family_step_1" = "Open the Family tab at the bottom.";
+"family_safe_word_no_family_step_2" = "If you’re starting — tap Create family.";
+"family_safe_word_no_family_step_3" = "If you were invited — Enter code or Scan QR. A parent shares a code like FAM-XXXX…";
+"family_safe_word_no_family_step_4" = "When your family appears, come back here and save the phrase.";
+"family_safe_word_no_family_cta" = "Open family connect";
 "simple_home_tile_parents_title" = "Parents 60+";
 "simple_home_tile_parents_subtitle" = "Second hand and post-call checklist";
 "av_scope_file_only_banner" = "We only check the file you pick. iOS does not allow a full-phone scan by third-party apps.";
@@ -2853,3 +2866,15 @@
 "family_incident_playbook_second_hand_step1" = "Make sure the parent has the “asked for money or a code” button.";
 "family_incident_playbook_second_hand_step2" = "Check the safe word and Call Filter on their iPhone.";
 "family_incident_playbook_second_hand_step3" = "Say out loud: we do not give codes on a call; we call you.";
+
+/* family time control / presence — 2026-10-16 */
+"duration_hours_minutes_fmt" = "%d h %d min";
+"duration_hours_fmt" = "%d h";
+"duration_minutes_fmt" = "%d min";
+"duration_unknown" = "—";
+"family_statistics_today_empty" = "Limits are saved. Today’s usage appears after Screen Time reports from the child’s device.";
+"family_presence_stamp_today" = "today · %@";
+"family_presence_stamp_yesterday" = "yesterday · %@";
+"family_presence_stamp_date" = "%@ · %@";
+"family_member_origin_server" = "server";
+"family_member_origin_pending" = "pending";

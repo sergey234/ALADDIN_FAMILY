@@ -40,4 +40,15 @@ final class UX36W2PresentationTests: XCTestCase {
         XCTAssertFalse(text.contains("3h/day"))
         XCTAssertTrue(text.contains("3"))
     }
+
+    func testDurationFormatsLegacyEnglishBlobs() {
+        let mixed = ParentalScreenTimeFormat.displayDuration(stored: "1h 36m")
+        XCTAssertFalse(mixed.contains("1h 36m"))
+        XCTAssertTrue(mixed.contains("1"))
+        XCTAssertTrue(mixed.contains("36"))
+
+        let mins = ParentalScreenTimeFormat.displayDuration(stored: "30 min")
+        XCTAssertNotEqual(mins, "30 min")
+        XCTAssertTrue(mins.contains("30"))
+    }
 }

@@ -34,8 +34,8 @@ struct AdvancedProtectionSettingsScreen: View {
     @AppStorage("parental_screenshots_enabled") private var isScreenshotsEnabled: Bool = false
     @State private var familyBrowserSitesCount: Int = 0
     @State private var familyAppsUsedCount: Int = 0
-    @State private var familyTotalTimeUsed: String = "0m"
-    @State private var familyTotalTimeLimit: String = "0m"
+    @State private var familyTotalTimeUsed: String = "—"
+    @State private var familyTotalTimeLimit: String = "—"
     @State private var familyAppLimitsCount: Int = 0
     
     // Состояния для аккордеонов
@@ -869,10 +869,14 @@ struct AdvancedProtectionSettingsScreen: View {
             familyAppsUsedCount = stats["appsUsedCount"] as? Int ?? familyAppsUsedCount
         }
 
-        // Time stats
-        if let stats = UserDefaults.standard.dictionary(forKey: "parental_time_stats") as? [String: String] {
-            familyTotalTimeUsed = stats["totalTimeUsed"] ?? familyTotalTimeUsed
-            familyTotalTimeLimit = stats["totalTimeLimit"] ?? familyTotalTimeLimit
+        // Time stats — only trusted device/server cache (never orphan mock blobs)
+        if let stats = UserDefaults.standard.dictionary(forKey: "parental_time_stats") as? [String: String],
+           stats["source"] == "device_activity" || stats["source"] == "server",
+           let used = stats["totalTimeUsed"], !used.isEmpty {
+            familyTotalTimeUsed = ParentalScreenTimeFormat.displayDuration(stored: used)
+            familyTotalTimeLimit = ParentalScreenTimeFormat.displayDuration(
+                stored: stats["totalTimeLimit"] ?? familyTotalTimeLimit
+            )
         }
 
         // App limits count

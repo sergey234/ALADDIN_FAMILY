@@ -16,9 +16,9 @@ enum FamilySafeWordHasher {
 
     static func validatePhrase(_ phrase: String) -> String? {
         let normalized = normalizePhrase(phrase)
+        // Product: one word OK; minimum 4 characters (letters/digits), max 120.
         if normalized.count < 4 { return "phrase_too_short" }
         if normalized.count > 120 { return "phrase_too_long" }
-        if normalized.split(separator: " ").count < 2 { return "phrase_need_two_words" }
         return nil
     }
 

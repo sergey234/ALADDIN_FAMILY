@@ -126,31 +126,53 @@ enum FamilyPresenceStore {
         localization: LocalizationManager = .shared
     ) -> String? {
         guard let snap = snapshot(for: memberId) else { return nil }
-        let formatter = DateFormatter()
-        formatter.locale = localization.locale
-        formatter.dateFormat = "HH:mm"
+        let stamp: (Date) -> String = { presenceStamp(for: $0, localization: localization) }
 
         if snap.isNeedHelpUrgent, let helpAt = snap.lastNeedHelpAt {
-            let time = formatter.string(from: helpAt)
+            let when = stamp(helpAt)
             if let battery = snap.batteryPercent {
                 return String(
                     format: localization.localized("family_presence_need_help_line_battery"),
-                    time,
+                    when,
                     battery
                 )
             }
-            return String(format: localization.localized("family_presence_need_help_line"), time)
+            return String(format: localization.localized("family_presence_need_help_line"), when)
         }
 
-        let time = formatter.string(from: snap.lastImOkAt)
+        let when = stamp(snap.lastImOkAt)
         if let battery = snap.batteryPercent {
             return String(
                 format: localization.localized("family_presence_soft_line_battery"),
-                time,
+                when,
                 battery
             )
         }
-        return String(format: localization.localized("family_presence_soft_line"), time)
+        return String(format: localization.localized("family_presence_soft_line"), when)
+    }
+
+    /// «сегодня · 15:00» / «вчера · 15:00» / «16 окт · 15:00» — дата всегда видна вне «сегодня».
+    static func presenceStamp(
+        for date: Date,
+        localization: LocalizationManager = .shared
+    ) -> String {
+        let calendar = Calendar.current
+        let timeFormatter = DateFormatter()
+        timeFormatter.locale = localization.locale
+        timeFormatter.dateFormat = "HH:mm"
+        let time = timeFormatter.string(from: date)
+
+        if calendar.isDateInToday(date) {
+            return String(format: localization.localized("family_presence_stamp_today"), time)
+        }
+        if calendar.isDateInYesterday(date) {
+            return String(format: localization.localized("family_presence_stamp_yesterday"), time)
+        }
+        let dayFormatter = DateFormatter()
+        dayFormatter.locale = localization.locale
+        dayFormatter.setLocalizedDateFormatFromTemplate("dMMM")
+        let day = dayFormatter.string(from: date)
+        return String(format: localization.localized("family_presence_stamp_date"), day, time)
     }
 
     static func isNeedHelpUrgent(for memberId: String) -> Bool {

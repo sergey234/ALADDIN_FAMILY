@@ -2484,10 +2484,14 @@ struct FamilyScreen: View {
                                 .environmentObject(localizationManager)
                             FamilySafeWordCard(members: familyMembers)
                                 .environmentObject(localizationManager)
+                                .environmentObject(navigationManager)
                             // UX-36 W10: «Семейная вторая рука» — пакет для parent / tip для teen
                             FamilySecondHandPackCard(members: familyMembers)
                                 .environmentObject(localizationManager)
                                 .environmentObject(navigationManager)
+                            // fvp-p1-1: тонкая лента рядом со «второй рукой»
+                            FamilyIncidentFeedView(members: familyMembers)
+                                .environmentObject(localizationManager)
                             FamilyHabitRemindersSection(members: familyMembers)
                                 .environmentObject(localizationManager)
                             FamilyChallengesSection(members: familyMembers)
@@ -2508,8 +2512,6 @@ struct FamilyScreen: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("family_open_list")
-                            FamilyIncidentFeedView(members: familyMembers)
-                                .environmentObject(localizationManager)
                         }
 
                         // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
@@ -3710,9 +3712,9 @@ struct FamilyTimeControlModal: View {
     @State private var showSleepTimeSettings = false
     @State private var showAppLimitsSettings = false
     
-    // Настройки времени с сохранением в UserDefaults
+    // Настройки времени с сохранением в UserDefaults (storage keys may be English; UI always localizes)
     @AppStorage("parental_screen_time_limit") private var screenTimeLimit: String = "3h/day"
-    @AppStorage("parental_screen_time_remaining") private var screenTimeRemaining: String = "1h 24m"
+    @AppStorage("parental_screen_time_remaining") private var screenTimeRemaining: String = ""
     @AppStorage("parental_schedule_weekdays") private var scheduleWeekdays: String = "15:00-18:00"
     @AppStorage("parental_schedule_weekends") private var scheduleWeekends: String = "10:00-20:00"
     @AppStorage("parental_bedtime_start") private var bedtimeStart: String = "22:00"
@@ -3720,13 +3722,30 @@ struct FamilyTimeControlModal: View {
     @AppStorage("parental_instagram_limit") private var instagramLimit: String = "30 min"
     @AppStorage("parental_tiktok_limit") private var tiktokLimit: String = "20 min"
     
-    // Статистика
-    @State private var totalTimeUsed: String = "1h 36m"
-    @State private var totalTimeLimit: String = "3h"
-    @State private var instagramUsed: String = "18 min"
-    @State private var instagramLimitStat: String = "30 min"
-    @State private var tiktokUsed: String = "12 min"
-    @State private var tiktokLimitStat: String = "20 min"
+    // Статистика — только если есть реальные данные в UserDefaults (без mock fallback)
+    @State private var hasRealTimeStats = false
+    @State private var totalTimeUsedLabel = ""
+    @State private var totalTimeLimitLabel = ""
+    @State private var instagramUsedLabel = ""
+    @State private var instagramLimitLabel = ""
+    @State private var tiktokUsedLabel = ""
+    @State private var tiktokLimitLabel = ""
+    
+    private var screenTimeDescription: String {
+        let limit = ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: localizationManager)
+        let remainingRaw = screenTimeRemaining.trimmingCharacters(in: .whitespacesAndNewlines)
+        if remainingRaw.isEmpty {
+            return "\(localizationManager.localized("family_screen_time_now")) \(limit)"
+        }
+        let remaining = ParentalScreenTimeFormat.displayDuration(stored: remainingRaw, localization: localizationManager)
+        return "\(localizationManager.localized("family_screen_time_now")) \(limit) (\(localizationManager.localized("family_screen_time_remaining")) \(remaining))"
+    }
+    
+    private var appLimitsDescription: String {
+        let ig = ParentalScreenTimeFormat.displayDuration(stored: instagramLimit, localization: localizationManager)
+        let tt = ParentalScreenTimeFormat.displayDuration(stored: tiktokLimit, localization: localizationManager)
+        return "\(localizationManager.localized("family_instagram")) \(ig), \(localizationManager.localized("family_tiktok")) \(tt)"
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -3738,7 +3757,7 @@ struct FamilyTimeControlModal: View {
                 FamilyConfigButtonItem(
                     icon: "📱",
                     title: localizationManager.localized("family_screen_time"),
-                    description: "\(localizationManager.localized("family_screen_time_now")) \(screenTimeLimit) (\(localizationManager.localized("family_screen_time_remaining")) \(screenTimeRemaining))",
+                    description: screenTimeDescription,
                     buttonTitle: localizationManager.localized("family_configure"),
                     action: { showScreenTimeSettings = true }
                 )
@@ -3765,7 +3784,7 @@ struct FamilyTimeControlModal: View {
                 FamilyConfigButtonItem(
                     icon: "⏰",
                     title: localizationManager.localized("family_app_limits"),
-                    description: "\(localizationManager.localized("family_instagram")) \(instagramLimit), \(localizationManager.localized("family_tiktok")) \(tiktokLimit)",
+                    description: appLimitsDescription,
                     buttonTitle: localizationManager.localized("family_configure"),
                     action: { showAppLimitsSettings = true }
                 )
@@ -3774,42 +3793,49 @@ struct FamilyTimeControlModal: View {
                     .background(Color.white.opacity(0.2))
                     .padding(.vertical, Spacing.s)
                 
-                // Статистика
+                // Статистика (реальные данные или честный empty)
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     Text(localizationManager.localized("family_statistics_today"))
                         .font(.bodyBold)
                         .foregroundColor(.secondaryGold)
                     
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(localizationManager.localized("family_total_time"))
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                            Spacer()
-                            Text("\(totalTimeUsed) / \(totalTimeLimit)")
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
+                    if hasRealTimeStats {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(localizationManager.localized("family_total_time"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                Spacer()
+                                Text("\(totalTimeUsedLabel) / \(totalTimeLimitLabel)")
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                            }
+                            
+                            HStack {
+                                Text(localizationManager.localized("family_instagram"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                Spacer()
+                                Text("\(instagramUsedLabel) / \(instagramLimitLabel)")
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                            }
+                            
+                            HStack {
+                                Text(localizationManager.localized("family_tiktok"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                Spacer()
+                                Text("\(tiktokUsedLabel) / \(tiktokLimitLabel)")
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                            }
                         }
-                        
-                        HStack {
-                            Text(localizationManager.localized("family_instagram"))
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                            Spacer()
-                            Text("\(instagramUsed) / \(instagramLimitStat)")
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
-                        }
-                        
-                        HStack {
-                            Text(localizationManager.localized("family_tiktok"))
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                            Spacer()
-                            Text("\(tiktokUsed) / \(tiktokLimitStat)")
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
-                        }
+                    } else {
+                        Text(localizationManager.localized("family_statistics_today_empty"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .padding(Spacing.m)
@@ -3841,15 +3867,160 @@ struct FamilyTimeControlModal: View {
         .withVisualLogger()
     }
     
-    // Загрузка статистики времени из UserDefaults
+    /// Usage stats: DeviceActivity (`fetchRealScreenTimeStats`) or UD cache — never invent Instagram/TikTok mock.
     private func loadTimeStatistics() {
-        if let stats = UserDefaults.standard.dictionary(forKey: "parental_time_stats") as? [String: String] {
-            totalTimeUsed = stats["totalTimeUsed"] ?? "1h 36m"
-            totalTimeLimit = stats["totalTimeLimit"] ?? "3h"
-            instagramUsed = stats["instagramUsed"] ?? "18 min"
-            instagramLimitStat = stats["instagramLimitStat"] ?? "30 min"
-            tiktokUsed = stats["tiktokUsed"] ?? "12 min"
-            tiktokLimitStat = stats["tiktokLimitStat"] ?? "20 min"
+        Task {
+            let fromDevice = await ParentalControlManager.shared.fetchRealScreenTimeStats()
+            await MainActor.run {
+                applyTimeStatistics(deviceRows: fromDevice)
+            }
+        }
+    }
+
+    private func applyTimeStatistics(deviceRows: [AppUsageStatistics]) {
+        let loc = localizationManager
+        if !deviceRows.isEmpty {
+            let totalSeconds = deviceRows.reduce(0.0) { $0 + $1.timeSpent }
+            let totalMin = Int(totalSeconds / 60)
+            totalTimeUsedLabel = ParentalScreenTimeFormat.formatMinutes(totalMin, localization: loc)
+            totalTimeLimitLabel = ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: loc)
+            let ig = deviceRows.first { $0.appName.lowercased().contains("instagram") }
+            let tt = deviceRows.first { $0.appName.lowercased().contains("tiktok") }
+            instagramUsedLabel = ParentalScreenTimeFormat.formatMinutes(
+                Int((ig?.timeSpent ?? 0) / 60),
+                localization: loc
+            )
+            instagramLimitLabel = ParentalScreenTimeFormat.displayDuration(stored: instagramLimit, localization: loc)
+            tiktokUsedLabel = ParentalScreenTimeFormat.formatMinutes(
+                Int((tt?.timeSpent ?? 0) / 60),
+                localization: loc
+            )
+            tiktokLimitLabel = ParentalScreenTimeFormat.displayDuration(stored: tiktokLimit, localization: loc)
+            hasRealTimeStats = true
+            persistUsageCache(
+                totalUsedMin: totalMin,
+                igUsedMin: Int((ig?.timeSpent ?? 0) / 60),
+                ttUsedMin: Int((tt?.timeSpent ?? 0) / 60)
+            )
+            return
+        }
+
+        guard let stats = UserDefaults.standard.dictionary(forKey: "parental_time_stats") as? [String: String],
+              let used = stats["totalTimeUsed"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !used.isEmpty,
+              stats["source"] == "device_activity" || stats["source"] == "server" else {
+            hasRealTimeStats = false
+            return
+        }
+        totalTimeUsedLabel = ParentalScreenTimeFormat.displayDuration(stored: used, localization: loc)
+        totalTimeLimitLabel = ParentalScreenTimeFormat.displayDuration(
+            stored: stats["totalTimeLimit"] ?? screenTimeLimit,
+            localization: loc
+        )
+        instagramUsedLabel = ParentalScreenTimeFormat.displayDuration(
+            stored: stats["instagramUsed"] ?? "0 min",
+            localization: loc
+        )
+        instagramLimitLabel = ParentalScreenTimeFormat.displayDuration(
+            stored: stats["instagramLimitStat"] ?? instagramLimit,
+            localization: loc
+        )
+        tiktokUsedLabel = ParentalScreenTimeFormat.displayDuration(
+            stored: stats["tiktokUsed"] ?? "0 min",
+            localization: loc
+        )
+        tiktokLimitLabel = ParentalScreenTimeFormat.displayDuration(
+            stored: stats["tiktokLimitStat"] ?? tiktokLimit,
+            localization: loc
+        )
+        hasRealTimeStats = true
+    }
+
+    private func persistUsageCache(totalUsedMin: Int, igUsedMin: Int, ttUsedMin: Int) {
+        let payload: [String: String] = [
+            "source": "device_activity",
+            "totalTimeUsed": "\(totalUsedMin) min",
+            "totalTimeLimit": screenTimeLimit,
+            "instagramUsed": "\(igUsedMin) min",
+            "instagramLimitStat": instagramLimit,
+            "tiktokUsed": "\(ttUsedMin) min",
+            "tiktokLimitStat": tiktokLimit
+        ]
+        UserDefaults.standard.set(payload, forKey: "parental_time_stats")
+    }
+}
+
+/// Compact time picker on a light capsule so HH:mm stays readable on dark family modals.
+private struct FamilyHighContrastTimePicker: View {
+    @Binding var selection: Date
+    
+    var body: some View {
+        DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
+            .datePickerStyle(.compact)
+            .labelsHidden()
+            .tint(Color.secondaryGold)
+            .colorScheme(.light)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.white.opacity(0.94))
+            )
+            .accessibilityLabel(Text(selection, style: .time))
+    }
+}
+
+private enum FamilyDefaultClock {
+    static func timeInterval(hour: Int, minute: Int) -> Double {
+        let date = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
+        return date.timeIntervalSince1970
+    }
+
+    static func hhmm(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_GB")
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
+    /// Persist summary strings read by FamilyTimeControlModal / FamilyDayStrip.
+    static func persistScheduleSummary(
+        weekdayStart: Date,
+        weekdayEnd: Date,
+        weekendStart: Date,
+        weekendEnd: Date
+    ) {
+        let defaults = UserDefaults.standard
+        defaults.set("\(hhmm(weekdayStart))-\(hhmm(weekdayEnd))", forKey: "parental_schedule_weekdays")
+        defaults.set("\(hhmm(weekendStart))-\(hhmm(weekendEnd))", forKey: "parental_schedule_weekends")
+    }
+
+    static func persistBedtimeSummary(start: Date, end: Date) {
+        let defaults = UserDefaults.standard
+        defaults.set(hhmm(start), forKey: "parental_bedtime_start")
+        defaults.set(hhmm(end), forKey: "parental_bedtime_end")
+    }
+
+    static func persistScreenTimeLimitMinutes(_ minutes: Double) {
+        let hours = max(1, Int((minutes / 60.0).rounded()))
+        UserDefaults.standard.set(
+            ParentalScreenTimeFormat.storageValue(hours: hours),
+            forKey: "parental_screen_time_limit"
+        )
+        // Usage unknown until DeviceActivity report — do not invent remaining.
+        UserDefaults.standard.set("", forKey: "parental_screen_time_remaining")
+    }
+
+    static func persistAppLimitSummary(app: String, limitMinutes: Double) {
+        let blob = "\(Int(limitMinutes)) min"
+        switch app.lowercased() {
+        case "instagram":
+            UserDefaults.standard.set(blob, forKey: "parental_instagram_limit")
+        case "tiktok":
+            UserDefaults.standard.set(blob, forKey: "parental_tiktok_limit")
+        default:
+            break
         }
     }
 }
@@ -6450,8 +6621,14 @@ struct ScreenTimeSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    print("✅ Screen time saved: weekdays \(Int(weekdayLimit)) min, weekends \(Int(weekendLimit)) min")
-                isPresented = false
+                    let activeMinutes = isWeekdaySelected ? weekdayLimit : weekendLimit
+                    FamilyDefaultClock.persistScreenTimeLimitMinutes(activeMinutes)
+                    VisualLogger.shared.log(
+                        "✅ screen_time saved weekdays=\(Int(weekdayLimit))min weekends=\(Int(weekendLimit))min → summary",
+                        level: .info,
+                        category: "ADVANCED.UI"
+                    )
+                    isPresented = false
                 }) {
                     Text(localizationManager.localized("screen_time_save"))
                         .font(.bodyBold)
@@ -6470,7 +6647,7 @@ struct ScreenTimeSettingsModal: View {
                 level: .info,
                 category: "ADVANCED.UI"
             )
-            print("✅ Weekday limit: \(Int(newValue)) min")
+            FamilyDefaultClock.persistScreenTimeLimitMinutes(newValue)
         }
         .onChange(of: weekendLimit) { newValue in
             VisualLogger.shared.log(
@@ -6478,7 +6655,9 @@ struct ScreenTimeSettingsModal: View {
                 level: .info,
                 category: "ADVANCED.UI"
             )
-            print("✅ Weekend limit: \(Int(newValue)) min")
+            if !isWeekdaySelected {
+                FamilyDefaultClock.persistScreenTimeLimitMinutes(newValue)
+            }
         }
         .withVisualLogger()
     }
@@ -6577,16 +6756,14 @@ struct ScheduleSettingsModal: View {
                     }
                 }
                 
-                // Время начала и окончания
+                // Время начала и окончания (светлая капсула — цифры читаемы на тёмном фоне)
                 VStack(spacing: Spacing.m) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         Text(localizationManager.localized("schedule_access_from"))
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                         
-                        DatePicker("", selection: isWeekdaySelected ? weekdayStart : weekendStart, displayedComponents: .hourAndMinute)
-                            .datePickerStyle(.compact)
-                            .labelsHidden()
+                        FamilyHighContrastTimePicker(selection: isWeekdaySelected ? weekdayStart : weekendStart)
                     }
                     
                     VStack(alignment: .leading, spacing: Spacing.s) {
@@ -6594,9 +6771,7 @@ struct ScheduleSettingsModal: View {
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                         
-                        DatePicker("", selection: isWeekdaySelected ? weekdayEnd : weekendEnd, displayedComponents: .hourAndMinute)
-                            .datePickerStyle(.compact)
-                            .labelsHidden()
+                        FamilyHighContrastTimePicker(selection: isWeekdaySelected ? weekdayEnd : weekendEnd)
                     }
                 }
                 .padding(Spacing.m)
@@ -6605,7 +6780,12 @@ struct ScheduleSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+                    FamilyDefaultClock.persistScheduleSummary(
+                        weekdayStart: weekdayStart.wrappedValue,
+                        weekdayEnd: weekdayEnd.wrappedValue,
+                        weekendStart: weekendStart.wrappedValue,
+                        weekendEnd: weekendEnd.wrappedValue
+                    )
                     print("✅ Schedule saved: weekdays \(timeFormatter.string(from: weekdayStart.wrappedValue)) - \(timeFormatter.string(from: weekdayEnd.wrappedValue)), weekends \(timeFormatter.string(from: weekendStart.wrappedValue)) - \(timeFormatter.string(from: weekendEnd.wrappedValue))")
                     Task {
                         await syncScheduleSettingsToServer()
@@ -6624,25 +6804,37 @@ struct ScheduleSettingsModal: View {
         }
         .id("schedule_settings_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
-            // Инициализация дат по умолчанию если они не сохранены
+            // Канон UI: будни 15:00–18:00, выходные 10:00–20:00 (не «сейчас»)
             if weekdayStartInterval == 0 {
-                weekdayStartInterval = Date().timeIntervalSince1970
+                weekdayStartInterval = FamilyDefaultClock.timeInterval(hour: 15, minute: 0)
             }
             if weekdayEndInterval == 0 {
-                weekdayEndInterval = Date().timeIntervalSince1970
+                weekdayEndInterval = FamilyDefaultClock.timeInterval(hour: 18, minute: 0)
             }
             if weekendStartInterval == 0 {
-                weekendStartInterval = Date().timeIntervalSince1970
+                weekendStartInterval = FamilyDefaultClock.timeInterval(hour: 10, minute: 0)
             }
             if weekendEndInterval == 0 {
-                weekendEndInterval = Date().timeIntervalSince1970
+                weekendEndInterval = FamilyDefaultClock.timeInterval(hour: 20, minute: 0)
             }
+            FamilyDefaultClock.persistScheduleSummary(
+                weekdayStart: weekdayStart.wrappedValue,
+                weekdayEnd: weekdayEnd.wrappedValue,
+                weekendStart: weekendStart.wrappedValue,
+                weekendEnd: weekendEnd.wrappedValue
+            )
         }
         .withVisualLogger()
     }
 
     @MainActor
     private func syncScheduleSettingsToServer() async {
+        FamilyDefaultClock.persistScheduleSummary(
+            weekdayStart: weekdayStart.wrappedValue,
+            weekdayEnd: weekdayEnd.wrappedValue,
+            weekendStart: weekendStart.wrappedValue,
+            weekendEnd: weekendEnd.wrappedValue
+        )
         let payload: [String: AnyCodable] = [
             "scheduleWeekdayStart": AnyCodable(weekdayStartInterval),
             "scheduleWeekdayEnd": AnyCodable(weekdayEndInterval),
@@ -6712,16 +6904,14 @@ struct SleepTimeSettingsModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.l) {
-                // Время сна
+                // Время сна (светлая капсула — цифры читаемы на тёмном фоне)
                 VStack(spacing: Spacing.m) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         Text(localizationManager.localized("bedtime_block_from"))
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                         
-                        DatePicker("", selection: bedtimeStart, displayedComponents: .hourAndMinute)
-                            .datePickerStyle(.compact)
-                            .labelsHidden()
+                        FamilyHighContrastTimePicker(selection: bedtimeStart)
                     }
                     
                     VStack(alignment: .leading, spacing: Spacing.s) {
@@ -6729,9 +6919,7 @@ struct SleepTimeSettingsModal: View {
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                         
-                        DatePicker("", selection: bedtimeEnd, displayedComponents: .hourAndMinute)
-                            .datePickerStyle(.compact)
-                            .labelsHidden()
+                        FamilyHighContrastTimePicker(selection: bedtimeEnd)
                     }
                 }
                 .padding(Spacing.m)
@@ -6748,7 +6936,10 @@ struct SleepTimeSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+                    FamilyDefaultClock.persistBedtimeSummary(
+                        start: bedtimeStart.wrappedValue,
+                        end: bedtimeEnd.wrappedValue
+                    )
                     print("✅ Bedtime saved: \(timeFormatter.string(from: bedtimeStart.wrappedValue)) - \(timeFormatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
                     Task {
                         await syncSleepSettingsToServer()
@@ -6767,13 +6958,17 @@ struct SleepTimeSettingsModal: View {
         }
         .id("bedtime_settings_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
-            // Инициализация дат по умолчанию если они не сохранены
+            // Канон UI: сон 22:00–07:00 (не «сейчас»)
             if bedtimeStartInterval == 0 {
-                bedtimeStartInterval = Date().timeIntervalSince1970
+                bedtimeStartInterval = FamilyDefaultClock.timeInterval(hour: 22, minute: 0)
             }
             if bedtimeEndInterval == 0 {
-                bedtimeEndInterval = Date().timeIntervalSince1970
+                bedtimeEndInterval = FamilyDefaultClock.timeInterval(hour: 7, minute: 0)
             }
+            FamilyDefaultClock.persistBedtimeSummary(
+                start: bedtimeStart.wrappedValue,
+                end: bedtimeEnd.wrappedValue
+            )
         }
         .onChange(of: isEmergencyCallsEnabled) { newValue in
             VisualLogger.shared.log(
@@ -6788,6 +6983,10 @@ struct SleepTimeSettingsModal: View {
 
     @MainActor
     private func syncSleepSettingsToServer() async {
+        FamilyDefaultClock.persistBedtimeSummary(
+            start: bedtimeStart.wrappedValue,
+            end: bedtimeEnd.wrappedValue
+        )
         let payload: [String: AnyCodable] = [
             "sleepBedtimeStart": AnyCodable(bedtimeStartInterval),
             "sleepBedtimeEnd": AnyCodable(bedtimeEndInterval),
@@ -6895,6 +7094,7 @@ struct AppLimitsSettingsModal: View {
             appLimits[index].limit = limit
         }
         saveAppLimits()
+        FamilyDefaultClock.persistAppLimitSummary(app: app, limitMinutes: limit)
     }
     
     var body: some View {
