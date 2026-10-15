@@ -127,7 +127,13 @@ struct CompanionParentConsentSection: View {
 
     @ViewBuilder
     private func consentToggle(title: String, subtitle: String, isOn: Binding<Bool>) -> some View {
-        Toggle(isOn: isOn) {
+        Toggle(isOn: Binding(
+            get: { isOn.wrappedValue },
+            set: { newValue in
+                print("🦄 CompanionConsent toggle «\(title)» → \(newValue)")
+                isOn.wrappedValue = newValue
+            }
+        )) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
@@ -144,6 +150,7 @@ struct CompanionParentConsentSection: View {
     private func heroChip(id: String, emoji: String, title: String, isOn: Binding<Bool>) -> some View {
         Button {
             isOn.wrappedValue.toggle()
+            print("🦄 CompanionConsent hero \(id) → \(isOn.wrappedValue)")
         } label: {
             HStack {
                 Text(emoji)
@@ -213,15 +220,19 @@ struct CompanionParentConsentSection: View {
         )
 
         do {
+            print("🦄 CompanionConsent SAVE chars=\(chars) child=\(childCanUseCompanion) memory=\(memoryEnabled) wisdom=\(vedicWisdomEnabled)")
             _ = try await CompanionAPIService.shared.updateConsent(payload)
             CompanionSettings.setCachedVedicWisdomEnabled(
                 payload.vedicWisdomEnabled,
                 ageBand: CompanionUserContext.companionAgeBand
             )
             statusMessage = localizationManager.localized("companion_consent_saved")
+            ToastManager.shared.showSuccess(localizationManager.localized("companion_consent_toggle_log"))
             NotificationCenter.default.post(name: .companionConsentDidSave, object: nil)
             HapticFeedback.impact(.light)
+            print("✅ CompanionConsent SAVE ok")
         } catch {
+            print("❌ CompanionConsent SAVE failed: \(error.localizedDescription)")
             errorText = error.localizedDescription
         }
     }

@@ -155,6 +155,14 @@ struct SimpleHomeScreen: View {
             ) {
                 showVoiceNotes = true
             }
+            tile(
+                titleKey: "simple_home_tile_advanced_title",
+                subtitleKey: "simple_home_tile_advanced_subtitle",
+                systemImage: "slider.horizontal.3",
+                identifier: "simple_home_tile_advanced"
+            ) {
+                navigationManager.navigateTo(.advancedProtection)
+            }
         }
     }
 

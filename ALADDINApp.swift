@@ -731,6 +731,8 @@ struct ALADDINApp: App {
                         await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
                         await AladdinOutboundQueue.shared.startPathMonitor()
                         _ = await AladdinOutboundQueue.shared.flush()
+                        // W4: ImOK / NeedHelp offline queue — flush when network returns with app.
+                        await FamilyImOkOfflineQueue.flush()
                         await DevicePauseAutoUnblock.processExpiredIfNeeded()
                         FamilyBatteryCriticalMonitor.checkAndNotifyIfNeeded(
                             localization: localizationManager

@@ -12,20 +12,27 @@ struct InfoRow: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundColor(color)
+                .foregroundColor(color == .primary ? .secondaryGold : color)
                 .frame(width: 20)
             
             Text(title)
                 .font(.body)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary.opacity(0.85))
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
             
-            Spacer()
+            Spacer(minLength: 8)
             
             Text(value)
                 .font(.body)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary)
+                .foregroundColor(.secondaryGold)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value)")
     }
 }
 

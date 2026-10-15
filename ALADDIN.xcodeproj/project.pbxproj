@@ -559,9 +559,12 @@
 		FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL07112F90000100C7D34B /* FamilyDayStripView.swift */; };
 		UX36W206F90000100C7D34B /* ParentalScreenTimeFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */; };
 		UX36W204F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */; };
+		PRODQA04B90000100D3VNM /* DeviceMarketingName.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRODQA04F90000100D3VNM /* DeviceMarketingName.swift */; };
 		UX36W202F90000100C7D34B /* DeviceThreatPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W201F90000100C7D34B /* DeviceThreatPresentation.swift */; };
 		UX36W10F90000100C7D34C /* FamilySecondHandPackViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */; };
 		UX36W1T3F90000100C7D34C /* SecuritySettingsFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */; };
+		PFHYBC01F90000100C7D34C /* ProtectionFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = PFHYBC01F90000100C7D34B /* ProtectionFeedback.swift */; };
+		PQAS06A2F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = PQAS06A1F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift */; };
 		FSL13122F90000100C7D34B /* FamilyImOkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13112F90000100C7D34B /* FamilyImOkService.swift */; };
 		FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13212F90000100C7D34B /* FamilyImOkButton.swift */; };
 		FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */; };
@@ -579,6 +582,7 @@
 		FWS20222F90000100C7D34B /* FamilyHabitRemindersModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20112F90000100C7D34B /* FamilyHabitRemindersModels.swift */; };
 		FWS20322F90000100C7D34B /* FamilyHabitRemindersScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */; };
 		FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */; };
+		PRODQA16B90000100EVKIT /* FamilyHabitEventKitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRODQA16F90000100EVKIT /* FamilyHabitEventKitSync.swift */; };
 		FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */; };
 		FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */; };
 		FWS20722F90000100C7D34B /* AntifakeTransferCheckCTA.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */; };
@@ -1399,9 +1403,12 @@
 		FSL07112F90000100C7D34B /* FamilyDayStripView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyDayStripView.swift; path = Shared/Components/FamilyDayStripView.swift; sourceTree = "<group>"; };
 		UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalScreenTimeFormat.swift; path = Shared/Utilities/ParentalScreenTimeFormat.swift; sourceTree = "<group>"; };
 		UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMemberDisplayNameFormatter.swift; path = Shared/Utilities/FamilyMemberDisplayNameFormatter.swift; sourceTree = "<group>"; };
+		PRODQA04F90000100D3VNM /* DeviceMarketingName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceMarketingName.swift; path = Shared/Utilities/DeviceMarketingName.swift; sourceTree = "<group>"; };
 		UX36W201F90000100C7D34B /* DeviceThreatPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceThreatPresentation.swift; path = Shared/Utilities/DeviceThreatPresentation.swift; sourceTree = "<group>"; };
 		UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySecondHandPackViews.swift; path = Shared/Components/FamilySecondHandPackViews.swift; sourceTree = "<group>"; };
 		UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecuritySettingsFeedback.swift; path = Shared/Utilities/SecuritySettingsFeedback.swift; sourceTree = "<group>"; };
+		PFHYBC01F90000100C7D34B /* ProtectionFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionFeedback.swift; path = Shared/Utilities/ProtectionFeedback.swift; sourceTree = "<group>"; };
+		PQAS06A1F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalCustomBlockedSitesSection.swift; path = Shared/Components/ParentalCustomBlockedSitesSection.swift; sourceTree = "<group>"; };
 		FSL13112F90000100C7D34B /* FamilyImOkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkService.swift; path = Core/Family/FamilyImOkService.swift; sourceTree = "<group>"; };
 		FSL13212F90000100C7D34B /* FamilyImOkButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkButton.swift; path = Shared/Components/FamilyImOkButton.swift; sourceTree = "<group>"; };
 		FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyShieldWeekDigestStore.swift; path = Core/Family/FamilyShieldWeekDigestStore.swift; sourceTree = "<group>"; };
@@ -1419,6 +1426,7 @@
 		FWS20112F90000100C7D34B /* FamilyHabitRemindersModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersModels.swift; path = Core/Family/FamilyHabitRemindersModels.swift; sourceTree = "<group>"; };
 		FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersScheduler.swift; path = Core/Family/FamilyHabitRemindersScheduler.swift; sourceTree = "<group>"; };
 		FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersService.swift; path = Core/Family/FamilyHabitRemindersService.swift; sourceTree = "<group>"; };
+		PRODQA16F90000100EVKIT /* FamilyHabitEventKitSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitEventKitSync.swift; path = Core/Family/FamilyHabitEventKitSync.swift; sourceTree = "<group>"; };
 		FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersSection.swift; path = Shared/Components/FamilyHabitRemindersSection.swift; sourceTree = "<group>"; };
 		FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyPushRegistrar.swift; path = Core/Family/AntifakeFamilyPushRegistrar.swift; sourceTree = "<group>"; };
 		FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTransferCheckCTA.swift; path = Shared/Components/AntifakeTransferCheckCTA.swift; sourceTree = "<group>"; };
@@ -2029,6 +2037,7 @@
 				FWS21112F90000100C7D34B /* FamilyMomentsListSheet.swift */,
 				FWS20F12F90000100C7D34B /* HabitMedalSourcesSettings.swift */,
 				FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */,
+				PRODQA16F90000100EVKIT /* FamilyHabitEventKitSync.swift */,
 				FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */,
 				FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */,
 				FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */,
@@ -2184,9 +2193,12 @@
 				FSL07112F90000100C7D34B /* FamilyDayStripView.swift */,
 				UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */,
 				UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */,
+				PRODQA04F90000100D3VNM /* DeviceMarketingName.swift */,
 				UX36W201F90000100C7D34B /* DeviceThreatPresentation.swift */,
 				UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */,
 				UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */,
+				PFHYBC01F90000100C7D34B /* ProtectionFeedback.swift */,
+				PQAS06A1F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift */,
 				FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */,
 				5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */,
 				B1000120B1000120B1000120 /* Toast.swift */,
@@ -3141,6 +3153,7 @@
 				BRATH022F90000100C7D34B /* BreathAmbientAudioPlayer.swift in Sources */,
 				BRATH042F90000100C7D34B /* BreathAmbientAudioControls.swift in Sources */,
 				FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */,
+				PRODQA16B90000100EVKIT /* FamilyHabitEventKitSync.swift in Sources */,
 				FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */,
 				FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */,
 				FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */,
@@ -3163,9 +3176,12 @@
 				FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */,
 				UX36W206F90000100C7D34B /* ParentalScreenTimeFormat.swift in Sources */,
 				UX36W204F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift in Sources */,
+				PRODQA04B90000100D3VNM /* DeviceMarketingName.swift in Sources */,
 				UX36W202F90000100C7D34B /* DeviceThreatPresentation.swift in Sources */,
 				UX36W10F90000100C7D34C /* FamilySecondHandPackViews.swift in Sources */,
 				UX36W1T3F90000100C7D34C /* SecuritySettingsFeedback.swift in Sources */,
+				PFHYBC01F90000100C7D34C /* ProtectionFeedback.swift in Sources */,
+				PQAS06A2F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift in Sources */,
 				FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */,
 				FSL14222F90000100C7D34B /* FamilyShieldWeekDigestCard.swift in Sources */,
 				FWS20C22F90000100C7D34B /* FamilyIncidentFeedView.swift in Sources */,
@@ -3620,7 +3636,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3654,7 +3670,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3813,7 +3829,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -3847,7 +3863,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -3878,7 +3894,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3904,7 +3920,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3934,7 +3950,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3968,7 +3984,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4001,7 +4017,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4027,7 +4043,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4051,7 +4067,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4076,7 +4092,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4104,7 +4120,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4138,7 +4154,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;

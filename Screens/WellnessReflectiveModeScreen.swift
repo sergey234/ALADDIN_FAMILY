@@ -89,12 +89,10 @@ struct WellnessReflectiveModeScreen: View {
                 systemImage: "bubble.left.and.bubble.right.fill"
             )
             .font(.subheadline.bold())
-            Text(localizationManager.localized("wellness_deep_explore_subtitle"))
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.9))
+            // One simple line (was duplicated subtitle + body with same copy).
             Text(localizationManager.localized("wellness_reflective_info_body"))
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(.white.opacity(0.9))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)

@@ -92,7 +92,12 @@ final class GeofenceGeocodingService {
     /// Reverse geocode: city / locality for human-readable status (keeps raw coords in UI separately).
     func reverseGeocodeLocality(for location: CLLocation) async -> String? {
         await withCheckedContinuation { continuation in
-            reverseGeocoder.reverseGeocodeLocation(location) { placemarks, _ in
+            // ProdQA S21/S23 — city names follow app language (RU/EN), not device-only locale.
+            let preferred = LocalizationManager.shared.locale
+            reverseGeocoder.reverseGeocodeLocation(
+                location,
+                preferredLocale: preferred
+            ) { placemarks, _ in
                 let mark = placemarks?.first
                 let city = mark?.locality?.trimmingCharacters(in: .whitespacesAndNewlines)
                 let area = mark?.administrativeArea?.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -512,8 +512,12 @@ struct TabButton: View {
             Text(title)
                 .font(.captionBold)
                 .foregroundColor(isSelected ? .backgroundDark : .textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .allowsTightening(true)
                 .padding(.vertical, Spacing.s)
                 .frame(maxWidth: .infinity)
+                .frame(minHeight: 36)
                 .background(isSelected ? Color.secondaryGold : Color.surfaceDark.opacity(0.6))
                 .cornerRadius(CornerRadius.medium)
         }
@@ -531,9 +535,27 @@ struct DeviceInfoView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            InfoRow(icon: "person.fill", title: localizationManager.localized("device_detail_info_owner"), value: deviceDetail?.owner ?? device.owner, color: .blue)
-            InfoRow(icon: "app.fill", title: localizationManager.localized("device_detail_info_type"), value: deviceDetail?.type ?? device.type.rawValue, color: .orange)
-            InfoRow(icon: "phone.fill", title: localizationManager.localized("device_detail_info_model"), value: deviceDetail?.name ?? device.name, color: .green)
+            InfoRow(
+                icon: "person.fill",
+                title: localizationManager.localized("device_detail_info_owner"),
+                value: FamilyMemberDisplayNameFormatter.displayName(
+                    storedName: deviceDetail?.owner ?? device.owner,
+                    localization: localizationManager
+                ),
+                color: .secondaryGold
+            )
+            InfoRow(
+                icon: "app.fill",
+                title: localizationManager.localized("device_detail_info_type"),
+                value: humanizedDeviceType(deviceDetail?.type ?? device.type.rawValue),
+                color: .secondaryGold
+            )
+            InfoRow(
+                icon: "phone.fill",
+                title: localizationManager.localized("device_detail_info_model"),
+                value: resolvedModelName(deviceDetail: deviceDetail, device: device),
+                color: .secondaryGold
+            )
             // ✅ ИСПРАВЛЕНО: Используем реальные данные из API вместо hardcoded значений
             if let osVersion = deviceDetail?.osVersion {
                 InfoRow(icon: "gear", title: localizationManager.localized("device_detail_info_system"), value: osVersion, color: .purple)
@@ -547,6 +569,47 @@ struct DeviceInfoView: View {
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    private func humanizedDeviceType(_ raw: String) -> String {
+        let key = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        switch key {
+        case "iphone", "ios", "phone":
+            return "iPhone"
+        case "ipad":
+            return "iPad"
+        case "android":
+            return "Android"
+        default:
+            return raw.isEmpty ? "iPhone" : raw
+        }
+    }
+
+    /// Prefer hardware marketing name when this looks like the current device; else stored name + role.
+    private func resolvedModelName(deviceDetail: DeviceDetailResponse?, device: Device) -> String {
+        let stored = (deviceDetail?.name ?? device.name).trimmingCharacters(in: .whitespacesAndNewlines)
+        let marketing = DeviceMarketingName.displayName()
+        let looksLikeProfileLabel = stored.contains("•") || stored.localizedCaseInsensitiveContains("parent")
+            || stored.localizedCaseInsensitiveContains("родител")
+            || stored.localizedCaseInsensitiveContains("ребён")
+            || stored.localizedCaseInsensitiveContains("ребен")
+            || stored.localizedCaseInsensitiveContains("люд")
+            || stored.localizedCaseInsensitiveContains("elderly")
+            || stored.localizedCaseInsensitiveContains("child")
+            || stored.localizedCaseInsensitiveContains("teen")
+        if looksLikeProfileLabel || stored.isEmpty {
+            let role = FamilyMemberDisplayNameFormatter.displayName(
+                storedName: deviceDetail?.owner ?? device.owner,
+                localization: localizationManager
+            )
+            return DeviceMarketingName.modelPlusRole(roleLabel: role)
+        }
+        // If stored is generic "iPhone", upgrade to marketing name.
+        if stored.caseInsensitiveCompare("iPhone") == .orderedSame
+            || stored.caseInsensitiveCompare("iPad") == .orderedSame {
+            return marketing
+        }
+        return stored
     }
 }
 

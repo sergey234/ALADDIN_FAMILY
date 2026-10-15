@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Scan result card for Device Hub L3 agents (B5).
 struct DeviceScanResultCard: View {
@@ -93,10 +94,16 @@ struct DeviceIncidentResultCard: View {
             .font(.headline)
             .foregroundColor(.successGreen)
 
-            if let incidentId = result.incidentId {
-                Text("\(localizationManager.localized("device_hub_incident_id")): \(incidentId)")
+            if let incidentId = result.incidentId, !incidentId.isEmpty {
+                // Soften INC-* — family UI, not a breach ticket. Long-press copies full id.
+                Text("\(localizationManager.localized("device_hub_incident_id")): \(shortIncidentLabel(incidentId))")
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.85))
+                    .contextMenu {
+                        Button(localizationManager.localized("common_copy")) {
+                            UIPasteboard.general.string = incidentId
+                        }
+                    }
             }
             if let status = result.status {
                 Text("\(localizationManager.localized("device_hub_incident_status")): \(ComponentStatusCopy.localized(status, localization: localizationManager))")
@@ -106,5 +113,11 @@ struct DeviceIncidentResultCard: View {
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.medium)
+    }
+
+    private func shortIncidentLabel(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count <= 12 { return trimmed }
+        return String(trimmed.prefix(8)) + "…"
     }
 }

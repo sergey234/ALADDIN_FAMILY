@@ -101,6 +101,8 @@ struct ParentalControlScreen: View {
     @State private var statsErrorMessage: String?
     /// qa-14: keep last successful stats so 429 doesn't blank the screen
     @State private var lastGoodParentalStats: ParentalControlStatsResponse?
+    /// ProdQA S18: Retry disabled until this date after HTTP 429.
+    @State private var statsRateLimitUntil: Date?
     
     // MARK: - Control States
     // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для синхронизации с FamilyScreen
@@ -353,6 +355,7 @@ struct ParentalControlScreen: View {
             verifyFailedEn: "Change was blocked: parent verification is required."
         ) {
             apply(newValue)
+            SecuritySettingsFeedback.saved()
         }
     }
     
@@ -366,15 +369,36 @@ struct ParentalControlScreen: View {
                     .foregroundColor(.secondaryGold)
                 
                 Spacer()
-                
-                Button(localizationManager.localized("parental_dashboard_button")) {
-                    requireSensitiveParentSession(permission: .viewParentalDashboard) {
-                        showParentDashboardModal = true
-                    }
-                }
-                .font(.captionBold)
-                .foregroundColor(.textSecondary)
             }
+
+            // ProdQA S18: full-row card → ParentDashboard (not a tiny caption link).
+            Button(action: {
+                requireSensitiveParentSession(permission: .viewParentalDashboard) {
+                    showParentDashboardModal = true
+                }
+            }) {
+                HStack(spacing: Spacing.m) {
+                    Image(systemName: "person.crop.rectangle")
+                        .foregroundColor(.secondaryGold)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(localizationManager.localized("parental_dashboard_button"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("parental_dashboard_open_hint"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.secondaryGold)
+                }
+                .padding(Spacing.m)
+                .background(Color.white.opacity(0.06))
+                .cornerRadius(CornerRadius.medium)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .accessibilityIdentifier("parental_open_dashboard_card")
             
             VStack(alignment: .leading, spacing: Spacing.s) {
                 if viewModel.isLoadingWeeklyAchievements {
@@ -596,14 +620,38 @@ struct ParentalControlScreen: View {
                         .font(.caption)
                         .foregroundColor(.dangerRed)
                         .fixedSize(horizontal: false, vertical: true)
-                    if !childMembers.isEmpty {
-                        Button(action: {
-                            HapticFeedback.selection()
-                            loadParentalControlData(for: selectedChild)
-                        }) {
-                            Text(localizationManager.localized("parental_retry"))
-                                .font(.captionBold)
-                                .foregroundColor(Color.secondaryGold)
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let remaining = Self.rateLimitSecondsRemaining(
+                            until: statsRateLimitUntil,
+                            now: context.date
+                        )
+                        if remaining > 0 {
+                            Text(
+                                String(
+                                    format: localizationManager.localized("parental_stats_rate_wait_fmt"),
+                                    remaining
+                                )
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.warningOrange)
+                            .accessibilityIdentifier("parental_stats_rate_countdown")
+                        }
+                        if !childMembers.isEmpty {
+                            Button(action: {
+                                guard remaining == 0 else { return }
+                                HapticFeedback.selection()
+                                loadParentalControlData(for: selectedChild)
+                            }) {
+                                Text(localizationManager.localized("parental_retry"))
+                                    .font(.captionBold)
+                                    .foregroundColor(
+                                        remaining == 0
+                                            ? Color.secondaryGold
+                                            : Color.textSecondary.opacity(0.5)
+                                    )
+                            }
+                            .disabled(remaining > 0)
+                            .accessibilityIdentifier("parental_stats_retry")
                         }
                     }
                 }
@@ -905,7 +953,6 @@ struct ParentalControlScreen: View {
     // MARK: - Data Loading
     
     private func loadChildMembers() {
-        isChildrenLoading = true
         childrenErrorMessage = nil
         
         // ✅ ИСПРАВЛЕНИЕ: Сначала пробуем загрузить из UserDefaults (локальный кэш)
@@ -933,8 +980,13 @@ struct ParentalControlScreen: View {
                 }
                 self.children = convertedChildren
                 hasLocalChildren = true
+                // ProdQA S18: cache-first — no flicker spinner when roster already known.
+                self.isChildrenLoading = false
                 print("✅ Загружено \(convertedChildren.count) детей из локального кэша")
             }
+        }
+        if !hasLocalChildren {
+            isChildrenLoading = true
         }
         
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой из API
@@ -1085,7 +1137,25 @@ struct ParentalControlScreen: View {
         loadBypassStats(for: childId)
     }
     
+    private static func rateLimitSecondsRemaining(until: Date?, now: Date = Date()) -> Int {
+        guard let until else { return 0 }
+        return max(0, Int(ceil(until.timeIntervalSince(now))))
+    }
+
+    private func beginStatsRateLimitCooldown(seconds: TimeInterval = 45) {
+        statsRateLimitUntil = Date().addingTimeInterval(seconds)
+    }
+
+    private func clearStatsRateLimitCooldown() {
+        statsRateLimitUntil = nil
+    }
+
     private func loadParentalControlStats(for childId: String?) {
+        if Self.rateLimitSecondsRemaining(until: statsRateLimitUntil) > 0 {
+            isStatsLoading = false
+            statsErrorMessage = localizationManager.localized("parental_stats_rate_limited")
+            return
+        }
         isStatsLoading = true
         statsErrorMessage = nil
         manager.getStats(childId: childId) { result in
@@ -1093,6 +1163,7 @@ struct ParentalControlScreen: View {
                 // Не снимаем флаг здесь, так как мы еще ждем ответа от getBypassStats
                 switch result {
                 case .success(let stats):
+                    self.clearStatsRateLimitCooldown()
                     self.lastGoodParentalStats = stats
                     self.applyStats(stats)
                     self.statsErrorMessage = nil
@@ -1107,8 +1178,10 @@ struct ParentalControlScreen: View {
                     if isRateLimited, let cached = self.lastGoodParentalStats {
                         self.applyStats(cached)
                         self.statsErrorMessage = localizationManager.localized("parental_stats_rate_limited")
+                        self.beginStatsRateLimitCooldown()
                     } else if isRateLimited {
                         self.statsErrorMessage = localizationManager.localized("parental_stats_rate_limited")
+                        self.beginStatsRateLimitCooldown()
                     } else {
                         self.statsErrorMessage = localizationManager.localized("parental_stats_error_short")
                     }

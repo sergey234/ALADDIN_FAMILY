@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import CoreLocation
+import UserNotifications
 
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
@@ -2285,14 +2286,24 @@ struct FamilyScreen: View {
                                             softPresenceLine: {
                                                 _ = presenceRefreshTick
                                                 return FamilyPresenceStore.softLine(
-                                                    for: member.serverMemberId ?? member.id,
+                                                    matchingIds: [
+                                                        member.serverMemberId ?? "",
+                                                        member.id,
+                                                        member.canonicalId
+                                                    ],
+                                                    displayName: member.name,
                                                     localization: localizationManager
                                                 )
                                             }(),
                                             softPresenceUrgent: {
                                                 _ = presenceRefreshTick
                                                 return FamilyPresenceStore.isNeedHelpUrgent(
-                                                    for: member.serverMemberId ?? member.id
+                                                    matchingIds: [
+                                                        member.serverMemberId ?? "",
+                                                        member.id,
+                                                        member.canonicalId
+                                                    ],
+                                                    displayName: member.name
                                                 )
                                             }()
                                         )
@@ -4465,8 +4476,11 @@ struct FamilyLocationModal: View {
                 }
             } catch let error as LocationManagerError {
                 await MainActor.run {
-                    self.locationStatus = error.localizedDescription
-                    self.locationLastUpdate = localizationManager.localized("family_location_unavailable_hint")
+                    // ProdQA S21: keep last good coords/city if we already had them — never say «unavailable» over a known fix.
+                    if !self.applyCachedLocationStatusIfAny() {
+                        self.locationStatus = error.localizedDescription
+                        self.locationLastUpdate = localizationManager.localized("family_location_unavailable_hint")
+                    }
                     if case .authorizationDenied = error {
                         self.locationPermissionBlocked = true
                         self.showLocationPermissionAlert = true
@@ -4475,16 +4489,20 @@ struct FamilyLocationModal: View {
                 print("⚠️ FamilyLocationModal: \(error.localizedDescription)")
             } catch let error as CLError {
                 await MainActor.run {
-                    self.locationStatus = localizationManager.localized("family_location_unavailable_hint")
-                    self.locationLastUpdate = error.code == .locationUnknown
-                        ? localizationManager.localized("family_location_signal_weak_hint")
-                        : error.localizedDescription
+                    if !self.applyCachedLocationStatusIfAny() {
+                        self.locationStatus = localizationManager.localized("family_location_unavailable_hint")
+                        self.locationLastUpdate = error.code == .locationUnknown
+                            ? localizationManager.localized("family_location_signal_weak_hint")
+                            : error.localizedDescription
+                    }
                 }
                 print("⚠️ FamilyLocationModal: CLError \(error.code.rawValue): \(error.localizedDescription)")
             } catch {
                 await MainActor.run {
-                    self.locationStatus = localizationManager.localized("family_location_unavailable_hint")
-                    self.locationLastUpdate = error.localizedDescription
+                    if !self.applyCachedLocationStatusIfAny() {
+                        self.locationStatus = localizationManager.localized("family_location_unavailable_hint")
+                        self.locationLastUpdate = error.localizedDescription
+                    }
                 }
                 print("⚠️ FamilyLocationModal: Ошибка получения местоположения: \(error.localizedDescription)")
             }
@@ -4492,6 +4510,27 @@ struct FamilyLocationModal: View {
 
         loadLocationDataFromAPI()
         todayEvents = GeofenceEventStore.asLocationEvents()
+    }
+
+    /// Returns true if a previous good GPS/city line was restored (S21).
+    @discardableResult
+    private func applyCachedLocationStatusIfAny() -> Bool {
+        let stats = UserDefaults.standard.dictionary(forKey: statsKey) ?? [:]
+        guard let cached = stats["locationStatus"] as? String else { return false }
+        let trimmed = cached.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Accept only lines that look like a real fix (coords or city), not permission errors.
+        let looksLikeFix = trimmed.contains("📍") || trimmed.contains(",") || trimmed.count > 8
+        let looksLikeError = trimmed.localizedCaseInsensitiveContains("недоступ")
+            || trimmed.localizedCaseInsensitiveContains("unavail")
+            || trimmed.localizedCaseInsensitiveContains("denied")
+        guard looksLikeFix, !looksLikeError else { return false }
+        locationStatus = trimmed
+        if let upd = stats["locationLastUpdate"] as? String, !upd.isEmpty {
+            locationLastUpdate = upd
+        } else {
+            locationLastUpdate = localizationManager.localized("family_location_stale_hint")
+        }
+        return true
     }
 
     /// Real saved places only — no Lenin/Pushkin demo names.
@@ -7213,32 +7252,37 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
-                // W5 FAQ — why no push (Always + notifications + in-app inbox fallback)
+                // ProdQA S02: keep Enable Notifications CTA only (no tech FAQ sheet).
+                // Denied → open Settings (iOS will not re-prompt); authorized → soft toast.
                 if placesConsentAccepted {
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(localizationManager.localized("geofence_why_no_push_title"))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-                        Text(localizationManager.localized("geofence_why_no_push_body"))
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.88))
-                            .fixedSize(horizontal: false, vertical: true)
-                        Button {
-                            Task { @MainActor in
-                                _ = await NotificationManager.shared.requestAuthorizationIfNeeded()
+                    Button {
+                        Task { @MainActor in
+                            let center = UNUserNotificationCenter.current()
+                            let settings = await center.notificationSettings()
+                            switch settings.authorizationStatus {
+                            case .notDetermined:
+                                _ = await NotificationManager.shared.requestAuthorization()
+                            case .denied:
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    _ = await UIApplication.shared.open(url)
+                                }
+                            default:
+                                ToastManager.shared.showSuccess(
+                                    localizationManager.localized("geofence_notifications_already_on")
+                                )
                             }
-                        } label: {
-                            Text(localizationManager.localized("geofence_why_no_push_enable_notifications"))
-                                .font(.caption.weight(.bold))
-                                .foregroundColor(.secondaryGold)
                         }
-                        .accessibilityIdentifier("geofence_why_no_push_enable")
+                    } label: {
+                        Text(localizationManager.localized("geofence_why_no_push_enable_notifications"))
+                            .font(.subheadline.weight(.bold))
+                            .foregroundColor(.secondaryGold)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(Spacing.m)
+                            .background(Color.white.opacity(0.10))
+                            .cornerRadius(CornerRadius.medium)
                     }
-                    .padding(Spacing.m)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white.opacity(0.10))
-                    .cornerRadius(CornerRadius.medium)
-                    .accessibilityIdentifier("geofence_why_no_push_faq")
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("geofence_why_no_push_enable")
                 }
                 
                 // Форма добавления
@@ -9206,7 +9250,13 @@ struct FamilyParentalControlSettingsModal: View {
                      
                     Picker(localizationManager.localized("family_child"), selection: $selectedChildId) {
                         ForEach(children) { child in
-                            Text(child.name).tag(child.id)
+                            Text(
+                                FamilyMemberDisplayNameFormatter.displayName(
+                                    storedName: child.name,
+                                    role: .child,
+                                    localization: localizationManager
+                                )
+                            ).tag(child.id)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -9253,6 +9303,10 @@ struct FamilyParentalControlSettingsModal: View {
                 CompanionMemoryManagementSection()
 
                 CompanionPersonalitySection()
+
+                // ProdQA S06 — parent custom blocked sites
+                ParentalCustomBlockedSitesSection()
+                    .environmentObject(localizationManager)
                 
                 // 3. Автоматические правила
                 FamilyConfigButtonItem(

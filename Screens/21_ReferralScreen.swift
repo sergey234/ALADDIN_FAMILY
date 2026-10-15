@@ -683,6 +683,24 @@ struct ReferralScreen: View {
                         openMessenger(type: .vk)
                     }
                 )
+
+                invitationMethod(
+                    icon: "at",
+                    title: localizationManager.localized("referral_method_x"),
+                    subtitle: localizationManager.localized("referral_method_x_subtitle"),
+                    action: {
+                        openMessenger(type: .x)
+                    }
+                )
+
+                invitationMethod(
+                    icon: "camera.fill",
+                    title: localizationManager.localized("referral_method_instagram"),
+                    subtitle: localizationManager.localized("referral_method_instagram_subtitle"),
+                    action: {
+                        openMessenger(type: .instagram)
+                    }
+                )
                 
                 invitationMethod(
                     icon: "square.and.arrow.up",
@@ -1251,6 +1269,19 @@ struct ReferralScreen: View {
                 urlString = "https://vk.com/share.php?url=\(encodedLink)&title=\(message)"
                 fallbackToWeb = true
             }
+        case .x:
+            // X (Twitter) compose — app or web.
+            if let appURL = URL(string: "twitter://post?message=\(message)"),
+               UIApplication.shared.canOpenURL(appURL) {
+                urlString = "twitter://post?message=\(message)"
+            } else {
+                urlString = "https://twitter.com/intent/tweet?text=\(message)"
+                fallbackToWeb = true
+            }
+        case .instagram:
+            // Instagram has no reliable text deep-link — system share (Stories if IG installed).
+            showShareSheet = true
+            return
         case .systemShare:
             showShareSheet = true
             return
@@ -1355,6 +1386,8 @@ enum MessengerType {
     case whatsapp
     case telegram
     case vk
+    case x
+    case instagram
     case systemShare
 }
 

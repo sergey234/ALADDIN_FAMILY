@@ -703,6 +703,8 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $viewModel.showAdvancedProtection) {
             AdvancedProtectionSettingsScreen()
+                .environmentObject(navigationManager)
+                .environmentObject(localizationManager)
                 .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showProtectionHistory) {

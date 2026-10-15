@@ -115,6 +115,12 @@ class PositioningSystemService: ObservableObject {
         selectedSystem = system
         UserDefaults.standard.set(system.rawValue, forKey: userDefaultsKey)
         updateCurrentSystem()
+        // Honest prod note: iOS Core Location always uses multi-GNSS;
+        // this preference is UX/region preference only (cannot force GLONASS-only).
+        print("🛰️ PositioningSystemService: saved preference=\(system.rawValue) effective=\(currentSystem.rawValue) region=\(currentRegion)")
+        MasterLogger.shared.business(
+            "🛰️ Positioning preference=\(system.rawValue) effective=\(currentSystem.rawValue) region=\(currentRegion)"
+        )
     }
     
     /// Обновить текущую систему на основе выбора

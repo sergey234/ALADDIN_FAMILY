@@ -1489,7 +1489,7 @@
 "parent_dashboard_content_type_drawing" = "Рисование";
 "parent_dashboard_content_type_safety" = "Безопасность";
 "parent_dashboard_content_type_career" = "Профориентация";
-"parent_dashboard_export_child_package" = "Экспорт данных ребёнка";
+"parent_dashboard_export_child_package" = "Скачать данные ребёнка";
 "parent_dashboard_delete_active_child" = "Удалить данные активного ребёнка";
 "parent_dashboard_dsar_export_ok" = "Экспорт подготовлен.";
 "parent_dashboard_dsar_export_fail" = "Ошибка экспорта: %@";
@@ -1584,12 +1584,20 @@
 "parent_dashboard_auto_digest_recommendation_prefix" = "Рекомендация родителю: усилить модуль";
 "parent_dashboard_mastery_title" = "Уровни освоения навыков";
 "parent_dashboard_mastery_empty" = "Уровни освоения появятся после первых сессий.";
-"parent_dashboard_mastery_level_introduced" = "introduced";
-"parent_dashboard_mastery_level_practicing" = "practicing";
-"parent_dashboard_mastery_level_mastered" = "mastered";
-"parent_dashboard_roi_title" = "Educational ROI";
-"parent_dashboard_roi_subtitle" = "Категории с наибольшей эффективностью прироста навыков";
-"parent_dashboard_roi_empty" = "ROI появится после накопления прогресса.";
+"parent_dashboard_mastery_level_introduced" = "Знакомство";
+"parent_dashboard_mastery_level_practicing" = "Практика";
+"parent_dashboard_mastery_level_mastered" = "Освоено";
+"parent_dashboard_roi_title" = "Польза от обучения";
+"parent_dashboard_roi_subtitle" = "Категории, где прогресс растёт быстрее всего";
+"parent_dashboard_roi_empty" = "Сводка появится после первых занятий.";
+"elderly_content_safety" = "Безопасность";
+"elderly_content_health" = "Здоровье";
+"elderly_content_memory" = "Память";
+"elderly_content_activity" = "Активность";
+"geofence_notifications_already_on" = "Уведомления уже включены";
+"wellness_deep_explore_title" = "Глубокое исследование себя!";
+"wellness_deep_explore_subtitle" = "Выберите, как герой ответит.";
+"wellness_reflective_info_body" = "Выберите тон разговора — герой подстроится под вас.";
 "common_coming_soon" = "Скоро будет";
 "analytics_accessibility_background" = "Фон экрана аналитики";
 "analytics_accessibility_navbar" = "Навигационная панель аналитики";
@@ -1663,14 +1671,14 @@
 "advanced_family_app_limits_subtitle" = "Ограничения по приложениям";
 "advanced_family_app_limits_metrics" = "Лимитов: %d";
 "advanced_threat_card_title" = "Блокировка угроз";
-"advanced_threat_card_subtitle" = "Phishing • Malware • Mobile • Network";
+"advanced_threat_card_subtitle" = "Фишинг-ссылки • Вредоносные программы • Мобильная сеть";
 "advanced_threat_status_off" = "Выкл";
 "advanced_threat_status_on" = "Вкл";
 "advanced_threat_status_partial" = "Частично: %d/%d";
 "advanced_threat_configure" = "Настроить";
 "advanced_threat_refresh" = "Обновить";
 "advanced_threat_sheet_title" = "Настройки защиты от угроз";
-"content_block_status_active" = "Блокировка активна: %d сайтов";
+"content_block_status_active" = "Правил защиты: %d";
 "content_block_status_needs_activation" = "Расширение ALADDIN выключено в Safari. Включите его через «Управление расширениями».";
 "content_block_status_applying_rules" = "Расширение включено. Применяем фильтрацию…";
 "content_block_open_settings" = "Как включить в Safari";
@@ -2241,8 +2249,8 @@
 "calls_hub_settings_subtitle" = "Память разговоров и выжимки";
 "calls_hub_empty_title" = "Пока нет сохранённых звонков";
 "calls_hub_empty_subtitle" = "Подготовьте звонок заранее или сохраните суть после разговора.";
-"calls_disclaimer_short" = "ALADDIN не пишет линию оператора. Запись — с микрофона при громкой связи, если вы её включили.";
-"calls_disclaimer_full" = "ALADDIN может записать звук с микрофона телефона, если вы включите громкую связь. Это не запись линии, как у оператора. Предупредите собеседника. Доступно в пробном периоде и на Family/Premium. ALADDIN не несёт ответственности за сбои записи, ущерб от мошенников и претензии собеседника.";
+"calls_disclaimer_short" = "Мы записываем только звук с микрофона при громкой связи — не саму линию звонка.";
+"calls_disclaimer_full" = "Запись — только с микрофона при громкой связи и с вашего согласия. Линию оператора приложение не слышит. Предупредите собеседника.";
 "privacy_policy_section_calls_memory" = "Память звонков и запись";
 "privacy_policy_section_calls_memory_subtitle" = "Микрофон, локальное хранение, ваша ответственность";
 "privacy_policy_section_calls_memory_content_1" = "ALADDIN не записывает линию оператора. Запись возможна только через микрофон телефона, если вы сами включили запись (обычно с громкой связью).";
@@ -2273,7 +2281,7 @@
 "calls_after_nav_title" = "После звонка";
 "calls_after_antifake_cta" = "Проверить на мошенников";
 "calls_after_antifake_note" = "Проверка после звонка";
-"calls_card_untitled" = "Звонок";
+"calls_card_untitled" = "Исходящий";
 "calls_paywall_title" = "Звонки — для Family и Premium";
 "calls_paywall_body" = "Память звонков доступна в пробном периоде 14 дней и на тарифах Family/Premium.";
 "calls_paywall_open_tariffs" = "Открыть тарифы";
@@ -2421,8 +2429,7 @@
 "component_status_active" = "Работает";
 
 /* ux36-w2 */
-"component_status_fallback_active" = "Работает в упрощённом режиме";
-
+"component_status_fallback_active" = "Базовая проверка на устройстве";
 /* ux36-w2 */
 "component_status_error" = "Сбой. Откройте модуль и повторите";
 
@@ -2433,8 +2440,7 @@
 "component_status_threat_found" = "Найдена угроза";
 
 /* ux36-w2 */
-"component_status_unknown" = "Статус уточняется";
-
+"component_status_unknown" = "Проверяем защиту…";
 /* ux36-w2 */
 "family_member_status_protected" = "Защищён";
 
@@ -2617,3 +2623,96 @@
 "family_second_hand_push_checklist_2" = "Перезвоните сами по своему номеру";
 "family_second_hand_push_checklist_3" = "Не переводите деньги за родственника по телефону";
 
+/* ProdQA S06 parental custom sites */
+"parental_custom_sites_title" = "Свои сайты для блокировки";
+"parental_custom_sites_subtitle" = "Добавьте сайт — он перестанет открываться у ребёнка в Safari.";
+"parental_custom_sites_placeholder" = "например: example.com";
+"parental_custom_sites_add" = "Добавить";
+"parental_custom_sites_empty" = "Пока нет своих сайтов — можно добавить.";
+"parental_custom_sites_remove" = "Удалить сайт";
+"parental_custom_sites_already" = "Этот сайт уже в списке";
+"parental_custom_sites_saved" = "Сайт добавлен";
+"parental_custom_sites_removed" = "Сайт убран";
+"parental_custom_sites_sync_local" = "Сохранено на телефоне. Синхронизация с семьёй позже.";
+
+/* ProdQA S05 Focus name options (pending owner pick — keep current until GO) */
+"focus_session_name_option_1" = "Спокойные минуты";
+"focus_session_name_option_1_desc" = "Таймер 25 или 60 минут. Помогает сосредоточиться — приложения не блокирует.";
+"focus_session_name_option_2" = "Время без отвлечений";
+"focus_session_name_option_2_desc" = "Короткий таймер для учёбы или дел. Можно остановить в любой момент.";
+"focus_session_name_option_3" = "Минуты на дело";
+"focus_session_name_option_3_desc" = "Мягкий таймер. Напоминает держать внимание, без запретов на другие приложения.";
+"focus_session_title" = "Спокойные минуты";
+"focus_session_subtitle" = "Помогает сосредоточиться!";
+"focus_session_disclaimer" = "";
+"simple_home_tile_advanced_title" = "Расширенные настройки";
+"simple_home_tile_advanced_subtitle" = "Управление компонентами защиты";
+"calls_card_trial" = "Тренировка";
+"calls_prep_phone_section" = "Номер";
+"calls_prep_phone_placeholder" = "Кому звоним";
+"calls_prep_need_phone" = "Введите номер или откройте Телефон вручную";
+"calls_prep_open_phone" = "Открыть Телефон";
+"device_hub_incident_reported" = "Проверка сохранена";
+"device_hub_incident_id" = "Запись проверки";
+"device_hub_incident_status" = "Статус";
+"notifications_load_failed_human" = "Не удалось обновить список. Показаны сохранённые.";
+"common_copy" = "Скопировать";
+"parental_dashboard_open_hint" = "Открыть панель родителя";
+"referral_method_x" = "X";
+"referral_method_x_subtitle" = "Опубликовать приглашение в X";
+"referral_method_instagram" = "Instagram";
+"referral_method_instagram_subtitle" = "Поделиться через Instagram (Stories/Direct)";
+"family_habit_eventkit_toggle" = "Календарь Apple";
+"family_habit_eventkit_subtitle" = "Дублировать напоминания в Календарь";
+"referral_step1_desc" = "Отправьте ссылку в WhatsApp, Telegram, VK, X или Instagram";
+"family_location_stale_hint" = "Последнее известное место";
+"parental_dashboard_button" = "Панель родителя";
+"parental_retry" = "Повторить";
+"family_location_unavailable_hint" = "Местоположение недоступно";
+"family_location_waiting_gps" = "Определяем место…";
+"parental_stats_rate_limited" = "Слишком много запросов. Подождите минуту.";
+"family_role_parent_label" = "Родитель";
+"family_role_child_label" = "Ребёнок";
+"family_role_teen_label" = "Подросток";
+"family_role_elderly_label" = "Люди 60+";
+"calls_prep_pick_contact" = "Выбрать из контактов";
+"parental_stats_rate_wait_fmt" = "Подождите :%02d";
+"settings_updates_opening" = "Открываем App Store…";
+"settings_updates_failed" = "Не удалось открыть App Store";
+"positioning_system_ios_note" = "На iPhone Apple всегда использует доступные спутники вместе (GPS + ГЛОНАСС + Galileo и др.). Выбор здесь — предпочтение для подсказок, а не принудительное отключение систем.";
+"positioning_system_saved_toast" = "Сохранено: %@";
+"calls_phone_unavailable_sim" = "На симуляторе Телефон недоступен. Проверьте на iPhone.";
+"calls_phone_open_failed" = "Не удалось открыть Телефон. Наберите номер вручную.";
+"calls_contact_picked" = "Контакт выбран";
+"calls_contact_no_phone" = "У контакта нет номера";
+"calls_hub_fab_label" = "Новый звонок";
+"calls_direction_section" = "Как записываем";
+"calls_option_a_title" = "A · Только исходящие";
+"calls_option_a_body" = "Подготовка → громкая связь → диктофон. Просто и по правилам Apple.";
+"calls_option_b_title" = "B · Только после звонка";
+"calls_option_b_body" = "Без записи звука: сохраняете суть, когда разговор уже закончился.";
+"calls_option_c_title" = "C · Гибрид ★ рекомендуем";
+"calls_option_c_body" = "Исходящие: подготовка + диктофон. Входящие: «Идёт звонок» → запись с динамика или память после. Без записи линии оператора.";
+"calls_incoming_cta" = "Идёт входящий — записать с динамика";
+"calls_incoming_hint" = "Apple не даёт записывать линию оператора. Включите громкую связь и стартуйте диктофон. Собеседника предупредите.";
+"companion_consent_toggle_log" = "Помощник: сохранено";
+"protection_feedback_on_fmt" = "Защита «%@» включена";
+"protection_feedback_off_fmt" = "Защита «%@» выключена";
+"protection_feedback_app_on_safari" = "В приложении включено. Включите расширение ALADDIN в Safari → Управление расширениями.";
+"protection_feedback_safari_active" = "Фильтрация Safari работает";
+"protection_feedback_safari_off" = "Фильтрация Safari выключена в приложении";
+"protection_feedback_threats_on_fmt" = "Защита от угроз: %d из %d";
+"protection_feedback_threats_off" = "Защита от угроз выключена";
+"protection_feedback_messages_on" = "Мониторинг сообщений включён";
+"protection_feedback_messages_off" = "Мониторинг сообщений выключен";
+"protection_feedback_messages_subtitle" = "Сохраняем настройку в семье. Push от iOS — только если разрешены уведомления.";
+"protection_feedback_screenshots_on" = "Контроль снимков экрана включён";
+"protection_feedback_screenshots_off" = "Контроль снимков экрана выключен";
+"advanced_threat_status_count_fmt" = "Защита от угроз: %d из %d";
+"advanced_threat_status_all_on" = "Защита от угроз: все компоненты включены";
+"protection_toast_on_fmt" = "Защита %@ включена";
+"protection_toast_off_fmt" = "Защита %@ выключена";
+"protection_toast_generic_on" = "Защита включена";
+"protection_toast_generic_off" = "Защита выключена";
+"protection_feedback_safari_needs_action" = "Включите в Safari";
+"protection_feedback_safari_app_on_status" = "В приложении включено — осталось Safari";

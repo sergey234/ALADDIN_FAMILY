@@ -16,6 +16,7 @@ struct AdvancedProtectionSettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @ObservedObject private var viewModel = ProtectionSettingsViewModel.shared
     @ObservedObject private var contentBlockerManager = ContentBlockerManager.shared
 
@@ -69,6 +70,13 @@ struct AdvancedProtectionSettingsScreen: View {
     @State private var familyModalEnabledDummy: Bool = true
     @State private var isApplyingParentalMonitoringSettings: Bool = false
     @State private var parentalMonitoringSyncTask: Task<Void, Never>? = nil
+    /// Hybrid C — toast только после реального POST успеха.
+    @State private var pendingParentalFeedback: ParentalMonitoringFeedback? = nil
+
+    private enum ParentalMonitoringFeedback {
+        case messages(Bool)
+        case screenshots(Bool)
+    }
 
     // Threat settings sheets
     @State private var showThreatProtectionSheet: Bool = false
@@ -97,7 +105,17 @@ struct AdvancedProtectionSettingsScreen: View {
                     title: localizationManager.localized("settings_advanced_title"),
                     subtitle: localizationManager.localized("settings_advanced_subtitle"),
                     showBackButton: true,
-                    onBack: { dismiss() }
+                    onBack: {
+                        // Stack path (Удобный режим → Расширенные): goBack.
+                        // Sheet path (Настройки): dismiss.
+                        if navigationManager.currentScreen == .advancedProtection {
+                            print("🔙 [AdvancedProtection] Back via NavigationManager.goBack")
+                            navigationManager.goBack()
+                        } else {
+                            print("🔙 [AdvancedProtection] Back via dismiss (sheet)")
+                            dismiss()
+                        }
+                    }
                 )
                 
                 // Основной контент
@@ -719,17 +737,22 @@ struct AdvancedProtectionSettingsScreen: View {
     }
     
     private var threatAggregateStatusText: String {
-        if threatEnabledCountSnapshot == 0 {
-            return localizationManager.localized("advanced_threat_status_off")
-        }
-        if threatEnabledCountSnapshot == threatComponentIds.count {
-            return localizationManager.localized("advanced_threat_status_on")
-        }
-        return String(
-            format: localizationManager.localized("advanced_threat_status_partial"),
+        // Hybrid C: всегда «Защита от угроз: N из M»
+        String(
+            format: localizationManager.localized("advanced_threat_status_count_fmt"),
             threatEnabledCountSnapshot,
             threatComponentIds.count
         )
+    }
+
+    private var threatCardBorderColor: Color {
+        if threatEnabledCountSnapshot <= 0 {
+            return Color.textSecondary.opacity(0.1)
+        }
+        if threatEnabledCountSnapshot == threatComponentIds.count {
+            return Color.green.opacity(0.3)
+        }
+        return Color.warningOrange.opacity(0.45)
     }
     
     private var threatAggregateIsOn: Bool {
@@ -761,6 +784,10 @@ struct AdvancedProtectionSettingsScreen: View {
         }
         await MainActor.run {
             syncThreatEnabledCountSnapshot()
+            ProtectionFeedback.threats(
+                enabledCount: threatEnabledCountSnapshot,
+                total: threatComponentIds.count
+            )
         }
     }
     
@@ -783,7 +810,13 @@ struct AdvancedProtectionSettingsScreen: View {
                     
                     Text(threatAggregateStatusText)
                         .font(.caption2)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(
+                            threatEnabledCountSnapshot <= 0
+                                ? .textSecondary
+                                : (threatEnabledCountSnapshot == threatComponentIds.count
+                                   ? .successGreen
+                                   : .warningOrange)
+                        )
                 }
                 
                 Spacer()
@@ -815,8 +848,14 @@ struct AdvancedProtectionSettingsScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(Color.backgroundMedium.opacity(0.3))
-        .cornerRadius(CornerRadius.large)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(Color.backgroundMedium.opacity(0.3))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .stroke(threatCardBorderColor, lineWidth: 1)
+                )
+        )
     }
 
     private func loadFamilyStats() {
@@ -891,7 +930,7 @@ struct AdvancedProtectionSettingsScreen: View {
 
             Divider().background(Color.white.opacity(0.15))
 
-            VStack(spacing: Spacing.s) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {
                     Text(localizationManager.localized("advanced_family_messages_toggle_title"))
                         .font(.caption)
@@ -899,13 +938,22 @@ struct AdvancedProtectionSettingsScreen: View {
                     Spacer()
                     ALADDINToggle(isOn: $isMessagesMonitoringEnabled)
                         .onChange(of: isMessagesMonitoringEnabled) { newValue in
+                            guard !isApplyingParentalMonitoringSettings else { return }
                             VisualLogger.shared.log(
                                 "🔄 parental_messages_monitoring = \(newValue)",
                                 level: .info,
                                 category: "ADVANCED.UI"
                             )
+                            pendingParentalFeedback = .messages(newValue)
                             scheduleParentalMonitoringSync()
                         }
+                }
+
+                if isMessagesMonitoringEnabled {
+                    Text(localizationManager.localized("protection_feedback_messages_subtitle"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 HStack {
@@ -915,19 +963,32 @@ struct AdvancedProtectionSettingsScreen: View {
                     Spacer()
                     ALADDINToggle(isOn: $isScreenshotsEnabled)
                         .onChange(of: isScreenshotsEnabled) { newValue in
+                            guard !isApplyingParentalMonitoringSettings else { return }
                             VisualLogger.shared.log(
                                 "🔄 parental_screenshots_enabled = \(newValue)",
                                 level: .info,
                                 category: "ADVANCED.UI"
                             )
+                            pendingParentalFeedback = .screenshots(newValue)
                             scheduleParentalMonitoringSync()
                         }
                 }
             }
         }
         .padding(Spacing.m)
-        .background(Color.backgroundMedium.opacity(0.3))
-        .cornerRadius(CornerRadius.large)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(Color.backgroundMedium.opacity(0.3))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .stroke(
+                            isMessagesMonitoringEnabled || isScreenshotsEnabled
+                                ? Color.green.opacity(0.3)
+                                : Color.textSecondary.opacity(0.1),
+                            lineWidth: 1
+                        )
+                )
+        )
     }
 
     private var familyTimeControlCard: some View {
@@ -980,17 +1041,21 @@ struct AdvancedProtectionSettingsScreen: View {
                     Text(localizationManager.localized("advanced_family_app_limits_title"))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
 
                     Text(localizationManager.localized("advanced_family_app_limits_subtitle"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
+                        .lineLimit(2)
 
                     Text(String(format: localizationManager.localized("advanced_family_app_limits_metrics"), familyAppLimitsCount))
                         .font(.caption2)
                         .foregroundColor(.textSecondary)
+                        .lineLimit(1)
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
                 Button {
                     showAppLimitsSettingsModal = true
@@ -998,6 +1063,9 @@ struct AdvancedProtectionSettingsScreen: View {
                     Text(localizationManager.localized("advanced_family_details"))
                         .font(.caption.bold())
                         .foregroundColor(.secondaryGold)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .fixedSize(horizontal: true, vertical: false)
                 }
             }
         }
@@ -1013,23 +1081,61 @@ struct AdvancedProtectionSettingsScreen: View {
         configureAction: @escaping () -> Void,
         trigger: SafariSettingsSheet
     ) -> some View {
+        let cardOn = isOn.wrappedValue
+        let blockerStatus = contentBlockerManager.status
+        // Hybrid C: зелёная рамка только при реальном Content Blocker .enabled
+        let borderColor: Color = {
+            guard cardOn else { return Color.textSecondary.opacity(0.1) }
+            switch blockerStatus {
+            case .enabled:
+                return Color.green.opacity(0.3)
+            case .needsActivation, .extensionMissing:
+                return Color.warningOrange.opacity(0.5)
+            default:
+                return Color(hex: "#A855F7").opacity(0.25)
+            }
+        }()
+        let statusColor: Color = {
+            guard cardOn else { return .textSecondary }
+            switch blockerStatus {
+            case .enabled:
+                return .successGreen
+            case .needsActivation, .extensionMissing:
+                return .warningOrange
+            default:
+                return .textSecondary
+            }
+        }()
         let statusText: String = {
-            switch contentBlockerManager.status {
+            if !cardOn {
+                return localizationManager.localized("advanced_safari_status_disabled")
+            }
+            switch blockerStatus {
             case .enabled:
                 return String(
                     format: localizationManager.localized("content_block_status_active"),
                     contentBlockerManager.blockedSitesCount
                 )
             case .needsActivation:
-                return localizationManager.localized("content_block_status_needs_activation")
+                // Жёлтый честный статус — без «защита подключена»
+                return localizationManager.localized("protection_feedback_safari_needs_action")
             case .extensionMissing:
                 return localizationManager.currentLanguage == .russian
                     ? "Расширение Safari Content Blocker отсутствует в сборке"
                     : "Safari Content Blocker extension is missing in this build"
             case .disabled:
-                return localizationManager.localized("advanced_safari_status_disabled")
+                return localizationManager.localized("protection_feedback_safari_app_on_status")
             case .error:
                 return localizationManager.localized("advanced_safari_status_error")
+            }
+        }()
+        let showSafariCTA: Bool = {
+            guard cardOn else { return false }
+            switch blockerStatus {
+            case .needsActivation, .extensionMissing, .disabled:
+                return true
+            default:
+                return false
             }
         }()
         
@@ -1053,7 +1159,7 @@ struct AdvancedProtectionSettingsScreen: View {
                     
                     Text(statusText)
                         .font(.caption2)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(statusColor)
                 }
                 
                 Spacer()
@@ -1083,12 +1189,22 @@ struct AdvancedProtectionSettingsScreen: View {
                 
                 Spacer()
                 
-                Button {
-                    showSafariEnableGuide = true
-                } label: {
-                    Text(localizationManager.localized("content_block_guide_open_title"))
-                        .font(.caption.bold())
-                        .foregroundColor(Color(hex: "#A855F7"))
+                if showSafariCTA {
+                    Button {
+                        showSafariEnableGuide = true
+                    } label: {
+                        Text(localizationManager.localized("content_block_guide_open_title"))
+                            .font(.caption.bold())
+                            .foregroundColor(.warningOrange)
+                    }
+                } else {
+                    Button {
+                        showSafariEnableGuide = true
+                    } label: {
+                        Text(localizationManager.localized("content_block_guide_open_title"))
+                            .font(.caption.bold())
+                            .foregroundColor(Color(hex: "#A855F7"))
+                    }
                 }
             }
             
@@ -1109,7 +1225,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 .fill(Color.backgroundMedium.opacity(0.3))
                 .overlay(
                     RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color(hex: "#A855F7").opacity(0.25), lineWidth: 1)
+                        .stroke(borderColor, lineWidth: 1)
                 )
         )
     }
@@ -1145,6 +1261,10 @@ struct AdvancedProtectionSettingsScreen: View {
             setSafariSitesCategories([.adult, .violence, .gambling, .forums, .fileSharing])
         }
 
+        // Hybrid C: не затирать AppStorage-намерение, пока extension не .enabled
+        // (иначе «В приложении включено» сбрасывается при refresh).
+        guard case .enabled = contentBlockerManager.status else { return }
+
         let active = Set(contentBlockerManager.activeCategories)
         safariSocialEnabled = active.contains(.socialMedia)
 
@@ -1157,24 +1277,38 @@ struct AdvancedProtectionSettingsScreen: View {
         isApplyingSafariRules = true
         let previousSitesEnabled = safariSitesEnabled
         let previousSocialEnabled = safariSocialEnabled
+        let turningOn: Bool = {
+            switch trigger {
+            case .sites: return safariSitesEnabled
+            case .social: return safariSocialEnabled
+            }
+        }()
 
         Task {
             defer { Task { @MainActor in isApplyingSafariRules = false } }
             await contentBlockerManager.checkBlockingStatus()
 
-            // если пользователь пытается включить карточку, но extension выключен — показываем инструкцию и откатываем включение карточки
+            // Hybrid C: тумблер в приложении можно оставить ON; честный toast + жёлтый статус + CTA.
+            // Не пишем «защита подключена», пока Content Blocker ≠ .enabled.
             if case .needsActivation = contentBlockerManager.status {
                 await MainActor.run {
-                    if trigger == .sites, safariSitesEnabled { safariSitesEnabled = false }
-                    if trigger == .social, safariSocialEnabled { safariSocialEnabled = false }
-                    safariSettingsSheet = trigger
+                    if turningOn {
+                        ProtectionFeedback.safariAppEnabledNeedsExtension()
+                        showSafariEnableGuide = true
+                    } else {
+                        ProtectionFeedback.safariAppDisabled()
+                    }
                 }
                 return
             }
             if case .extensionMissing = contentBlockerManager.status {
                 await MainActor.run {
-                    if trigger == .sites, safariSitesEnabled { safariSitesEnabled = false }
-                    if trigger == .social, safariSocialEnabled { safariSocialEnabled = false }
+                    if turningOn {
+                        ProtectionFeedback.safariAppEnabledNeedsExtension()
+                        showSafariEnableGuide = true
+                    } else {
+                        ProtectionFeedback.safariAppDisabled()
+                    }
                 }
                 return
             }
@@ -1199,6 +1333,15 @@ struct AdvancedProtectionSettingsScreen: View {
                         safariApplyErrorMessage = message
                     } else {
                         safariApplyErrorMessage = nil
+                    }
+                    // Toast только по факту статуса extension
+                    if case .enabled = contentBlockerManager.status, !union.isEmpty {
+                        ProtectionFeedback.safariFullyActive()
+                    } else if union.isEmpty {
+                        ProtectionFeedback.safariAppDisabled()
+                    } else if case .needsActivation = contentBlockerManager.status {
+                        ProtectionFeedback.safariAppEnabledNeedsExtension()
+                        showSafariEnableGuide = true
                     }
                 }
             } catch {
@@ -1295,6 +1438,16 @@ struct AdvancedProtectionSettingsScreen: View {
                 category: "ADVANCED.API"
             )
             SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_save_complete", state: .synced)
+            // Hybrid C: toast только при реальном успехе POST
+            switch pendingParentalFeedback {
+            case .messages(let enabled):
+                ProtectionFeedback.messagesMonitoring(enabled: enabled)
+            case .screenshots(let enabled):
+                ProtectionFeedback.screenshotsMonitoring(enabled: enabled)
+            case .none:
+                break
+            }
+            pendingParentalFeedback = nil
         } catch {
             VisualLogger.shared.log(
                 "❌ ADVANCED.API parental POST failed: \(error.localizedDescription)",
@@ -1302,6 +1455,8 @@ struct AdvancedProtectionSettingsScreen: View {
                 category: "ADVANCED.API"
             )
             SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_save_error", state: .error(error.localizedDescription))
+            pendingParentalFeedback = nil
+            SecuritySettingsFeedback.networkError()
         }
     }
 }
@@ -1499,5 +1654,6 @@ struct AdvancedProtectionSettingsScreen_Previews: PreviewProvider {
     static var previews: some View {
         AdvancedProtectionSettingsScreen()
             .environmentObject(LocalizationManager())
+            .environmentObject(NavigationManager())
     }
 }

@@ -193,7 +193,7 @@ struct ElderlyInterfaceScreen: View {
         .alert(localizationManager.localized("elderly_interface_call_children_question"), isPresented: $showCallChildrenAlert) {
             // Use role-safe filtering instead of localized string matching.
             ForEach(emergencyContacts) { member in
-                Button("\(member.name) (\(member.role))") {
+                Button("\(FamilyMemberDisplayNameFormatter.displayName(storedName: member.name, role: member.rawRole, localization: localizationManager)) (\(member.role))") {
                     callFamilyMember(member.name, member.phone)
                 }
             }
@@ -583,7 +583,11 @@ struct ElderlyInterfaceScreen: View {
             
             // Информация
             VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(member.name)
+                Text(FamilyMemberDisplayNameFormatter.displayName(
+                    storedName: member.name,
+                    role: member.rawRole,
+                    localization: localizationManager
+                ))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
@@ -632,7 +636,7 @@ struct ElderlyInterfaceScreen: View {
                     .clipShape(Circle())
             }
             .buttonStyle(PlainButtonStyle())
-            .accessibilityLabel("\(localizationManager.localized("elderly_interface_call_children")): \(member.name)")
+            .accessibilityLabel("\(localizationManager.localized("elderly_interface_call_children")): \(FamilyMemberDisplayNameFormatter.displayName(storedName: member.name, role: member.rawRole, localization: localizationManager))")
             .accessibilityHint(localizationManager.localized("elderly_a11y_calls_family_hint"))
         }
         .padding(Spacing.l)

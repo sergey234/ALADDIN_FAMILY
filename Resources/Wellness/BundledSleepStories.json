@@ -1,0 +1,22 @@
+{
+  "stories": [
+    {
+      "id": "cloud",
+      "durationMin": 5,
+      "titleKey": "bundled_sleep_cloud_title",
+      "scriptKey": "bundled_sleep_cloud_script"
+    },
+    {
+      "id": "garden",
+      "durationMin": 6,
+      "titleKey": "bundled_sleep_garden_title",
+      "scriptKey": "bundled_sleep_garden_script"
+    },
+    {
+      "id": "stars",
+      "durationMin": 7,
+      "titleKey": "bundled_sleep_stars_title",
+      "scriptKey": "bundled_sleep_stars_script"
+    }
+  ]
+}

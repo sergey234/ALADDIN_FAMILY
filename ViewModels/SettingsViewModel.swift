@@ -670,9 +670,25 @@ class SettingsViewModel: ObservableObject {
         UserDefaults.standard.set(alias, forKey: "profile_alias")
     }
 
+    @MainActor
     func checkForUpdates() {
-        // Mock implementation - would open App Store in real app
         print("✅ Checking for updates...")
+        // Prod: open App Store search for ALADDIN (numeric App Store id not yet in repo SSOT).
+        // When Store id is known, prefer itms-apps://apps.apple.com/app/idXXXXXXXX.
+        guard let url = URL(string: "https://apps.apple.com/search?term=ALADDIN%20Family") else {
+            ToastManager.shared.showError(
+                LocalizationManager.shared.localized("settings_updates_failed")
+            )
+            return
+        }
+        UIApplication.shared.open(url, options: [:]) { ok in
+            print(ok
+                  ? "✅ Settings: App Store search opened"
+                  : "⚠️ Settings: App Store open failed")
+        }
+        let msg = LocalizationManager.shared.localized("settings_updates_opening")
+        ToastManager.shared.showInfo(msg)
+        toastService?.showToast(message: msg, type: "info", duration: 2.5)
     }
 
     func handleBiometricToggle(_ enabled: Bool) {

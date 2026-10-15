@@ -332,14 +332,14 @@ struct NotificationsScreen: View {
                 ProgressView(localizationManager.localized("notifications_loading"))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)
-            } else if let error = viewModel.errorMessage {
+            } else if viewModel.errorMessage != nil {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("notifications_load_failed"))
                         .font(.bodyBold)
                         .foregroundColor(.dangerRed)
-                    Text(error)
+                    Text(localizationManager.localized("notifications_load_failed_human"))
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.9))
                     Button(localizationManager.localized("notifications_retry")) {
                         Task { await viewModel.loadNotifications() }
                     }
@@ -529,7 +529,7 @@ struct NotificationCard: View {
                     HStack {
                         Text(notification.title)
                             .font(.body.weight(.bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.white)
                             .multilineTextAlignment(.leading)
                         
                         if !notification.isRead {
@@ -544,20 +544,15 @@ struct NotificationCard: View {
                     
                     Text(notification.message)
                         .font(.body)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.9))
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
                     
-                    if let correlationId = notification.correlationId, !correlationId.isEmpty {
-                        Text("ID: \(correlationId)")
-                            .font(.caption2)
-                            .foregroundColor(.textTertiary)
-                            .lineLimit(1)
-                    }
+                    // ProdQA S13: hide technical correlation IDs from family UI (long-press copy later if needed).
                     
                     Text(notification.time)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                 }
                 
                 Spacer()

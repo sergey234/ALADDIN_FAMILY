@@ -38,7 +38,48 @@ enum FamilyPresenceStore {
     private static let key = "aladdin_family_presence_v1"
 
     static func snapshot(for memberId: String) -> FamilyPresenceSnapshot? {
-        load().first { $0.memberId == memberId }
+        let needle = memberId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !needle.isEmpty else { return nil }
+        let all = load()
+        if let exact = all.first(where: { $0.memberId == needle }) { return exact }
+        // ProdQA S25: local_self / MEM_* / server id drift — match by suffix or display name later via candidates.
+        return all.first { snap in
+            snap.memberId.hasSuffix(needle) || needle.hasSuffix(snap.memberId)
+        }
+    }
+
+    /// Resolve presence across id aliases (server / local / canonical) + optional display name.
+    static func snapshot(matchingIds ids: [String], displayName: String? = nil) -> FamilyPresenceSnapshot? {
+        for id in ids {
+            let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+            if let snap = snapshot(for: trimmed) { return snap }
+        }
+        // ProdQA S25: when ids drift (local_self vs MEM_*), bind by display name.
+        if let displayName {
+            let needle = displayName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if !needle.isEmpty {
+                if let byName = load().first(where: {
+                    $0.displayName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == needle
+                }) {
+                    return byName
+                }
+            }
+        }
+        return nil
+    }
+
+    static func softLine(
+        matchingIds ids: [String],
+        displayName: String? = nil,
+        localization: LocalizationManager = .shared
+    ) -> String? {
+        guard let snap = snapshot(matchingIds: ids, displayName: displayName) else { return nil }
+        return softLine(for: snap.memberId, localization: localization)
+    }
+
+    static func isNeedHelpUrgent(matchingIds ids: [String], displayName: String? = nil) -> Bool {
+        snapshot(matchingIds: ids, displayName: displayName)?.isNeedHelpUrgent ?? false
     }
 
     static func all() -> [FamilyPresenceSnapshot] {
@@ -51,6 +92,14 @@ enum FamilyPresenceStore {
 
     static func upsert(_ snap: FamilyPresenceSnapshot) {
         var items = load().filter { $0.memberId != snap.memberId }
+        // Drop stale local_self row once we have a real server member id for same person.
+        if snap.memberId != "local_self" {
+            let name = snap.displayName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            items.removeAll {
+                $0.memberId == "local_self"
+                    && $0.displayName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == name
+            }
+        }
         if let existing = load().first(where: { $0.memberId == snap.memberId }),
            snap.lastNeedHelpAt == nil,
            let kept = existing.lastNeedHelpAt {
@@ -271,6 +320,8 @@ enum FamilyImOkService {
             category: .family,
             userInfo: [
                 "type": "need_help",
+                "member_id": resolvedId,
+                "display_name": displayName,
                 "deepLink": "aladdin://family"
             ],
             delay: 0.15,

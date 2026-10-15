@@ -162,7 +162,12 @@ struct ProfileScreen: View {
             loadRegistrationDate()
             loadProfileImage()
             mainViewModel.requestRefreshDebounced()
-            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
+            Task {
+                // ProdQA S26: force subscription + dates on open (no hours of pending sync).
+                await subscriptionManager.syncSubscriptionOnMainScreenAppear()
+                await subscriptionManager.refreshSubscriptionStatus()
+                await MainActor.run { loadRegistrationDate() }
+            }
         }
         .sheet(isPresented: $showImagePicker) {
             ProfileImagePicker(selectedImage: $selectedImage)
@@ -737,21 +742,29 @@ struct ProfileScreen: View {
     // MARK: - Load Registration Date
     
     private func loadRegistrationDate() {
-        // W6 SSOT — never invent "today"; freeze server/JWT date once.
+        // W6 + S26 — never invent "today"; freeze JWT/trial/server ASAP so UI is not stuck on pending.
         let isRussian = localizationManager.currentLanguage == .russian
+        if let tokenIssued = subscriptionManager.currentToken?.issuedAt {
+            _ = AccountRegistrationDateStore.captureIfNeeded(tokenIssued)
+        }
+        if let trialStart = subscriptionManager.trialStatus?.startDate {
+            _ = AccountRegistrationDateStore.captureIfNeeded(trialStart)
+        }
         if let formatted = AccountRegistrationDateStore.displayString(isRussian: isRussian) {
             registrationDate = formatted
-        } else {
-            registrationDate = ""
-            // Soft pull profile so pending sync can fill SSOT without fake date.
-            APIService.shared.getUserProfile { result in
-                DispatchQueue.main.async {
-                    if case .success(let profile) = result {
-                        _ = AccountRegistrationDateStore.captureFromServerString(profile.registrationDate)
-                        if let formatted = AccountRegistrationDateStore.displayString(isRussian: isRussian) {
-                            self.registrationDate = formatted
-                        }
-                    }
+            return
+        }
+        registrationDate = ""
+        APIService.shared.getUserProfile { result in
+            DispatchQueue.main.async {
+                if case .success(let profile) = result {
+                    _ = AccountRegistrationDateStore.captureFromServerString(profile.registrationDate)
+                }
+                if let tokenIssued = self.subscriptionManager.currentToken?.issuedAt {
+                    _ = AccountRegistrationDateStore.captureIfNeeded(tokenIssued)
+                }
+                if let formatted = AccountRegistrationDateStore.displayString(isRussian: isRussian) {
+                    self.registrationDate = formatted
                 }
             }
         }

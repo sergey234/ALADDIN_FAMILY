@@ -205,7 +205,7 @@ class NavigationManager: ObservableObject {
             case .wellnessExercise: return "Упражнение"
             case .wellnessTimeline: return "Дневник"
             case .wellnessDreamJournal: return "Сны"
-            case .wellnessReflective: return "Глубокое исследование"
+            case .wellnessReflective: return LocalizationManager.shared.localized("wellness_deep_explore_title")
             case .wellnessTogether: return "Вместе"
             case .wellnessExamMode: return "Режим экзамена"
             case .wellnessOneThing: return "Одно дело"

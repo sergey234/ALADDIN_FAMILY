@@ -1639,6 +1639,14 @@ final class SubscriptionManager: ObservableObject {
 
         currentSubscription = status
         persistSubscriptionStatus(status)
+        // ProdQA S26: keep Profile expiry AppStorage in sync with every status update.
+        if let expiresAt = status.expiresAt {
+            persistSubscriptionExpiresAtIso(expiresAt)
+        }
+        if let trial = status.trialInfo, trial.isActive {
+            _ = AccountRegistrationDateStore.captureIfNeeded(trial.startDate)
+            persistSubscriptionExpiresAtIso(trial.endDate)
+        }
         logger.business("📊 Subscription updated: \(status.level)")
 
         // Paid upgrade: снять leftover trial, иначе слоты/цвет могут остаться на trial.
@@ -1739,6 +1747,12 @@ final class SubscriptionManager: ObservableObject {
 
         trialStatus = trial
         persistTrialStatus(trial)
+        // ProdQA S26: freeze «с нами с» + expiry ISO immediately (no multi-hour pending sync).
+        _ = AccountRegistrationDateStore.captureIfNeeded(trial.startDate)
+        if let tokenIssued = currentToken?.issuedAt {
+            _ = AccountRegistrationDateStore.captureIfNeeded(tokenIssued)
+        }
+        persistSubscriptionExpiresAtIso(trial.endDate)
         logger.business("🎁 Trial updated: \(trial.daysRemaining) days remaining")
         // Лимит семьи и градиент главной завязаны на `subscriptionLevelForFamilyMemberCap`, который смотрит и на `trialStatus`.
         // Раньше `registerDeviceWithTrial` вызывал `updateSubscriptionStatus` до присвоения `trialStatus` — кап оставался free (1) и цвет «золотой».
@@ -1747,6 +1761,18 @@ final class SubscriptionManager: ObservableObject {
         }
         reconcileTariffManagerWithSubscription(reason: "updateTrialStatus")
         bumpSubscriptionDisplayEpoch()
+    }
+
+    /// Profile / Main read `@AppStorage("subscription_expires_at_iso")` — keep it warm on every trial/paid update.
+    private func persistSubscriptionExpiresAtIso(_ date: Date) {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        var encoded = iso.string(from: date)
+        if encoded.isEmpty {
+            iso.formatOptions = [.withInternetDateTime]
+            encoded = iso.string(from: date)
+        }
+        UserDefaults.standard.set(encoded, forKey: "subscription_expires_at_iso")
     }
 
     /// Публичный bump после выбора тарифа/trial — иначе главная может оставить старый цвет карточки.

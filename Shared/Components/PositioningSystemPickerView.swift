@@ -92,6 +92,12 @@ struct PositioningSystemPickerView: View {
                         .foregroundColor(.textSecondary)
                 }
             }
+
+            // Apple / Core Location honesty (prod, no mock “force GLONASS”)
+            Text(localizationManager.localized("positioning_system_ios_note"))
+                .font(.caption2)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(Spacing.cardPadding)
         .background(cardBackground)
@@ -120,12 +126,16 @@ struct PositioningSystemPickerView: View {
     
     private func systemRow(system: PositioningSystem) -> some View {
         Button(action: {
+            print("🛰️ Positioning select = \(system.rawValue)")
             VisualLogger.shared.log(
                 "🛰️ Positioning select = \(system.rawValue)",
                 level: .info,
                 category: "SETTINGS.POSITIONING"
             )
             selectedSystem = system
+            ToastManager.shared.showInfo(
+                localizationManager.localized("positioning_system_saved_toast", system.localizedDisplayName(localizationManager))
+            )
         }) {
             HStack {
                 Image(systemName: system.icon)

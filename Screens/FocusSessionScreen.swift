@@ -16,9 +16,7 @@ struct FocusSessionScreen: View {
                 Text(localizationManager.localized("focus_session_subtitle"))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.8))
-                Text(localizationManager.localized("focus_session_disclaimer"))
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.55))
+                // Owner copy lock: title + one subtitle only (no extra disclaimer).
 
                 if !FamilyFocusSessionFeature.isEnabled {
                     Text(localizationManager.localized("focus_session_flag_off"))

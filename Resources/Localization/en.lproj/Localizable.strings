@@ -1599,12 +1599,20 @@
 "parent_dashboard_auto_digest_recommendation_prefix" = "Parent recommendation: reinforce module";
 "parent_dashboard_mastery_title" = "Skill Mastery Levels";
 "parent_dashboard_mastery_empty" = "Mastery levels will appear after first sessions.";
-"parent_dashboard_mastery_level_introduced" = "introduced";
-"parent_dashboard_mastery_level_practicing" = "practicing";
-"parent_dashboard_mastery_level_mastered" = "mastered";
-"parent_dashboard_roi_title" = "Educational ROI";
-"parent_dashboard_roi_subtitle" = "Categories with the highest skill-gain efficiency";
-"parent_dashboard_roi_empty" = "ROI will appear after progress accumulates.";
+"parent_dashboard_mastery_level_introduced" = "Getting started";
+"parent_dashboard_mastery_level_practicing" = "Practicing";
+"parent_dashboard_mastery_level_mastered" = "Mastered";
+"parent_dashboard_roi_title" = "Learning progress";
+"parent_dashboard_roi_subtitle" = "Categories where skills grow fastest";
+"parent_dashboard_roi_empty" = "Summary appears after the first sessions.";
+"elderly_content_safety" = "Safety";
+"elderly_content_health" = "Health";
+"elderly_content_memory" = "Memory";
+"elderly_content_activity" = "Activity";
+"geofence_notifications_already_on" = "Notifications are already on";
+"wellness_deep_explore_title" = "Deep self-exploration!";
+"wellness_deep_explore_subtitle" = "Choose how the hero replies.";
+"wellness_reflective_info_body" = "Pick a tone — the hero will match how you want to talk.";
 "common_coming_soon" = "Coming soon";
 "ai_categories_accuracy" = "Accuracy";
 "ai_categories_action_allow" = "Allow";
@@ -1775,18 +1783,18 @@
 "advanced_family_time_title" = "Screen Time Control";
 "advanced_family_time_subtitle" = "Screen time and modes";
 "advanced_family_time_metrics" = "Today: %@ / %@";
-"advanced_family_app_limits_title" = "App Limits";
+"advanced_family_app_limits_title" = "App limits";
 "advanced_family_app_limits_subtitle" = "Per-app usage limits";
 "advanced_family_app_limits_metrics" = "Limits: %d";
 "advanced_threat_card_title" = "Threat Protection";
-"advanced_threat_card_subtitle" = "Phishing • Malware • Mobile • Network";
+"advanced_threat_card_subtitle" = "Phishing links • Harmful software • Mobile network";
 "advanced_threat_status_off" = "Off";
 "advanced_threat_status_on" = "On";
 "advanced_threat_status_partial" = "Partial: %d/%d";
 "advanced_threat_configure" = "Configure";
 "advanced_threat_refresh" = "Refresh";
 "advanced_threat_sheet_title" = "Threat Protection Settings";
-"content_block_status_active" = "Blocking active: %d sites";
+"content_block_status_active" = "Protection rules: %d";
 "content_block_status_needs_activation" = "ALADDIN extension is turned off in Safari. Enable it in Extension Management.";
 "content_block_status_applying_rules" = "Extension enabled. Applying filtering…";
 "content_block_open_settings" = "How to enable in Safari";
@@ -2331,8 +2339,8 @@
 "calls_hub_settings_subtitle" = "Call memory and summaries";
 "calls_hub_empty_title" = "No saved calls yet";
 "calls_hub_empty_subtitle" = "Prepare before a call or save the key points after.";
-"calls_disclaimer_short" = "ALADDIN does not record the carrier line. Mic capture on speaker only if you start it.";
-"calls_disclaimer_full" = "ALADDIN can record from the phone microphone if you use speakerphone. This is not carrier-line recording. Tell the other person. Available during the 14-day trial and on Family/Premium. ALADDIN is not liable for failed recordings, scam losses, or claims about recording.";
+"calls_disclaimer_short" = "We only record from the microphone on speaker — not the carrier line.";
+"calls_disclaimer_full" = "Recording is from the microphone on speakerphone, only with your consent. The app cannot hear the carrier line. Tell the other person.";
 "privacy_policy_section_calls_memory" = "Call memory and recording";
 "privacy_policy_section_calls_memory_subtitle" = "Microphone, on-device storage, your responsibility";
 "privacy_policy_section_calls_memory_content_1" = "ALADDIN does not record the carrier phone line. Capture is only via the phone microphone if you start recording (usually with speakerphone).";
@@ -2363,7 +2371,7 @@
 "calls_after_nav_title" = "After the call";
 "calls_after_antifake_cta" = "Check for scams";
 "calls_after_antifake_note" = "Post-call check";
-"calls_card_untitled" = "Call";
+"calls_card_untitled" = "Outgoing";
 "calls_paywall_title" = "Calls — Family and Premium";
 "calls_paywall_body" = "Call memory is available during the 14-day trial and on Family/Premium.";
 "calls_paywall_open_tariffs" = "Open plans";
@@ -2511,8 +2519,7 @@
 "component_status_active" = "On";
 
 /* ux36-w2 */
-"component_status_fallback_active" = "Running in simple mode";
-
+"component_status_fallback_active" = "Basic check on this device";
 /* ux36-w2 */
 "component_status_error" = "Problem. Open the module and try again";
 
@@ -2523,8 +2530,7 @@
 "component_status_threat_found" = "Threat found";
 
 /* ux36-w2 */
-"component_status_unknown" = "Status updating";
-
+"component_status_unknown" = "Checking protection…";
 /* ux36-w2 */
 "family_member_status_protected" = "Protected";
 
@@ -2707,3 +2713,96 @@
 "family_second_hand_push_checklist_2" = "Call back yourself on your own number";
 "family_second_hand_push_checklist_3" = "Do not send money for a “relative” over the phone";
 
+/* ProdQA S06 parental custom sites */
+"parental_custom_sites_title" = "Your blocked sites";
+"parental_custom_sites_subtitle" = "Add a site — it will be blocked for the child in Safari.";
+"parental_custom_sites_placeholder" = "e.g. example.com";
+"parental_custom_sites_add" = "Add";
+"parental_custom_sites_empty" = "No custom sites yet — you can add some.";
+"parental_custom_sites_remove" = "Remove site";
+"parental_custom_sites_already" = "This site is already on the list";
+"parental_custom_sites_saved" = "Site added";
+"parental_custom_sites_removed" = "Site removed";
+"parental_custom_sites_sync_local" = "Saved on this phone. Family sync will retry later.";
+
+/* ProdQA S05 Focus name options (pending owner pick) */
+"focus_session_name_option_1" = "Calm minutes";
+"focus_session_name_option_1_desc" = "A 25 or 60 minute timer. Helps you focus — does not block apps.";
+"focus_session_name_option_2" = "Distraction-free time";
+"focus_session_name_option_2_desc" = "A short timer for study or tasks. Stop anytime.";
+"focus_session_name_option_3" = "Minutes for the task";
+"focus_session_name_option_3_desc" = "A soft timer. Reminds you to stay on task without locking other apps.";
+"focus_session_title" = "Calm minutes";
+"focus_session_subtitle" = "Helps you focus!";
+"focus_session_disclaimer" = "";
+"simple_home_tile_advanced_title" = "Advanced settings";
+"simple_home_tile_advanced_subtitle" = "Protection components";
+"calls_card_trial" = "Practice";
+"calls_prep_phone_section" = "Number";
+"calls_prep_phone_placeholder" = "Who to call";
+"calls_prep_need_phone" = "Enter a number or open Phone yourself";
+"calls_prep_open_phone" = "Open Phone";
+"device_hub_incident_reported" = "Check saved";
+"device_hub_incident_id" = "Check record";
+"device_hub_incident_status" = "Status";
+"notifications_load_failed_human" = "Could not refresh. Showing saved items.";
+"common_copy" = "Copy";
+"parental_dashboard_open_hint" = "Open parent dashboard";
+"referral_method_x" = "X";
+"referral_method_x_subtitle" = "Post your invite on X";
+"referral_method_instagram" = "Instagram";
+"referral_method_instagram_subtitle" = "Share via Instagram (Stories/Direct)";
+"family_habit_eventkit_toggle" = "Apple Calendar";
+"family_habit_eventkit_subtitle" = "Mirror reminders into Calendar";
+"referral_step1_desc" = "Send the link via WhatsApp, Telegram, VK, X, or Instagram";
+"family_location_stale_hint" = "Last known place";
+"parental_dashboard_button" = "Parent panel";
+"parental_retry" = "Retry";
+"family_location_unavailable_hint" = "Location unavailable";
+"family_location_waiting_gps" = "Getting location…";
+"parental_stats_rate_limited" = "Too many requests. Please wait a minute.";
+"family_role_parent_label" = "Parent";
+"family_role_child_label" = "Child";
+"family_role_teen_label" = "Teen";
+"family_role_elderly_label" = "People 60+";
+"calls_prep_pick_contact" = "Choose from Contacts";
+"parental_stats_rate_wait_fmt" = "Wait :%02d";
+"settings_updates_opening" = "Opening App Store…";
+"settings_updates_failed" = "Could not open App Store";
+"positioning_system_ios_note" = "On iPhone, Apple always uses available satellites together (GPS + GLONASS + Galileo, etc.). This choice is a preference for tips — it cannot force one system alone.";
+"positioning_system_saved_toast" = "Saved: %@";
+"calls_phone_unavailable_sim" = "Phone app is unavailable in Simulator. Try on a real iPhone.";
+"calls_phone_open_failed" = "Could not open Phone. Dial the number manually.";
+"calls_contact_picked" = "Contact selected";
+"calls_contact_no_phone" = "This contact has no phone number";
+"calls_hub_fab_label" = "New call";
+"calls_direction_section" = "How we save calls";
+"calls_option_a_title" = "A · Outgoing only";
+"calls_option_a_body" = "Prep → speaker → Voice Memos. Simple and Apple-safe.";
+"calls_option_b_title" = "B · After the call only";
+"calls_option_b_body" = "No audio: save key points when the call has ended.";
+"calls_option_c_title" = "C · Hybrid ★ recommended";
+"calls_option_c_body" = "Outgoing: prep + mic. Incoming: “On a call” → speaker recording or after-call notes. Never carrier-line tap.";
+"calls_incoming_cta" = "Incoming call — record via speaker";
+"calls_incoming_hint" = "Apple does not allow recording the carrier line. Use speaker + Voice Memos and tell the other person.";
+"companion_consent_toggle_log" = "Companion: saved";
+"protection_feedback_on_fmt" = "%@ protection on";
+"protection_feedback_off_fmt" = "%@ protection off";
+"protection_feedback_app_on_safari" = "Enabled in the app. Turn on the ALADDIN extension in Safari → Manage Extensions.";
+"protection_feedback_safari_active" = "Safari filtering is active";
+"protection_feedback_safari_off" = "Safari filtering is off in the app";
+"protection_feedback_threats_on_fmt" = "Threat protection: %d of %d";
+"protection_feedback_threats_off" = "Threat protection is off";
+"protection_feedback_messages_on" = "Message monitoring is on";
+"protection_feedback_messages_off" = "Message monitoring is off";
+"protection_feedback_messages_subtitle" = "We save this for your family. iOS push only if notifications are allowed.";
+"protection_feedback_screenshots_on" = "Screenshot monitoring is on";
+"protection_feedback_screenshots_off" = "Screenshot monitoring is off";
+"advanced_threat_status_count_fmt" = "Threat protection: %d of %d";
+"advanced_threat_status_all_on" = "Threat protection: all components on";
+"protection_toast_on_fmt" = "%@ protection on";
+"protection_toast_off_fmt" = "%@ protection off";
+"protection_toast_generic_on" = "Protection on";
+"protection_toast_generic_off" = "Protection off";
+"protection_feedback_safari_needs_action" = "Enable in Safari";
+"protection_feedback_safari_app_on_status" = "On in the app — enable in Safari next";

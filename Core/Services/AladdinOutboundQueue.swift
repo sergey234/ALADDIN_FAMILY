@@ -62,6 +62,8 @@ enum AladdinOutboundBackoff {
 }
 
 /// Local-first outbound jobs. Persist + flush on foreground / network.
+/// Actor serializes flush; UserDefaults writes hop to MainActor so SwiftUI/@AppStorage
+/// observers never publish from a background thread (purple runtime issues).
 actor AladdinOutboundQueue {
     static let shared = AladdinOutboundQueue()
 
@@ -87,27 +89,27 @@ actor AladdinOutboundQueue {
         self.deliverer = deliverer
     }
 
-    func enqueueCheckin(_ draft: WellnessCheckinDraft) {
+    func enqueueCheckin(_ draft: WellnessCheckinDraft) async {
         var jobs = load()
         jobs.removeAll {
             if case .checkin = $0 { return true }
             return false
         }
         jobs.append(.checkin(draft))
-        save(jobs)
+        await save(jobs)
         // Fresh user action — allow immediate flush attempt.
-        clearBackoff()
+        await clearBackoff()
     }
 
-    func enqueueHabitConfig(_ config: FamilyHabitRemindersConfig) {
+    func enqueueHabitConfig(_ config: FamilyHabitRemindersConfig) async {
         var jobs = load()
         jobs.removeAll {
             if case .habitConfig = $0 { return true }
             return false
         }
         jobs.append(.habitConfig(config))
-        save(jobs)
-        clearBackoff()
+        await save(jobs)
+        await clearBackoff()
     }
 
     func pendingCount() -> Int {
@@ -162,11 +164,11 @@ actor AladdinOutboundQueue {
                 hadTransientFailure = true
             }
         }
-        save(remaining)
+        await save(remaining)
         if remaining.isEmpty {
-            clearBackoff()
+            await clearBackoff()
         } else if hadTransientFailure {
-            recordTransientFailure(now: now)
+            await recordTransientFailure(now: now)
         }
         return remaining.count
     }
@@ -185,16 +187,27 @@ actor AladdinOutboundQueue {
         monitor.start(queue: DispatchQueue.global(qos: .utility))
     }
 
-    private func recordTransientFailure(now: Date) {
-        let failures = defaults.integer(forKey: Self.failuresKey) + 1
-        defaults.set(failures, forKey: Self.failuresKey)
-        let delay = AladdinOutboundBackoff.delaySeconds(afterFailures: failures)
-        defaults.set(now.addingTimeInterval(delay), forKey: Self.backoffUntilKey)
+    /// Failure counters + backoff deadline — MainActor so observers publish on main.
+    private func recordTransientFailure(now: Date) async {
+        let defaults = self.defaults
+        let failuresKey = Self.failuresKey
+        let backoffKey = Self.backoffUntilKey
+        await MainActor.run {
+            let failures = defaults.integer(forKey: failuresKey) + 1
+            defaults.set(failures, forKey: failuresKey)
+            let delay = AladdinOutboundBackoff.delaySeconds(afterFailures: failures)
+            defaults.set(now.addingTimeInterval(delay), forKey: backoffKey)
+        }
     }
 
-    private func clearBackoff() {
-        defaults.set(0, forKey: Self.failuresKey)
-        defaults.removeObject(forKey: Self.backoffUntilKey)
+    private func clearBackoff() async {
+        let defaults = self.defaults
+        let failuresKey = Self.failuresKey
+        let backoffKey = Self.backoffUntilKey
+        await MainActor.run {
+            defaults.set(0, forKey: failuresKey)
+            defaults.removeObject(forKey: backoffKey)
+        }
     }
 
     private func load() -> [Job] {
@@ -204,9 +217,14 @@ actor AladdinOutboundQueue {
         return (try? dec.decode([Job].self, from: data)) ?? []
     }
 
-    private func save(_ jobs: [Job]) {
+    private func save(_ jobs: [Job]) async {
         let enc = JSONEncoder()
         enc.dateEncodingStrategy = .iso8601
-        defaults.set(try? enc.encode(jobs), forKey: Self.storageKey)
+        let data = try? enc.encode(jobs)
+        let defaults = self.defaults
+        let key = Self.storageKey
+        await MainActor.run {
+            defaults.set(data, forKey: key)
+        }
     }
 }

@@ -400,16 +400,15 @@ class ProtectionSettingsViewModel: ObservableObject {
             let titleKey = "component_\(componentId)_title"
             let name = L.localized(titleKey)
             if name == titleKey || name.isEmpty {
-                toastManager.showSuccess(
-                    L.localized(newValue ? "protection_toast_generic_on" : "protection_toast_generic_off")
+                ProtectionFeedback.show(
+                    newValue ? .on : .off,
+                    message: L.localized(newValue ? "protection_toast_generic_on" : "protection_toast_generic_off"),
+                    toast: toastManager
                 )
+            } else if newValue {
+                ProtectionFeedback.componentOn(name: name, toast: toastManager)
             } else {
-                toastManager.showSuccess(
-                    String(
-                        format: L.localized(newValue ? "protection_toast_on_fmt" : "protection_toast_off_fmt"),
-                        name
-                    )
-                )
+                ProtectionFeedback.componentOff(name: name, toast: toastManager)
             }
         case .failure(let error):
             // ✅ ЭТАП 3: Обработка unauthorized

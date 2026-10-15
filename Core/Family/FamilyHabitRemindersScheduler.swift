@@ -215,6 +215,9 @@ final class FamilyHabitRemindersScheduler {
         let habitPending = pending.filter { $0.identifier.hasPrefix("family.habit.") }
         let customPending = habitPending.filter { $0.identifier.hasPrefix(Self.customIdNamespace) }
         print("✅ family habits pending: \(habitPending.count) (custom=\(customPending.count))")
+
+        // ProdQA S16 — mirror into Apple Calendar when user enabled sync.
+        await FamilyHabitEventKitSync.shared.syncIfEnabled(config: config)
     }
 
     // MARK: - Custom (fhc-03)

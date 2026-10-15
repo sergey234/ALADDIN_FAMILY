@@ -22,6 +22,7 @@ struct FamilyHabitRemindersSection: View {
     @State private var medalWater = HabitMedalSourcesSettings.isSourceEnabled("water")
     @State private var medalMedicine = HabitMedalSourcesSettings.isSourceEnabled("medicine")
     @State private var remindOnThisDevice = FamilyHabitRemindersPolicy.remindOnThisDevice()
+    @State private var syncAppleCalendar = FamilyHabitEventKitSync.shared.isEnabled
     @State private var persistGeneration = 0
     @State private var isHydrating = true
 
@@ -218,6 +219,26 @@ struct FamilyHabitRemindersSection: View {
             FamilyHabitRemindersPolicy.setRemindOnThisDevice(enabled)
         }
         .accessibilityIdentifier("family_habit_remind_this_device")
+
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle(
+                localizationManager.localized("family_habit_eventkit_toggle"),
+                isOn: $syncAppleCalendar
+            )
+            .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+            .onChange(of: syncAppleCalendar) { enabled in
+                FamilyHabitEventKitSync.shared.isEnabled = enabled
+                if enabled {
+                    Task {
+                        await FamilyHabitEventKitSync.shared.syncIfEnabled(config: draft)
+                    }
+                }
+            }
+            .accessibilityIdentifier("family_habit_eventkit_toggle")
+            Text(localizationManager.localized("family_habit_eventkit_subtitle"))
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.65))
+        }
 
         Toggle(
             localizationManager.localized("family_habit_all_minors_toggle"),
