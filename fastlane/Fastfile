@@ -33,23 +33,21 @@ platform :ios do
         sh("bash scripts/ci_disable_widgets_embed.sh")
       end
 
-      # Screen Time appex (Monitor/Report/Shield): Manual Release requires App Store profiles
-      # that are not in CI secrets yet. Without this, archive fails in ~30s on codesign.
+      # Screen Time appex (Monitor/Report/Shield): Manual Release needs App Store profiles in CI.
       st_monitor_uuid = ENV["PROVISIONING_PROFILE_ST_MONITOR_UUID"].to_s
       st_report_uuid = ENV["PROVISIONING_PROFILE_ST_REPORT_UUID"].to_s
       st_shield_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_UUID"].to_s
-      if st_monitor_uuid.empty? || st_report_uuid.empty? || st_shield_uuid.empty?
+      st_manual = !st_monitor_uuid.empty? && !st_report_uuid.empty? && !st_shield_uuid.empty?
+      if st_manual
+        puts "✅ Screen Time App Store profiles present — embedding Monitor/Report/Shield"
+      else
         puts "⚠️  Screen Time App Store profile UUIDs not set — skipping ST appex embed for this archive"
-        puts "    Later: create App IDs + profiles, add secrets PROVISIONING_PROFILE_ST_* / *_UUID"
+        puts "    Add secrets PROVISIONING_PROFILE_ST_* (+ decode step) then rebuild"
         sh("bash scripts/ci_disable_screen_time_embed.sh")
       end
 
-      # Main target: App Store profile lacks Family Controls Distribution entitlement
-      # (CI error: profile doesn't include com.apple.developer.family-controls).
-      # Keep entitlement in git for Device QA; strip only for this CI archive.
-      puts "⚠️  Stripping family-controls from ALADDIN.entitlements for CI App Store archive"
-      puts "    After Apple Distribution FC approval: regenerate profile + stop this strip"
-      sh("bash scripts/ci_strip_family_controls_entitlement.sh")
+      # Family Controls stays in ALADDIN.entitlements — requires PROVISIONING_PROFILE_APP
+      # with com.apple.developer.family-controls (UUID 7a0c48ca… on Mac as of 2026-10-16).
 
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
@@ -58,7 +56,7 @@ platform :ios do
       puts "📋 Antifake Share Profile UUID: #{antifake_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
       puts "📋 Call Directory Profile UUID: #{call_directory_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
       puts "📋 Widgets Profile UUID: #{widgets_profile_uuid || '(disabled / add PROVISIONING_PROFILE_WIDGETS)'}"
-      puts "📋 Screen Time profiles: #{(st_monitor_uuid.empty? ? 'disabled for CI archive' : 'present')}"
+      puts "📋 Screen Time Monitor/Report/Shield: #{st_manual ? "#{st_monitor_uuid} / #{st_report_uuid} / #{st_shield_uuid}" : 'disabled for CI archive'}"
 
       UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении") if app_profile_uuid.nil? || app_profile_uuid.empty?
       if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -71,6 +69,9 @@ platform :ios do
       antifake_profile_file = antifake_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{antifake_profile_uuid}.mobileprovision"
       call_directory_profile_file = call_directory_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{call_directory_profile_uuid}.mobileprovision"
       widgets_profile_file = widgets_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{widgets_profile_uuid}.mobileprovision"
+      st_monitor_profile_file = st_manual ? "#{profile_dir}/#{st_monitor_uuid}.mobileprovision" : nil
+      st_report_profile_file = st_manual ? "#{profile_dir}/#{st_report_uuid}.mobileprovision" : nil
+      st_shield_profile_file = st_manual ? "#{profile_dir}/#{st_shield_uuid}.mobileprovision" : nil
 
       expected_app_group = "group.ai.aladdin"
       validate_profile_app_group = lambda do |profile_path, profile_label, expected_bundle_id|
@@ -136,6 +137,31 @@ platform :ios do
         widgets_manual = true
       end
 
+      if st_manual
+        validate_profile_app_group.call(
+          st_monitor_profile_file,
+          "ST Monitor",
+          "ai.aladdin.DeviceActivityMonitor"
+        )
+        validate_profile_app_group.call(
+          st_report_profile_file,
+          "ST Report",
+          "ai.aladdin.DeviceActivityReport"
+        )
+        validate_profile_app_group.call(
+          st_shield_profile_file,
+          "ST Shield",
+          "ai.aladdin.ShieldConfiguration"
+        )
+        [app_profile_file, st_monitor_profile_file, st_report_profile_file, st_shield_profile_file].each do |path|
+          xml, _, st = Open3.capture3("security", "cms", "-D", "-i", path)
+          unless st.success? && xml.include?("com.apple.developer.family-controls")
+            UI.user_error!("❌ Profile missing family-controls: #{path}")
+          end
+        end
+        puts "✅ Family Controls present on main + ST App Store profiles"
+      end
+
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
 
@@ -190,6 +216,33 @@ platform :ios do
         WIDGETS
       end
 
+      st_xcconfig = if st_manual
+        <<~ST
+          ALADDINDeviceActivityMonitor_CODE_SIGN_IDENTITY = Apple Distribution
+          ALADDINDeviceActivityMonitor_CODE_SIGN_STYLE = Manual
+          ALADDINDeviceActivityMonitor_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINDeviceActivityMonitor_PROVISIONING_PROFILE_SPECIFIER = #{st_monitor_uuid}
+          ALADDINDeviceActivityMonitor_PROVISIONING_PROFILE = #{st_monitor_uuid}
+          ALADDINDeviceActivityMonitor_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.DeviceActivityMonitor
+          ALADDINDeviceActivityReport_CODE_SIGN_IDENTITY = Apple Distribution
+          ALADDINDeviceActivityReport_CODE_SIGN_STYLE = Manual
+          ALADDINDeviceActivityReport_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINDeviceActivityReport_PROVISIONING_PROFILE_SPECIFIER = #{st_report_uuid}
+          ALADDINDeviceActivityReport_PROVISIONING_PROFILE = #{st_report_uuid}
+          ALADDINDeviceActivityReport_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.DeviceActivityReport
+          ALADDINShieldConfiguration_CODE_SIGN_IDENTITY = Apple Distribution
+          ALADDINShieldConfiguration_CODE_SIGN_STYLE = Manual
+          ALADDINShieldConfiguration_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINShieldConfiguration_PROVISIONING_PROFILE_SPECIFIER = #{st_shield_uuid}
+          ALADDINShieldConfiguration_PROVISIONING_PROFILE = #{st_shield_uuid}
+          ALADDINShieldConfiguration_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.ShieldConfiguration
+        ST
+      else
+        <<~ST
+          // Screen Time appex skipped (no PROVISIONING_PROFILE_ST_* UUIDs)
+        ST
+      end
+
       xcconfig_content = <<~XCCONFIG
         DEVELOPMENT_TEAM = #{team_id}
 
@@ -208,6 +261,7 @@ platform :ios do
         #{antifake_xcconfig}
         #{call_directory_xcconfig}
         #{widgets_xcconfig}
+        #{st_xcconfig}
       XCCONFIG
 
       File.write(xcconfig_path, xcconfig_content)
@@ -278,6 +332,20 @@ platform :ios do
         xcodebuild_args << "ALADDINWidgets_PROVISIONING_PROFILE_SPECIFIER=#{widgets_profile_uuid}"
         xcodebuild_args << "ALADDINWidgets_PROVISIONING_PROFILE=#{widgets_profile_uuid}"
       end
+      if st_manual
+        xcodebuild_args << "ALADDINDeviceActivityMonitor_CODE_SIGN_STYLE=Manual"
+        xcodebuild_args << "ALADDINDeviceActivityMonitor_CODE_SIGN_IDENTITY=Apple Distribution"
+        xcodebuild_args << "ALADDINDeviceActivityMonitor_PROVISIONING_PROFILE_SPECIFIER=#{st_monitor_uuid}"
+        xcodebuild_args << "ALADDINDeviceActivityMonitor_PROVISIONING_PROFILE=#{st_monitor_uuid}"
+        xcodebuild_args << "ALADDINDeviceActivityReport_CODE_SIGN_STYLE=Manual"
+        xcodebuild_args << "ALADDINDeviceActivityReport_CODE_SIGN_IDENTITY=Apple Distribution"
+        xcodebuild_args << "ALADDINDeviceActivityReport_PROVISIONING_PROFILE_SPECIFIER=#{st_report_uuid}"
+        xcodebuild_args << "ALADDINDeviceActivityReport_PROVISIONING_PROFILE=#{st_report_uuid}"
+        xcodebuild_args << "ALADDINShieldConfiguration_CODE_SIGN_STYLE=Manual"
+        xcodebuild_args << "ALADDINShieldConfiguration_CODE_SIGN_IDENTITY=Apple Distribution"
+        xcodebuild_args << "ALADDINShieldConfiguration_PROVISIONING_PROFILE_SPECIFIER=#{st_shield_uuid}"
+        xcodebuild_args << "ALADDINShieldConfiguration_PROVISIONING_PROFILE=#{st_shield_uuid}"
+      end
       if needs_provisioning_updates
         xcodebuild_args << "-allowProvisioningUpdates"
       end
@@ -298,6 +366,9 @@ platform :ios do
     antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
     call_directory_profile_uuid = ENV["PROVISIONING_PROFILE_CALL_DIRECTORY_UUID"]
     widgets_profile_uuid = ENV["PROVISIONING_PROFILE_WIDGETS_UUID"]
+    st_monitor_uuid = ENV["PROVISIONING_PROFILE_ST_MONITOR_UUID"].to_s
+    st_report_uuid = ENV["PROVISIONING_PROFILE_ST_REPORT_UUID"].to_s
+    st_shield_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_UUID"].to_s
 
     UI.user_error!("❌ APP_PROFILE_UUID не установлен") if app_profile_uuid.nil? || app_profile_uuid.empty?
     UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен") if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -314,6 +385,11 @@ platform :ios do
     end
     if widgets_profile_uuid && !widgets_profile_uuid.empty?
       profiles["ai.aladdin.widgets"] = widgets_profile_uuid
+    end
+    if !st_monitor_uuid.empty? && !st_report_uuid.empty? && !st_shield_uuid.empty?
+      profiles["ai.aladdin.DeviceActivityMonitor"] = st_monitor_uuid
+      profiles["ai.aladdin.DeviceActivityReport"] = st_report_uuid
+      profiles["ai.aladdin.ShieldConfiguration"] = st_shield_uuid
     end
 
     export_options_path = "./build/ExportOptions.plist"

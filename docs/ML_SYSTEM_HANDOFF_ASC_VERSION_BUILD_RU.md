@@ -166,21 +166,18 @@ UI name: **Build and Upload to App Store**
 ExportOptions: app + ContentBlocker + AntifakeShare + CallDirectory + Widgets + (при наличии) Screen Time appex  
 `ai.aladdin.DeviceActivityMonitor` / `DeviceActivityReport` / `ShieldConfiguration`.
 
-### Screen Time / Family Controls и CI (уроки #585–#586)
+### Screen Time / Family Controls и CI (уроки #585–#587)
 
-**#585 / #586 — Archive FAIL (Upload не стартовал):**
+**#585 / #586 — Archive FAIL; #587 — cancelled (переход на честный FC):**
 
-1. ST appex: Manual + нет CI secrets → `scripts/ci_disable_screen_time_embed.sh`  
-2. **Главная причина #586:** профиль **«ALADDIN AI App Store»** не содержит  
-   `com.apple.developer.family-controls` / Family Controls capability.  
-   → `scripts/ci_strip_family_controls_entitlement.sh` из Fastfile (только CI; в git entitlement остаётся).
-
-**После approve Family Controls Distribution у Apple:**
-
-1. Включить capability на App ID `ai.aladdin`  
-2. Перевыпустить App Store profile → обновить secret `PROVISIONING_PROFILE_APP`  
-3. Убрать strip из Fastfile; вернуть ST embed + ST profile secrets  
-4. `AppStoreBuildPolicy.allowsSystemFamilyControls` → true только после Device QA + GO
+1. Нужен App Store profile **с** `com.apple.developer.family-controls` в secret `PROVISIONING_PROFILE_APP`  
+   (Mac: UUID `7a0c48ca-…`, не старый `09def2b7-…` без FC).  
+2. ST secrets: `PROVISIONING_PROFILE_ST_{MONITOR,REPORT,SHIELD}` + `*_UUID`  
+   → decode: `scripts/decode_screen_time_profiles_ci.sh`  
+   → заливка: `scripts/set_github_st_fc_secrets.sh` (нужен `gh auth login`).  
+3. Strip FC в CI **снят** — entitlement остаётся в Archive.  
+4. Fallback без ST secrets: `scripts/ci_disable_screen_time_embed.sh` (только если UUID пустые).  
+5. `AppStoreBuildPolicy.allowsSystemFamilyControls` → true только после Device QA + GO.
 
 ---
 
