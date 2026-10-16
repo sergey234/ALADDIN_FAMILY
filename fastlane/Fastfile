@@ -44,6 +44,13 @@ platform :ios do
         sh("bash scripts/ci_disable_screen_time_embed.sh")
       end
 
+      # Main target: App Store profile lacks Family Controls Distribution entitlement
+      # (CI error: profile doesn't include com.apple.developer.family-controls).
+      # Keep entitlement in git for Device QA; strip only for this CI archive.
+      puts "⚠️  Stripping family-controls from ALADDIN.entitlements for CI App Store archive"
+      puts "    After Apple Distribution FC approval: regenerate profile + stop this strip"
+      sh("bash scripts/ci_strip_family_controls_entitlement.sh")
+
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"

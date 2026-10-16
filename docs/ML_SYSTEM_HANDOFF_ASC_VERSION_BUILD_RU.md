@@ -166,16 +166,21 @@ UI name: **Build and Upload to App Store**
 ExportOptions: app + ContentBlocker + AntifakeShare + CallDirectory + Widgets + (при наличии) Screen Time appex  
 `ai.aladdin.DeviceActivityMonitor` / `DeviceActivityReport` / `ShieldConfiguration`.
 
-### Screen Time appex и CI (урок run #585 / `a474ba3c`)
+### Screen Time / Family Controls и CI (уроки #585–#586)
 
-- Run **#585** упал на шаге **Build Archive with Fastlane** (~24 с) — Upload даже не стартовал.  
-- Причина: ST targets в Release = Manual + `PROVISIONING_PROFILE_SPECIFIER`, а секретов профилей в CI нет.  
-- Паттерн как у Widgets/CallDirectory: `fastlane/Fastfile` вызывает  
-  `scripts/ci_disable_screen_time_embed.sh`, если нет  
-  `PROVISIONING_PROFILE_ST_MONITOR_UUID` / `_REPORT_` / `_SHIELD_`.  
-- IPA для TestFlight уходит **без** ST appex, пока профили не добавлены.  
-  Код ST остаётся в репо; локальный Xcode Device QA не ломается.  
-- Чтобы ship ST в IPA: создать App IDs + App Store profiles, положить secrets, убрать disable.
+**#585 / #586 — Archive FAIL (Upload не стартовал):**
+
+1. ST appex: Manual + нет CI secrets → `scripts/ci_disable_screen_time_embed.sh`  
+2. **Главная причина #586:** профиль **«ALADDIN AI App Store»** не содержит  
+   `com.apple.developer.family-controls` / Family Controls capability.  
+   → `scripts/ci_strip_family_controls_entitlement.sh` из Fastfile (только CI; в git entitlement остаётся).
+
+**После approve Family Controls Distribution у Apple:**
+
+1. Включить capability на App ID `ai.aladdin`  
+2. Перевыпустить App Store profile → обновить secret `PROVISIONING_PROFILE_APP`  
+3. Убрать strip из Fastfile; вернуть ST embed + ST profile secrets  
+4. `AppStoreBuildPolicy.allowsSystemFamilyControls` → true только после Device QA + GO
 
 ---
 
