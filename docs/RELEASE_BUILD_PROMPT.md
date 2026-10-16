@@ -29,13 +29,17 @@
 ```text
 PREV_BUILD = 10
 NEXT_BUILD = 11
+CURRENT_MARKETING_VERSION = 1.0.1
 ```
 
-Смысл сейчас: в рабочих файлах Xcode/git фактическая сборка = **10**.
-Следующая релизная сборка = **11** — только после нового **GO на bump**.
+Смысл сейчас:
+- **Version (marketing)** в Xcode/git = **1.0.1** (совпадает с ASC iOS version «1.0.1 Подготовка к отправке»).
+- **Build** в Xcode/git = **10**.
+- Следующая **сборка** = **11** — только после нового **GO на bump** build.
+- Следующая **marketing version** (например 1.0.2) — только если ASC закрыл train 1.0.1 / после approve, и только по **GO владельца**.
 
 ```text
-Задача при GO на bump:
+Задача при GO на bump BUILD:
 1) Поднять номер сборки с PREV_BUILD на NEXT_BUILD во всех нужных местах.
 2) Проверить, что все фиксы/дополнения этой сборки в git (включая файлы из pbxproj).
 3) Закоммитить только необходимое для релиза.
@@ -45,6 +49,21 @@ NEXT_BUILD = 11
 
 > **Путь B / компания:** нумерация с **1** для ASC app `ai.aladdin`.
 > Личный TF (`family.aladdin.ios`) имел свою линейку до 248 — **не продолжать** те номера в Path B.
+
+════════════════════════════════════
+ДВА НОМЕРА (не путать)
+════════════════════════════════════
+| Что | Где в коде | Сейчас | В ASC |
+|-----|------------|--------|-------|
+| **Version** (marketing) | `MARKETING_VERSION` / `CFBundleShortVersionString` / `AppConfig.appVersion` | **1.0.1** | iOS version **1.0.1** |
+| **Build** | `CFBundleVersion` / `CURRENT_PROJECT_VERSION` / `AppConfig.buildNumber` | **10** | TestFlight build **10** |
+
+Урок 2026-10-16 (CI run build 9): Archive/Export зелёные, **Upload FAIL** —
+`Invalid Pre-Release Train. The train version '1.0.0' is closed` +
+`CFBundleShortVersionString [1.0.0] must be higher than previously approved [1.0.0]`.
+После approve версии в ASC **нельзя** заливать новые Build на ту же marketing version —
+нужна **новая** ASC version + bump marketing в коде. Подробный handoff:
+`docs/ML_SYSTEM_HANDOFF_ASC_VERSION_BUILD_RU.md`.
 
 ════════════════════════════════════
 КАНОН (не менять)
@@ -95,6 +114,24 @@ git log --oneline -n 3
 - в этих файлах нет PREV_BUILD;
 - все targets/extensions согласованы на NEXT_BUILD;
 - `NEXT_BUILD == PREV_BUILD + 1` (**понижать запрещено**; не вставлять номера из старых шаблонов/личных TF).
+
+════════════════════════════════════
+MARKETING VERSION — обязательные файлы (GO отдельно от bump build)
+════════════════════════════════════
+| Файл | Что менять |
+|------|------------|
+| `ALADDIN.xcodeproj/project.pbxproj` | все `MARKETING_VERSION = …;` → новая (сейчас **1.0.1**) |
+| `Core/Config/AppConfig.swift` | `appVersion` |
+| `Tests/UnitTests/AppConfigTests.swift` | assert `appVersion` |
+| `ALADDINCallDirectory/Info.plist` | `CFBundleShortVersionString` |
+| `ALADDINWidgets/Info.plist` | `CFBundleShortVersionString` |
+| `ALADDINDeviceActivityMonitor/Info.plist` | `CFBundleShortVersionString` |
+| `ALADDINDeviceActivityReport/Info.plist` | `CFBundleShortVersionString` |
+| `ALADDINShieldConfiguration/Info.plist` | `CFBundleShortVersionString` |
+| `Info.plist` | обычно `$(MARKETING_VERSION)` — ок, если pbx обновлён |
+
+Перед upload: в ASC уже создана iOS version с **тем же** marketing номером.
+Обновить `CURRENT_MARKETING_VERSION` в паре выше.
 
 ════════════════════════════════════
 ОБЯЗАТЕЛЬНАЯ ПРОВЕРКА ПЕРЕД КОММИТОМ (урок CI 243)
