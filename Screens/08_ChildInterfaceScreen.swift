@@ -157,6 +157,11 @@ struct ChildInterfaceScreen: View {
             ProfileImagePicker(selectedImage: $selectedImage)
         }
         .onAppear {
+            // Child device role + age band (kids/school/teen/youngAdult) for Screen Time eligibility
+            UserDefaults.standard.set("child", forKey: "current_user_role")
+            FamilyScreenTimeEligibility.persistAgeGroupFromChildInterface(
+                FamilyScreenTimeEligibility.childInterfaceAgeToken(String(describing: selectedAge))
+            )
             loadProfileImage()
             Task {
                 await ContentManager.shared.runUnifiedLifecycle()
@@ -435,6 +440,9 @@ struct ChildInterfaceScreen: View {
                 ForEach([AgeGroup.kids, .school, .teen, .youngAdult], id: \.self) { age in
                     Button(action: {
                         selectedAge = age
+                        FamilyScreenTimeEligibility.persistAgeGroupFromChildInterface(
+                            FamilyScreenTimeEligibility.childInterfaceAgeToken(String(describing: age))
+                        )
                     }) {
                         Text(age.title(localizationManager: localizationManager))
                             .font(.caption)
@@ -1231,12 +1239,10 @@ struct ChildEditContactsModal: View {
             }
         }
         .onAppear {
-            // ✅ КРИТИЧНО: Устанавливаем роль ребёнка при входе в экран
-            // ДОЛЖНО БЫТЬ В САМОМ НАЧАЛЕ .onAppear!
+            // Contacts modal: keep child role; age band is set on ChildInterfaceScreen / age tabs
             UserDefaults.standard.set("child", forKey: "current_user_role")
-            UserDefaults.standard.synchronize() // Принудительная синхронизация
-            print("✅ ChildInterfaceScreen: Роль установлена как 'child'")
-            print("   Проверка: UserDefaults['current_user_role'] = '\(UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА")'")
+            UserDefaults.standard.synchronize()
+            print("✅ ChildEditContactsModal: role=child")
             let members = UnifiedFamilyRoster.load()
             let permissionSnapshot = FamilyPermissionLayer.snapshot(members: members)
             let directPermission = FamilyAccessPolicy.hasPermission(.editFamilyContacts, members: members)

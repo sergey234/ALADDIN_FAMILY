@@ -563,12 +563,18 @@ struct DeviceInfoView: View {
             if let ipAddress = deviceDetail?.ipAddress {
                 InfoRow(icon: "network", title: localizationManager.localized("device_detail_info_ip"), value: ipAddress, color: .blue)
             }
-            // MAC адрес не приходит с сервера, поэтому скрываем если нет данных
-            // InfoRow(icon: "antenna.radiowaves.left.and.right", title: localizationManager.localized("device_detail_info_mac"), value: "AA:BB:CC:DD:EE:FF", color: .orange)
+            InfoRow(
+                icon: "hourglass",
+                title: localizationManager.localized("screen_time_device_row_title"),
+                value: ScreenTimeDeviceStatus.resolve(deviceId: device.id, ownerName: device.owner)
+                    .displayLine(localization: localizationManager),
+                color: .secondaryGold
+            )
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("device_detail_screen_time_status")
     }
 
     private func humanizedDeviceType(_ raw: String) -> String {

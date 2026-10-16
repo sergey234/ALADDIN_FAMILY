@@ -678,7 +678,12 @@ struct FamilyScreen: View {
                         let normalizedRole = member.role.lowercased()
                         let role: FamilyMemberCard.FamilyRole
                         let parentLabels = Set(["parent", locManager.localized("family_role_parent_label").lowercased()])
-                        let childLabels = Set(["child", locManager.localized("family_role_child_label").lowercased()])
+                        let childLabels = Set([
+                            "child",
+                            "young_adult", "youngadult", "young-adult", "adult_child", "adultchild",
+                            "kid", "kids", "school",
+                            locManager.localized("family_role_child_label").lowercased()
+                        ])
                         let teenLabels = Set(["teenager", "teen", locManager.localized("family_role_teen_label").lowercased()])
                         let elderlyLabels = Set(["elderly", "grandparent", locManager.localized("family_role_elderly_label").lowercased()])
                         
@@ -692,7 +697,10 @@ struct FamilyScreen: View {
                         case _ where elderlyLabels.contains(normalizedRole):
                             role = .elderly
                         default:
-                            role = .parent
+                            // Unknown role: keep under parental care only if ST eligibility says supervised
+                            role = FamilyScreenTimeEligibility.isSupervisedMember(role: normalizedRole)
+                                ? .child
+                                : .parent
                         }
                         
                         // Получаем аватар для роли
@@ -3711,6 +3719,7 @@ struct FamilyTimeControlModal: View {
     @State private var showScheduleSettings = false
     @State private var showSleepTimeSettings = false
     @State private var showAppLimitsSettings = false
+    @State private var showChildScreenTimeSetup = false
     
     // Настройки времени с сохранением в UserDefaults (storage keys may be English; UI always localizes)
     @AppStorage("parental_screen_time_limit") private var screenTimeLimit: String = "3h/day"
@@ -3726,10 +3735,8 @@ struct FamilyTimeControlModal: View {
     @State private var hasRealTimeStats = false
     @State private var totalTimeUsedLabel = ""
     @State private var totalTimeLimitLabel = ""
-    @State private var instagramUsedLabel = ""
-    @State private var instagramLimitLabel = ""
-    @State private var tiktokUsedLabel = ""
-    @State private var tiktokLimitLabel = ""
+    /// Per-app rows: Instagram, TikTok, WhatsApp, Telegram, YouTube, VK, OK, Discord, Games…
+    @State private var appStatRows: [(name: String, used: String, limit: String)] = []
     
     private var screenTimeDescription: String {
         let limit = ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: localizationManager)
@@ -3742,9 +3749,20 @@ struct FamilyTimeControlModal: View {
     }
     
     private var appLimitsDescription: String {
-        let ig = ParentalScreenTimeFormat.displayDuration(stored: instagramLimit, localization: localizationManager)
-        let tt = ParentalScreenTimeFormat.displayDuration(stored: tiktokLimit, localization: localizationManager)
-        return "\(localizationManager.localized("family_instagram")) \(ig), \(localizationManager.localized("family_tiktok")) \(tt)"
+        let records = ScreenTimeAppLimitsBridge.loadRecords()
+        let parts = records.prefix(4).map { rec in
+            let lim = ParentalScreenTimeFormat.formatMinutes(rec.limitMinutes, localization: localizationManager)
+            return "\(rec.displayName) \(lim)"
+        }
+        if records.count > 4 {
+            return parts.joined(separator: ", ") + "…"
+        }
+        if parts.isEmpty {
+            let ig = ParentalScreenTimeFormat.displayDuration(stored: instagramLimit, localization: localizationManager)
+            let tt = ParentalScreenTimeFormat.displayDuration(stored: tiktokLimit, localization: localizationManager)
+            return "\(localizationManager.localized("family_instagram")) \(ig), \(localizationManager.localized("family_tiktok")) \(tt)"
+        }
+        return parts.joined(separator: ", ")
     }
     
     var body: some View {
@@ -3810,25 +3828,16 @@ struct FamilyTimeControlModal: View {
                                     .font(.bodyBold)
                                     .foregroundColor(.textPrimary)
                             }
-                            
-                            HStack {
-                                Text(localizationManager.localized("family_instagram"))
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                                Spacer()
-                                Text("\(instagramUsedLabel) / \(instagramLimitLabel)")
-                                    .font(.bodyBold)
-                                    .foregroundColor(.textPrimary)
-                            }
-                            
-                            HStack {
-                                Text(localizationManager.localized("family_tiktok"))
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                                Spacer()
-                                Text("\(tiktokUsedLabel) / \(tiktokLimitLabel)")
-                                    .font(.bodyBold)
-                                    .foregroundColor(.textPrimary)
+                            ForEach(Array(appStatRows.enumerated()), id: \.offset) { _, row in
+                                HStack {
+                                    Text(localizedAppLabel(row.name))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                    Spacer()
+                                    Text("\(row.used) / \(row.limit)")
+                                        .font(.bodyBold)
+                                        .foregroundColor(.textPrimary)
+                                }
                             }
                         }
                     } else {
@@ -3836,6 +3845,15 @@ struct FamilyTimeControlModal: View {
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        Button {
+                            showChildScreenTimeSetup = true
+                        } label: {
+                            Text(localizationManager.localized("screen_time_parent_open_on_child"))
+                                .font(.caption)
+                                .foregroundColor(.secondaryGold)
+                                .multilineTextAlignment(.leading)
+                        }
+                        .padding(.top, 4)
                     }
                 }
                 .padding(Spacing.m)
@@ -3844,6 +3862,10 @@ struct FamilyTimeControlModal: View {
             }
         }
         // Детальные модалы настроек
+        .sheet(isPresented: $showChildScreenTimeSetup) {
+            ChildScreenTimeSetupView()
+                .environmentObject(localizationManager)
+        }
         .sheet(isPresented: $showScreenTimeSettings) {
             ScreenTimeSettingsModal(isPresented: $showScreenTimeSettings)
                 .environmentObject(localizationManager)
@@ -3867,7 +3889,7 @@ struct FamilyTimeControlModal: View {
         .withVisualLogger()
     }
     
-    /// Usage stats: DeviceActivity (`fetchRealScreenTimeStats`) or UD cache — never invent Instagram/TikTok mock.
+    /// Usage stats: DeviceActivity / store / server — all tracked apps; never invent mock minutes.
     private func loadTimeStatistics() {
         Task {
             let fromDevice = await ParentalControlManager.shared.fetchRealScreenTimeStats()
@@ -3877,39 +3899,65 @@ struct FamilyTimeControlModal: View {
         }
     }
 
+    private func localizedAppLabel(_ name: String) -> String {
+        switch name.lowercased() {
+        case "instagram": return localizationManager.localized("family_instagram")
+        case "tiktok": return localizationManager.localized("family_tiktok")
+        case "whatsapp": return localizationManager.localized("family_whatsapp")
+        case "telegram": return localizationManager.localized("family_telegram")
+        case "youtube": return localizationManager.localized("family_youtube")
+        case "vk": return localizationManager.localized("family_vk")
+        case "odnoklassniki": return localizationManager.localized("family_odnoklassniki")
+        case "discord": return localizationManager.localized("family_discord")
+        case "games": return localizationManager.localized("family_games")
+        default: return name
+        }
+    }
+
     private func applyTimeStatistics(deviceRows: [AppUsageStatistics]) {
         let loc = localizationManager
+        let records = ScreenTimeAppLimitsBridge.loadRecords()
+        let tracked = records.isEmpty ? ScreenTimeUsageStore.trackedAppNames : records.map(\.displayName)
+
         if !deviceRows.isEmpty {
             let totalSeconds = deviceRows.reduce(0.0) { $0 + $1.timeSpent }
             let totalMin = Int(totalSeconds / 60)
             totalTimeUsedLabel = ParentalScreenTimeFormat.formatMinutes(totalMin, localization: loc)
             totalTimeLimitLabel = ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: loc)
-            let ig = deviceRows.first { $0.appName.lowercased().contains("instagram") }
-            let tt = deviceRows.first { $0.appName.lowercased().contains("tiktok") }
-            instagramUsedLabel = ParentalScreenTimeFormat.formatMinutes(
-                Int((ig?.timeSpent ?? 0) / 60),
-                localization: loc
-            )
-            instagramLimitLabel = ParentalScreenTimeFormat.displayDuration(stored: instagramLimit, localization: loc)
-            tiktokUsedLabel = ParentalScreenTimeFormat.formatMinutes(
-                Int((tt?.timeSpent ?? 0) / 60),
-                localization: loc
-            )
-            tiktokLimitLabel = ParentalScreenTimeFormat.displayDuration(stored: tiktokLimit, localization: loc)
+            let apps: [ScreenTimeUsageStore.AppMinute] = deviceRows.map {
+                ScreenTimeUsageStore.AppMinute(
+                    tokenHash: $0.appName.lowercased(),
+                    displayName: $0.appName,
+                    seconds: Int($0.timeSpent),
+                    limitSeconds: nil
+                )
+            }
+            appStatRows = tracked.map { name in
+                let usedMin = ScreenTimeUsageStore.matchSeconds(in: apps, forDisplayName: name) / 60
+                let limitMin = records.first { $0.displayName.lowercased() == name.lowercased() }?.limitMinutes
+                    ?? (name.lowercased() == "tiktok" ? 20 : 30)
+                return (
+                    name: name,
+                    used: ParentalScreenTimeFormat.formatMinutes(usedMin, localization: loc),
+                    limit: ParentalScreenTimeFormat.formatMinutes(limitMin, localization: loc)
+                )
+            }
             hasRealTimeStats = true
-            persistUsageCache(
-                totalUsedMin: totalMin,
-                igUsedMin: Int((ig?.timeSpent ?? 0) / 60),
-                ttUsedMin: Int((tt?.timeSpent ?? 0) / 60)
+            let payload = ScreenTimeUsageStore.buildParentalTimeStatsPayload(
+                source: "device_activity",
+                totalSeconds: Int(totalSeconds),
+                apps: apps
             )
+            ScreenTimeUsageStore.applyServerPayload(payload)
             return
         }
 
-        guard let stats = UserDefaults.standard.dictionary(forKey: "parental_time_stats") as? [String: String],
+        guard let stats = ScreenTimeUsageStore.loadParentalTimeStats(),
               let used = stats["totalTimeUsed"]?.trimmingCharacters(in: .whitespacesAndNewlines),
               !used.isEmpty,
               stats["source"] == "device_activity" || stats["source"] == "server" else {
             hasRealTimeStats = false
+            appStatRows = []
             return
         }
         totalTimeUsedLabel = ParentalScreenTimeFormat.displayDuration(stored: used, localization: loc)
@@ -3917,36 +3965,25 @@ struct FamilyTimeControlModal: View {
             stored: stats["totalTimeLimit"] ?? screenTimeLimit,
             localization: loc
         )
-        instagramUsedLabel = ParentalScreenTimeFormat.displayDuration(
-            stored: stats["instagramUsed"] ?? "0 min",
-            localization: loc
-        )
-        instagramLimitLabel = ParentalScreenTimeFormat.displayDuration(
-            stored: stats["instagramLimitStat"] ?? instagramLimit,
-            localization: loc
-        )
-        tiktokUsedLabel = ParentalScreenTimeFormat.displayDuration(
-            stored: stats["tiktokUsed"] ?? "0 min",
-            localization: loc
-        )
-        tiktokLimitLabel = ParentalScreenTimeFormat.displayDuration(
-            stored: stats["tiktokLimitStat"] ?? tiktokLimit,
-            localization: loc
-        )
+        let csv = stats["trackedAppsCSV"]?.split(separator: ",").map(String.init) ?? tracked
+        appStatRows = csv.map { name in
+            let usedKey = ScreenTimeUsageStore.statsKeyUsed(name)
+            let limitKey = ScreenTimeUsageStore.statsKeyLimit(name)
+            let usedStored = stats[usedKey]
+                ?? (name.lowercased() == "instagram" ? stats["instagramUsed"] : nil)
+                ?? (name.lowercased() == "tiktok" ? stats["tiktokUsed"] : nil)
+                ?? "0 min"
+            let limitStored = stats[limitKey]
+                ?? (name.lowercased() == "instagram" ? stats["instagramLimitStat"] : nil)
+                ?? (name.lowercased() == "tiktok" ? stats["tiktokLimitStat"] : nil)
+                ?? "30 min"
+            return (
+                name: name,
+                used: ParentalScreenTimeFormat.displayDuration(stored: usedStored, localization: loc),
+                limit: ParentalScreenTimeFormat.displayDuration(stored: limitStored, localization: loc)
+            )
+        }
         hasRealTimeStats = true
-    }
-
-    private func persistUsageCache(totalUsedMin: Int, igUsedMin: Int, ttUsedMin: Int) {
-        let payload: [String: String] = [
-            "source": "device_activity",
-            "totalTimeUsed": "\(totalUsedMin) min",
-            "totalTimeLimit": screenTimeLimit,
-            "instagramUsed": "\(igUsedMin) min",
-            "instagramLimitStat": instagramLimit,
-            "tiktokUsed": "\(ttUsedMin) min",
-            "tiktokLimitStat": tiktokLimit
-        ]
-        UserDefaults.standard.set(payload, forKey: "parental_time_stats")
     }
 }
 
@@ -7014,6 +7051,7 @@ struct AppLimitsSettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
+    @State private var showChildScreenTimeSetup = false
     
     // Сохранение лимитов приложений в UserDefaults
     private let limitsKey = "app_limits_settings"
@@ -7029,55 +7067,52 @@ struct AppLimitsSettingsModal: View {
     
     @State private var appLimits: [AppLimitItem] = []
     
-    // Загрузка лимитов из UserDefaults
+    // Загрузка лимитов: bridge (tokenHash) + legacy name keys
     private func loadAppLimits() {
-        // ✅ ИСПРАВЛЕНО: Сначала загружаем из общего массива, затем проверяем индивидуальные ключи
-        var loadedLimits: [AppLimitItem] = []
-        
-        if let data = UserDefaults.standard.data(forKey: limitsKey),
-           let decoded = try? JSONDecoder().decode([AppLimitItemCodable].self, from: data) {
-            loadedLimits = decoded.map { AppLimitItem(app: $0.app, limit: $0.limit, color: Color(hex: $0.colorHex)) }
-        } else {
-            // Значения по умолчанию
-            loadedLimits = [
-                AppLimitItem(app: "Instagram", limit: 30.0, color: .purple),
-                AppLimitItem(app: "TikTok", limit: 20.0, color: .black),
-                AppLimitItem(app: "WhatsApp", limit: 60.0, color: .green),
-                AppLimitItem(app: "Telegram", limit: 60.0, color: .blue),
-                AppLimitItem(app: "YouTube", limit: 45.0, color: .red),
-                AppLimitItem(app: "VK", limit: 30.0, color: .blue),
-                AppLimitItem(app: "Odnoklassniki", limit: 20.0, color: .orange),
-                AppLimitItem(app: "Discord", limit: 30.0, color: .indigo),
-                AppLimitItem(app: "Games", limit: 60.0, color: .pink)
-            ]
+        let palette: [String: Color] = [
+            "instagram": .purple, "tiktok": .black, "whatsapp": .green,
+            "telegram": .blue, "youtube": .red, "vk": .blue,
+            "discord": .indigo, "games": .pink
+        ]
+        let fromBridge = ScreenTimeAppLimitsBridge.loadRecords().map { rec in
+            AppLimitItem(
+                app: rec.displayName,
+                limit: Double(rec.limitMinutes),
+                color: palette[rec.displayName.lowercased()] ?? .secondaryGold,
+                tokenHash: rec.tokenHash
+            )
         }
-        
-        // ✅ BUILD 96: Асинхронная загрузка для предотвращения рекурсии
-        // Проверяем индивидуальные ключи для каждого приложения (приоритет выше)
-        // Устанавливаем начальные значения сразу
-        appLimits = loadedLimits
-        
-        // Затем обновляем асинхронно
+        appLimits = fromBridge
         Task { @MainActor in
-            var updatedLimits = appLimits
-            for index in updatedLimits.indices {
-                let app = updatedLimits[index].app
+            var updated = appLimits
+            for index in updated.indices {
+                let app = updated[index].app
                 let appKey = "app_\(app.lowercased().replacingOccurrences(of: " ", with: "_"))_time_limit"
                 if UserDefaults.standard.object(forKey: appKey) != nil {
                     let savedLimit = UserDefaults.standard.double(forKey: appKey)
-                    if savedLimit > 0 {
-                        updatedLimits[index].limit = savedLimit
-                    }
+                    if savedLimit > 0 { updated[index].limit = savedLimit }
+                }
+                if updated[index].tokenHash == nil {
+                    updated[index].tokenHash = ScreenTimeAppLimitsBridge.tokenHash(forDisplayName: app)
                 }
             }
-            // Обновляем appLimits на main thread после загрузки
-            appLimits = updatedLimits
+            appLimits = updated
         }
     }
     
-    // Сохранение лимитов в UserDefaults
+    // Сохранение лимитов + tokenHash в App Group bridge
     private func saveAppLimits() {
-        let codable = appLimits.map { AppLimitItemCodable(app: $0.app, limit: $0.limit, colorHex: "") }
+        let records = appLimits.map {
+            ScreenTimeAppLimitsBridge.Record(
+                displayName: $0.app,
+                limitMinutes: Int($0.limit),
+                tokenHash: $0.tokenHash ?? ScreenTimeAppLimitsBridge.tokenHash(forDisplayName: $0.app)
+            )
+        }
+        ScreenTimeAppLimitsBridge.saveRecords(records)
+        let codable = appLimits.map {
+            AppLimitItemCodable(app: $0.app, limit: $0.limit, colorHex: "", tokenHash: $0.tokenHash)
+        }
         if let encoded = try? JSONEncoder().encode(codable) {
             UserDefaults.standard.set(encoded, forKey: limitsKey)
         }
@@ -7095,6 +7130,14 @@ struct AppLimitsSettingsModal: View {
         }
         saveAppLimits()
         FamilyDefaultClock.persistAppLimitSummary(app: app, limitMinutes: limit)
+        // Always visible in Xcode console (VisualLogger may be filtered out)
+        let mins = Int(limit)
+        print("🎚️ SCREEN_TIME app_limit saved: \(app) = \(mins) min/day key=\(appKey)")
+        VisualLogger.shared.log(
+            "🎚️ app_limit_\(app) = \(mins) min/day",
+            level: .info,
+            category: "SCREEN_TIME"
+        )
     }
     
     var body: some View {
@@ -7103,6 +7146,20 @@ struct AppLimitsSettingsModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
+                Text(localizationManager.localized("app_limits_token_hint"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    showChildScreenTimeSetup = true
+                } label: {
+                    Text(localizationManager.localized("screen_time_parent_open_on_child"))
+                        .font(.captionBold)
+                        .foregroundColor(.secondaryGold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 ForEach($appLimits) { $limit in
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         HStack {
@@ -7111,6 +7168,12 @@ struct AppLimitsSettingsModal: View {
                                 .foregroundColor(.textPrimary)
                             
                             Spacer()
+                            
+                            if limit.tokenHash != nil {
+                                Text("🔗")
+                                    .font(.caption2)
+                                    .accessibilityLabel(localizationManager.localized("app_limits_token_bound"))
+                            }
                             
                             Text("\(Int(limit.limit)) \(localizationManager.localized("app_limits_min_per_day"))")
                                 .font(.bodyBold)
@@ -7122,13 +7185,8 @@ struct AppLimitsSettingsModal: View {
                             get: { limit.limit },
                             set: { newValue in
                                 limit.limit = newValue
-                                // Автоматическое сохранение при изменении слайдера
+                                // Автоматическое сохранение при изменении слайдера (локально; без API)
                                 saveAppLimitForApp(app: limit.app, limit: newValue)
-                                VisualLogger.shared.log(
-                                    "🎚️ app_limit_\(limit.app) = \(Int(newValue)) min/day",
-                                    level: .info,
-                                    category: "ADVANCED.UI"
-                                )
                             }
                         ), in: 5...120, step: 5) {
                             Text(limit.app)
@@ -7172,6 +7230,10 @@ struct AppLimitsSettingsModal: View {
             }
         }
         .id("app_limits_lang_\(localizationManager.currentLanguage.rawValue)")
+        .sheet(isPresented: $showChildScreenTimeSetup) {
+            ChildScreenTimeSetupView()
+                .environmentObject(localizationManager)
+        }
         .onAppear {
             loadAppLimits()
         }
@@ -7180,7 +7242,8 @@ struct AppLimitsSettingsModal: View {
 
     @MainActor
     private func syncAppLimitsToServer() async {
-        let serializableLimits = appLimits.map { ["app": $0.app, "limit": $0.limit] }
+        // Names + minutes only over the wire (token hashes stay on-device in App Group).
+        let serializableLimits = appLimits.map { ["app": $0.app, "limit": $0.limit] as [String: Any] }
         let payload: [String: AnyCodable] = [
             "appLimits": AnyCodable(serializableLimits)
         ]

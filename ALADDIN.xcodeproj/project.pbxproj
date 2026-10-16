@@ -621,6 +621,8 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		FWSW0222F90000100C7D34B /* FamilySafeWordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */; };
 		FWSW0322F90000100C7D34B /* FamilySafeWordViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */; };
 		FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */; };
+		STMAIN0E2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN0D2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift */; };
+		STMAIN102F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN0F2F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift */; };
 		GEOGC22F90000100C7D34B /* GeofenceGeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */; };
 		GOBLIN22F90000100C7D34B /* CompanionBreakStepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */; };
 		GOBLIN42F90000100C7D34B /* CompanionBreakStepsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */; };
@@ -767,6 +769,23 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		WELLTS22F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */; };
 		WELLVAL22F90000100C7D34B /* WellnessValuesCardSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */; };
 		WELPRM22F90000100C7D34B /* WellnessPremiumFunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */; };
+		STMON0112F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = STMON0102F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		STREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		STSHD0112F90000200C7D34B /* ALADDINShieldConfiguration.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = STSHD0102F90000200C7D34B /* ALADDINShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		STMON0302F90000200C7D34B /* DeviceActivityMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMON0012F90000200C7D34B /* DeviceActivityMonitorExtension.swift */; };
+		STMON0312F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */; };
+		STMON0322F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = STMON00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
+		STREP0302F90000200C7D34B /* DeviceActivityReportExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = STREP0012F90000200C7D34B /* DeviceActivityReportExtension.swift */; };
+		STREP0312F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */; };
+		STREP0322F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = STREP00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
+		STSHD0302F90000200C7D34B /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = STSHD0012F90000200C7D34B /* ShieldConfigurationExtension.swift */; };
+		STSHD0322F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = STSHD00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
+		STMAIN022F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */; };
+		STMAIN042F90000200C7D34B /* ScreenTimeUsageSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN032F90000200C7D34B /* ScreenTimeUsageSync.swift */; };
+		STMAIN062F90000200C7D34B /* ChildScreenTimeSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN052F90000200C7D34B /* ChildScreenTimeSetupView.swift */; };
+		STMAIN082F90000200C7D34B /* ScreenTimeAppLimitsBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN072F90000200C7D34B /* ScreenTimeAppLimitsBridge.swift */; };
+		STMAIN0A2F90000200C7D34B /* ScreenTimeDeviceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN092F90000200C7D34B /* ScreenTimeDeviceStatus.swift */; };
+		STMAIN0C2F90000200C7D34B /* FamilyScreenTimeEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN0B2F90000200C7D34B /* FamilyScreenTimeEligibility.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -812,6 +831,27 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 			remoteGlobalIDString = WDGT0172F90000100C7D34B;
 			remoteInfo = ALADDINWidgets;
 		};
+		STMON0122F90000200C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = STMON0172F90000200C7D34B;
+			remoteInfo = ALADDINDeviceActivityMonitor;
+		};
+		STREP0122F90000200C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = STREP0172F90000200C7D34B;
+			remoteInfo = ALADDINDeviceActivityReport;
+		};
+		STSHD0122F90000200C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = STSHD0172F90000200C7D34B;
+			remoteInfo = ALADDINShieldConfiguration;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -824,6 +864,9 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 				AFSh0112F90000100C7D34B /* ALADDINAntifakeShare.appex in Embed App Extensions */,
 				AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */,
 				WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */,
+				STMON0112F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex in Embed App Extensions */,
+				STREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed App Extensions */,
+				STSHD0112F90000200C7D34B /* ALADDINShieldConfiguration.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 		};
@@ -1467,6 +1510,8 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordService.swift; path = Core/Family/FamilySafeWordService.swift; sourceTree = "<group>"; };
 		FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordViews.swift; path = Shared/Components/FamilySafeWordViews.swift; sourceTree = "<group>"; };
 		FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySafeWordHasherTests.swift; sourceTree = "<group>"; };
+		STMAIN0D2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyScreenTimeEligibilityTests.swift; sourceTree = "<group>"; };
+		STMAIN0F2F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTimeUsageStoreStatsTests.swift; sourceTree = "<group>"; };
 		GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceGeocodingService.swift; path = Core/Services/GeofenceGeocodingService.swift; sourceTree = "<group>"; };
 		GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionBreakStepsService.swift; path = Core/Companion/CompanionBreakStepsService.swift; sourceTree = "<group>"; };
 		GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionBreakStepsSheet.swift; path = Shared/Components/CompanionBreakStepsSheet.swift; sourceTree = "<group>"; };
@@ -1616,6 +1661,27 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/WellnessTogetherSession.swift; sourceTree = "<group>"; };
 		WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessValuesCardSheet.swift; sourceTree = "<group>"; };
 		WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessPremiumFunnel.swift; path = Core/Services/WellnessPremiumFunnel.swift; sourceTree = "<group>"; };
+		STMON0012F90000200C7D34B /* DeviceActivityMonitorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityMonitorExtension.swift; sourceTree = "<group>"; };
+		STMON0082F90000200C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		STMON0092F90000200C7D34B /* ALADDINDeviceActivityMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINDeviceActivityMonitor.entitlements; sourceTree = "<group>"; };
+		STMON00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		STMON0102F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINDeviceActivityMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		STREP0012F90000200C7D34B /* DeviceActivityReportExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityReportExtension.swift; sourceTree = "<group>"; };
+		STREP0082F90000200C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		STREP0092F90000200C7D34B /* ALADDINDeviceActivityReport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINDeviceActivityReport.entitlements; sourceTree = "<group>"; };
+		STREP00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINDeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		STSHD0012F90000200C7D34B /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
+		STSHD0082F90000200C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		STSHD0092F90000200C7D34B /* ALADDINShieldConfiguration.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINShieldConfiguration.entitlements; sourceTree = "<group>"; };
+		STSHD00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		STSHD0102F90000200C7D34B /* ALADDINShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ScreenTimeUsageStore.swift; path = Core/Family/ScreenTimeUsageStore.swift; sourceTree = "<group>"; };
+		STMAIN032F90000200C7D34B /* ScreenTimeUsageSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ScreenTimeUsageSync.swift; path = Core/Family/ScreenTimeUsageSync.swift; sourceTree = "<group>"; };
+		STMAIN052F90000200C7D34B /* ChildScreenTimeSetupView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChildScreenTimeSetupView.swift; sourceTree = "<group>"; };
+		STMAIN072F90000200C7D34B /* ScreenTimeAppLimitsBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ScreenTimeAppLimitsBridge.swift; path = Core/Family/ScreenTimeAppLimitsBridge.swift; sourceTree = "<group>"; };
+		STMAIN092F90000200C7D34B /* ScreenTimeDeviceStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ScreenTimeDeviceStatus.swift; path = Core/Family/ScreenTimeDeviceStatus.swift; sourceTree = "<group>"; };
+		STMAIN0B2F90000200C7D34B /* FamilyScreenTimeEligibility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyScreenTimeEligibility.swift; path = Core/Family/FamilyScreenTimeEligibility.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1651,6 +1717,21 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			);
 		};
 		WDGT0152F90000100C7D34B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		STMON0152F90000200C7D34B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		STREP0152F90000200C7D34B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		STSHD0152F90000200C7D34B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -1754,6 +1835,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */,
 				5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */,
 				5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */,
+				STMAIN052F90000200C7D34B /* ChildScreenTimeSetupView.swift */,
 				C0MPHOM12F90000100C7D34B /* CompanionHomeScreen.swift */,
 				SH0ME0012F90000100C7D34B /* SimpleHomeScreen.swift */,
 				C0MPHUB12F90000100C7D34B /* CompanionHubScreen.swift */,
@@ -2060,6 +2142,11 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */,
 				FSL13112F90000100C7D34B /* FamilyImOkService.swift */,
 				FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */,
+				STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */,
+				STMAIN032F90000200C7D34B /* ScreenTimeUsageSync.swift */,
+				STMAIN072F90000200C7D34B /* ScreenTimeAppLimitsBridge.swift */,
+				STMAIN092F90000200C7D34B /* ScreenTimeDeviceStatus.swift */,
+				STMAIN0B2F90000200C7D34B /* FamilyScreenTimeEligibility.swift */,
 				FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */,
 				FWS20D12F90000100C7D34B /* DebugSFMHealthSection.swift */,
 				PSYCHGM12F90000100C7D34B /* WellnessGuideModeSheet.swift */,
@@ -2229,6 +2316,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E61A09F2EFB38ED0039093A /* ALADDINContentBlocker */,
 				AFSh0212F90000100C7D34B /* ALADDINAntifakeShare */,
 				AFCD0212F90000200C7D34B /* ALADDINCallDirectory */,
+				STMON0212F90000200C7D34B /* ALADDINDeviceActivityMonitor */,
+				STREP0212F90000200C7D34B /* ALADDINDeviceActivityReport */,
+				STSHD0212F90000200C7D34B /* ALADDINShieldConfiguration */,
 				B5003000 /* Products */,
 				5E0057FF2EC3B4DC00024F7E /* Recovered References */,
 			);
@@ -2507,6 +2597,8 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CMPSET02 /* CompanionSettingsTests.swift */,
 				CMPHDR02 /* CompanionHeroRouterTests.swift */,
 				FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */,
+				STMAIN0D2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift */,
+				STMAIN0F2F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift */,
 				FWS20T22F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift */,
 				UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */,
 				FWS20T42F90000100C7D34B /* AntifakeConfidenceRingTests.swift */,
@@ -2551,6 +2643,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */,
 				AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */,
 				AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */,
+				STMON0102F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex */,
+				STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */,
+				STSHD0102F90000200C7D34B /* ALADDINShieldConfiguration.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2578,6 +2673,39 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				WDGT0092F90000100C7D34B /* ALADDINWidgets.entitlements */,
 			);
 			path = ALADDINWidgets;
+			sourceTree = "<group>";
+		};
+		STMON0212F90000200C7D34B /* ALADDINDeviceActivityMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				STMON0012F90000200C7D34B /* DeviceActivityMonitorExtension.swift */,
+				STMON0082F90000200C7D34B /* Info.plist */,
+				STMON0092F90000200C7D34B /* ALADDINDeviceActivityMonitor.entitlements */,
+				STMON00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */,
+			);
+			path = ALADDINDeviceActivityMonitor;
+			sourceTree = "<group>";
+		};
+		STREP0212F90000200C7D34B /* ALADDINDeviceActivityReport */ = {
+			isa = PBXGroup;
+			children = (
+				STREP0012F90000200C7D34B /* DeviceActivityReportExtension.swift */,
+				STREP0082F90000200C7D34B /* Info.plist */,
+				STREP0092F90000200C7D34B /* ALADDINDeviceActivityReport.entitlements */,
+				STREP00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */,
+			);
+			path = ALADDINDeviceActivityReport;
+			sourceTree = "<group>";
+		};
+		STSHD0212F90000200C7D34B /* ALADDINShieldConfiguration */ = {
+			isa = PBXGroup;
+			children = (
+				STSHD0012F90000200C7D34B /* ShieldConfigurationExtension.swift */,
+				STSHD0082F90000200C7D34B /* Info.plist */,
+				STSHD0092F90000200C7D34B /* ALADDINShieldConfiguration.entitlements */,
+				STSHD00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */,
+			);
+			path = ALADDINShieldConfiguration;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2614,6 +2742,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				AFSh0132F90000100C7D34B /* PBXTargetDependency */,
 				AFCD0132F90000200C7D34B /* PBXTargetDependency */,
 				WDGT0132F90000100C7D34B /* PBXTargetDependency */,
+				STMON0132F90000200C7D34B /* PBXTargetDependency */,
+				STREP0132F90000200C7D34B /* PBXTargetDependency */,
+				STSHD0132F90000200C7D34B /* PBXTargetDependency */,
 			);
 			name = ALADDIN;
 			packageProductDependencies = (
@@ -2702,6 +2833,51 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			productReference = WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		STMON0172F90000200C7D34B /* ALADDINDeviceActivityMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = STMON0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINDeviceActivityMonitor" */;
+			buildPhases = (
+				STMON0142F90000200C7D34B /* Sources */,
+				STMON0152F90000200C7D34B /* Frameworks */,
+				STMON0162F90000200C7D34B /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ALADDINDeviceActivityMonitor;
+			productName = ALADDINDeviceActivityMonitor;
+			productReference = STMON0102F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		STREP0172F90000200C7D34B /* ALADDINDeviceActivityReport */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = STREP0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINDeviceActivityReport" */;
+			buildPhases = (
+				STREP0142F90000200C7D34B /* Sources */,
+				STREP0152F90000200C7D34B /* Frameworks */,
+				STREP0162F90000200C7D34B /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ALADDINDeviceActivityReport;
+			productName = ALADDINDeviceActivityReport;
+			productReference = STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		STSHD0172F90000200C7D34B /* ALADDINShieldConfiguration */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = STSHD0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINShieldConfiguration" */;
+			buildPhases = (
+				STSHD0142F90000200C7D34B /* Sources */,
+				STSHD0152F90000200C7D34B /* Frameworks */,
+				STSHD0162F90000200C7D34B /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ALADDINShieldConfiguration;
+			productName = ALADDINShieldConfiguration;
+			productReference = STSHD0102F90000200C7D34B /* ALADDINShieldConfiguration.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2734,6 +2910,15 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 					WDGT0172F90000100C7D34B = {
 						CreatedOnToolsVersion = 16.0;
 					};
+					STMON0172F90000200C7D34B = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					STREP0172F90000200C7D34B = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					STSHD0172F90000200C7D34B = {
+						CreatedOnToolsVersion = 16.0;
+					};
 				};
 			};
 			buildConfigurationList = A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */;
@@ -2760,6 +2945,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */,
 				AFCD0172F90000200C7D34B /* ALADDINCallDirectory */,
 				WDGT0172F90000100C7D34B /* ALADDINWidgets */,
+				STMON0172F90000200C7D34B /* ALADDINDeviceActivityMonitor */,
+				STREP0172F90000200C7D34B /* ALADDINDeviceActivityReport */,
+				STSHD0172F90000200C7D34B /* ALADDINShieldConfiguration */,
 			);
 		};
 /* End PBXProject section */
@@ -2802,6 +2990,24 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		WDGT0162F90000100C7D34B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+			);
+		};
+		STMON0162F90000200C7D34B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				STMON0322F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */,
+			);
+		};
+		STREP0162F90000200C7D34B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				STREP0322F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */,
+			);
+		};
+		STSHD0162F90000200C7D34B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				STSHD0322F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -3187,6 +3393,12 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */,
 				PQAS06A2F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift in Sources */,
 				FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */,
+				STMAIN022F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */,
+				STMAIN042F90000200C7D34B /* ScreenTimeUsageSync.swift in Sources */,
+				STMAIN082F90000200C7D34B /* ScreenTimeAppLimitsBridge.swift in Sources */,
+				STMAIN0A2F90000200C7D34B /* ScreenTimeDeviceStatus.swift in Sources */,
+				STMAIN0C2F90000200C7D34B /* FamilyScreenTimeEligibility.swift in Sources */,
+				STMAIN062F90000200C7D34B /* ChildScreenTimeSetupView.swift in Sources */,
 				FSL14222F90000100C7D34B /* FamilyShieldWeekDigestCard.swift in Sources */,
 				FWS20C22F90000100C7D34B /* FamilyIncidentFeedView.swift in Sources */,
 				FWS20D22F90000100C7D34B /* DebugSFMHealthSection.swift in Sources */,
@@ -3538,6 +3750,8 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CMPSET03 /* CompanionSettingsTests.swift in Sources */,
 				CMPHDR03 /* CompanionHeroRouterTests.swift in Sources */,
 				FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */,
+				STMAIN0E2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift in Sources */,
+				STMAIN102F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift in Sources */,
 				FWS20T32F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift in Sources */,
 				UXCOTST22F90000100C7D34B /* AladdinComposerOfflineTests.swift in Sources */,
 				FWS20T52F90000100C7D34B /* AntifakeConfidenceRingTests.swift in Sources */,
@@ -3583,6 +3797,26 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				WDGT0342F90000100C7D34B /* WidgetL10n.swift in Sources */,
 			);
 		};
+		STMON0142F90000200C7D34B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				STMON0302F90000200C7D34B /* DeviceActivityMonitorExtension.swift in Sources */,
+				STMON0312F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */,
+			);
+		};
+		STREP0142F90000200C7D34B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				STREP0302F90000200C7D34B /* DeviceActivityReportExtension.swift in Sources */,
+				STREP0312F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */,
+			);
+		};
+		STSHD0142F90000200C7D34B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				STSHD0302F90000200C7D34B /* ShieldConfigurationExtension.swift in Sources */,
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3616,6 +3850,21 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			target = WDGT0172F90000100C7D34B /* ALADDINWidgets */;
 			targetProxy = WDGT0122F90000100C7D34B /* PBXContainerItemProxy */;
 		};
+		STMON0132F90000200C7D34B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = STMON0172F90000200C7D34B /* ALADDINDeviceActivityMonitor */;
+			targetProxy = STMON0122F90000200C7D34B /* PBXContainerItemProxy */;
+		};
+		STREP0132F90000200C7D34B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = STREP0172F90000200C7D34B /* ALADDINDeviceActivityReport */;
+			targetProxy = STREP0122F90000200C7D34B /* PBXContainerItemProxy */;
+		};
+		STSHD0132F90000200C7D34B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = STSHD0172F90000200C7D34B /* ALADDINShieldConfiguration */;
+			targetProxy = STSHD0122F90000200C7D34B /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -3640,7 +3889,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3674,7 +3923,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3833,7 +4082,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -3867,7 +4116,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -3898,7 +4147,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3924,7 +4173,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3954,7 +4203,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3988,7 +4237,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4021,7 +4270,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4047,7 +4296,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4071,7 +4320,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4096,7 +4345,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4124,7 +4373,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4158,7 +4407,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4180,6 +4429,162 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		STMON0192F90000200C7D34B /* Debug configuration for PBXNativeTarget "ALADDINDeviceActivityMonitor" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityMonitor/ALADDINDeviceActivityMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINDeviceActivityMonitor/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.DeviceActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		STMON0202F90000200C7D34B /* Release configuration for PBXNativeTarget "ALADDINDeviceActivityMonitor" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityMonitor/ALADDINDeviceActivityMonitor.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINDeviceActivityMonitor/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.DeviceActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDIN AI DeviceActivityMonitor App Store";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		STREP0192F90000200C7D34B /* Debug configuration for PBXNativeTarget "ALADDINDeviceActivityReport" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityReport/ALADDINDeviceActivityReport.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINDeviceActivityReport/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.DeviceActivityReport;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		STREP0202F90000200C7D34B /* Release configuration for PBXNativeTarget "ALADDINDeviceActivityReport" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityReport/ALADDINDeviceActivityReport.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINDeviceActivityReport/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.DeviceActivityReport;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDIN AI DeviceActivityReport App Store";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		STSHD0192F90000200C7D34B /* Debug configuration for PBXNativeTarget "ALADDINShieldConfiguration" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINShieldConfiguration/ALADDINShieldConfiguration.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINShieldConfiguration/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.ShieldConfiguration;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		STSHD0202F90000200C7D34B /* Release configuration for PBXNativeTarget "ALADDINShieldConfiguration" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINShieldConfiguration/ALADDINShieldConfiguration.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINShieldConfiguration/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.ShieldConfiguration;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDIN AI ShieldConfiguration App Store";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -4248,6 +4653,33 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				WDGT0192F90000100C7D34B /* Debug configuration for PBXNativeTarget "ALADDINWidgets" */,
 				WDGT0202F90000100C7D34B /* Release configuration for PBXNativeTarget "ALADDINWidgets" */,
 			);
+			defaultConfigurationName = Release;
+		};
+		STMON0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINDeviceActivityMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				STMON0192F90000200C7D34B /* Debug configuration for PBXNativeTarget "ALADDINDeviceActivityMonitor" */,
+				STMON0202F90000200C7D34B /* Release configuration for PBXNativeTarget "ALADDINDeviceActivityMonitor" */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		STREP0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINDeviceActivityReport" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				STREP0192F90000200C7D34B /* Debug configuration for PBXNativeTarget "ALADDINDeviceActivityReport" */,
+				STREP0202F90000200C7D34B /* Release configuration for PBXNativeTarget "ALADDINDeviceActivityReport" */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		STSHD0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINShieldConfiguration" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				STSHD0192F90000200C7D34B /* Debug configuration for PBXNativeTarget "ALADDINShieldConfiguration" */,
+				STSHD0202F90000200C7D34B /* Release configuration for PBXNativeTarget "ALADDINShieldConfiguration" */,
+			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

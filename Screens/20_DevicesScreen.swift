@@ -589,6 +589,14 @@ struct DeviceCard: View {
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                     .accessibilityLabel("Последняя активность: \(device.lastActive)")
+
+                Text(ScreenTimeDeviceStatus.resolve(deviceId: device.id, ownerName: device.owner)
+                    .displayLine(localization: localizationManager))
+                    .font(.caption2)
+                    .foregroundColor(.secondaryGold.opacity(0.95))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .accessibilityIdentifier("device_card_screen_time_status")
             }
             
             Spacer()

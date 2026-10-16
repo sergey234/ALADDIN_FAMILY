@@ -293,4 +293,4 @@ Monitor/Report extensions **только** пишут в App Group (не в main
 
 ## 11. Статус сейчас (одна строка)
 
-**Инфраструктуры Screen Time для сбора usage нет; UI честно пустой и готов принять `source=device_activity`. Следующий шаг владельца: A1–A3 (решение + подача Distribution), затем B–E по чеклисту.**
+**2026-10-16 PROD-100:** FC Distribution **Assigned** · App Approved · Profiles **4/4** на Mac · Build **9** в git без ST targets. UI честно пустой. Исполняемый SSOT: [`SCREEN_TIME_WAVE2_FULL_UI_MAP_AND_CHECKLIST_2026-10-16_RU.md`](SCREEN_TIME_WAVE2_FULL_UI_MAP_AND_CHECKLIST_2026-10-16_RU.md) (picker на child, sync POST/GET aggregates, Monitor = primary writer). Код W2-B…E — только после фразы **«FC Assigned — GO на WAVE 2»** → build **10**. TODO: `.cursor/SCREEN_TIME_WAVE2_TASK_REGISTRY.md`.

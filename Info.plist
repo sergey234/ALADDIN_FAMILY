@@ -2,13 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>ai.aladdin.content.refresh</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>en</string>
-		<string>ru</string>
-	</array>
 	<key>CFBundleDisplayName</key>
 	<string>ALADDIN X AI</string>
 	<key>CFBundleExecutable</key>
@@ -17,14 +16,34 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ru</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>family.aladdin.device.bind</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aladdin</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
-	<string>9</string>
+	<string>10</string>
+	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
+	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -36,8 +55,6 @@
 		<string>tel</string>
 		<string>telprompt</string>
 	</array>
-	<key>SUPPORT_TELEGRAM_BOT_USERNAME</key>
-	<string>AladdinchatAI_bot</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -50,12 +67,12 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>localhost</key>
+			<key>127.0.0.1</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 			</dict>
-			<key>127.0.0.1</key>
+			<key>localhost</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
@@ -106,6 +123,8 @@
 	</array>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>ALADDIN needs notification access for family safety and security alerts.</string>
+	<key>SUPPORT_TELEGRAM_BOT_USERNAME</key>
+	<string>AladdinchatAI_bot</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -129,10 +148,6 @@
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
-	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>ai.aladdin.content.refresh</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
@@ -165,20 +180,5 @@
 	<string>Light</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
-	<string></string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>family.aladdin.device.bind</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>aladdin</string>
-			</array>
-		</dict>
-	</array>
 </dict>
 </plist>

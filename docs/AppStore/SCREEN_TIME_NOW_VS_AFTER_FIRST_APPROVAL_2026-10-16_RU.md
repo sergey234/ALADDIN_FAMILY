@@ -179,3 +179,14 @@
 | Заявление Apple после первой публикации | **Да** |
 | Код Screen Time extensions сейчас | **Не начинать** без отдельного GO после Assigned |
 | Фокус сейчас | Первая публикация / Guideline 2.1 · честный empty статистики · без Screen Time claims |
+
+---
+
+## 9. Обновление статуса (владелец 2026-10-16)
+
+| Поле | Значение |
+|------|----------|
+| Build 8 | **Accepted к релизу** |
+| Следующий шаг продукта | Push + доставить **build 9** (коммиты без FC) |
+| Заявление Family Controls | **Можно подавать** (Account Holder) — см. FINAL план |
+| Финальный исполняемый план | [`SCREEN_TIME_POST_BUILD8_APPROVED_FINAL_PLAN_2026-10-16_RU.md`](SCREEN_TIME_POST_BUILD8_APPROVED_FINAL_PLAN_2026-10-16_RU.md) |

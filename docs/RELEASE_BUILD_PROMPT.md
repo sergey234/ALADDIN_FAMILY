@@ -27,12 +27,12 @@
 ## Актуальная пара (обновлять после каждого bump)
 
 ```text
-PREV_BUILD = 9
-NEXT_BUILD = 10
+PREV_BUILD = 10
+NEXT_BUILD = 11
 ```
 
-Смысл сейчас: в рабочих файлах Xcode/git фактическая сборка = **9**.
-Следующая релизная сборка = **10** — только после нового **GO на bump**.
+Смысл сейчас: в рабочих файлах Xcode/git фактическая сборка = **10**.
+Следующая релизная сборка = **11** — только после нового **GO на bump**.
 
 ```text
 Задача при GO на bump:
@@ -87,6 +87,9 @@ git log --oneline -n 3
 |------|-----|
 | `ALADDINCallDirectory/Info.plist` | `CFBundleVersion` = NEXT_BUILD (не оставлять старый hardcoded) |
 | `ALADDINWidgets/Info.plist` | обычно `$(CURRENT_PROJECT_VERSION)` — ок, если pbx обновлён |
+| `ALADDINDeviceActivityMonitor/Info.plist` | `CFBundleVersion` = NEXT_BUILD (hardcoded) |
+| `ALADDINDeviceActivityReport/Info.plist` | `CFBundleVersion` = NEXT_BUILD (hardcoded) |
+| `ALADDINShieldConfiguration/Info.plist` | `CFBundleVersion` = NEXT_BUILD (hardcoded) |
 
 После правки:
 - в этих файлах нет PREV_BUILD;

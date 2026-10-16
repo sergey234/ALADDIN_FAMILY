@@ -60,9 +60,17 @@ struct FamilyDayStripView: View {
         .accessibilityHint(localizationManager.localized("day_strip_tap_hint"))
     }
 
-    /// Formats legacy `"3h/day"` / `"3h"` into a localized hours phrase.
+    /// used/limit from real Screen Time cache when present; otherwise limit only.
     private var screenLimitDisplay: String {
-        ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: localizationManager)
+        let limit = ParentalScreenTimeFormat.display(stored: screenTimeLimit, localization: localizationManager)
+        guard let stats = ScreenTimeUsageStore.loadParentalTimeStats(),
+              stats["source"] == "device_activity" || stats["source"] == "server",
+              let usedRaw = stats["totalTimeUsed"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !usedRaw.isEmpty else {
+            return limit
+        }
+        let used = ParentalScreenTimeFormat.displayDuration(stored: usedRaw, localization: localizationManager)
+        return "\(used) / \(limit)"
     }
 
     private func dayChip(icon: String, title: String, value: String, active: Bool) -> some View {

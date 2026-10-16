@@ -162,11 +162,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "9"
+    static let buildNumber = "10"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "9"
+    static let minimumClientBuildForApiContract = "10"
     static let bundleIdentifier = "ai.aladdin"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -527,6 +527,8 @@ struct AppConfig {
         static let parentalControlSettingsConflicts = "/api/parental-control/settings/conflicts"
         
         // Лимиты времени (4 endpoints)
+        /// WAVE 2: child POST / parent GET Screen Time usage aggregates (no opaque tokens).
+        static let parentalControlScreenTimeUsage = "/api/parental-control/screen-time/usage"
         static let parentalControlTimeLimits = "/api/parental-control/time-limits" // /{childId}
         static let parentalControlTimeLimitsUpdate = "/api/parental-control/time-limits/update"
         static let parentalControlTimeLimitsHistory = "/api/parental-control/time-limits/history"

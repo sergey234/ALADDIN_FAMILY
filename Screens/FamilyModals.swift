@@ -1,3 +1,5 @@
+// WAVE 2: This file is NOT in ALADDIN.xcodeproj (dead duplicate / mock risk).
+// Live Family Time UI lives in Screens/02_FamilyScreen.swift. Do not add to pbx.
 import SwiftUI
 struct FamilyParentalControlCard: View {
     let icon: String
@@ -4417,7 +4419,10 @@ extension FamilyMemberCard.FamilyRole: Codable {
         let localizationManager = LocalizationManager()
         let normalized = rawValue.lowercased()
         let parentLabels = Set(["parent", localizationManager.translations[.russian]?["family_role_parent_label"]?.lowercased() ?? "parent"])
-        let childLabels = Set(["child", localizationManager.translations[.russian]?["family_role_child_label"]?.lowercased() ?? "child"])
+        let childLabels = Set([
+            "child", "young_adult", "youngadult", "young-adult", "adult_child", "adultchild", "kid", "kids", "school",
+            localizationManager.translations[.russian]?["family_role_child_label"]?.lowercased() ?? "child"
+        ])
         let teenLabels = Set(["teenager", "teen", localizationManager.translations[.russian]?["family_role_teen_label"]?.lowercased() ?? "teenager"])
         let elderlyLabels = Set(["elderly", "grandparent", localizationManager.translations[.russian]?["family_role_elderly_label"]?.lowercased() ?? "elderly"])
         switch normalized {
@@ -4425,7 +4430,12 @@ extension FamilyMemberCard.FamilyRole: Codable {
         case _ where childLabels.contains(normalized): self = .child
         case _ where teenLabels.contains(normalized): self = .teenager
         case _ where elderlyLabels.contains(normalized): self = .elderly
-        default: throw CodableError.invalidValue(rawValue)
+        default:
+            if FamilyScreenTimeEligibility.isSupervisedMember(role: normalized) {
+                self = .child
+            } else {
+                throw CodableError.invalidValue(rawValue)
+            }
         }
     }
     

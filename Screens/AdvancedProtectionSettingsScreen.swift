@@ -870,7 +870,7 @@ struct AdvancedProtectionSettingsScreen: View {
         }
 
         // Time stats — only trusted device/server cache (never orphan mock blobs)
-        if let stats = UserDefaults.standard.dictionary(forKey: "parental_time_stats") as? [String: String],
+        if let stats = ScreenTimeUsageStore.loadParentalTimeStats(),
            stats["source"] == "device_activity" || stats["source"] == "server",
            let used = stats["totalTimeUsed"], !used.isEmpty {
             familyTotalTimeUsed = ParentalScreenTimeFormat.displayDuration(stored: used)

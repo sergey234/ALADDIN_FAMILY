@@ -73,8 +73,7 @@ struct ParentalControlScreen: View {
 
     private var childMembers: [FamilyMemberResponse] {
         let apiChildren = children.filter { member in
-            let role = member.role.lowercased()
-            return role == "child" || role == "teenager" || role == "teen"
+            FamilyScreenTimeEligibility.isSupervisedMember(role: member.role)
         }
         if apiChildren.isEmpty {
             return profileBackedChildren
@@ -604,6 +603,8 @@ struct ParentalControlScreen: View {
                 
                 Spacer()
             }
+
+            familyControlsReadinessBanner
             
             if isStatsLoading {
                 HStack(spacing: Spacing.s) {
@@ -712,8 +713,15 @@ struct ParentalControlScreen: View {
                             icon: "⏱️",
                             title: localizationManager.localized("parental_time_control"),
                             statusBadge: timeRemaining.isEmpty ? "⏳" : timeRemaining,
-                            statusText: String(format: localizationManager.localized("parental_time_remaining_status"), timeRemaining.isEmpty ? localizationManager.localized("parental_time_remaining_default") : timeRemaining),
-                            metric: String(format: localizationManager.localized("parental_time_schedules_metric"), timeSchedules),
+                            statusText: screenTimeUsedLimitLine
+                                ?? String(
+                                    format: localizationManager.localized("parental_time_remaining_status"),
+                                    timeRemaining.isEmpty
+                                        ? localizationManager.localized("parental_time_remaining_default")
+                                        : timeRemaining
+                                ),
+                            metric: screenTimeUsedLimitLine
+                                ?? String(format: localizationManager.localized("parental_time_schedules_metric"), timeSchedules),
                             cardColor: .blue.opacity(0.2),
                             borderColor: .blue.opacity(0.4),
                             badgeColor: .warningOrange,
@@ -884,6 +892,55 @@ struct ParentalControlScreen: View {
             RoundedRectangle(cornerRadius: CornerRadius.large)
                 .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
         )
+    }
+
+    /// FC readiness + honest Screen Time usage line (WAVE 2 polish).
+    private var familyControlsReadinessBanner: some View {
+        let readiness = manager.familyControlsReadinessSnapshot
+        let reason = readiness?.fallbackReason
+        let bannerText: String = {
+            if !AppStoreBuildPolicy.allowsSystemFamilyControls {
+                return localizationManager.localized("screen_time_fc_gated_banner")
+            }
+            switch reason {
+            case "authorization_not_approved":
+                return localizationManager.localized("screen_time_fc_need_auth")
+            case "extension_missing_or_not_embedded":
+                return localizationManager.localized("screen_time_fc_need_extension")
+            case nil:
+                return localizationManager.localized("screen_time_fc_ready")
+            default:
+                return localizationManager.localized("screen_time_fc_need_auth")
+            }
+        }()
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(bannerText)
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if let usedLine = screenTimeUsedLimitLine {
+                Text(usedLine)
+                    .font(.captionBold)
+                    .foregroundColor(.secondaryGold)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.s)
+        .background(Color.white.opacity(0.06))
+        .cornerRadius(CornerRadius.medium)
+        .accessibilityIdentifier("parental_fc_readiness_banner")
+    }
+
+    private var screenTimeUsedLimitLine: String? {
+        guard let stats = ScreenTimeUsageStore.loadParentalTimeStats(),
+              stats["source"] == "device_activity" || stats["source"] == "server",
+              let used = stats["totalTimeUsed"], !used.isEmpty else {
+            return nil
+        }
+        let usedLabel = ParentalScreenTimeFormat.displayDuration(stored: used, localization: localizationManager)
+        let limitRaw = stats["totalTimeLimit"] ?? UserDefaults.standard.string(forKey: "parental_screen_time_limit") ?? "3h/day"
+        let limitLabel = ParentalScreenTimeFormat.display(stored: limitRaw, localization: localizationManager)
+        return String(format: localizationManager.localized("screen_time_device_active_fmt"), usedLabel, limitLabel)
     }
     
     // MARK: - Rewards Card
@@ -1210,6 +1267,13 @@ struct ParentalControlScreen: View {
         }
     }
     
+    private func refreshScreenTimeCardFromStore() {
+        if let line = screenTimeUsedLimitLine {
+            // Prefer real DeviceActivity / server aggregate over legacy remaining placeholder.
+            timeRemaining = line
+        }
+    }
+
     private func applyStats(_ stats: ParentalControlStatsResponse) {
         let totalFilters = max(stats.contentBlocked.activeFilters, 4)
         contentBlockActive = stats.contentBlocked.activeFilters
@@ -1220,6 +1284,7 @@ struct ParentalControlScreen: View {
         let remaining = stats.screenTime.remaining
         timeRemaining = remaining.isEmpty ? localizationManager.localized("parental_time_remaining_default") : remaining
         timeSchedules = stats.screenTime.schedulesCount
+        refreshScreenTimeCardFromStore()
         // ✅ ИСПРАВЛЕНО: Не перезаписываем isTimeControlEnabled из статистики - это пользовательская настройка через @AppStorage
         
         monitoringWebsites = stats.monitoring.sitesTracked
@@ -1321,6 +1386,11 @@ struct ParentalControlScreen: View {
         guard let resolvedChildId = resolveSelectedChildID(), !resolvedChildId.isEmpty else { return }
         
         let familyId = UserDefaults.standard.string(forKey: "family_id") ?? "family_001"
+        UserDefaults.standard.set(resolvedChildId, forKey: "active_child_profile_server_id")
+        _ = await ScreenTimeUsageSync.pullForParent(familyId: familyId, memberId: resolvedChildId)
+        await MainActor.run {
+            refreshScreenTimeCardFromStore()
+        }
         
         // Синхронизация настроек
         manager.loadSettingsFromServer(familyId: familyId, childId: resolvedChildId) { result in

@@ -134,9 +134,7 @@ enum FamilyControlsAvailabilityError: LocalizedError {
     }
 
     private func isChildRoleDeviceForFamilyControls() -> Bool {
-        let r = UserDefaults.standard.string(forKey: "current_user_role")?
-            .trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
-        return r == "child" || r == "teenager" || r == "teen"
+        FamilyScreenTimeEligibility.isSupervisedDevice()
     }
 
     /// Обновить снимок readiness без применения ManagedSettings (удобно для экрана родителя).
@@ -259,6 +257,19 @@ enum FamilyControlsAvailabilityError: LocalizedError {
             return readiness
         }
 
+        // Persist identity for Monitor/Report App Group writers.
+        let ag = UserDefaults(suiteName: ScreenTimeUsageStore.appGroupId) ?? .standard
+        let familyId = FamilyLocalStore.loadPersistedFamilyId()
+        ag.set(familyId, forKey: "screen_time_family_id")
+        let memberId = [
+            UserDefaults.standard.string(forKey: "your_member_id"),
+            UserDefaults.standard.string(forKey: "active_child_profile_server_id"),
+            UserDefaults.standard.string(forKey: "user_id")
+        ]
+        .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .first { !$0.isEmpty } ?? ""
+        ag.set(memberId, forKey: "screen_time_member_id")
+
         // ManagedSettings stage
         setAppRemovalDenied(true)
 
@@ -268,6 +279,7 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         } catch {
             print("⚠️ DeviceActivity monitoring start failed: \(error.localizedDescription)")
         }
+        _ = await ScreenTimeUsageSync.postIfChild()
 
         let finalReadiness = assessFamilyControlsReadiness()
         familyControlsReadinessSnapshot = finalReadiness
@@ -280,7 +292,16 @@ enum FamilyControlsAvailabilityError: LocalizedError {
             intervalEnd: DateComponents(hour: 23, minute: 59),
             repeats: true
         )
-        try deviceActivityCenter.startMonitoring(defaultDeviceActivityName, during: schedule)
+        let events = ScreenTimeAppLimitsBridge.thresholdEvents()
+        if events.isEmpty {
+            try deviceActivityCenter.startMonitoring(defaultDeviceActivityName, during: schedule)
+        } else {
+            try deviceActivityCenter.startMonitoring(
+                defaultDeviceActivityName,
+                during: schedule,
+                events: events
+            )
+        }
     }
     
     // MARK: - App & Content Management
@@ -408,9 +429,53 @@ enum FamilyControlsAvailabilityError: LocalizedError {
      * Получить реальную статистику использования (текстовый формат)
      */
     func fetchRealScreenTimeStats() async -> [AppUsageStatistics] {
-        // ✅ BUILD 123: Очищено от MOCK имен. В будущем здесь будет запрос к DeviceActivityCenter.
-        // Пока возвращаем пустой список, чтобы UI показывал "Нет данных" вместо фейковых приложений,
-        // либо загружаем реальные данные если Extension настроен.
+        // Parent: try server aggregate first (child POST → GET).
+        if !isChildRoleDeviceForFamilyControls() {
+            let familyId = FamilyLocalStore.loadPersistedFamilyId()
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let memberId = [
+                UserDefaults.standard.string(forKey: "active_child_profile_server_id"),
+                UserDefaults.standard.string(forKey: "selected_child_member_id"),
+                UserDefaults.standard.string(forKey: "your_member_id")
+            ]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty } ?? ""
+            if !familyId.isEmpty, !memberId.isEmpty {
+                _ = await ScreenTimeUsageSync.pullForParent(familyId: familyId, memberId: memberId)
+            }
+        }
+
+        if let snap = ScreenTimeUsageStore.load(),
+           !snap.isStale,
+           snap.isTodayInStoredTimezone,
+           snap.totalSeconds > 0 || !snap.apps.isEmpty {
+            if snap.apps.isEmpty {
+                return [
+                    AppUsageStatistics(
+                        appName: "Total",
+                        timeSpent: TimeInterval(snap.totalSeconds),
+                        sessions: 1,
+                        limit: 0
+                    )
+                ]
+            }
+            return snap.apps.map {
+                AppUsageStatistics(
+                    appName: $0.displayName ?? $0.tokenHash,
+                    timeSpent: TimeInterval($0.seconds),
+                    sessions: 1,
+                    limit: TimeInterval($0.limitSeconds ?? 0)
+                )
+            }
+        }
+
+        // Fallback: parental_time_stats written by store/sync (source gated in UI).
+        if let stats = ScreenTimeUsageStore.loadParentalTimeStats(),
+           (stats["source"] == "device_activity" || stats["source"] == "server"),
+           let used = stats["totalTimeUsed"], !used.isEmpty {
+            // Signal UI via empty device rows — FamilyTimeControlModal reads App Group cache next.
+            return []
+        }
         return []
     }
     

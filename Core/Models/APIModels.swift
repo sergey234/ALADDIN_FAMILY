@@ -224,6 +224,7 @@ struct AppLimitItemCodable: Codable {
     let app: String
     var limit: Double
     let colorHex: String
+    var tokenHash: String?
 }
 
 struct AppLimitItem: Identifiable {
@@ -231,6 +232,7 @@ struct AppLimitItem: Identifiable {
     var app: String
     var limit: Double
     let color: Color
+    var tokenHash: String?
 }
 
 struct LocationEvent: Identifiable {

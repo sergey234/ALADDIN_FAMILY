@@ -120,6 +120,9 @@
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
+      <StoreKitConfigurationFileReference
+         identifier = "../../NEW_BACKUP_ALADDIN_20261012_123929/ALADDIN/StoreKit/ALADDINSubscriptions.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
