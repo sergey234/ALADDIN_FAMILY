@@ -564,6 +564,7 @@
 		UX36W10F90000100C7D34C /* FamilySecondHandPackViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */; };
 		UX36W1T3F90000100C7D34C /* SecuritySettingsFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */; };
 		PFHYBC01F90000100C7D34C /* ProtectionFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = PFHYBC01F90000100C7D34B /* ProtectionFeedback.swift */; };
+FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */; };
 		PQAS06A2F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = PQAS06A1F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift */; };
 		FSL13122F90000100C7D34B /* FamilyImOkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13112F90000100C7D34B /* FamilyImOkService.swift */; };
 		FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13212F90000100C7D34B /* FamilyImOkButton.swift */; };
@@ -1408,6 +1409,7 @@
 		UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySecondHandPackViews.swift; path = Shared/Components/FamilySecondHandPackViews.swift; sourceTree = "<group>"; };
 		UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecuritySettingsFeedback.swift; path = Shared/Utilities/SecuritySettingsFeedback.swift; sourceTree = "<group>"; };
 		PFHYBC01F90000100C7D34B /* ProtectionFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionFeedback.swift; path = Shared/Utilities/ProtectionFeedback.swift; sourceTree = "<group>"; };
+FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyScamCallFunnel.swift; path = Core/Security/FamilyScamCallFunnel.swift; sourceTree = "<group>"; };
 		PQAS06A1F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalCustomBlockedSitesSection.swift; path = Shared/Components/ParentalCustomBlockedSitesSection.swift; sourceTree = "<group>"; };
 		FSL13112F90000100C7D34B /* FamilyImOkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkService.swift; path = Core/Family/FamilyImOkService.swift; sourceTree = "<group>"; };
 		FSL13212F90000100C7D34B /* FamilyImOkButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkButton.swift; path = Shared/Components/FamilyImOkButton.swift; sourceTree = "<group>"; };
@@ -2198,6 +2200,7 @@
 				UX36W10F90000100C7D34B /* FamilySecondHandPackViews.swift */,
 				UX36W1T3F90000100C7D34B /* SecuritySettingsFeedback.swift */,
 				PFHYBC01F90000100C7D34B /* ProtectionFeedback.swift */,
+				FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */,
 				PQAS06A1F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift */,
 				FSL14212F90000100C7D34B /* FamilyShieldWeekDigestCard.swift */,
 				5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */,
@@ -3181,6 +3184,7 @@
 				UX36W10F90000100C7D34C /* FamilySecondHandPackViews.swift in Sources */,
 				UX36W1T3F90000100C7D34C /* SecuritySettingsFeedback.swift in Sources */,
 				PFHYBC01F90000100C7D34C /* ProtectionFeedback.swift in Sources */,
+				FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */,
 				PQAS06A2F90000100C7D34B /* ParentalCustomBlockedSitesSection.swift in Sources */,
 				FSL14122F90000100C7D34B /* FamilyShieldWeekDigestStore.swift in Sources */,
 				FSL14222F90000100C7D34B /* FamilyShieldWeekDigestCard.swift in Sources */,

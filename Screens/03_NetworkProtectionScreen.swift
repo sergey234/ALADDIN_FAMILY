@@ -802,6 +802,15 @@ struct NetworkProtectionScreen: View {
             .opacity(antivirusEnabled ? 1.0 : 0.5)
             .accessibilityHint(localizationManager.localized("antivirus_scan_choose_file_accessibility_hint"))
 
+            // fvp-p0-4: честный scope — только выбранный файл (не «весь iPhone»)
+            Text(localizationManager.localized("av_scope_file_only_banner"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, Spacing.xs)
+                .accessibilityIdentifier("av_scope_file_only_banner")
+
             Text(
                 localizationManager.localized(
                     "antivirus_scan_legal_disclaimer",

@@ -53,17 +53,26 @@ enum CompanionHeroRiveHost {
     }
 
     /// PNG master 360×480 когда Rive runtime недоступен (симулятор iOS 15) или `.riv` ещё placeholder.
+    /// ProdQA S03 (owner GO): unicorn always uses full-body `unicorn_master.png` until Rive Hero360 is re-exported full-body.
     static func shouldUseRasterMaster(characterId: String) -> Bool {
         guard hasRasterFallback(characterId: characterId) else { return false }
+        if isUnicornCharacter(characterId) { return true }
         if shouldAttemptRiveRuntime(characterId: characterId) { return false }
         return true
     }
 
     /// Пробуем Rive, если production `.riv` в бандле и среда без известных Metal-крашей.
+    /// Unicorn: skip Rive until artboard framing is full-body (owner chose PNG A everywhere).
     static func shouldAttemptRiveRuntime(characterId: String) -> Bool {
+        if isUnicornCharacter(characterId) { return false }
         guard isProductionRiv(characterId: characterId) else { return false }
         guard !isSimulatorIOS15MetalUnstable else { return false }
         return true
+    }
+
+    private static func isUnicornCharacter(_ characterId: String) -> Bool {
+        let id = characterId.lowercased()
+        return id == "unicorn" || id.contains("unicorn")
     }
 
     static func shouldUseRiveRuntime(characterId: String) -> Bool {
