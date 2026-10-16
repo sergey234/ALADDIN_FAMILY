@@ -33,6 +33,17 @@ platform :ios do
         sh("bash scripts/ci_disable_widgets_embed.sh")
       end
 
+      # Screen Time appex (Monitor/Report/Shield): Manual Release requires App Store profiles
+      # that are not in CI secrets yet. Without this, archive fails in ~30s on codesign.
+      st_monitor_uuid = ENV["PROVISIONING_PROFILE_ST_MONITOR_UUID"].to_s
+      st_report_uuid = ENV["PROVISIONING_PROFILE_ST_REPORT_UUID"].to_s
+      st_shield_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_UUID"].to_s
+      if st_monitor_uuid.empty? || st_report_uuid.empty? || st_shield_uuid.empty?
+        puts "⚠️  Screen Time App Store profile UUIDs not set — skipping ST appex embed for this archive"
+        puts "    Later: create App IDs + profiles, add secrets PROVISIONING_PROFILE_ST_* / *_UUID"
+        sh("bash scripts/ci_disable_screen_time_embed.sh")
+      end
+
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"
@@ -40,6 +51,7 @@ platform :ios do
       puts "📋 Antifake Share Profile UUID: #{antifake_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
       puts "📋 Call Directory Profile UUID: #{call_directory_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
       puts "📋 Widgets Profile UUID: #{widgets_profile_uuid || '(disabled / add PROVISIONING_PROFILE_WIDGETS)'}"
+      puts "📋 Screen Time profiles: #{(st_monitor_uuid.empty? ? 'disabled for CI archive' : 'present')}"
 
       UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении") if app_profile_uuid.nil? || app_profile_uuid.empty?
       if extension_profile_uuid.nil? || extension_profile_uuid.empty?
