@@ -51,12 +51,32 @@ enum SystemContentFilterRulesStore {
         saveBlockedHosts(hosts)
     }
 
+    /// Human copy for the toggle — never show `IPC failed` / XPC jargon.
+    static func userFacingStatus(for error: Error, localization: LocalizationManager) -> String {
+        if isSimulatorOrMissingFilterHost(error) {
+            return localization.localized("system_filter_toggle_error_simulator")
+        }
+        return String(
+            format: localization.localized("system_filter_toggle_error_fmt"),
+            error.localizedDescription
+        )
+    }
+
     /// Enable system filter (shows iOS permission UI when supported).
     static func setEnabled(_ enabled: Bool, categories: [ContentBlockerCategory], completion: @escaping (Result<Void, Error>) -> Void) {
         guard AppStoreBuildPolicy.allowsSystemContentFilter else {
             completion(.failure(StoreError.featureDisabled))
             return
         }
+        #if targetEnvironment(simulator)
+        if enabled {
+            completion(.failure(StoreError.simulatorUnavailable))
+            return
+        }
+        isOptedIn = false
+        completion(.success(()))
+        return
+        #endif
         if enabled {
             syncHostsFromContentCategories(categories)
         }
@@ -105,11 +125,23 @@ enum SystemContentFilterRulesStore {
         return s
     }
 
-    enum StoreError: LocalizedError {
+    private static func isSimulatorOrMissingFilterHost(_ error: Error) -> Bool {
+        if let store = error as? StoreError, store == .simulatorUnavailable { return true }
+        let ns = error as NSError
+        if ns.domain == "NEFilterErrorDomain" || ns.domain == "NEConfigurationErrorDomain" {
+            return true
+        }
+        let desc = error.localizedDescription.lowercased()
+        return desc.contains("ipc") || desc.contains("connection invalid")
+    }
+
+    enum StoreError: LocalizedError, Equatable {
         case featureDisabled
+        case simulatorUnavailable
         var errorDescription: String? {
             switch self {
             case .featureDisabled: return "System content filter is not enabled for this build"
+            case .simulatorUnavailable: return "System content filter is unavailable in Simulator"
             }
         }
     }

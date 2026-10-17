@@ -2941,10 +2941,11 @@
 "parental_filter_system_gated" = "Системный фильтр для всех приложений готовится.";
 "parental_filter_system_available" = "Системный фильтр для всех приложений: правила родителя применяются шире Safari, когда расширение активно.";
 "system_filter_toggle_title" = "Системный фильтр";
-"system_filter_toggle_footer" = "Шире Safari: Chrome и другие приложения, где система спрашивает фильтр.";
-"system_filter_toggle_on_hint" = "Системный фильтр включён. Если iOS спросил разрешение — подтвердите. На симуляторе часто недоступен.";
-"system_filter_toggle_off_hint" = "Системный фильтр выключен. Safari Content Blocker не затронут.";
-"system_filter_toggle_error_fmt" = "Не удалось включить системный фильтр: %@. На iOS 16+ / реальном устройстве после TestFlight.";
+"system_filter_toggle_footer" = "Блокирует сайты не только в Safari, но и в Chrome и других приложениях.";
+"system_filter_toggle_on_hint" = "Включено. Если iPhone спросил разрешение — нажмите «Разрешить».";
+"system_filter_toggle_off_hint" = "Выключено. Блокировка в Safari не меняется.";
+"system_filter_toggle_error_fmt" = "Не включилось. Разрешите фильтр в окне iPhone и попробуйте снова.";
+"system_filter_toggle_error_simulator" = "На симуляторе не включается. Проверьте на iPhone.";
 "family_critical_alerts_toggle" = "Критические оповещения";
 "family_critical_alerts_footer" = "Срочный сигнал и важные семейные события могут звучать даже в «Не беспокоить». Можно выключить в Настройках iPhone.";
 "family_critical_alerts_on_hint" = "Критические оповещения разрешены. Проверьте Настройки → ALADDIN → Уведомления.";

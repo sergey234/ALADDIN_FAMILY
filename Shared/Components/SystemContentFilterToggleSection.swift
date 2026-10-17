@@ -41,9 +41,10 @@ struct SystemContentFilterToggleSection: View {
 
                 if let statusMessage, !statusMessage.isEmpty {
                     Text(statusMessage)
-                        .font(.caption2)
+                        .font(.caption)
                         .foregroundColor(.warningOrange)
                         .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityIdentifier("system_content_filter_status")
                 }
             }
@@ -69,9 +70,9 @@ struct SystemContentFilterToggleSection: View {
                     HapticFeedback.notification(.success)
                 case .failure(let error):
                     isOn = false
-                    statusMessage = String(
-                        format: localizationManager.localized("system_filter_toggle_error_fmt"),
-                        error.localizedDescription
+                    statusMessage = SystemContentFilterRulesStore.userFacingStatus(
+                        for: error,
+                        localization: localizationManager
                     )
                     HapticFeedback.notification(.error)
                 }

@@ -7699,33 +7699,34 @@ struct GeofencesSettingsModal: View {
                             if newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 Text(localizationManager.localized("geofences_name_placeholder"))
                                     .font(.body)
-                                    .foregroundColor(Color.white.opacity(0.78))
+                                    .foregroundColor(Color.textTertiary)
                             }
                             TextField("", text: $newGeofenceName)
                                 .font(.body)
-                                .foregroundColor(.white)
+                                .textFieldStyle(.plain)
+                                .foregroundColor(Color.shyamInk)
                                 .accentColor(.secondaryGold)
                         }
                         .padding(Spacing.m)
-                        .background(Color.white.opacity(0.14))
+                        .background(Color.shyamMoon)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Color.white.opacity(0.45), lineWidth: 1)
+                                .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
                         )
                         .cornerRadius(CornerRadius.medium)
                         
-                        // Адрес — 2 строки (TextEditor), placeholder читаемый на dark.
+                        // Адрес — 2 строки (TextEditor), ink on paper (UIKit default fill is white).
                         ZStack(alignment: .topLeading) {
                             if newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 Text(localizationManager.localized("geofences_address_placeholder"))
                                     .font(.body)
-                                    .foregroundColor(Color.white.opacity(0.78))
+                                    .foregroundColor(Color.textTertiary)
                                     .padding(.top, 8)
                                     .padding(.leading, 5)
                             }
                             TextEditor(text: $newGeofenceAddress)
                                 .font(.body)
-                                .foregroundColor(.white)
+                                .foregroundColor(Color.shyamInk)
                                 .accentColor(.secondaryGold)
                                 .frame(minHeight: 64)
                                 .wellnessScrollContentBackgroundHidden()
@@ -7733,10 +7734,10 @@ struct GeofencesSettingsModal: View {
                         }
                         .padding(.horizontal, Spacing.m - 4)
                         .padding(.vertical, Spacing.s)
-                        .background(Color.white.opacity(0.14))
+                        .background(Color.shyamMoon)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Color.white.opacity(0.45), lineWidth: 1)
+                                .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
                         )
                         .cornerRadius(CornerRadius.medium)
 
@@ -8081,9 +8082,11 @@ struct GeofencesSettingsModal: View {
 
             TextField(localizationManager.localized("geofences_name_placeholder"), text: $noShowPlaceName)
                 .font(.body)
-                .foregroundColor(.textPrimary)
+                .textFieldStyle(.plain)
+                .foregroundColor(Color.shyamInk)
+                .accentColor(.secondaryGold)
                 .padding(Spacing.s)
-                .background(Color.white.opacity(0.12))
+                .background(Color.shyamMoon)
                 .cornerRadius(CornerRadius.medium)
 
             Text(localizationManager.localized("geofence_noshow_pick_time"))
