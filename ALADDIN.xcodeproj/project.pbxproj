@@ -575,6 +575,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		FSLGEO522F90000100C7D34B /* GeofenceNoShowMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */; };
 		FSLGEO622F90000100C7D34B /* GeofenceMonitoringBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */; };
 		FSLGEO722F90000100C7D34B /* GeofencePlacesCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO712F90000100C7D34B /* GeofencePlacesCloudSync.swift */; };
+		FSLGEO822F90000100C7D34B /* GeofenceAdultSelfShareStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO812F90000100C7D34B /* GeofenceAdultSelfShareStore.swift */; };
 		FSLHAB622F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */; };
 		FSLPRE622F90000100C7D34B /* PrivacyPremiumErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */; };
 		FSLSOS622F90000100C7D34B /* FamilyNeedHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */; };
@@ -1486,6 +1487,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceNoShowMonitor.swift; path = Core/Family/GeofenceNoShowMonitor.swift; sourceTree = "<group>"; };
 		FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceMonitoringBootstrap.swift; path = Core/Family/GeofenceMonitoringBootstrap.swift; sourceTree = "<group>"; };
 		FSLGEO712F90000100C7D34B /* GeofencePlacesCloudSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofencePlacesCloudSync.swift; path = Core/Family/GeofencePlacesCloudSync.swift; sourceTree = "<group>"; };
+		FSLGEO812F90000100C7D34B /* GeofenceAdultSelfShareStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceAdultSelfShareStore.swift; path = Core/Family/GeofenceAdultSelfShareStore.swift; sourceTree = "<group>"; };
 		FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersBootstrap.swift; path = Core/Family/FamilyHabitRemindersBootstrap.swift; sourceTree = "<group>"; };
 		FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrivacyPremiumErrorMapper.swift; path = Core/Privacy/PrivacyPremiumErrorMapper.swift; sourceTree = "<group>"; };
 		FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyNeedHelpButton.swift; path = Shared/Components/FamilyNeedHelpButton.swift; sourceTree = "<group>"; };
@@ -2173,6 +2175,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */,
 				FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */,
 				FSLGEO712F90000100C7D34B /* GeofencePlacesCloudSync.swift */,
+				FSLGEO812F90000100C7D34B /* GeofenceAdultSelfShareStore.swift */,
 				STACT7122F90000200C7D34B /* ShieldAskParentStore.swift */,
 				FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */,
 				FSLPRE612F90000100C7D34B /* PrivacyPremiumErrorMapper.swift */,
@@ -3454,6 +3457,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSLGEO422F90000100C7D34B /* GeofencePlacesConsentStore.swift in Sources */,
 				FSLGEO622F90000100C7D34B /* GeofenceMonitoringBootstrap.swift in Sources */,
 				FSLGEO722F90000100C7D34B /* GeofencePlacesCloudSync.swift in Sources */,
+				FSLGEO822F90000100C7D34B /* GeofenceAdultSelfShareStore.swift in Sources */,
 				STACT7222F90000200C7D34B /* ShieldAskParentStore.swift in Sources */,
 				FSLHAB622F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift in Sources */,
 				FSLPRE622F90000100C7D34B /* PrivacyPremiumErrorMapper.swift in Sources */,
