@@ -2116,17 +2116,26 @@ struct FamilyScreen: View {
                             let quotaUsed2 = subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
                             let currentCount2 = quotaUsed2
                             let limit2 = subscriptionManager.familyQuotaSnapshot.max
-                            let capacityText2 = "\(currentCount2) из \(limit2)"
+                            let capacityText2 = localizationManager.localized(
+                                "family_member_capacity_with_plan_fmt",
+                                currentCount2,
+                                limit2
+                            )
                             let progress = limit2 > 0 ? Double(currentCount2) / Double(limit2) : 0.0
 
                             HStack(spacing: 15) {
                                 StatItem(
                                     icon: "👥",
                                     value: capacityText2,
-                                    label: "Участники (\(subscriptionManager.getCurrentLevel().displayName))"
+                                    label: localizationManager.localized("family_members_label")
                                 )
                                 .accessibilityElement(children: .combine)
-                                .accessibilityLabel("Семья: \(capacityText2) участников, тариф \(subscriptionManager.getCurrentLevel().displayName)")
+                                .accessibilityLabel(
+                                    String(
+                                        format: localizationManager.localized("family_members_accessibility_fmt"),
+                                        capacityText2
+                                    )
+                                )
                                 
                                 StatItem(
                                     icon: "👶",
@@ -2153,10 +2162,11 @@ struct FamilyScreen: View {
                             let quotaUsed3 = subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
                             let currentCount3 = quotaUsed3
                             let limit3 = subscriptionManager.familyQuotaSnapshot.max
-                            // ✅ Локализованный текст емкости (без хардкода и двойных скобок)
-                            let isRussian3 = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"
-                            let planLabel3 = isRussian3 ? "Тариф" : "Plan"
-                            let capacityText3 = "\(currentCount3) \(isRussian3 ? "из" : "of") \(limit3) \(isRussian3 ? "участников" : "members") (\(planLabel3))"
+                            let capacityText3 = localizationManager.localized(
+                                "family_member_capacity_with_plan_fmt",
+                                currentCount3,
+                                limit3
+                            )
 
                             Group {
                                 if !canManageFamilyRoster {
@@ -2240,6 +2250,47 @@ struct FamilyScreen: View {
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
                         )
+
+                        Button(action: {
+                            navigateToAddOrCreateFamily()
+                        }) {
+                            HStack(alignment: .center, spacing: 14) {
+                                Image(systemName: "person.badge.plus")
+                                    .font(.system(size: 28, weight: .semibold))
+                                    .foregroundColor(.secondaryGold)
+                                    .frame(width: 48, height: 48)
+                                    .background(Circle().fill(Color.secondaryGold.opacity(0.16)))
+
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(localizationManager.localized("family_invite_card_title"))
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.white)
+                                    Text(localizationManager.localized("family_invite_card_body"))
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.78))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+
+                                Spacer(minLength: 0)
+
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.white.opacity(0.55))
+                            }
+                            .padding(16)
+                            .background(Color.white.opacity(0.10))
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!canManageFamilyRoster || !canAddFamilyMemberUnderTariff)
+                        .opacity((canManageFamilyRoster && canAddFamilyMemberUnderTariff) ? 1 : 0.55)
+                        .accessibilityIdentifier("family_invite_card")
+                        .accessibilityLabel(localizationManager.localized("family_invite_card_title"))
+                        .accessibilityHint(localizationManager.localized("family_invite_card_body"))
                         
                         // Family Members
                         VStack(alignment: .leading, spacing: 20) {
@@ -6706,7 +6757,7 @@ struct ScheduleSettingsModal: View {
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        let lang = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) ?? "ru"
         formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
         return formatter
     }
@@ -6903,7 +6954,7 @@ struct SleepTimeSettingsModal: View {
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        let lang = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) ?? "ru"
         formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
         return formatter
     }
@@ -7057,7 +7108,7 @@ struct AppLimitsSettingsModal: View {
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        let lang = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) ?? "ru"
         formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
         return formatter
     }
@@ -7314,6 +7365,7 @@ struct GeofencesSettingsModal: View {
     @State private var showValidationAlert = false
     @State private var validationAlertMessage = ""
     @State private var placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
+    @State private var placesNotificationStatusMessage: String?
     @ObservedObject private var locationManager = LocationManager.shared
     @State private var noShowSchedules: [GeofenceNoShowSchedule] = []
     @State private var showNoShowEditor = false
@@ -7667,12 +7719,20 @@ struct GeofencesSettingsModal: View {
                             let settings = await center.notificationSettings()
                             switch settings.authorizationStatus {
                             case .notDetermined:
-                                _ = await NotificationManager.shared.requestAuthorization()
+                                let granted = await NotificationManager.shared.requestAuthorization()
+                                placesNotificationStatusMessage = localizationManager.localized(
+                                    granted ? "geofence_notifications_enabled_now" : "geofence_notifications_permission_denied"
+                                )
+                                if granted {
+                                    ToastManager.shared.showSuccess(localizationManager.localized("geofence_notifications_enabled_now"))
+                                }
                             case .denied:
+                                placesNotificationStatusMessage = localizationManager.localized("geofence_notifications_open_settings_hint")
                                 if let url = URL(string: UIApplication.openSettingsURLString) {
                                     _ = await UIApplication.shared.open(url)
                                 }
                             default:
+                                placesNotificationStatusMessage = localizationManager.localized("geofence_notifications_already_on")
                                 ToastManager.shared.showSuccess(
                                     localizationManager.localized("geofence_notifications_already_on")
                                 )
@@ -7689,6 +7749,15 @@ struct GeofencesSettingsModal: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("geofence_why_no_push_enable")
+
+                    if let status = placesNotificationStatusMessage {
+                        Text(status)
+                            .font(.caption)
+                            .foregroundColor(.secondaryGold)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, Spacing.m)
+                            .accessibilityIdentifier("geofence_notifications_status")
+                    }
                 }
                 
                 // Форма добавления

@@ -348,6 +348,9 @@ struct MainScreen: View {
             Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
             mainViewModel.requestRefreshDebounced()
         }
+        .onChange(of: localizationManager.currentLanguage) { _ in
+            Task { await updateExpirationTextCache(from: subscriptionExpiresAtIso) }
+        }
         // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН .id() с localizationManager - может вызывать рекурсию с @AppStorage
         // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию
         // View будет обновляться автоматически через @EnvironmentObject
@@ -1081,7 +1084,10 @@ struct MainScreen: View {
         // DateFormatterService использует статический Calendar и предотвращает рекурсию
         // Это исправляет краш в background thread (Thread 7)
         let formattedText = await MainActor.run {
-            dateFormatterService.formatExpirationDate(from: isoString)
+            dateFormatterService.formatExpirationDate(
+                from: isoString,
+                language: localizationManager.currentLanguage
+            )
         }
         
         await MainActor.run {

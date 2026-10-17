@@ -31,23 +31,24 @@ enum SubscriptionProfileCaption {
         trialStatus: TrialInfo?,
         subscriptionExpiresAtIso: String,
         currentSubscriptionExpiresAt: Date?,
+        language: LocalizationManager.Language = LocalizationManager.shared.currentLanguage,
         dates: DateFormatterService = .shared
     ) -> String? {
         guard tier != .free else { return nil }
 
         if tier == .trial {
             if let trial = trialStatus, trial.isActive {
-                return dates.formatDisplayDate(trial.endDate)
+                return dates.formatDisplayDate(trial.endDate, language: language)
             }
         }
 
         if !subscriptionExpiresAtIso.isEmpty,
-           let fromIso = dates.formatExpirationDate(from: subscriptionExpiresAtIso) {
+           let fromIso = dates.formatExpirationDate(from: subscriptionExpiresAtIso, language: language) {
             return fromIso
         }
 
         if let exp = currentSubscriptionExpiresAt {
-            return dates.formatDisplayDate(exp)
+            return dates.formatDisplayDate(exp, language: language)
         }
 
         return nil

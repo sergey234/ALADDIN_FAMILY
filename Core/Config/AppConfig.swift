@@ -170,11 +170,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.1"
-    static let buildNumber = "10"
+    static let buildNumber = "11"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "10"
+    static let minimumClientBuildForApiContract = "11"
     static let bundleIdentifier = "ai.aladdin"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -224,6 +224,8 @@ struct AppConfig {
         // Family
         static let createFamily = "/api/family/create"
         static let joinFamily = "/api/family/join"
+        static let familyInviteCreate = "/api/family/invite/create"
+        static let familyInvitePreflight = "/api/family/invite/preflight"
         static let recoverFamily = "/api/family/recover"
         static let loginByRecoveryCode = "/api/auth/login-by-recovery-code"
         static let familyMembers = "/api/family/members"
@@ -239,7 +241,9 @@ struct AppConfig {
         static let familyChallenges = "/api/family/challenges"
         static let familyIncidents = "/api/family/incidents"
         static let familyImOk = "/api/family/im-ok"
+        static let familyUrgentSignal = "/api/family/urgent-signal"
         static let familyPresence = "/api/family/presence"
+        static let promoRedeem = "/api/promo/redeem"
         /// WAVE3 L4 — child device reports geofence enter/exit → parent APNs
         static let familyGeofenceEvent = "/api/family/geofence-event"
 

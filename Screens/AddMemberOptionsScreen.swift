@@ -58,6 +58,7 @@ struct AddMemberOptionsScreen: View {
     @State private var showCreateFamily: Bool = false
     @State private var showQRScanner: Bool = false
     @State private var showCodeInput: Bool = false
+    @State private var showFamilyInviteShare: Bool = false
     
     // MARK: - Body
     
@@ -97,6 +98,20 @@ struct AddMemberOptionsScreen: View {
                                     .foregroundColor(.white.opacity(0.8))
                             }
                             .padding(.top, 8)
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(localizationManager.localized("invite_center_choose_flow_title"))
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(.white)
+                                Text(localizationManager.localized("invite_center_choose_flow_desc"))
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white.opacity(0.78))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white.opacity(0.08))
+                            .cornerRadius(12)
 
                             // Limit banner + tariffs CTA (qa-18) — cards stay visible (qa-20).
                             let currentCount = cachedFamilyMemberCount
@@ -172,6 +187,18 @@ struct AddMemberOptionsScreen: View {
                                     }
                                 }
 
+                                if hasExistingFamilyOnDevice {
+                                    optionButton(
+                                        icon: "qrcode",
+                                        title: localizationManager.localized("family_invite_show_qr_title"),
+                                        description: localizationManager.localized("family_invite_show_qr_desc"),
+                                        color: Color(red: 0.35, green: 0.75, blue: 1.0),
+                                        enabled: canManageFamilyRosterFromCache && canAddHere
+                                    ) {
+                                        showFamilyInviteShare = true
+                                    }
+                                }
+
                                 // Вариант 2: Сканировать QR-код (синий — всегда виден)
                                 optionButton(
                                     icon: "qrcode.viewfinder",
@@ -190,6 +217,24 @@ struct AddMemberOptionsScreen: View {
                                     color: Color(red: 0.35, green: 0.85, blue: 0.55)
                                 ) {
                                     navigationManager.navigateTo(.invitationCode)
+                                }
+
+                                optionButton(
+                                    icon: "iphone",
+                                    title: localizationManager.localized("invite_center_pair_device_title"),
+                                    description: localizationManager.localized("invite_center_pair_device_desc"),
+                                    color: Color(red: 0.55, green: 0.55, blue: 1.0)
+                                ) {
+                                    navigationManager.navigateTo(.joinDevice)
+                                }
+
+                                optionButton(
+                                    icon: "gift.fill",
+                                    title: localizationManager.localized("invite_center_friend_referral_title"),
+                                    description: localizationManager.localized("invite_center_friend_referral_desc"),
+                                    color: Color(red: 1.0, green: 0.55, blue: 0.72)
+                                ) {
+                                    navigationManager.navigateTo(.referral)
                                 }
                             }
 
@@ -241,6 +286,12 @@ struct AddMemberOptionsScreen: View {
                 showCodeInput = false
                 navigationManager.navigateTo(.invitationCode)
             }
+        }
+        .sheet(isPresented: $showFamilyInviteShare) {
+            FamilyInviteShareModal(
+                familyId: FamilyLocalStore.loadPersistedFamilyId() ?? ""
+            )
+            .environmentObject(localizationManager)
         }
         .safeAreaInset(edge: .bottom) {
             Button(localizationManager.localized("add_member_cancel")) {

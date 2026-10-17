@@ -111,6 +111,8 @@ struct AnalyticsSettingsModal: View {
                             }
                         )
                     )
+                    .foregroundColor(.textPrimary)
+                    .tint(.successGreen)
                 }
             }
         }
@@ -137,6 +139,8 @@ struct AnalyticsSettingsModal: View {
                     }
                 )
             )
+            .foregroundColor(.textPrimary)
+            .tint(.successGreen)
             
             if autoReportsEnabled {
                 Picker("", selection: $reportFrequency) {

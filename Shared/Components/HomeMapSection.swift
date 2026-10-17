@@ -105,6 +105,10 @@ struct HomeMapSection: View {
     private func homePhoneRow(_ device: Device) -> some View {
         let paused = DevicePauseScheduler.isPaused(device.id) || device.status == .blocked
         let remaining = DevicePauseScheduler.remainingMinutes(deviceId: device.id)
+        let ownerName = FamilyMemberDisplayNameFormatter.displayName(
+            storedName: device.owner,
+            localization: localizationManager
+        )
 
         return HStack(spacing: Spacing.s) {
             Image(systemName: device.type.icon)
@@ -117,7 +121,7 @@ struct HomeMapSection: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.textPrimary)
                         .lineLimit(1)
-                    Text(device.owner)
+                    Text(ownerName)
                         .font(.caption2)
                         .foregroundColor(.textSecondary)
                         .lineLimit(1)
@@ -262,11 +266,14 @@ struct HomeMapSection: View {
     }
 
     private func refreshIoT() async {
+        guard !isLoadingIoT else { return }
         isLoadingIoT = true
         iotError = nil
         defer { isLoadingIoT = false }
         do {
-            try await iotModule.loadStatus(homeId: homeId)
+            try await withTimeout(seconds: 6) {
+                try await iotModule.loadStatus(homeId: homeId)
+            }
         } catch {
             iotError = localizationManager.localized("home_map_iot_load_failed")
         }
@@ -317,6 +324,26 @@ struct HomeMapSection: View {
         if case .notFound = networkError { return true }
         if case .httpError(404) = networkError { return true }
         return false
+    }
+
+    private func withTimeout<T>(
+        seconds: Double,
+        operation: @escaping () async throws -> T
+    ) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask {
+                try await operation()
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                throw CancellationError()
+            }
+            guard let result = try await group.next() else {
+                throw CancellationError()
+            }
+            group.cancelAll()
+            return result
+        }
     }
 
     private func iotIcon(for type: IoTDeviceType) -> String {

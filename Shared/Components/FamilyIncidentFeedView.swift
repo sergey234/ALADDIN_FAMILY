@@ -19,7 +19,7 @@ struct FamilyIncidentFeedView: View {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 Label(
                     localizationManager.localized("family_incident_feed_title"),
-                    systemImage: "bell.and.waves.left.and.right.fill"
+                    systemImage: "bell.badge.fill"
                 )
                 .font(.headline)
                 .foregroundColor(.white)
@@ -130,7 +130,7 @@ struct FamilyIncidentFeedView: View {
         case .wellnessCrisis: return "heart.text.square.fill"
         case .bedtimeBreach: return "moon.zzz.fill"
         case .scamCall: return "phone.down.waves.left.and.right"
-        case .secondHand: return "figure.2.and.child.holdinghands"
+        case .secondHand: return "person.2.fill"
         case .unknown: return "bell.fill"
         }
     }

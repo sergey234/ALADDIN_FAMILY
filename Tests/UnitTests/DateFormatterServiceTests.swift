@@ -138,6 +138,16 @@ final class DateFormatterServiceTests: XCTestCase {
         XCTAssertNotNil(formatted, "Форматированная строка не должна быть nil")
         XCTAssertFalse(formatted!.isEmpty, "Форматированная строка не должна быть пустой")
     }
+
+    /// Тест: Английский язык приложения не должен показывать русские месяцы.
+    func testFormatExpirationDateUsesExplicitEnglishLanguage() {
+        let isoString = "2026-10-31T00:00:00.000Z"
+        let formatted = service.formatExpirationDate(from: isoString, language: .english)
+
+        XCTAssertNotNil(formatted)
+        XCTAssertTrue(formatted?.contains("Oct") == true, "English date should contain Oct")
+        XCTAssertFalse(formatted?.lowercased().contains("окт") == true, "English date must not contain Russian month")
+    }
     
     // MARK: - Calendar Helper Tests
     

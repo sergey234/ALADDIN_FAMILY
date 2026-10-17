@@ -769,7 +769,7 @@ final class SubscriptionManager: ObservableObject {
     func familyRosterLimitReachedUserMessage(used: Int? = nil, limit: Int? = nil) -> String {
         let maxSlots = max(0, limit ?? familyQuotaSnapshot.max)
         let usedSlots = max(0, used ?? familyQuotaSnapshot.used)
-        let isRussian = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"
+        let isRussian = (UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) ?? "ru") == "ru"
         if maxSlots > 0 {
             let capacity = "\(min(usedSlots, maxSlots))/\(maxSlots)"
             return isRussian
@@ -2525,13 +2525,13 @@ extension SubscriptionManager {
 
     /// 📊 Get offline status info for UI
     func getOfflineStatusInfo() -> (isOffline: Bool, lastSync: String) {
+        let appLanguage = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) ?? "ru"
         let lastSyncText = lastSyncDate.map { date in
             let formatter = RelativeDateTimeFormatter()
             // ✅ Динамическая локаль в зависимости от языка приложения
-            let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
-            formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
+            formatter.locale = Locale(identifier: appLanguage == "ru" ? "ru_RU" : "en_US")
             return formatter.localizedString(for: date, relativeTo: Date())
-        } ?? (UserDefaults.standard.string(forKey: "app_language") ?? "ru" == "ru" ? "Никогда" : "Never")
+        } ?? (appLanguage == "ru" ? "Никогда" : "Never")
 
         return (isOffline: isOfflineMode, lastSync: lastSyncText)
     }

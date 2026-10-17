@@ -191,6 +191,47 @@ class APIService: ObservableObject {
         performJoinFamily(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
     }
 
+    func createFamilyInvite(
+        request: FamilyInviteCreateRequest,
+        completion: @escaping (Result<FamilyInviteResponse, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.familyInviteCreate, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func preflightFamilyInvite(
+        request: FamilyInvitePreflightRequest,
+        completion: @escaping (Result<FamilyInvitePreflightResponse, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.familyInvitePreflight, body: request, requiresAuth: false, completion: completion)
+    }
+
+    struct PromoRedeemRequest: Codable {
+        let code: String
+    }
+
+    struct PromoRedeemResponse: Codable {
+        let success: Bool
+        let code: String
+        let duration_days: Int
+        let message: String
+        let grant_pending: Bool
+        let level: String?
+        let expires_at: String?
+        let subscription_active_until: String?
+    }
+
+    func redeemPromoCode(
+        code: String,
+        completion: @escaping (Result<PromoRedeemResponse, Error>) -> Void
+    ) {
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.promoRedeem,
+            body: PromoRedeemRequest(code: code),
+            requiresAuth: true,
+            completion: completion
+        )
+    }
+
     private func performCreateFamily(
         request: CreateFamilyRequest,
         hasRetriedAfterTokenBootstrap: Bool,
@@ -3069,7 +3110,11 @@ class APIService: ObservableObject {
         let hasToken = (t?.isEmpty == false)
         let hasPin = (p?.isEmpty == false)
         guard hasToken || hasPin else {
-            completion(.failure(NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "token or pin required"])))
+            completion(.failure(NSError(
+                domain: "APIService",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: LocalizationManager.shared.localized("device_pairing_error_token_or_pin_required")]
+            )))
             return
         }
         let request = BindDeviceRequest(token: hasToken ? t : nil, pin: hasPin ? p : nil)
@@ -4770,6 +4815,35 @@ class APIService: ObservableObject {
         networkManager.post(
             endpoint: AppConfig.Endpoint.familyImOk,
             body: Body(batteryPercent: batteryPercent)
+        ) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? response.success))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// Срочный сигнал семье → защищённый backend event/APNs route. Plaintext family chat is not used.
+    func postFamilyUrgentSignal(
+        reason: String,
+        displayName: String,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let reason: String
+            let displayName: String
+
+            enum CodingKeys: String, CodingKey {
+                case reason
+                case displayName = "display_name"
+            }
+        }
+
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyUrgentSignal,
+            body: Body(reason: reason, displayName: displayName)
         ) { (result: Result<APIResponse<Bool>, Error>) in
             switch result {
             case .success(let response):

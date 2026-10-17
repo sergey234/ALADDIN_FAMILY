@@ -15,6 +15,8 @@ from app.services.parental_monitoring_service import get_monitoring_detail
 from security.api.routers.parental_control_router import (
     MonitoringIngestRequest,
     ParentalMonitoringDetailResponse,
+    ScreenTimeUsageBody,
+    get_screen_time_usage,
     ingest_parental_monitoring_events,
 )
 
@@ -59,3 +61,21 @@ async def parental_monitoring_events_ingest(
         _handle_service_error(exc)
     except Exception as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@router.get("/screen-time/usage", response_model=ScreenTimeUsageBody)
+async def parental_screen_time_usage(
+    familyId: str = Query(...),
+    memberId: str = Query(...),
+    dayStart: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Prod-mounted compat path for iOS: /api/parental-control/screen-time/usage."""
+    return await get_screen_time_usage(
+        familyId=familyId,
+        memberId=memberId,
+        dayStart=dayStart,
+        db=db,
+        current_user=current_user,
+    )

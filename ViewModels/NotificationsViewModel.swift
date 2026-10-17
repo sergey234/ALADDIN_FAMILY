@@ -137,6 +137,7 @@ class NotificationsViewModel: ObservableObject {
         func localizedMessage(_ localizationManager: LocalizationManager) -> String {
             NotificationCopyLocalizer.localizedMessage(
                 rawType: rawType,
+                bakedTitle: title,
                 bakedMessage: message,
                 metadata: metadata,
                 localizationManager: localizationManager
@@ -589,6 +590,7 @@ enum NotificationCopyLocalizer {
 
     static func localizedMessage(
         rawType: String,
+        bakedTitle: String = "",
         bakedMessage: String,
         metadata: [String: String],
         localizationManager: LocalizationManager = .shared
@@ -628,7 +630,19 @@ enum NotificationCopyLocalizer {
                 return localizationManager.localized(key)
             }
             return bakedMessage
+        case "im_ok", "im_ok_signal", "family_im_ok":
+            return localizationManager.localized("im_ok_confirm_sent_body")
+        case "need_help", "family_need_help", "urgent_signal":
+            return localizationManager.localized("need_help_confirm_sent_body")
         default:
+            if let titleKey = titleKey(forBakedTitle: bakedTitle) {
+                if titleKey == "im_ok_button_title" {
+                    return localizationManager.localized("im_ok_confirm_sent_body")
+                }
+                if titleKey == "need_help_button_title" {
+                    return localizationManager.localized("need_help_confirm_sent_body")
+                }
+            }
             if let key = bodyKey(forBakedMessage: bakedMessage) {
                 // Format bodies that need a count extracted from baked RU text.
                 if key == "push_antivirus_complete_body_threats",
@@ -672,6 +686,8 @@ enum NotificationCopyLocalizer {
         case "subscription_expired": return "push_subscription_expired_now_title"
         case "ai_message": return "push_ai_assistant_title"
         case "qa_threat": return "push_qa_threat_title"
+        case "im_ok", "im_ok_signal", "family_im_ok": return "im_ok_button_title"
+        case "need_help", "family_need_help", "urgent_signal": return "need_help_button_title"
         default: return nil
         }
     }
@@ -708,8 +724,22 @@ enum NotificationCopyLocalizer {
             "Давно не виделись": "wellness_nudge_idle_title",
             "Давно не виделись!": "wellness_nudge_idle_title",
             "We miss you": "wellness_nudge_idle_title",
+            "Я в порядке": "im_ok_button_title",
+            "I'm OK": "im_ok_button_title",
+            "Нужна помощь": "need_help_button_title",
+            "Need help": "need_help_button_title",
+            "Нужна помощь!": "need_help_button_title",
+            "Need help!": "need_help_button_title",
         ]
-        return map[t]
+        if let key = map[t] { return key }
+        let lower = t.lowercased()
+        if lower.contains("я в порядке") || lower.contains("i'm ok") || lower.contains("im ok") {
+            return "im_ok_button_title"
+        }
+        if lower.contains("нужна помощь") || lower.contains("need help") {
+            return "need_help_button_title"
+        }
+        return nil
     }
 
     private static func bodyKey(forBakedMessage message: String) -> String? {
@@ -725,8 +755,17 @@ enum NotificationCopyLocalizer {
             "Давно не заходил(а) — всё ок? Хватит одной минуты check-in.": "wellness_nudge_idle_body",
             "Давно не заходил(а) — всё ок? Хватит одной минуты check-in": "wellness_nudge_idle_body",
             "Haven't checked in — all OK? One minute is enough.": "wellness_nudge_idle_body",
+            "Сообщение отправлено семье": "im_ok_confirm_sent_body",
+            "Сообщение отправлено семье.": "im_ok_confirm_sent_body",
+            "Message sent to the family": "im_ok_confirm_sent_body",
+            "Message sent to the family.": "im_ok_confirm_sent_body",
+            "Ребёнок: нужна помощь — срочно": "need_help_confirm_sent_body",
+            "Child: need help — urgent": "need_help_confirm_sent_body",
         ]
         if let key = exact[m] { return key }
+        if m.lowercased().contains("сообщение отправ") || m.lowercased().contains("message sent") {
+            return "im_ok_confirm_sent_body"
+        }
         if m.contains("Давно не заходил") {
             return "wellness_nudge_idle_body"
         }

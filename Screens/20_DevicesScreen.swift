@@ -46,7 +46,7 @@ struct DevicesScreen: View {
             // Фон — Storm Mesh shield light (Batch 3, режим C)
             StormMeshBackground(variant: .shield)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Фон экрана устройств")
+                .accessibilityLabel(localizationManager.localized("devices_background_accessibility"))
             
             VStack(spacing: 0) {
                 // Навигационная панель (вне оверлея — кнопка «Добавить» всегда нажимается во время загрузки)
@@ -88,6 +88,7 @@ struct DevicesScreen: View {
                             .scaleEffect(1.5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color.black.opacity(0.25))
+                            .allowsHitTesting(false)
                     }
                 }
             }
@@ -168,7 +169,12 @@ struct DevicesScreen: View {
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("Защищённых устройств: \(devices.filter { $0.status == .protected }.count)")
+                .accessibilityLabel(
+                    String(
+                        format: localizationManager.localized("devices_protected_accessibility_fmt"),
+                        devices.filter { $0.status == .protected }.count
+                    )
+                )
                 
                 VStack {
                     Text("⚠️ \(devices.filter { $0.status == .warning }.count)")
@@ -183,7 +189,12 @@ struct DevicesScreen: View {
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("Устройств с предупреждениями: \(devices.filter { $0.status == .warning }.count)")
+                .accessibilityLabel(
+                    String(
+                        format: localizationManager.localized("devices_warning_accessibility_fmt"),
+                        devices.filter { $0.status == .warning }.count
+                    )
+                )
                 
                 VStack {
                     Text("🔴 \(devices.filter { $0.status == .danger }.count)")
@@ -196,7 +207,12 @@ struct DevicesScreen: View {
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("Устройств в опасности: \(devices.filter { $0.status == .danger }.count)")
+                .accessibilityLabel(
+                    String(
+                        format: localizationManager.localized("devices_danger_accessibility_fmt"),
+                        devices.filter { $0.status == .danger }.count
+                    )
+                )
                 
                 Spacer()
             }
@@ -578,19 +594,25 @@ struct DeviceCard: View {
                 Text(device.name)
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
-                    .accessibilityLabel("Название устройства: \(device.name)")
+                    .accessibilityLabel(
+                        String(format: localizationManager.localized("devices_device_name_accessibility_fmt"), device.name)
+                    )
                 
-                Text(device.owner)
+                Text(displayOwnerName)
                     .font(.caption)
                     .foregroundColor(.textSecondary)
-                    .accessibilityLabel("Владелец: \(device.owner)")
+                    .accessibilityLabel(
+                        String(format: localizationManager.localized("devices_owner_accessibility_fmt"), displayOwnerName)
+                    )
                 
                 Text(device.lastActive)
                     .font(.caption)
                     .foregroundColor(.textSecondary)
-                    .accessibilityLabel("Последняя активность: \(device.lastActive)")
+                    .accessibilityLabel(
+                        String(format: localizationManager.localized("devices_last_active_accessibility_fmt"), device.lastActive)
+                    )
 
-                Text(ScreenTimeDeviceStatus.resolve(deviceId: device.id, ownerName: device.owner)
+                Text(ScreenTimeDeviceStatus.resolve(deviceId: device.id, ownerName: displayOwnerName)
                     .displayLine(localization: localizationManager))
                     .font(.caption2)
                     .foregroundColor(.secondaryGold.opacity(0.95))
@@ -612,12 +634,31 @@ struct DeviceCard: View {
                     .minimumScaleFactor(0.8)
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("Статус: \(device.status.localizedName(localizationManager))")
+            .accessibilityLabel(
+                String(
+                    format: localizationManager.localized("devices_status_accessibility_fmt"),
+                    device.status.localizedName(localizationManager)
+                )
+            )
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .stormIndigo)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Устройство \(device.name), владелец \(device.owner), статус \(device.status.localizedName(localizationManager))")
+        .accessibilityLabel(
+            String(
+                format: localizationManager.localized("devices_card_accessibility_fmt"),
+                device.name,
+                displayOwnerName,
+                device.status.localizedName(localizationManager)
+            )
+        )
+    }
+
+    private var displayOwnerName: String {
+        FamilyMemberDisplayNameFormatter.displayName(
+            storedName: device.owner,
+            localization: localizationManager
+        )
     }
     
     private var deviceIcon: some View {
@@ -629,14 +670,21 @@ struct DeviceCard: View {
                 Circle()
                     .fill(device.type.color.opacity(0.1))
             )
-            .accessibilityLabel("Тип устройства: \(device.type.rawValue)")
+            .accessibilityLabel(
+                String(format: localizationManager.localized("devices_type_accessibility_fmt"), device.type.rawValue)
+            )
     }
     
     private var statusIndicator: some View {
         Circle()
             .fill(device.status.color)
             .frame(width: 12, height: 12)
-            .accessibilityLabel("Индикатор статуса: \(device.status.localizedName(localizationManager))")
+            .accessibilityLabel(
+                String(
+                    format: localizationManager.localized("devices_status_indicator_accessibility_fmt"),
+                    device.status.localizedName(localizationManager)
+                )
+            )
     }
 }
 
@@ -712,7 +760,7 @@ enum DeviceStatus: String, CaseIterable {
         case .danger: return localizationManager.localized("devices_status_danger")
         case .inactive: return localizationManager.localized("devices_status_inactive")
         case .blocked: return localizationManager.localized("devices_status_blocked")
-        case .pending: return "Ожидает привязки"
+        case .pending: return localizationManager.localized("devices_status_pending")
         }
     }
 }
@@ -1033,7 +1081,13 @@ struct AddDeviceView: View {
                         let name = m.name.trimmingCharacters(in: .whitespacesAndNewlines)
                         let sid = m.id.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !name.isEmpty, !sid.isEmpty else { return nil }
-                        return OwnerPick(id: sid, displayName: name)
+                        return OwnerPick(
+                            id: sid,
+                            displayName: FamilyMemberDisplayNameFormatter.displayName(
+                                storedName: name,
+                                localization: localizationManager
+                            )
+                        )
                     }
                     guard !picks.isEmpty else { return }
                     ownerPicks = picks
@@ -1056,7 +1110,14 @@ struct AddDeviceView: View {
                 guard !name.isEmpty else { return nil }
                 let sid = m.canonicalId.trimmingCharacters(in: .whitespacesAndNewlines)
                 let rid = sid.isEmpty ? "fallback_\(name)" : sid
-                return OwnerPick(id: rid, displayName: name)
+                return OwnerPick(
+                    id: rid,
+                    displayName: FamilyMemberDisplayNameFormatter.displayName(
+                        storedName: name,
+                        role: m.role,
+                        localization: localizationManager
+                    )
+                )
             }
             if !picks.isEmpty {
                 ownerPicks = picks

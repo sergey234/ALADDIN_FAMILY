@@ -11,13 +11,15 @@ API для получения статистики семьи
 from fastapi import APIRouter, HTTPException, Request, Depends, status, Query, Response, File, UploadFile, Form, Header
 from fastapi.responses import FileResponse
 import asyncio
+import json
 import os
 import re
+import secrets
 from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional, Any, Dict, List, Tuple, Annotated
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import uuid
 from pydantic import BaseModel, Field
 
@@ -75,6 +77,9 @@ limiter = Limiter(key_func=get_remote_address)
 logger = structlog.get_logger()
 
 _family_indexes_initialized = False
+_family_invites_initialized = False
+_FAMILY_INVITE_TTL_HOURS = int(os.environ.get("ALADDIN_FAMILY_INVITE_TTL_HOURS", "24"))
+_FAMILY_INVITE_MAX_USES = int(os.environ.get("ALADDIN_FAMILY_INVITE_MAX_USES", "10"))
 
 _FAMILY_CHAT_UPLOAD_ROOT = Path(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_DIR", "/tmp/aladdin_family_chat_media"))
 _SAFE_CHAT_MEDIA_FILENAME = re.compile(r"^[a-f0-9]{32}\.(?:enc|[A-Za-z0-9]{1,12})$")
@@ -354,6 +359,177 @@ def _normalize_client_family_id(raw: Optional[str]) -> str:
     if len(body) < 12:
         return ""
     return "FAM_" + body[:12]
+
+
+def _manual_invite_code_for_family_id(family_id: str) -> str:
+    canonical = _normalize_client_family_id(family_id)
+    body = canonical.replace("FAM_", "", 1)
+    return f"FAM-{body[:4]}-{body[4:8]}-{body[8:12]}"
+
+
+def _compact_invite_value(raw: Optional[str]) -> str:
+    return re.sub(r"[^A-Z0-9]", "", (raw or "").strip().upper())
+
+
+def _api_error(error_code: str, message: str, next_action: Optional[str] = None) -> Dict[str, str]:
+    detail = {"error_code": error_code, "message": message}
+    if next_action:
+        detail["next_action"] = next_action
+    return detail
+
+
+def _ensure_family_invites_table(db) -> None:
+    global _family_invites_initialized
+    if _family_invites_initialized:
+        return
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS family_invites (
+                id TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL,
+                invite_token TEXT NOT NULL UNIQUE,
+                manual_code TEXT NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                revoked_at TIMESTAMPTZ,
+                max_uses INTEGER NOT NULL DEFAULT 10,
+                uses INTEGER NOT NULL DEFAULT 0,
+                created_by_user_id INTEGER,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+    )
+    db.execute(text("ALTER TABLE family_invites ADD COLUMN IF NOT EXISTS max_uses INTEGER NOT NULL DEFAULT 10"))
+    db.execute(text("ALTER TABLE family_invites ADD COLUMN IF NOT EXISTS uses INTEGER NOT NULL DEFAULT 0"))
+    db.execute(text("ALTER TABLE family_invites ADD COLUMN IF NOT EXISTS created_by_user_id INTEGER"))
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_invites_family_created "
+            "ON family_invites(family_id, created_at DESC)"
+        )
+    )
+    db.commit()
+    _family_invites_initialized = True
+
+
+def _create_family_invite(db, family_id: str, created_by_user_id: Optional[int] = None) -> Dict[str, str]:
+    _ensure_family_invites_table(db)
+    invite_token = secrets.token_urlsafe(32)
+    manual_code = _manual_invite_code_for_family_id(family_id)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=_FAMILY_INVITE_TTL_HOURS)
+    invite_id = f"INV_{uuid.uuid4().hex[:12].upper()}"
+    db.execute(
+        text(
+            """
+            INSERT INTO family_invites (id, family_id, invite_token, manual_code, expires_at, max_uses, uses, created_by_user_id)
+            VALUES (:id, :family_id, :invite_token, :manual_code, :expires_at, :max_uses, 0, :created_by_user_id)
+            """
+        ),
+        {
+            "id": invite_id,
+            "family_id": family_id,
+            "invite_token": invite_token,
+            "manual_code": manual_code,
+            "expires_at": expires_at,
+            "max_uses": _FAMILY_INVITE_MAX_USES,
+            "created_by_user_id": created_by_user_id,
+        },
+    )
+    return {
+        "invite_token": invite_token,
+        "manual_code": manual_code,
+        "expires_at": expires_at.isoformat(),
+    }
+
+
+def _validate_family_invite(db, family_id: str, invite_code: Optional[str], invite_token: Optional[str]) -> Optional[str]:
+    _ensure_family_invites_table(db)
+    row = db.execute(
+        text(
+            """
+            SELECT id, invite_token, manual_code, expires_at, revoked_at, max_uses, uses
+            FROM family_invites
+            WHERE family_id = :family_id
+            ORDER BY created_at DESC
+            LIMIT 1
+            """
+        ),
+        {"family_id": family_id},
+    ).fetchone()
+    if not row:
+        # Backward compatibility for families created before persisted invites existed.
+        return None
+
+    invite_id, stored_token, manual_code, expires_at, revoked_at, max_uses, uses = row
+    if revoked_at is not None:
+        raise HTTPException(
+            status_code=410,
+            detail=_api_error("invite_revoked", "Invite was revoked", "request_new_invite"),
+        )
+
+    if expires_at is not None:
+        expiry = expires_at
+        if getattr(expiry, "tzinfo", None) is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > expiry:
+            raise HTTPException(
+                status_code=410,
+                detail=_api_error("invite_expired", "Invite expired", "request_new_invite"),
+            )
+
+    token_ok = bool(invite_token and secrets.compare_digest(str(invite_token), str(stored_token)))
+    manual_ok = _compact_invite_value(invite_code) == _compact_invite_value(str(manual_code))
+    if not token_ok and not manual_ok:
+        raise HTTPException(
+            status_code=403,
+            detail=_api_error("invalid_invite", "Invalid invite", "check_code_or_request_new_invite"),
+        )
+    if max_uses is not None and uses is not None and int(uses) >= int(max_uses):
+        raise HTTPException(
+            status_code=410,
+            detail=_api_error("invite_max_uses_reached", "Invite use limit reached", "request_new_invite"),
+        )
+    return str(invite_id)
+
+
+def _consume_family_invite(db, invite_id: Optional[str]) -> None:
+    if not invite_id:
+        return
+    db.execute(
+        text(
+            """
+            UPDATE family_invites
+            SET uses = uses + 1
+            WHERE id = :invite_id
+            """
+        ),
+        {"invite_id": invite_id},
+    )
+
+
+def _latest_family_invite(db, family_id: str) -> Optional[Dict[str, str]]:
+    _ensure_family_invites_table(db)
+    row = db.execute(
+        text(
+            """
+            SELECT invite_token, manual_code, expires_at
+            FROM family_invites
+            WHERE family_id = :family_id AND revoked_at IS NULL AND expires_at > NOW() AND uses < max_uses
+            ORDER BY created_at DESC
+            LIMIT 1
+            """
+        ),
+        {"family_id": family_id},
+    ).fetchone()
+    if not row:
+        return None
+    invite_token, manual_code, expires_at = row
+    return {
+        "invite_token": str(invite_token),
+        "manual_code": str(manual_code),
+        "expires_at": expires_at.isoformat() if hasattr(expires_at, "isoformat") else str(expires_at),
+    }
 
 
 def _owner_subscription_level_for_family(db, family_id: str) -> str:
@@ -945,10 +1121,47 @@ class JoinFamilyRequest(BaseModel):
     """Тело POST /api/family/join — как `JoinFamilyRequest` в iOS."""
 
     family_id: str
+    invite_code: Optional[str] = None
+    invite_token: Optional[str] = None
     role: str
     age_group: str
     personal_letter: str
     device_type: str
+
+
+class FamilyInviteCreateRequest(BaseModel):
+    """Create or refresh a shareable family invite for the current actor's family."""
+
+    family_id: Optional[str] = None
+
+
+class FamilyInvitePreflightRequest(BaseModel):
+    """Validate a family invite before showing the join wizard."""
+
+    family_id: str
+    invite_code: Optional[str] = None
+    invite_token: Optional[str] = None
+
+
+class FamilyInviteResponse(BaseModel):
+    success: bool
+    family_id: str
+    invite_code: str
+    invite_token: str
+    expires_at: str
+    qr_code_data: str
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+
+class FamilyInvitePreflightResponse(BaseModel):
+    success: bool
+    family_id: str
+    invite_code: str
+    expires_at: str
+    can_join: bool
+    message: Optional[str] = None
+    error: Optional[str] = None
 
 
 class FamilyJoinInnerResponse(BaseModel):
@@ -965,6 +1178,13 @@ class FamilyJoinAPIResponse(BaseModel):
     data: Optional[FamilyJoinInnerResponse] = None
     message: Optional[str] = None
     error: Optional[str] = None
+
+
+class RecoverFamilyResponse(BaseModel):
+    success: bool
+    message: str
+    familyId: Optional[str] = None
+    members: List[FamilyMemberResponse] = []
 
 
 def _ensure_family_chat_table(db) -> None:
@@ -1230,11 +1450,25 @@ async def create_family_endpoint(
                         "last_active": _iso_utc_timestamp(),
                     },
                 )
+                invite = _create_family_invite(db, response.family_id, created_by_user_id=user_id)
                 db.commit()
+                return invite
             finally:
                 gen.close()
 
-        await asyncio.to_thread(persist_sync)
+        invite = await asyncio.to_thread(persist_sync)
+        if invite:
+            response.short_code = invite["manual_code"]
+            response.expires_at = invite["expires_at"]
+            response.qr_code_data = json.dumps(
+                {
+                    "type": "family_registration",
+                    "family_id": response.family_id,
+                    "invite_token": invite["invite_token"],
+                    "expires_at": invite["expires_at"],
+                },
+                ensure_ascii=False,
+            )
         
         # ✅ STRUCTURED LOGGING: Логирование успешного создания
         logger.info(
@@ -1268,6 +1502,107 @@ async def create_family_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка создания семьи: {str(e)}"
         )
+
+
+@router.post("/invite/create", response_model=FamilyInviteResponse)
+@limiter.limit("20/minute")
+async def create_family_invite_endpoint(
+    request: Request,
+    payload: FamilyInviteCreateRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Create or refresh the canonical family invite for QR/manual code sharing."""
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="family_backend_unavailable")
+
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def create_sync() -> FamilyInviteResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            family_id = str(payload.family_id or "").strip()
+            if not family_id:
+                family_id = _resolve_actor_family_id(db, user_id, current_user) or ""
+            if not family_id:
+                raise HTTPException(
+                    status_code=404,
+                    detail=_api_error("family_not_found", "Family not found", "create_or_select_family"),
+                )
+            if not _actor_can_manage_family_roster(db, user_id, family_id):
+                raise HTTPException(
+                    status_code=403,
+                    detail=_api_error("family_invite_forbidden", "Family invite forbidden", "ask_family_owner"),
+                )
+
+            invite = _latest_family_invite(db, family_id) or _create_family_invite(
+                db,
+                family_id,
+                created_by_user_id=user_id,
+            )
+            db.commit()
+            qr_payload = json.dumps(
+                {
+                    "type": "family_registration",
+                    "family_id": family_id,
+                    "invite_token": invite["invite_token"],
+                    "expires_at": invite["expires_at"],
+                },
+                ensure_ascii=False,
+            )
+            return FamilyInviteResponse(
+                success=True,
+                family_id=family_id,
+                invite_code=invite["manual_code"],
+                invite_token=invite["invite_token"],
+                expires_at=invite["expires_at"],
+                qr_code_data=qr_payload,
+                message="family_invite_created",
+            )
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(create_sync)
+
+
+@router.post("/invite/preflight", response_model=FamilyInvitePreflightResponse)
+@limiter.limit("30/minute")
+async def preflight_family_invite_endpoint(
+    request: Request,
+    payload: FamilyInvitePreflightRequest,
+):
+    """Validate QR/manual invite before the user fills role, age, and letter."""
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="family_backend_unavailable")
+
+    def preflight_sync() -> FamilyInvitePreflightResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            family_id = _normalize_client_family_id(payload.family_id)
+            exists = db.execute(
+                text("SELECT 1 FROM families WHERE id = :fid LIMIT 1"),
+                {"fid": family_id},
+            ).fetchone()
+            if not exists:
+                raise HTTPException(
+                    status_code=404,
+                    detail=_api_error("family_not_found", "Family not found", "check_code_or_request_new_invite"),
+                )
+            _validate_family_invite(db, family_id, payload.invite_code, payload.invite_token)
+            invite = _latest_family_invite(db, family_id)
+            return FamilyInvitePreflightResponse(
+                success=True,
+                family_id=family_id,
+                invite_code=(invite or {}).get("manual_code", _manual_invite_code_for_family_id(family_id)),
+                expires_at=(invite or {}).get("expires_at", ""),
+                can_join=True,
+                message="family_invite_valid",
+            )
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(preflight_sync)
 
 
 # ============================================
@@ -1528,7 +1863,10 @@ async def join_family_post(
             ).fetchone()
             if not fam_exists:
                 logger.warning("family_join_unknown_family", user_id=user_id, family_id=canonical_fid)
-                raise HTTPException(status_code=404, detail="family_not_found")
+                raise HTTPException(
+                    status_code=404,
+                    detail=_api_error("family_not_found", "Family not found", "check_code_or_request_new_invite"),
+                )
 
             existing_same = db.execute(
                 text(
@@ -1557,6 +1895,13 @@ async def join_family_post(
                     error=None,
                 )
 
+            invite_id_to_consume = _validate_family_invite(
+                db,
+                canonical_fid,
+                body.invite_code or body.family_id,
+                body.invite_token,
+            )
+
             other_f = db.execute(
                 text(
                     """
@@ -1574,7 +1919,10 @@ async def join_family_post(
                     target_family_id=canonical_fid,
                     existing_family_id=str(other_f[0]),
                 )
-                raise HTTPException(status_code=409, detail="already_in_another_family")
+                raise HTTPException(
+                    status_code=409,
+                    detail=_api_error("already_in_another_family", "Already in another family", "leave_current_family_first"),
+                )
 
             role = (body.role or "").strip().lower()
             allowed_roles = {"parent", "child", "teenager", "elderly", "other"}
@@ -1598,7 +1946,10 @@ async def join_family_post(
                 {"fid": canonical_fid, "name": display_name},
             ).fetchone()
             if dup_name:
-                raise HTTPException(status_code=409, detail="personal_letter_taken")
+                raise HTTPException(
+                    status_code=409,
+                    detail=_api_error("personal_letter_taken", "Personal letter already used", "choose_another_letter"),
+                )
 
             owner_level = _owner_subscription_level_for_family(db, canonical_fid)
             _acquire_family_roster_write_lock(db, canonical_fid)
@@ -1623,7 +1974,10 @@ async def join_family_post(
                     current_slots=current_slots,
                     max_slots=max_slots,
                 )
-                raise HTTPException(status_code=409, detail="family_roster_full")
+                raise HTTPException(
+                    status_code=409,
+                    detail=_api_error("family_roster_full", "Family roster is full", "open_tariffs_or_free_seat"),
+                )
             logger.info(
                 "family_roster_gate_decision",
                 endpoint="/api/family/join",
@@ -1654,6 +2008,7 @@ async def join_family_post(
                     "last_active": last_active,
                 },
             )
+            _consume_family_invite(db, invite_id_to_consume)
             db.commit()
 
             logger.info(
@@ -2223,6 +2578,38 @@ async def recover_family_compat(
 ):
     _ = current_user.get("id")
     return FamilyCompatBoolResponse(success=True, data=True, message="Family recovered")
+
+
+@router.get("/recover/{family_id}", response_model=RecoverFamilyResponse)
+async def recover_family_by_id(
+    family_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    canonical_fid = _normalize_client_family_id(family_id)
+    if not canonical_fid:
+        raise HTTPException(status_code=400, detail="invalid family_id")
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def recover_sync() -> RecoverFamilyResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_indexes(db)
+            if not _actor_belongs_to_family(db, user_id, canonical_fid):
+                raise HTTPException(status_code=403, detail="family_recovery_requires_membership")
+            rows = _fetch_family_member_rows(db, canonical_fid)
+            return RecoverFamilyResponse(
+                success=True,
+                message="Family recovered",
+                familyId=canonical_fid,
+                members=[_row_to_family_member_response(r) for r in rows],
+            )
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(recover_sync)
 
 
 @router.get("/chat/messages", response_model=list[dict])
@@ -3377,6 +3764,11 @@ class FamilyImOkBody(BaseModel):
     battery_percent: Optional[int] = Field(default=None, ge=0, le=100)
 
 
+class FamilyUrgentSignalBody(BaseModel):
+    reason: str = Field(default="manual", max_length=64)
+    display_name: Optional[str] = Field(default=None, max_length=80)
+
+
 @router.post("/im-ok")
 @limiter.limit("30/hour")
 async def family_im_ok(
@@ -3410,6 +3802,42 @@ async def family_im_ok(
         "message": "im_ok",
         "parents_notified": result.get("parents_notified", 0),
         "member_id": result.get("member_id"),
+    }
+
+
+@router.post("/urgent-signal")
+@limiter.limit("30/hour")
+async def family_urgent_signal(
+    request: Request,
+    body: FamilyUrgentSignalBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """Member pressed urgent/help signal. Dedicated APNs route; no plaintext family chat."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def run_sync():
+        from app.services.family_presence_store import notify_parents_urgent_signal
+
+        return notify_parents_urgent_signal(
+            member_user_id=user_id,
+            display_name=(body.display_name or "").strip(),
+            reason=(body.reason or "manual").strip() or "manual",
+        )
+
+    result = await asyncio.to_thread(run_sync)
+    if not result.get("ok"):
+        err = result.get("error")
+        if err in ("no_family", "no_member"):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="family_membership_required",
+            )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err or "urgent_signal_failed"))
+    return {
+        "success": True,
+        "data": True,
+        "message": "urgent_signal",
+        "parents_notified": result.get("parents_notified", 0),
     }
 
 

@@ -132,6 +132,8 @@ struct ProfileScreen: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, Spacing.screenPadding)
                         }
+
+                        familyInviteSection
                         
                         // Информация
                         profileInfo
@@ -144,8 +146,8 @@ struct ProfileScreen: View {
                         // Согласие на обработку ПДн (152-ФЗ)
                         consentSection
                         
-                        // Реферальная программа
-                        referralSection
+                        // Друзья и бонусы
+                        friendsAndBonusSection
                         
                         // Spacer
                         Spacer()
@@ -156,8 +158,6 @@ struct ProfileScreen: View {
             }
         }
         .navigationBarHidden(true)
-        // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("profile_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadRegistrationDate()
             loadProfileImage()
@@ -289,7 +289,8 @@ struct ProfileScreen: View {
                     tier: tariffManager.currentTariff,
                     trialStatus: subscriptionManager.trialStatus,
                     subscriptionExpiresAtIso: subscriptionExpiresAtIso,
-                    currentSubscriptionExpiresAt: subscriptionManager.currentSubscription?.expiresAt
+                    currentSubscriptionExpiresAt: subscriptionManager.currentSubscription?.expiresAt,
+                    language: localizationManager.currentLanguage
                 ) {
                     Text("\(localizationManager.localized("profile_subscription_valid_until_prefix")) \(formattedExpiry)")
                         .font(.caption)
@@ -635,47 +636,85 @@ struct ProfileScreen: View {
         return dateString
     }
     
-    // MARK: - Referral Section
+    // MARK: - Invite Sections
     
-    private var referralSection: some View {
-        Group {
-            if FamilyAccessPolicy.isCaregiver() {
-                VStack(alignment: .leading, spacing: Spacing.s) {
-                    sectionTitle(localizationManager.localized("profile_referral_program"))
-                    
-                    VStack(spacing: Spacing.s) {
-                        Button(action: {
-                            FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile"])
-                            showReferralScreen = true
-                        }) {
-                            HStack(spacing: Spacing.m) {
-                                Text("🎁")
-                                    .font(.system(size: 24))
-                                
-                                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                                    Text(localizationManager.localized("profile_invite_friends"))
-                                        .font(.bodyBold)
-                                        .foregroundColor(.textPrimary)
-                                    
-                                    Text(localizationManager.localized("profile_invite_discount"))
-                                        .font(.caption)
-                                        .foregroundColor(.textSecondary)
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.textSecondary)
-                            }
-                            .padding(Spacing.m)
-                            .stormGlassCard(cornerRadius: CornerRadius.medium)
-                        }
-                    }
-                    .padding(.horizontal, Spacing.screenPadding)
+    @ViewBuilder
+    private var familyInviteSection: some View {
+        if FamilyAccessPolicy.isCaregiver() {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                sectionTitle(localizationManager.localized("profile_family_invite_section_title"))
+
+                Button(action: {
+                    FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_family_top"])
+                    navigationManager.navigateTo(.addMemberOptions)
+                }) {
+                    profileActionCard(
+                        icon: "👨‍👩‍👧‍👦",
+                        title: localizationManager.localized("profile_invite_family_members"),
+                        subtitle: localizationManager.localized("profile_invite_family_members_desc")
+                    )
                 }
+                .padding(.horizontal, Spacing.screenPadding)
             }
         }
+    }
+
+    private var friendsAndBonusSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            sectionTitle(localizationManager.localized("profile_friends_bonus_section_title"))
+
+            VStack(spacing: Spacing.s) {
+                if FamilyAccessPolicy.isCaregiver() {
+                        Button(action: {
+                            FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_referral"])
+                            showReferralScreen = true
+                        }) {
+                            profileActionCard(
+                                icon: "🎁",
+                                title: localizationManager.localized("profile_invite_friends"),
+                                subtitle: localizationManager.localized("profile_invite_discount")
+                            )
+                        }
+                }
+
+                Button(action: {
+                    navigationManager.navigateTo(.promoActivation)
+                }) {
+                    profileActionCard(
+                        icon: "🎟️",
+                        title: localizationManager.localized("profile_activate_promo"),
+                        subtitle: localizationManager.localized("profile_activate_promo_desc")
+                    )
+                }
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+    }
+
+    private func profileActionCard(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: Spacing.m) {
+            Text(icon)
+                .font(.system(size: 24))
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(title)
+                    .font(.bodyBold)
+                    .foregroundColor(.textPrimary)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(.textSecondary)
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     // MARK: - Helper Views
@@ -1055,7 +1094,7 @@ struct ActiveSessionsView: View {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime]
         if let date = isoFrac.date(from: trimmed) ?? iso.date(from: trimmed) {
-            return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+            return DateFormatterService.shared.formatDateTime(date)
         }
         return trimmed
     }

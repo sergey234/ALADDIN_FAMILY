@@ -25,7 +25,7 @@ struct FamilySafeWordCard: View {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Label(
                         localizationManager.localized("family_safe_word_title"),
-                        systemImage: "key.horizontal.fill"
+                        systemImage: "key.fill"
                     )
                     .font(.headline)
                     .foregroundColor(.white)

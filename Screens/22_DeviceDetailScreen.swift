@@ -87,8 +87,17 @@ struct DeviceDetailScreen: View {
                 
                 // Device Status Card
                 VStack(spacing: Spacing.m) {
-                    Text(device.type.icon)
-                        .font(.system(size: Size.iconXLarge * 1.5))
+                    Image(systemName: device.type.icon)
+                        .font(.system(size: Size.iconXLarge * 1.35, weight: .semibold))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.primaryBlue, Color.secondaryBlue.opacity(0.9)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(height: 112)
                         .accessibilityLabel(String(format: localizationManager.localized("device_detail_device_type"), device.type.rawValue))
                     
                     Text(device.name)
@@ -271,7 +280,7 @@ struct DeviceDetailScreen: View {
         let iso = ISO8601DateFormatter()
         iso.formatOptions = [.withInternetDateTime]
         if let date = isoFrac.date(from: trimmed) ?? iso.date(from: trimmed) {
-            return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+            return DateFormatterService.shared.formatDateTime(date)
         }
         return trimmed
     }

@@ -442,7 +442,7 @@ struct AntifakeVerdictCard: View {
                         } label: {
                             Label(
                                 localizationManager.localized("antifake_safe_word_verify_button"),
-                                systemImage: "key.horizontal.fill"
+                                systemImage: "key.fill"
                             )
                             .font(.subheadline.weight(.semibold))
                             .frame(maxWidth: .infinity, alignment: .leading)

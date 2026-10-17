@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Промокоды — Админ-панель ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔐 ALADDIN AI</h2>
+      <p>Админ-панель</p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="index.html">📊 Главная</a></li>
+        <li><a href="users.html">👥 Пользователи</a></li>
+        <li><a href="promo.html" class="active">🎁 Промокоды</a></li>
+        <li><a href="threats.html">🛡️ Угрозы</a></li>
+        <li><a href="logs.html">📋 Логи</a></li>
+        <li><a href="settings.html">⚙️ Настройки</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="dashboard-header">
+      <div>
+        <h1>🎁 Бесплатный доступ</h1>
+        <p style="color: var(--text-muted); margin-top: 6px;">
+          Создавайте коды для друзей, VIP и партнёров. Это не добавляет человека в семью.
+        </p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="loadPromoCodes()">🔄 Обновить</button>
+        <button class="btn-secondary" id="logoutBtn">🚪 Выйти</button>
+      </div>
+    </div>
+
+    <section class="metrics-section">
+      <h2 class="section-title">Создать код</h2>
+      <div class="metric-card" style="max-width: 760px;">
+        <form id="promoForm" onsubmit="createPromoCode(event)">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <label>
+              <span class="metric-label">Тип</span>
+              <select id="promoType" class="admin-input">
+                <option value="friend">Друг</option>
+                <option value="vip">VIP</option>
+                <option value="partner">Партнёр</option>
+                <option value="family_bonus">Семейный бонус</option>
+              </select>
+            </label>
+            <label>
+              <span class="metric-label">Дней доступа</span>
+              <select id="durationDays" class="admin-input">
+                <option value="7">7 дней</option>
+                <option value="14">14 дней</option>
+                <option value="30" selected>30 дней</option>
+                <option value="90">90 дней</option>
+                <option value="365">365 дней</option>
+              </select>
+            </label>
+            <label>
+              <span class="metric-label">Лимит активаций</span>
+              <input id="maxActivations" class="admin-input" type="number" min="1" max="100000" value="1">
+            </label>
+            <label>
+              <span class="metric-label">Уровень доступа</span>
+              <select id="promoLevel" class="admin-input">
+                <option value="premium" selected>Premium</option>
+                <option value="family">Family</option>
+                <option value="personal">Personal</option>
+                <option value="trial_premium">Trial Premium</option>
+              </select>
+            </label>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px;">
+            <label>
+              <span class="metric-label">Код вручную, необязательно</span>
+              <input id="customCode" class="admin-input" type="text" placeholder="FRIEND-SERGEY-30">
+            </label>
+            <label>
+              <span class="metric-label">Действует до, необязательно</span>
+              <input id="expiresAt" class="admin-input" type="datetime-local">
+            </label>
+          </div>
+
+          <label style="display: block; margin-top: 16px;">
+            <span class="metric-label">Заметка для audit</span>
+            <input id="auditReason" class="admin-input" type="text" placeholder="Например: друг Сергея, 30 дней">
+          </label>
+
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+            <button class="btn-primary" type="submit">Создать код</button>
+            <span id="promoCreateStatus" style="color: var(--text-muted);"></span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="tables-section">
+      <h2 class="section-title">Коды</h2>
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Код</th>
+                <th>Тип</th>
+                <th>Доступ</th>
+                <th>Активации</th>
+                <th>Ссылка</th>
+                <th>Статус</th>
+                <th>Действие</th>
+              </tr>
+            </thead>
+            <tbody id="promoCodesBody">
+              <tr><td colspan="7" class="table-loading">Загрузка...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    .admin-input {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    .copy-link {
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--accent-primary);
+    }
+  </style>
+  <script src="js/admin.js"></script>
+  <script>
+    function authHeaders() {
+      const adminKey = localStorage.getItem('adminKey') || '';
+      const bearer = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (adminKey) headers['X-Admin-Key'] = adminKey;
+      if (bearer) headers['Authorization'] = `Bearer ${bearer}`;
+      return headers;
+    }
+
+    function apiBase() {
+      const origin = window.location.origin || '';
+      return origin.startsWith('http') ? origin : 'https://aladdin-ai.ru';
+    }
+
+    async function promoRequest(endpoint, options = {}) {
+      let response;
+      try {
+        response = await fetch(`${apiBase()}${endpoint}`, {
+          ...options,
+          headers: { ...authHeaders(), ...(options.headers || {}) }
+        });
+      } catch (error) {
+        throw new Error(friendlyPromoAdminError(error.message || error));
+      }
+
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { detail: text };
+      }
+      if (!response.ok) {
+        throw new Error(friendlyPromoAdminError(data.detail || `HTTP ${response.status}`));
+      }
+      return data;
+    }
+
+    function unwrapPromoPayload(data) {
+      if (data && typeof data === 'object' && data.data && typeof data.data === 'object') {
+        return data.data;
+      }
+      return data || {};
+    }
+
+    function unwrapPromoList(data) {
+      const payload = unwrapPromoPayload(data);
+      if (Array.isArray(payload.codes)) return payload.codes;
+      if (Array.isArray(payload.items)) return payload.items;
+      if (Array.isArray(payload)) return payload;
+      return [];
+    }
+
+    function friendlyPromoAdminError(raw) {
+      const text = String(raw || '').toLowerCase();
+      if (text.includes('failed to fetch') || text.includes('networkerror') || text.includes('load failed')) {
+        return 'Не удалось подключиться к серверу. Откройте страницу через https://aladdin-ai.ru/admin/promo.html, проверьте X-Admin-Key и что /api/promo выкачен на прод.';
+      }
+      if (text.includes('promo_admin_auth_required')) return 'Нужен вход администратора или X-Admin-Key.';
+      if (text.includes('promo_admin_forbidden')) return 'У этого аккаунта нет прав на промокоды.';
+      if (text.includes('promo_code_already_exists')) return 'Такой код уже существует. Измените код или оставьте поле пустым.';
+      if (text.includes('promo_code_required')) return 'Введите код или оставьте поле пустым для автогенерации.';
+      if (text.includes('promo_not_found')) return 'Код не найден.';
+      return raw || 'Не удалось выполнить действие.';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    async function createPromoCode(event) {
+      event.preventDefault();
+      const status = document.getElementById('promoCreateStatus');
+      status.textContent = 'Создаём...';
+      const expiresRaw = document.getElementById('expiresAt').value;
+      const payload = {
+        code: document.getElementById('customCode').value.trim() || null,
+        promo_type: document.getElementById('promoType').value,
+        duration_days: Number(document.getElementById('durationDays').value),
+        max_activations: Number(document.getElementById('maxActivations').value),
+        level: document.getElementById('promoLevel').value,
+        expires_at: expiresRaw ? new Date(expiresRaw).toISOString() : null,
+        audit_reason: document.getElementById('auditReason').value.trim() || null
+      };
+      try {
+        const response = await promoRequest('/api/promo/admin/create', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const created = unwrapPromoPayload(response);
+        if (!created.code) {
+          throw new Error('Сервер создал ответ без поля code. Проверьте /api/promo/admin/create.');
+        }
+        status.textContent = `Готово: ${created.code}`;
+        if (created.link) {
+          await navigator.clipboard?.writeText(created.link);
+        }
+        await loadPromoCodes();
+      } catch (error) {
+        status.textContent = `Ошибка: ${error.message}`;
+      }
+    }
+
+    async function disablePromoCode(code) {
+      if (!confirm(`Отключить код ${code}?`)) return;
+      await promoRequest('/api/promo/admin/disable', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      });
+      await loadPromoCodes();
+    }
+
+    async function loadPromoCodes() {
+      const tbody = document.getElementById('promoCodesBody');
+      tbody.innerHTML = '<tr><td colspan="7" class="table-loading">Загрузка...</td></tr>';
+      try {
+        const data = await promoRequest('/api/promo/admin/list');
+        const codes = unwrapPromoList(data);
+        if (codes.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Кодов пока нет</td></tr>';
+          return;
+        }
+        tbody.innerHTML = codes.map(item => `
+          <tr>
+            <td><strong>${escapeHtml(item.code)}</strong></td>
+            <td>${escapeHtml(item.promo_type)}</td>
+            <td>${escapeHtml(item.duration_days)} дн. · ${escapeHtml(item.level)}</td>
+            <td>${escapeHtml(item.activations)}/${escapeHtml(item.max_activations)}</td>
+            <td><button class="btn-secondary" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(item.link || '')}'))">Скопировать</button><div class="copy-link">${escapeHtml(item.link)}</div></td>
+            <td>${escapeHtml(item.status)}</td>
+            <td>${item.status === 'active' ? `<button class="btn-secondary" onclick="disablePromoCode(decodeURIComponent('${encodeURIComponent(item.code || '')}'))">Отключить</button>` : '—'}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="7" class="table-loading">Ошибка: ${error.message}</td></tr>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPromoCodes);
+  </script>
+</body>
+</html>

@@ -53,8 +53,17 @@ enum SystemContentFilterRulesStore {
 
     /// Human copy for the toggle — never show `IPC failed` / XPC jargon.
     static func userFacingStatus(for error: Error, localization: LocalizationManager) -> String {
-        if isSimulatorOrMissingFilterHost(error) {
+        if let store = error as? StoreError, store == .simulatorUnavailable {
             return localization.localized("system_filter_toggle_error_simulator")
+        }
+        if let store = error as? StoreError, store == .featureDisabled {
+            return localization.localized("system_filter_toggle_error_disabled")
+        }
+        if isPermissionDenied(error) {
+            return localization.localized("system_filter_toggle_error_permission")
+        }
+        if isNetworkExtensionConfigurationError(error) {
+            return localization.localized("system_filter_toggle_error_extension")
         }
         return String(
             format: localization.localized("system_filter_toggle_error_fmt"),
@@ -125,14 +134,23 @@ enum SystemContentFilterRulesStore {
         return s
     }
 
-    private static func isSimulatorOrMissingFilterHost(_ error: Error) -> Bool {
-        if let store = error as? StoreError, store == .simulatorUnavailable { return true }
+    private static func isNetworkExtensionConfigurationError(_ error: Error) -> Bool {
         let ns = error as NSError
         if ns.domain == "NEFilterErrorDomain" || ns.domain == "NEConfigurationErrorDomain" {
             return true
         }
         let desc = error.localizedDescription.lowercased()
         return desc.contains("ipc") || desc.contains("connection invalid")
+    }
+
+    private static func isPermissionDenied(_ error: Error) -> Bool {
+        let ns = error as NSError
+        if ns.code == 5 || ns.code == 10 || ns.code == 13 { return true }
+        let desc = error.localizedDescription.lowercased()
+        return desc.contains("denied")
+            || desc.contains("permission")
+            || desc.contains("not allowed")
+            || desc.contains("user")
     }
 
     enum StoreError: LocalizedError, Equatable {

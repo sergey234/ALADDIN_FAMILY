@@ -147,7 +147,7 @@ struct NotificationsScreen: View {
         VStack(spacing: 12) {
             Text(localizationManager.localized("notifications_filters"))
                 .font(.title2)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             
@@ -311,14 +311,14 @@ struct NotificationsScreen: View {
             HStack {
                 Text(localizationManager.localized("notifications_notifications_title"))
                     .font(.title2)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
                 Spacer()
                 
                 Text(localizationManager.localized("notifications_count_from", viewModel.filteredNotifications(for: selectedFilter).count, viewModel.notifications.count))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.textSecondary)
             }
             
             if let lastSync = viewModel.lastSuccessfulSyncAt {

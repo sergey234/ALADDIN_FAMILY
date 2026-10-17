@@ -28,14 +28,34 @@ class DateFormatterService {
     /// ✅ BUILD 100: Calendar с локалью, зависящей от текущего языка приложения
     /// Это обеспечивает правильное отображение дат (январь/January, мая/May и т.д.)
     private static var currentLocale: Locale {
-        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
-        return Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
+        locale(for: currentLanguage)
+    }
+
+    private static var currentLanguage: LocalizationManager.Language {
+        if let raw = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
+           let language = LocalizationManager.Language(rawValue: raw) {
+            return language
+        }
+        return LocalizationManager.shared.currentLanguage
     }
     
     private static var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
         cal.locale = currentLocale
         return cal
+    }
+
+    private static func locale(for language: LocalizationManager.Language) -> Locale {
+        switch language {
+        case .russian:
+            return Locale(identifier: "ru_RU")
+        case .english:
+            return Locale(identifier: "en_US")
+        case .chinese:
+            return Locale(identifier: "zh_Hans")
+        case .arabic:
+            return Locale(identifier: "ar")
+        }
     }
     
     // MARK: - ISO8601 Formatters
@@ -115,6 +135,18 @@ class DateFormatterService {
     func formatDisplayDate(_ date: Date) -> String {
         return Self.displayFormatter.string(from: date)
     }
+
+    /// Форматирует Date в строку для отображения на явно выбранном языке приложения.
+    func formatDisplayDate(_ date: Date, language: LocalizationManager.Language) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Self.locale(for: language)
+        var cal = Calendar(identifier: .gregorian)
+        cal.locale = formatter.locale
+        formatter.calendar = cal
+        return formatter.string(from: date)
+    }
     
     /// Форматирует Date в строку с датой и временем
     func formatDateTime(_ date: Date) -> String {
@@ -138,6 +170,14 @@ class DateFormatterService {
             return nil
         }
         return formatDisplayDate(date)
+    }
+
+    /// Форматирует ISO8601 строку на явно выбранном языке приложения.
+    func formatExpirationDate(from isoString: String, language: LocalizationManager.Language) -> String? {
+        guard let date = parseISO8601(isoString) else {
+            return nil
+        }
+        return formatDisplayDate(date, language: language)
     }
     
     // MARK: - Calendar Helpers

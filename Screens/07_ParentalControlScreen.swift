@@ -89,7 +89,7 @@ struct ParentalControlScreen: View {
     
     private var currentChildDisplayName: String {
         if let child = childMembers.first(where: { $0.id == selectedChild }) {
-            return child.name
+            return displayName(for: child)
         }
         return localizationManager.localized("parental_child_placeholder")
     }
@@ -558,7 +558,7 @@ struct ParentalControlScreen: View {
                                 Text(((child.avatar ?? "").isEmpty ? "👤" : (child.avatar ?? "")))
                                     .font(.system(size: 28))
                                 
-                                Text(child.name)
+                                Text(displayName(for: child))
                                     .font(.bodyBold)
                                     .foregroundColor(selectedChild == child.id ? .white : .textPrimary)
                                     .lineLimit(1)
@@ -577,7 +577,7 @@ struct ParentalControlScreen: View {
                                     )
                             )
                         }
-                        .accessibilityLabel(String(format: localizationManager.localized("parental_select_child_accessibility"), child.name))
+                        .accessibilityLabel(String(format: localizationManager.localized("parental_select_child_accessibility"), displayName(for: child)))
                         .accessibilityAddTraits(selectedChild == child.id ? .isSelected : [])
                     }
                 }
@@ -589,6 +589,29 @@ struct ParentalControlScreen: View {
             RoundedRectangle(cornerRadius: CornerRadius.large)
                 .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
         )
+    }
+
+    private func displayName(for member: FamilyMemberResponse) -> String {
+        FamilyMemberDisplayNameFormatter.displayName(
+            storedName: member.name,
+            role: familyCardRole(from: member.role),
+            localization: localizationManager
+        )
+    }
+
+    private func familyCardRole(from rawRole: String) -> FamilyMemberCard.FamilyRole? {
+        switch rawRole.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "parent":
+            return .parent
+        case "child", "kid", "young_adult", "youngadult", "young-adult", "adult_child", "adultchild":
+            return .child
+        case "teenager", "teen":
+            return .teenager
+        case "elderly", "senior", "caregiver":
+            return .elderly
+        default:
+            return nil
+        }
     }
     
     // MARK: - Parental Control Cards Grid

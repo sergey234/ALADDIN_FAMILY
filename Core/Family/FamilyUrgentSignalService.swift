@@ -100,7 +100,34 @@ final class FamilyUrgentSignalService: ObservableObject {
             useCriticalAlert: useCritical
         )
 
-        GeofenceFamilyBridge.notifyParentsUrgentSignal(reason: reason)
+        let deliveredToFamily = await postUrgentSignal(reason: reason, localization: loc)
+        if !deliveredToFamily {
+            GeofenceFamilyBridge.notifyParentsUrgentSignal(reason: reason)
+        }
         print("🆘 FamilyUrgentSignalService: sent reason=\(reason)")
+    }
+
+    private func postUrgentSignal(reason: String, localization: LocalizationManager) async -> Bool {
+        let displayName = currentDisplayName(localization: localization)
+        return await withCheckedContinuation { continuation in
+            APIService.shared.postFamilyUrgentSignal(reason: reason, displayName: displayName) { result in
+                continuation.resume(returning: (try? result.get()) == true)
+            }
+        }
+    }
+
+    private func currentDisplayName(localization: LocalizationManager) -> String {
+        let raw = (UserDefaults.standard.string(forKey: "user_name")
+            ?? UserDefaults.standard.string(forKey: "user_display_name")
+            ?? UserDefaults.standard.string(forKey: "current_user_name")
+            ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !raw.isEmpty, !raw.hasPrefix("MEM_") {
+            return FamilyMemberDisplayNameFormatter.displayName(
+                storedName: raw,
+                localization: localization
+            )
+        }
+        return localization.localized("family_you")
     }
 }

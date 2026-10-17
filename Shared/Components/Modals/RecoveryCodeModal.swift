@@ -20,6 +20,7 @@ struct RecoveryCodeModal: View {
     @Binding var isPresented: Bool
     let recoveryCode: String
     let familyID: String
+    var qrPayload: String? = nil
     var onComplete: (() -> Void)? = nil
     
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -114,7 +115,7 @@ struct RecoveryCodeModal: View {
                             .foregroundColor(.secondary)
                         
                         // Генерация QR-кода
-                        if let qrCodeImage = generateQRCode(from: recoveryCode) {
+                        if let qrCodeImage = generateQRCode(from: qrPayload ?? recoveryCode) {
                             Image(uiImage: qrCodeImage)
                                 .interpolation(.none)
                                 .resizable()
@@ -226,15 +227,24 @@ struct RecoveryCodeModal: View {
     // MARK: - Helper Functions
     
     private func getShareItems() -> [Any] {
-        let shareText = String(format: localizationManager.localized("recovery_share_text"), recoveryCode)
+        let shareText = String(
+            format: localizationManager.localized("recovery_share_text_family_link"),
+            recoveryCode,
+            familyInviteLink
+        )
         var shareItems: [Any] = [shareText]
         
         // Добавляем QR-код как изображение
-        if let qrCodeImage = generateQRCode(from: recoveryCode) {
+        if let qrCodeImage = generateQRCode(from: qrPayload ?? recoveryCode) {
             shareItems.append(qrCodeImage)
         }
         
         return shareItems
+    }
+
+    private var familyInviteLink: String {
+        let encodedCode = recoveryCode.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? recoveryCode
+        return "https://aladdin-ai.ru/family/invite/\(encodedCode)"
     }
     
     private func infoItem(icon: String, text: String) -> some View {
@@ -278,5 +288,204 @@ struct RecoveryCodeModal_Previews: PreviewProvider {
             recoveryCode: "FAM-A1B2-C3D4-E5F6",
             familyID: "FAM_123456"
         )
+    }
+}
+
+// MARK: - Family Invite Share Modal
+
+/// Owner flow for an existing family: generate a fresh FAM invite and show QR/code/link.
+struct FamilyInviteShareModal: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    let familyId: String
+
+    @State private var invite: FamilyInviteResponse?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var showShareSheet = false
+
+    private var displayCode: String {
+        guard let invite else { return "" }
+        return FamilyInviteCodeParser.parse(invite.invite_code)?.displayCode
+            ?? FamilyInviteCodeParser.displayCode(fromFamilyId: invite.family_id)
+            ?? invite.invite_code
+    }
+
+    private var inviteLink: String {
+        let encoded = displayCode.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? displayCode
+        return "https://aladdin-ai.ru/family/invite/\(encoded)"
+    }
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                StormMeshBackground(variant: .family)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 18) {
+                        if isLoading {
+                            ProgressView()
+                                .tint(.secondaryGold)
+                            Text(localizationManager.localized("family_invite_loading"))
+                                .foregroundColor(.white.opacity(0.78))
+                        } else if let invite {
+                            inviteContent(invite)
+                        } else if let errorMessage {
+                            VStack(spacing: 12) {
+                                Text(errorMessage)
+                                    .font(.subheadline)
+                                    .foregroundColor(.warningOrange)
+                                    .multilineTextAlignment(.center)
+                                Button(localizationManager.localized("common_retry")) {
+                                    loadInvite()
+                                }
+                                .font(.headline)
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 10)
+                                .background(Color.secondaryGold)
+                                .clipShape(Capsule())
+                            }
+                        }
+                    }
+                    .padding(20)
+                }
+            }
+            .navigationTitle(localizationManager.localized("family_invite_share_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(localizationManager.localized("common_close")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .onAppear {
+            if invite == nil && !isLoading {
+                loadInvite()
+            }
+        }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheet(activityItems: shareItems())
+        }
+    }
+
+    @ViewBuilder
+    private func inviteContent(_ invite: FamilyInviteResponse) -> some View {
+        VStack(spacing: 16) {
+            Text(localizationManager.localized("family_invite_share_subtitle"))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.78))
+                .multilineTextAlignment(.center)
+
+            if let qrImage = generateQRCode(from: invite.qr_code_data) {
+                Image(uiImage: qrImage)
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 220, height: 220)
+                    .padding(12)
+                    .background(Color.white)
+                    .cornerRadius(18)
+            }
+
+            Text(displayCode)
+                .font(.system(size: 20, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.white.opacity(0.10))
+                .cornerRadius(12)
+
+            Text(String(format: localizationManager.localized("family_invite_expires_at_fmt"), formattedExpiration(invite.expires_at)))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.68))
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 12) {
+                Button(localizationManager.localized("recovery_copy")) {
+                    UIPasteboard.general.string = displayCode
+                    HapticFeedback.notification(.success)
+                }
+                .font(.headline)
+                .foregroundColor(.secondaryGold)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.white.opacity(0.10))
+                .cornerRadius(12)
+
+                Button(localizationManager.localized("recovery_share")) {
+                    showShareSheet = true
+                }
+                .font(.headline)
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.secondaryGold)
+                .cornerRadius(12)
+            }
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.08))
+        .cornerRadius(20)
+    }
+
+    private func loadInvite() {
+        let cleanFamilyId = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanFamilyId.isEmpty else {
+            errorMessage = localizationManager.localized("family_invite_missing_family")
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+        APIService.shared.createFamilyInvite(
+            request: FamilyInviteCreateRequest(family_id: cleanFamilyId)
+        ) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let response):
+                    invite = response
+                case .failure:
+                    errorMessage = localizationManager.localized("family_invite_create_failed")
+                }
+            }
+        }
+    }
+
+    private func shareItems() -> [Any] {
+        let text = String(
+            format: localizationManager.localized("recovery_share_text_family_link"),
+            displayCode,
+            inviteLink
+        )
+        var items: [Any] = [text]
+        if let invite, let qrImage = generateQRCode(from: invite.qr_code_data) {
+            items.append(qrImage)
+        }
+        return items
+    }
+
+    private func formattedExpiration(_ raw: String) -> String {
+        DateFormatterService.shared.formatExpirationDate(
+            from: raw,
+            language: localizationManager.currentLanguage
+        ) ?? raw
+    }
+
+    private func generateQRCode(from string: String) -> UIImage? {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        filter.correctionLevel = "M"
+        guard let outputImage = filter.outputImage else { return nil }
+        let transform = CGAffineTransform(scaleX: 10, y: 10)
+        let scaledImage = outputImage.transformed(by: transform)
+        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
+        return UIImage(cgImage: cgImage)
     }
 }

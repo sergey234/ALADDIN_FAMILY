@@ -93,7 +93,7 @@ struct FamilySecondHandPackCard: View {
             } label: {
                 Label(
                     localizationManager.localized("family_second_hand_pack_cta"),
-                    systemImage: "person.2.badge.gearshape"
+                    systemImage: "person.2.fill"
                 )
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity, alignment: .leading)
