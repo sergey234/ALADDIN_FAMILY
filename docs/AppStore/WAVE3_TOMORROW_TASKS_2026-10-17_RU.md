@@ -1,7 +1,7 @@
 # WAVE 3 — все задачи (полный список, ничего не забыто)
 
 **Дата:** 2026-10-17 · **TF в облаке:** 1.0.1 / build **10** (последний OK Upload) · **NEXT bump:** **11** (только GO)  
-**CI подпись (вечер):** Content Filter + Shield Action — UUID в Release SPECIFIER (не имя `… App Store.`). Archive на 10; повторный Upload 10 Apple не примет — нужен **GO на bump 11**.  
+**CI подпись (вечер):** UUID-фикс ✅ Archive+Export ([run 39039619395](https://github.com/sergey234/ALADDIN_FAMILY/actions/runs/39039619395)). Upload 409 не про номер сборки, а 3 валидации: HK Update string · Shield Action identifier · host NE entitlement.  
 **Канон push/CI:** [`docs/RELEASE_BUILD_PROMPT.md`](../RELEASE_BUILD_PROMPT.md) §0 · §0b · §7A  
 **ASC handoff:** [`docs/ML_SYSTEM_HANDOFF_ASC_VERSION_BUILD_RU.md`](../ML_SYSTEM_HANDOFF_ASC_VERSION_BUILD_RU.md)  
 **SSOT фич:** [`CAPABILITIES_WAVE3_BUILD11_MASTER_PLAN_2026-10-17_RU.md`](CAPABILITIES_WAVE3_BUILD11_MASTER_PLAN_2026-10-17_RU.md)  

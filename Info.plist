@@ -97,6 +97,8 @@
 	<string>ALADDIN needs microphone access for voice messages and voice analysis.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>ALADDIN may read motion and fall-related Health data only to send a family urgent safety signal when you enable it. Not used for diagnosis.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>ALADDIN does not write Health records. HealthKit is enabled only to read a fall-related signal for a family urgent alert when you turn it on.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>ALADDIN uses motion to help detect a hard fall and send a family urgent safety signal when you enable it.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

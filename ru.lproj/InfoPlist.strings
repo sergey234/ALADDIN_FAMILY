@@ -11,6 +11,7 @@
 "NSSpeechRecognitionUsageDescription" = "ALADDIN нужно распознавание речи для голосового ввода AI.";
 "NSMotionUsageDescription" = "ALADDIN использует движение, чтобы помочь отправить срочный сигнал семье при сильном ударе, если вы это включили.";
 "NSHealthShareUsageDescription" = "ALADDIN может читать данные о движении из Здоровья только для срочного сигнала семье, если вы это включили.";
+"NSHealthUpdateUsageDescription" = "ALADDIN не записывает данные в Здоровье. HealthKit нужен только чтобы прочитать сигнал о падении и отправить срочный сигнал семье, если вы это включили.";
 "NSCalendarsUsageDescription" = "ALADDIN нужен календарь, чтобы по желанию синхронизировать семейные привычки-напоминания.";
 "NSCalendarsFullAccessUsageDescription" = "ALADDIN нужен календарь, чтобы по желанию синхронизировать семейные привычки-напоминания.";
 "CFBundleDisplayName" = "ALADDIN X AI";

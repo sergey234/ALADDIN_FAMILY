@@ -137,7 +137,8 @@ fi
 if test -f ALADDINShieldAction/ShieldActionExtension.swift \
   && grep -q 'ai.aladdin.ShieldAction' ALADDIN.xcodeproj/project.pbxproj \
   && grep -q 'STACT0112F90000200C7D34B' ALADDIN.xcodeproj/project.pbxproj \
-  && grep -q 'shield-action-service' ALADDINShieldAction/Info.plist \
+  && grep -q 'com.apple.ManagedSettings.shield-action-service' ALADDINShieldAction/Info.plist \
+  && ! grep -q 'ManagedSettingsUI.shield-action-service' ALADDINShieldAction/Info.plist \
   && grep -q 'secondaryButtonLabel' ALADDINShieldConfiguration/ShieldConfigurationExtension.swift; then
   echo "OK: Shield Action target + Ask Parent UI"
 else
@@ -181,6 +182,25 @@ for k in geofence_consent_title geofence_adult_share_title geofence_always_teen_
 done
 if [[ "$LOC_OK" -eq 1 ]]; then
   echo "OK: L16 P1/A3/teen + geofences_title in RU+EN strings"
+fi
+
+# ASC 409 after signing fix: host NE Content Filter + Health update string
+if grep -q 'NSHealthUpdateUsageDescription' Info.plist \
+  && grep -q 'NSHealthUpdateUsageDescription' ru.lproj/InfoPlist.strings \
+  && grep -q 'NSHealthUpdateUsageDescription' en.lproj/InfoPlist.strings; then
+  echo "OK: NSHealthUpdateUsageDescription in Info.plist + RU/EN"
+else
+  echo "FAIL: missing NSHealthUpdateUsageDescription (ASC HealthKit validation)"
+  FAIL=1
+fi
+
+if grep -A3 'com.apple.developer.networking.networkextension' ALADDIN.entitlements \
+  | grep -q 'content-filter-provider' \
+  && ! grep -q 'packet-tunnel' ALADDIN.entitlements; then
+  echo "OK: host app NE content-filter-provider (no Packet Tunnel)"
+else
+  echo "FAIL: host app must declare content-filter-provider only"
+  FAIL=1
 fi
 
 if [[ "$FAIL" -ne 0 ]]; then

@@ -11,6 +11,7 @@
 "NSSpeechRecognitionUsageDescription" = "ALADDIN needs speech recognition for AI voice input and commands.";
 "NSMotionUsageDescription" = "ALADDIN uses motion to help send a family urgent safety signal on a hard impact when you enable it.";
 "NSHealthShareUsageDescription" = "ALADDIN may read Health motion-related data only to send a family urgent safety signal when you enable it.";
+"NSHealthUpdateUsageDescription" = "ALADDIN does not write Health records. HealthKit is enabled only to read a fall-related signal for a family urgent alert when you turn it on.";
 "NSCalendarsUsageDescription" = "ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.";
 "NSCalendarsFullAccessUsageDescription" = "ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.";
 "CFBundleDisplayName" = "ALADDIN X AI";
