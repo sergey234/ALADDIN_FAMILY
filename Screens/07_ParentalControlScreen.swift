@@ -706,8 +706,8 @@ struct ParentalControlScreen: View {
                             }
                             showContentBlockModal = true
                         }
-                    }
-                    
+                    )
+
                     if AppStoreBuildPolicy.allowsSystemFamilyControls {
                         ParentalControlCard(
                             icon: "⏱️",
