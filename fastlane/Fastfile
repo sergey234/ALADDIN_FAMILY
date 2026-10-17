@@ -37,6 +37,7 @@ platform :ios do
       st_monitor_uuid = ENV["PROVISIONING_PROFILE_ST_MONITOR_UUID"].to_s
       st_report_uuid = ENV["PROVISIONING_PROFILE_ST_REPORT_UUID"].to_s
       st_shield_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_UUID"].to_s
+      st_shield_action_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_ACTION_UUID"].to_s
       st_manual = !st_monitor_uuid.empty? && !st_report_uuid.empty? && !st_shield_uuid.empty?
       if st_manual
         puts "✅ Screen Time App Store profiles present — embedding Monitor/Report/Shield"
@@ -44,6 +45,14 @@ platform :ios do
         puts "⚠️  Screen Time App Store profile UUIDs not set — skipping ST appex embed for this archive"
         puts "    Add secrets PROVISIONING_PROFILE_ST_* (+ decode step) then rebuild"
         sh("bash scripts/ci_disable_screen_time_embed.sh")
+      end
+
+      # WAVE3 B3 — Shield Action needs its own App Store profile (optional until portal ready).
+      if st_manual && st_shield_action_uuid.empty?
+        puts "⚠️  PROVISIONING_PROFILE_ST_SHIELD_ACTION_UUID not set — skipping Shield Action embed"
+        sh("bash scripts/ci_disable_shield_action_embed.sh")
+      elsif st_manual && !st_shield_action_uuid.empty?
+        puts "✅ Shield Action App Store profile present — embedding ALADDINShieldAction"
       end
 
       # Family Controls stays in ALADDIN.entitlements — requires PROVISIONING_PROFILE_APP
@@ -243,6 +252,21 @@ platform :ios do
         ST
       end
 
+      st_shield_action_xcconfig = if st_manual && !st_shield_action_uuid.empty?
+        <<~STACT
+          ALADDINShieldAction_CODE_SIGN_IDENTITY = Apple Distribution
+          ALADDINShieldAction_CODE_SIGN_STYLE = Manual
+          ALADDINShieldAction_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINShieldAction_PROVISIONING_PROFILE_SPECIFIER = #{st_shield_action_uuid}
+          ALADDINShieldAction_PROVISIONING_PROFILE = #{st_shield_action_uuid}
+          ALADDINShieldAction_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.ShieldAction
+        STACT
+      else
+        <<~STACT
+          // ALADDINShieldAction skipped (no PROVISIONING_PROFILE_ST_SHIELD_ACTION_UUID)
+        STACT
+      end
+
       xcconfig_content = <<~XCCONFIG
         DEVELOPMENT_TEAM = #{team_id}
 
@@ -262,6 +286,7 @@ platform :ios do
         #{call_directory_xcconfig}
         #{widgets_xcconfig}
         #{st_xcconfig}
+        #{st_shield_action_xcconfig}
       XCCONFIG
 
       File.write(xcconfig_path, xcconfig_content)
@@ -345,6 +370,12 @@ platform :ios do
         xcodebuild_args << "ALADDINShieldConfiguration_CODE_SIGN_IDENTITY=Apple Distribution"
         xcodebuild_args << "ALADDINShieldConfiguration_PROVISIONING_PROFILE_SPECIFIER=#{st_shield_uuid}"
         xcodebuild_args << "ALADDINShieldConfiguration_PROVISIONING_PROFILE=#{st_shield_uuid}"
+        unless st_shield_action_uuid.empty?
+          xcodebuild_args << "ALADDINShieldAction_CODE_SIGN_STYLE=Manual"
+          xcodebuild_args << "ALADDINShieldAction_CODE_SIGN_IDENTITY=Apple Distribution"
+          xcodebuild_args << "ALADDINShieldAction_PROVISIONING_PROFILE_SPECIFIER=#{st_shield_action_uuid}"
+          xcodebuild_args << "ALADDINShieldAction_PROVISIONING_PROFILE=#{st_shield_action_uuid}"
+        end
       end
       if needs_provisioning_updates
         xcodebuild_args << "-allowProvisioningUpdates"
@@ -369,6 +400,7 @@ platform :ios do
     st_monitor_uuid = ENV["PROVISIONING_PROFILE_ST_MONITOR_UUID"].to_s
     st_report_uuid = ENV["PROVISIONING_PROFILE_ST_REPORT_UUID"].to_s
     st_shield_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_UUID"].to_s
+    st_shield_action_uuid = ENV["PROVISIONING_PROFILE_ST_SHIELD_ACTION_UUID"].to_s
 
     UI.user_error!("❌ APP_PROFILE_UUID не установлен") if app_profile_uuid.nil? || app_profile_uuid.empty?
     UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен") if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -390,6 +422,9 @@ platform :ios do
       profiles["ai.aladdin.DeviceActivityMonitor"] = st_monitor_uuid
       profiles["ai.aladdin.DeviceActivityReport"] = st_report_uuid
       profiles["ai.aladdin.ShieldConfiguration"] = st_shield_uuid
+      unless st_shield_action_uuid.empty?
+        profiles["ai.aladdin.ShieldAction"] = st_shield_action_uuid
+      end
     end
 
     export_options_path = "./build/ExportOptions.plist"

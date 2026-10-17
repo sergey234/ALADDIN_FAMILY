@@ -214,6 +214,19 @@ class LocationManager: NSObject, ObservableObject {
             }
         }
     }
+
+    /// WAVE3 L6/L14 — precise fix only while setting a place (or SOS); then restores battery mode.
+    func getCurrentLocationForPlaceSetup() async throws -> CLLocation {
+        let previousAccuracy = locationManager.desiredAccuracy
+        let previousFilter = locationManager.distanceFilter
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = kCLDistanceFilterNone
+        defer {
+            locationManager.desiredAccuracy = previousAccuracy
+            locationManager.distanceFilter = previousFilter
+        }
+        return try await getCurrentLocation()
+    }
     
     /// Начать постоянные обновления местоположения (только когда приложение активно)
     func startUpdatingLocation() {

@@ -50,6 +50,7 @@ final class GeofenceGeocodingService {
                 coordinates[geofence.id] = center
                 persisted.append(GeofenceWithCoordinatesCodable(from: withCoords))
             } catch {
+                // WAVE3 L6 — never invent coords; place stays without monitoring until fixed.
                 print("⚠️ GeofenceGeocodingService: '\(geofence.name)' — \(error.localizedDescription)")
             }
         }
@@ -58,6 +59,73 @@ final class GeofenceGeocodingService {
             UserDefaults.standard.set(encoded, forKey: storageKey)
         }
         return coordinates
+    }
+
+    /// WAVE3 L6 — geocode one place and persist; throws if address has no coordinates.
+    @discardableResult
+    func resolveAndStore(for geofence: GeofenceItem) async throws -> CLLocationCoordinate2D {
+        let normalized = normalizeAddress(geofence.address)
+        guard !normalized.isEmpty else { throw GeofenceGeocodingError.noPlacemark }
+
+        if let cached = loadStoredByAddress()[normalized] {
+            persist(geofence.withCoordinates(
+                latitude: cached.latitude,
+                longitude: cached.longitude
+            ))
+            return cached.center
+        }
+
+        let center = try await geocodeAddress(normalized)
+        persist(geofence.withCoordinates(
+            latitude: center.latitude,
+            longitude: center.longitude
+        ))
+        return center
+    }
+
+    /// WAVE3 L6/L14 — pin place from current GPS (precise capture for setup only).
+    func storeCoordinate(_ coordinate: CLLocationCoordinate2D, for geofence: GeofenceItem) {
+        persist(geofence.withCoordinates(
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude
+        ))
+    }
+
+    /// Human address line for “use current location” (street + city when available).
+    func reverseGeocodeAddressLine(for location: CLLocation) async -> String? {
+        await withCheckedContinuation { continuation in
+            let preferred = LocalizationManager.shared.locale
+            reverseGeocoder.reverseGeocodeLocation(
+                location,
+                preferredLocale: preferred
+            ) { placemarks, _ in
+                guard let mark = placemarks?.first else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                var parts: [String] = []
+                if let thoroughfare = mark.thoroughfare, !thoroughfare.isEmpty {
+                    if let sub = mark.subThoroughfare, !sub.isEmpty {
+                        parts.append("\(thoroughfare), \(sub)")
+                    } else {
+                        parts.append(thoroughfare)
+                    }
+                }
+                if let city = mark.locality, !city.isEmpty { parts.append(city) }
+                else if let area = mark.administrativeArea, !area.isEmpty { parts.append(area) }
+                let line = parts.joined(separator: ", ").trimmingCharacters(in: .whitespacesAndNewlines)
+                continuation.resume(returning: line.isEmpty ? nil : line)
+            }
+        }
+    }
+
+    private func persist(_ withCoords: GeofenceWithCoordinates) {
+        var byAddress = loadStoredByAddress()
+        byAddress[normalizeAddress(withCoords.address)] = withCoords
+        let persisted = byAddress.values.map { GeofenceWithCoordinatesCodable(from: $0) }
+        if let encoded = try? JSONEncoder().encode(persisted) {
+            UserDefaults.standard.set(encoded, forKey: storageKey)
+        }
     }
 
     private func loadStoredByAddress() -> [String: GeofenceWithCoordinates] {

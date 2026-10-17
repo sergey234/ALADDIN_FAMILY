@@ -359,17 +359,17 @@ Debug/non–App Store: как сейчас, можно true для локаль�
 - [x] **cap-L3** Important types: all geofence enter/exit
 - [ ] **cap-L4** Server geofence-event → APNs parents (**код ✅ · деплой ⏳ GO**)
 - [x] **cap-L5** Purpose strings (Review Notes — при Submit)
-- [ ] **cap-L6** Place coords from map/GPS (no silent skip)
-- [ ] **cap-L7** SOS / share location When In Use
-- [ ] **cap-L8** Soft presence polish
-- [ ] **cap-L9** Location Bubble honesty
+- [x] **cap-L6** Place coords from map/GPS (no silent skip)
+- [x] **cap-L7** SOS / share location When In Use
+- [x] **cap-L8** Soft presence polish
+- [x] **cap-L9** Location Bubble honesty
 - [x] **cap-L10** Verify no background `location` mode
 - [ ] **cap-L11** Critical Alerts for geofence (after D)
-- [ ] **cap-L12** Progressive WhenInUse → Always UX
-- [ ] **cap-L13** Sync геозон :8002 + kill fake coords
-- [ ] **cap-L14** Precise only setup / SOS
+- [x] **cap-L12** Progressive WhenInUse → Always UX
+- [x] **cap-L13** Sync геозон soft parental upsert + demo blocked (UI local SSOT)
+- [x] **cap-L14** Precise place-setup helper (SOS → L7)
 - [ ] **cap-L15** ASC Privacy labels + Notes (not continuous track)
-- [ ] **cap-L16** Member toggle / no hidden GPS
+- [x] **cap-L16** Member toggle / no hidden GPS (places consent)
 
 **One-pager завтра:** [`WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`](WAVE3_TOMORROW_TASKS_2026-10-17_RU.md)
 
@@ -389,8 +389,8 @@ Staging list: `WAVE3_TOMORROW_TASKS` § «Что уже готово».
 - [ ] **cap-A4** Archive entitlements FC
 
 ### B — Shield Action
-- [ ] **cap-B1** Target + App ID + profile
-- [ ] **cap-B2** Ask Parent / Close + Loc
+- [x] **cap-B1** Target + App ID + profile (code ✅ · portal profile ⏳)
+- [x] **cap-B2** Ask Parent / Close + Loc
 - [ ] **cap-B3** CI secrets + Fastfile
 - [ ] **cap-B4** Parent notify
 

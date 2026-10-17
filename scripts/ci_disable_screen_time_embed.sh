@@ -21,9 +21,11 @@ removals = [
     "\t\t\t\tSTMON0112F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex in Embed App Extensions */,\n",
     "\t\t\t\tSTREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed App Extensions */,\n",
     "\t\t\t\tSTSHD0112F90000200C7D34B /* ALADDINShieldConfiguration.appex in Embed App Extensions */,\n",
+    "\t\t\t\tSTACT0112F90000200C7D34B /* ALADDINShieldAction.appex in Embed App Extensions */,\n",
     "\t\t\t\tSTMON0132F90000200C7D34B /* PBXTargetDependency */,\n",
     "\t\t\t\tSTREP0132F90000200C7D34B /* PBXTargetDependency */,\n",
     "\t\t\t\tSTSHD0132F90000200C7D34B /* PBXTargetDependency */,\n",
+    "\t\t\t\tSTACT0132F90000200C7D34B /* PBXTargetDependency */,\n",
 ]
 removed = 0
 for block in removals:

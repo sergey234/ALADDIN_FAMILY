@@ -33,26 +33,26 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-L3 | L | Important types: all geofence enter/exit | ✅ |
 | cap-L4 | L | Server geofence-event → APNs parents | 🚧 код ✅ · деплой ⏳ GO |
 | cap-L5 | L | Purpose strings + Review Notes location | ✅ plist/strings · Notes ⏳ |
-| cap-L6 | L | Place coords map/GPS (no silent skip) | ⏳ |
-| cap-L7 | L | SOS / share location When In Use | ⏳ |
-| cap-L8 | L | Soft presence polish (no GPS) | ⏳ |
-| cap-L9 | L | Location Bubble honesty | ⏳ |
+| cap-L6 | L | Place coords map/GPS (no silent skip) | ✅ |
+| cap-L7 | L | SOS / share location When In Use | ✅ |
+| cap-L8 | L | Soft presence polish (no GPS) | ✅ |
+| cap-L9 | L | Location Bubble honesty | ✅ |
 | cap-L10 | L | Verify no UIBackgroundModes location | ✅ script |
 | cap-L11 | L | Geofence → Critical Alerts (after D) | ⏳ |
-| cap-L12 | L | UX: WhenInUse → explain → Always only for places | ⏳ |
-| cap-L13 | L | Sync geofences :8002 + kill fake/demo coords | ⏳ |
-| cap-L14 | L | Precise Location only setup zone / SOS | ⏳ |
+| cap-L12 | L | UX: WhenInUse → explain → Always only for places | ✅ |
+| cap-L13 | L | Sync geofences :8002 + kill fake/demo coords | ✅ code · soft upsert |
+| cap-L14 | L | Precise Location only setup zone / SOS | ✅ setup helper · SOS later |
 | cap-L15 | L | ASC Privacy labels + Notes «alerts not track» | ⏳ |
-| cap-L16 | L | Member toggle: no track without explicit opt-in | ⏳ |
+| cap-L16 | L | Member toggle: no track without explicit opt-in | ✅ consent places |
 | cap-A0 | A | Device QA ST 2 iPhone (build 10) | ⏳ |
 | cap-A1 | A | allowsSystemFamilyControls=true after QA+GO | ⏳ |
 | cap-A2 | A | Honest parent↔child minutes sync prod | ⏳ |
 | cap-A3 | A | ManagedSettings limits + honesty | ⏳ |
 | cap-A4 | A | Archive entitlements FC+appex | ⏳ |
-| cap-B1 | B | Shield Action target + FC profile | ⏳ |
-| cap-B2 | B | Ask Parent / Close + App Group + Loc | ⏳ |
-| cap-B3 | B | CI secrets + Fastfile Shield Action | ⏳ |
-| cap-B4 | B | Parent notify on shield ask | ⏳ |
+| cap-B1 | B | Shield Action target + FC profile | ✅ code · portal profile ⏳ |
+| cap-B2 | B | Ask Parent / Close + App Group + Loc | ✅ |
+| cap-B3 | B | CI secrets + Fastfile Shield Action | ✅ Fastfile · secret ⏳ |
+| cap-B4 | B | Parent notify on shield ask | ✅ local banner · APNs ⏳ |
 | cap-C1 | C | Apple form Critical Alerts | ⏳ |
 | cap-C2 | C | Apple form Communication Notifications | ⏳ |
 | cap-C3 | C | Apple form NE Content Filter/DNS Proxy (not VPN) | ⏳ |

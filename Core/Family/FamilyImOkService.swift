@@ -1,7 +1,9 @@
+import CoreLocation
 import Foundation
 import UIKit
 
-/// fsl-13 / fsl-15 / sos — «Я в порядке» / «Нужна помощь» + мягкий статус. Без GPS-трека.
+/// fsl-13 / fsl-15 / sos — «Я в порядке» / «Нужна помощь» + мягкий статус.
+/// Im OK = без GPS. Need Help (L7) = опционально одна точка When In Use (не трек).
 struct FamilyPresenceSnapshot: Codable, Equatable, Identifiable {
     var id: String { memberId }
     let memberId: String
@@ -293,11 +295,12 @@ enum FamilyImOkService {
         }
     }
 
-    /// sos — зеркало Im OK: срочное «нужна помощь» (чат семьи + локальный urgent статус). Без GPS.
+    /// sos / L7 — срочное «нужна помощь» + optional one-shot location (When In Use). Не continuous GPS.
     static func sendNeedHelp(
         displayName: String,
         localization: LocalizationManager = .shared,
-        apiService: APIService? = nil
+        apiService: APIService? = nil,
+        attachLocation: Bool = true
     ) async -> Result<Void, Error> {
         let api = apiService ?? APIService.shared
         let memberId = (UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? "")
@@ -324,10 +327,18 @@ enum FamilyImOkService {
         } else {
             batteryPart = ""
         }
+
+        var locationPart = ""
+        if attachLocation, UserDefaults.standard.object(forKey: "parental_sos_enabled") as? Bool != false {
+            if let pin = await captureSOSLocationPin(localization: localization, api: api) {
+                locationPart = pin
+            }
+        }
+
         let message = String(
             format: localization.localized("need_help_family_chat_message"),
             displayName,
-            batteryPart
+            batteryPart + locationPart
         ).trimmingCharacters(in: .whitespacesAndNewlines)
 
         let chatResult = await sendFamilyChat(message: message, api: api)
@@ -364,6 +375,41 @@ enum FamilyImOkService {
         case .failure(let error):
             FamilyImOkOfflineQueue.enqueue(message: message, kind: "need_help")
             return .failure(error)
+        }
+    }
+
+    /// WAVE3 L7 — one precise fix for SOS only; never starts region/significant monitoring.
+    private static func captureSOSLocationPin(
+        localization: LocalizationManager,
+        api: APIService
+    ) async -> String? {
+        let lm = LocationManager.shared
+        switch lm.authorizationStatus {
+        case .notDetermined:
+            lm.requestAuthorization(always: false)
+        case .denied, .restricted:
+            return " " + localization.localized("need_help_location_unavailable")
+        default:
+            break
+        }
+        guard lm.hasRequiredAuthorization() else {
+            return " " + localization.localized("need_help_location_unavailable")
+        }
+        do {
+            let location = try await lm.getCurrentLocationForPlaceSetup()
+            let lat = location.coordinate.latitude
+            let lon = location.coordinate.longitude
+            _ = await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                api.reportLocation(latitude: lat, longitude: lon, speed: nil) { _ in
+                    cont.resume()
+                }
+            }
+            if let line = await GeofenceGeocodingService.shared.reverseGeocodeAddressLine(for: location) {
+                return " " + String(format: localization.localized("need_help_location_named"), line)
+            }
+            return " " + String(format: localization.localized("need_help_location_coords"), lat, lon)
+        } catch {
+            return " " + localization.localized("need_help_location_unavailable")
         }
     }
 

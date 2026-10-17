@@ -6,10 +6,11 @@ import Foundation
 enum GeofenceMonitoringBootstrap {
     private static let geofencesKey = "geofences_settings"
 
-    /// Reload places → geocode → CLCircularRegion. Optionally upgrade to Always.
+    /// Reload places → geocode → CLCircularRegion.
+    /// WAVE3 L12 — Always upgrade is **opt-in** (`requestAlwaysUpgrade: true` only from consent / Always CTA).
     static func reloadIfNeeded(
         locationManager: LocationManager = .shared,
-        requestAlwaysUpgrade: Bool = true
+        requestAlwaysUpgrade: Bool = false
     ) async {
         guard GeofencePlacesConsentStore.hasAccepted else { return }
 

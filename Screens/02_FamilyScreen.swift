@@ -4613,10 +4613,7 @@ struct FamilyLocationModal: View {
             break
         }
         
-        // Запрос Always только если WhenInUse уже есть (upgrade path)
-        if locationManager.authorizationStatus == .authorizedWhenInUse {
-            locationManager.requestAuthorization(always: true)
-        }
+        // WAVE3 L12 — Always только из экрана мест (consent / CTA), не при открытии Location modal.
         
         // Запуск Significant-Change Location Service
         if isLocationEnabledState && locationManager.hasRequiredAuthorization(forBackground: true) {
@@ -4633,7 +4630,7 @@ struct FamilyLocationModal: View {
         Task { @MainActor in
             await GeofenceMonitoringBootstrap.reloadIfNeeded(
                 locationManager: locationManager,
-                requestAlwaysUpgrade: true
+                requestAlwaysUpgrade: false
             )
             print("✅ FamilyLocationModal: bootstrap monitoring done")
         }
@@ -7283,6 +7280,9 @@ struct GeofencesSettingsModal: View {
     @State private var newGeofenceName = ""
     @State private var newGeofenceAddress = ""
     @State private var newGeofenceRadius: Double = 100
+    @State private var isResolvingPlace = false
+    /// WAVE3 L6 — GPS pin from “use current location” (avoids geocode miss on coord fallback).
+    @State private var pendingSetupCoordinate: CLLocationCoordinate2D? = nil
     @State private var showValidationAlert = false
     @State private var validationAlertMessage = ""
     @State private var placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
@@ -7347,7 +7347,7 @@ struct GeofencesSettingsModal: View {
         Task { @MainActor in
             await GeofenceMonitoringBootstrap.reloadIfNeeded(
                 locationManager: locationManager,
-                requestAlwaysUpgrade: true
+                requestAlwaysUpgrade: false
             )
         }
     }
@@ -7356,12 +7356,12 @@ struct GeofencesSettingsModal: View {
         GeofencePlacesConsentStore.accept()
         placesConsentAccepted = true
         HapticFeedback.notification(.success)
-        // Always needed for arrive/leave when app is closed
+        // L12 progressive: When In Use first, then Always explain card (not silent Always).
         switch locationManager.authorizationStatus {
         case .notDetermined:
             locationManager.requestAuthorization(always: false)
-        case .authorizedWhenInUse:
-            locationManager.requestAlwaysUpgradeIfEligible()
+        case .authorizedWhenInUse, .authorizedAlways:
+            break
         case .denied, .restricted:
             break
         default:
@@ -7500,11 +7500,19 @@ struct GeofencesSettingsModal: View {
                         Button {
                             if locationManager.authorizationStatus == .authorizedWhenInUse {
                                 locationManager.requestAlwaysUpgradeIfEligible()
+                            } else if locationManager.authorizationStatus == .notDetermined {
+                                locationManager.requestAuthorization(always: false)
                             } else if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
                         } label: {
-                            Text(localizationManager.localized("geofence_always_button"))
+                            Text(
+                                localizationManager.localized(
+                                    locationManager.authorizationStatus == .authorizedWhenInUse
+                                        ? "geofence_always_button_allow"
+                                        : "geofence_always_button"
+                                )
+                            )
                                 .font(.caption.weight(.bold))
                                 .foregroundColor(.secondaryGold)
                         }
@@ -7596,6 +7604,20 @@ struct GeofencesSettingsModal: View {
                                 .stroke(Color.white.opacity(0.45), lineWidth: 1)
                         )
                         .cornerRadius(CornerRadius.medium)
+
+                        Button {
+                            Task { await fillAddressFromCurrentLocation() }
+                        } label: {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "location.fill")
+                                Text(localizationManager.localized("geofences_use_current_location"))
+                                    .font(.caption.weight(.bold))
+                            }
+                            .foregroundColor(.secondaryGold)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .disabled(isResolvingPlace)
+                        .accessibilityIdentifier("geofences_use_current_location")
                         
                         VStack(alignment: .leading, spacing: Spacing.s) {
                             HStack {
@@ -7643,36 +7665,16 @@ struct GeofencesSettingsModal: View {
                                     )
                                     .cornerRadius(CornerRadius.medium)
                             }
+                            .disabled(isResolvingPlace)
                             
                             Button(action: {
-                                HapticFeedback.impact(.medium)
-                                let trimmedName = newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines)
-                                let trimmedAddress = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-                                
-                                guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else {
-                                    validationAlertMessage = localizationManager.localized("geofences_name_address_required")
-                                    showValidationAlert = true
-                                    VisualLogger.shared.log(
-                                        "⚠️ geofence_add_validation_failed nameEmpty=\(trimmedName.isEmpty) addressEmpty=\(trimmedAddress.isEmpty)",
-                                        level: .warning,
-                                        category: "PARENTAL.UI"
-                                    )
-                                    return
-                                }
-                                
-                                geofences.append(GeofenceItem(name: trimmedName, address: trimmedAddress, radius: newGeofenceRadius))
-                                VisualLogger.shared.log(
-                                    "➕ geofence_add name=\(trimmedName) radius=\(Int(newGeofenceRadius))",
-                                    level: .info,
-                                    category: "PARENTAL.UI"
-                                )
-                                newGeofenceName = ""
-                                newGeofenceAddress = ""
-                                newGeofenceRadius = 100
-                                showAddForm = false
-                                saveGeofences()
+                                Task { await addGeofenceWithResolvedCoords() }
                             }) {
-                                Text(localizationManager.localized("geofences_add"))
+                                Text(
+                                    localizationManager.localized(
+                                        isResolvingPlace ? "geofences_resolving_coords" : "geofences_add"
+                                    )
+                                )
                                     .font(.bodyBold)
             .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
@@ -7680,6 +7682,7 @@ struct GeofencesSettingsModal: View {
                                     .background(Color.secondaryGold)
                                     .cornerRadius(CornerRadius.medium)
                             }
+                            .disabled(isResolvingPlace)
                         }
                     }
                     .padding(Spacing.m)
@@ -7724,7 +7727,7 @@ struct GeofencesSettingsModal: View {
             Task {
                 await GeofenceMonitoringBootstrap.reloadIfNeeded(
                     locationManager: locationManager,
-                    requestAlwaysUpgrade: true
+                    requestAlwaysUpgrade: false
                 )
             }
         }
@@ -7734,6 +7737,94 @@ struct GeofencesSettingsModal: View {
             Text(validationAlertMessage)
         }
         .withVisualLogger()
+    }
+
+    /// WAVE3 L6 — geocode (or refuse) before save; no silent places without coords.
+    @MainActor
+    private func addGeofenceWithResolvedCoords() async {
+        HapticFeedback.impact(.medium)
+        let trimmedName = newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedAddress = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else {
+            validationAlertMessage = localizationManager.localized("geofences_name_address_required")
+            showValidationAlert = true
+            return
+        }
+        guard !GeofenceGeocodingService.isDemoPlaceholderAddress(trimmedAddress, localization: localizationManager) else {
+            validationAlertMessage = localizationManager.localized("geofences_demo_address_blocked")
+            showValidationAlert = true
+            return
+        }
+
+        isResolvingPlace = true
+        defer { isResolvingPlace = false }
+
+        let item = GeofenceItem(name: trimmedName, address: trimmedAddress, radius: newGeofenceRadius)
+        do {
+            let center: CLLocationCoordinate2D
+            if let pinned = pendingSetupCoordinate {
+                GeofenceGeocodingService.shared.storeCoordinate(pinned, for: item)
+                center = pinned
+            } else {
+                center = try await GeofenceGeocodingService.shared.resolveAndStore(for: item)
+            }
+            geofences.append(item)
+            GeofencePlacesCloudSync.upsertPlace(
+                item,
+                latitude: center.latitude,
+                longitude: center.longitude
+            )
+            VisualLogger.shared.log(
+                "➕ geofence_add name=\(trimmedName) radius=\(Int(newGeofenceRadius)) lat=\(center.latitude)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
+            newGeofenceName = ""
+            newGeofenceAddress = ""
+            newGeofenceRadius = 100
+            pendingSetupCoordinate = nil
+            showAddForm = false
+            saveGeofences()
+        } catch {
+            validationAlertMessage = localizationManager.localized("geofences_geocode_failed")
+            showValidationAlert = true
+            VisualLogger.shared.log(
+                "⚠️ geofence_geocode_failed name=\(trimmedName)",
+                level: .warning,
+                category: "PARENTAL.UI"
+            )
+        }
+    }
+
+    /// WAVE3 L6/L14 — pin from current GPS with precise accuracy for setup only.
+    @MainActor
+    private func fillAddressFromCurrentLocation() async {
+        isResolvingPlace = true
+        defer { isResolvingPlace = false }
+        do {
+            if locationManager.authorizationStatus == .notDetermined {
+                locationManager.requestAuthorization(always: false)
+            }
+            let location = try await locationManager.getCurrentLocationForPlaceSetup()
+            pendingSetupCoordinate = location.coordinate
+            if let line = await GeofenceGeocodingService.shared.reverseGeocodeAddressLine(for: location) {
+                newGeofenceAddress = line
+            } else {
+                newGeofenceAddress = String(
+                    format: localizationManager.localized("geofences_coords_fallback_fmt"),
+                    location.coordinate.latitude,
+                    location.coordinate.longitude
+                )
+            }
+            if newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                newGeofenceName = localizationManager.localized("geofences_current_place_name")
+            }
+            HapticFeedback.notification(.success)
+        } catch {
+            validationAlertMessage = localizationManager.localized("geofences_current_location_failed")
+            showValidationAlert = true
+        }
     }
 
     @ViewBuilder

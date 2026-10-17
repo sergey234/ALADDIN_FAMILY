@@ -261,19 +261,20 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 ### Location L
 - [x] L0–L3, L5, L10  
 - [ ] **L4** деплой APNs  
-- [ ] **L6** coords map/GPS  
-- [ ] **L7** SOS share  
-- [ ] **L8** Soft presence  
-- [ ] **L9** Location Bubble  
+- [x] **L6** coords map/GPS (geocode fail = alert; «моя точка»)  
+- [x] **L7** SOS one-shot When In Use + precise  
+- [x] **L8** Soft presence honesty (Im OK без GPS)  
+- [x] **L9** Location Bubble honesty copy  
 - [ ] **L11** Critical на геозону  
-- [ ] **L12** Progressive WhenInUse→Always  
-- [ ] **L13** Sync :8002 + kill fake coords  
-- [ ] **L14** Precise only setup/SOS  
+- [x] **L12** Progressive WhenInUse→Always (CTA only)  
+- [x] **L13** Soft sync parental API + demo blocked (UI local SSOT)  
+- [x] **L14** Precise only place-setup helper (+ SOS)  
 - [ ] **L15** ASC Privacy labels location  
-- [ ] **L16** Тумблер / no hidden GPS  
+- [x] **L16** Opt-in мест (consent) · no silent GPS  
 
 ### A Screen Time · B Shield · C Forms · D Critical · E Comm · F NE · G HealthKit · H Hygiene · I Ship  
-(как в MASTER §6 — ids `cap-A*` … `cap-I*`)
+(как в MASTER §6 — ids `cap-A*` … `cap-I*`)  
+**B1/B2 код ✅** · **B3** ждёт App ID `ai.aladdin.ShieldAction` + secret · **B4** local parent banner ✅ (APNs позже)
 
 ---
 

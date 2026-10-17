@@ -738,7 +738,11 @@ struct ALADDINApp: App {
                             localization: localizationManager
                         )
                         GeofenceNoShowMonitor.checkDue(localization: localizationManager)
-                        await GeofenceMonitoringBootstrap.reloadIfNeeded(requestAlwaysUpgrade: true)
+                        // WAVE3 L12 — never auto-prompt Always on foreground; places CTA owns upgrade.
+                        await GeofenceMonitoringBootstrap.reloadIfNeeded(requestAlwaysUpgrade: false)
+                        ShieldAskParentStore.presentLocalParentAlertIfNeeded(
+                            localization: localizationManager
+                        )
                         await FamilyHabitRemindersBootstrap.reloadIfNeeded()
                         // Child device: pull parental Homework/YouTube/lock settings and apply locally (Apple FC).
                         _ = await ParentalControlManager.shared.syncAndApplyParentalSettingsFromServerIfChildDevice()

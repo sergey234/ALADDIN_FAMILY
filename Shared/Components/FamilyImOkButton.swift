@@ -52,6 +52,12 @@ struct FamilyImOkButton: View {
             .accessibilityLabel(localizationManager.localized("im_ok_button_title"))
             .accessibilityHint(localizationManager.localized("im_ok_button_subtitle"))
 
+            Text(localizationManager.localized("im_ok_no_gps_honesty"))
+                .font(.caption2)
+                .foregroundColor(.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("im_ok_no_gps_honesty")
+
             if let statusMessage {
                 Text(statusMessage)
                     .font(.caption)

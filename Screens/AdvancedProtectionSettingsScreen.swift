@@ -297,8 +297,15 @@ struct AdvancedProtectionSettingsScreen: View {
                 title: localizationManager.localized("component_location_bubble_agent_title"),
                 isPresented: $viewModel.showLocationBubbleSettings
             ) {
-                Text(localizationManager.localized("component_location_bubble_agent_description"))
-                    .foregroundColor(.textSecondary)
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("component_location_bubble_agent_description"))
+                        .foregroundColor(.textSecondary)
+                    Text(localizationManager.localized("location_bubble_honesty_body"))
+                        .font(.caption)
+                        .foregroundColor(.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("location_bubble_honesty")
+                }
             }
         }
         .sheet(isPresented: $viewModel.showPersonalDataCleanupSettings) {

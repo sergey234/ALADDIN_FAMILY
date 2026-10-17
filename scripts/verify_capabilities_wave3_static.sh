@@ -87,6 +87,64 @@ else
   FAIL=1
 fi
 
+# L12: Always upgrade opt-in (default false on bootstrap)
+if grep -q 'requestAlwaysUpgrade: Bool = false' Core/Family/GeofenceMonitoringBootstrap.swift \
+  && grep -q 'geofence_always_button_allow' Screens/02_FamilyScreen.swift; then
+  echo "OK: L12 progressive Always (opt-in)"
+else
+  echo "FAIL: L12 Always still auto-upgraded by default"
+  FAIL=1
+fi
+
+# L6: resolve before save + use current spot
+if grep -q 'resolveAndStore' Core/Services/GeofenceGeocodingService.swift \
+  && grep -q 'addGeofenceWithResolvedCoords' Screens/02_FamilyScreen.swift \
+  && grep -q 'geofences_use_current_location' Resources/Localization/ru.lproj/Localizable.strings \
+  && grep -q 'geofences_use_current_location' Resources/Localization/en.lproj/Localizable.strings; then
+  echo "OK: L6 place coords resolve + RU/EN strings"
+else
+  echo "FAIL: L6 place coords / loc incomplete"
+  FAIL=1
+fi
+
+# L13: cloud sync helper + no UI hydrate from mock GET required
+if test -f Core/Family/GeofencePlacesCloudSync.swift \
+  && grep -q 'GeofencePlacesCloudSync' Screens/02_FamilyScreen.swift; then
+  echo "OK: L13 places cloud sync (soft upsert)"
+else
+  echo "FAIL: L13 GeofencePlacesCloudSync missing"
+  FAIL=1
+fi
+
+# L14: precise only for place setup helper
+if grep -q 'getCurrentLocationForPlaceSetup' Core/Managers/LocationManager.swift; then
+  echo "OK: L14 precise place-setup helper"
+else
+  echo "FAIL: L14 precise place-setup helper missing"
+  FAIL=1
+fi
+
+# L7 SOS one-shot location
+if grep -q 'captureSOSLocationPin' Core/Family/FamilyImOkService.swift \
+  && grep -q 'need_help_location_named' Resources/Localization/ru.lproj/Localizable.strings; then
+  echo "OK: L7 SOS one-shot location"
+else
+  echo "FAIL: L7 SOS location incomplete"
+  FAIL=1
+fi
+
+# B1/B2 Shield Action target
+if test -f ALADDINShieldAction/ShieldActionExtension.swift \
+  && grep -q 'ai.aladdin.ShieldAction' ALADDIN.xcodeproj/project.pbxproj \
+  && grep -q 'STACT0112F90000200C7D34B' ALADDIN.xcodeproj/project.pbxproj \
+  && grep -q 'shield-action-service' ALADDINShieldAction/Info.plist \
+  && grep -q 'secondaryButtonLabel' ALADDINShieldConfiguration/ShieldConfigurationExtension.swift; then
+  echo "OK: Shield Action target + Ask Parent UI"
+else
+  echo "FAIL: Shield Action target incomplete"
+  FAIL=1
+fi
+
 if [[ "$FAIL" -ne 0 ]]; then
   echo "== FAIL =="
   exit 1
