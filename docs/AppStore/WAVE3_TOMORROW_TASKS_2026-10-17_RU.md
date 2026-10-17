@@ -311,7 +311,7 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 
 ### Location L
 - [x] L0–L3, L5, L10  
-- [ ] **L4** деплой APNs  
+- [x] **L4** деплой APNs MAIN (`…180`) 2026-10-17 · walk-test ⏳  
 - [x] **L6** coords map/GPS (geocode fail = alert; «моя точка»)  
 - [x] **L7** SOS one-shot When In Use + precise  
 - [x] **L8** Soft presence honesty (Im OK без GPS)  

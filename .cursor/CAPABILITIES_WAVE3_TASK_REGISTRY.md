@@ -31,7 +31,7 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-L1 | L | Always gate + honest monitoring status | ✅ |
 | cap-L2 | L | requestState after start monitoring | ✅ |
 | cap-L3 | L | Important types: all geofence enter/exit | ✅ |
-| cap-L4 | L | Server geofence-event → APNs parents | 🚧 код ✅ · деплой ⏳ GO |
+| cap-L4 | L | Server geofence-event → APNs parents | ✅ deployed MAIN 2026-10-17 · walk-test ⏳ |
 | cap-L5 | L | Purpose strings + Review Notes location | ✅ plist/strings · Notes ⏳ |
 | cap-L6 | L | Place coords map/GPS (no silent skip) | ✅ |
 | cap-L7 | L | SOS / share location When In Use | ✅ |
