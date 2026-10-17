@@ -400,8 +400,8 @@ The user can disable Critical Alerts in iOS Settings.
 
 # ЗАДАЧА 5 · Communication Notifications (C2) (~10 мин)
 
-**Зачем:** уведомления «как входящий» для меток скам/спам (связка с Call Directory).  
-**Не** маркетинг-чат.
+**Зачем / было / будет:** см. таблицу выше «Задача 5».  
+**Кратко:** просим UI «как входящий» для скам-номеров; не реклама.
 
 Отдельной короткой public-URL формы часто нет — используйте Capability Requests на App ID.
 
@@ -445,8 +445,9 @@ Not used for advertising, marketing chat, or engagement campaigns.
 
 # ЗАДАЧА 6 · Content Filter / Network Extensions — **не VPN** (~15 мин)
 
-**Зачем:** системный фильтр сайтов «вне Safari» (родительский).  
-**Запрещено включать:** Packet Tunnel / VPN / Personal VPN.
+**Зачем / было / будет:** см. таблицу выше «Задача 6».  
+**Кратко:** готовим системный родительский фильтр сайтов; **VPN не включать**.  
+**Запрещено:** Packet Tunnel / Personal VPN.
 
 > Важно: Content Filter на iOS часто **включается на App ID без отдельной «магической» формы** (self-serve Network Extensions).  
 > Отдельная форма нужна не всегда. Наша цель сейчас: **правильно отметить capability и явно не трогать VPN**.  
