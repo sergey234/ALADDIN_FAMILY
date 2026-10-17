@@ -67,10 +67,10 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-E1 | E | Communication Notifications + Call UI | ✅ presenter + flag on · Call Directory already |
 | cap-E2 | E | Call Directory sync/setup polish | ✅ baseline handler · polish later |
 | cap-F1 | F | NE Filter/DNSProxy design (no tunnel) | ✅ ADR `WAVE3_F1_NE_FILTER_ADR_RU.md` |
-| cap-F2 | F | FilterProvider + parental rules | ✅ ALADDINContentFilter + App Group rules · embed skip until profile |
+| cap-F2 | F | FilterProvider + parental rules | ✅ ALADDINContentFilter + App Group rules · profile+secrets ready |
 | cap-F3 | F | Parental UI Safari vs system filter | ✅ honesty copy Safari + available when flag on |
-| cap-F4 | F | CI NE Filter profiles | ⏳ App ID `ai.aladdin.ContentFilter` + secret |
-| cap-G1 | G | HealthKit capability + privacy strings | ✅ privacy strings · HK entitlement deferred (CI profile) · motion path live |
+| cap-F4 | F | CI NE Filter profiles | ✅ UUID `77be9ff5…` · secrets · decode/Fastfile · **no push until GO** |
+| cap-G1 | G | HealthKit capability + privacy strings | ✅ privacy + `healthkit` entitlement · APP profile `(4)` has HK |
 | cap-G2 | G | Fall → family incident push | ✅ «Срочный сигнал семье» motion + manual + chat |
 | cap-G3 | G | allowsHealthKitIntegration=true + GO | ✅ owner GO build 10 |
 | cap-H1 | H | Info.plist privacy audit | ✅ `WAVE3_H1_INFOPLIST_PRIVACY_AUDIT_2026-10-17_RU.md` · removed unused |

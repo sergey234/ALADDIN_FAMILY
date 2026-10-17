@@ -174,7 +174,7 @@ gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
 |-------------|--------|
 | A1 `allowsSystemFamilyControls` | **true** (App Store path) |
 | E1 Communication Notifications | **true** + presenter |
-| F2 Content Filter | target `ALADDINContentFilter` · embed skip until profile |
+| F2 Content Filter | target `ALADDINContentFilter` · secrets ✅ · CI wiring local ⏳ push |
 | G «Срочный сигнал семье» | motion + manual + loc RU/EN · HK entitlement deferred for CI |
 | Critical Alerts | **false** until `VX53USXWCJ` Assigned |
 
