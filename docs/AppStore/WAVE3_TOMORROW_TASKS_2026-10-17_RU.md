@@ -1,6 +1,7 @@
 # WAVE 3 — все задачи (полный список, ничего не забыто)
 
 **Дата:** 2026-10-17 · **TF в облаке:** 1.0.1 / build **10** (последний OK Upload) · **NEXT bump:** **11** (только GO)  
+**CI подпись (вечер):** Content Filter + Shield Action — UUID в Release SPECIFIER (не имя `… App Store.`). Archive на 10; повторный Upload 10 Apple не примет — нужен **GO на bump 11**.  
 **Канон push/CI:** [`docs/RELEASE_BUILD_PROMPT.md`](../RELEASE_BUILD_PROMPT.md) §0 · §0b · §7A  
 **ASC handoff:** [`docs/ML_SYSTEM_HANDOFF_ASC_VERSION_BUILD_RU.md`](../ML_SYSTEM_HANDOFF_ASC_VERSION_BUILD_RU.md)  
 **SSOT фич:** [`CAPABILITIES_WAVE3_BUILD11_MASTER_PLAN_2026-10-17_RU.md`](CAPABILITIES_WAVE3_BUILD11_MASTER_PLAN_2026-10-17_RU.md)  
@@ -64,7 +65,7 @@ telegram_stars_shop_bot/**  .env  BACKUPS/**  .DS_Store  *.pbxproj.bak*
 | | |
 |--|--|
 | App / Team | `ai.aladdin` · **B3WGHSWL79** |
-| Version / Build в TF | **1.0.1 / 10** (успех #588; следующий Upload = снова **10** с ExtensionKit) |
+| Version / Build в TF | **1.0.1 / 10** уже Ready (успех #588). Следующий Upload после фикса подписи = **11** (GO) |
 | След. bump | **11** — только «GO на bump» |
 | Ветка / remote | `master` → `git@github.com:sergey234/ALADDIN_FAMILY.git` |
 | CI | `check-secrets.yml` = **Build and Upload to App Store** |

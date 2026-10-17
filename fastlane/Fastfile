@@ -1,6 +1,7 @@
 # Fastfile для ALADDIN iOS CI/CD
 # Использует существующие сертификаты и профили из GitHub Secrets
-# НЕ требует изменения project.pbxproj
+# Content Filter / Shield Action: UUID пишется в pbx Release SPECIFIER
+# (Xcode ищет профиль по имени из pbx, xcconfig TARGET_UUID этого не перекрывает)
 
 default_platform(:ios)
 require "open3"
@@ -80,6 +81,14 @@ platform :ios do
       UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении") if app_profile_uuid.nil? || app_profile_uuid.empty?
       if extension_profile_uuid.nil? || extension_profile_uuid.empty?
         UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен. Нужен профиль для ALADDINContentBlocker.")
+      end
+
+      # Xcode resolves target-level SPECIFIER by profile name. Write UUID into
+      # Release blocks for Content Filter + Shield Action (same as main app UUID).
+      if !st_shield_action_uuid.empty? || ne_filter_manual
+        ENV["ALADDIN_PBX_SHIELD_ACTION_UUID"] = st_shield_action_uuid
+        ENV["ALADDIN_PBX_CONTENT_FILTER_UUID"] = ne_filter_uuid
+        sh("python3 scripts/apply_appex_profile_uuids_to_pbx.py")
       end
 
       profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
