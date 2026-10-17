@@ -2938,5 +2938,14 @@
 
 /* WAVE3 cap-F3 Safari vs system filter honesty */
 "parental_filter_safari_honesty" = "Сейчас фильтр работает в Safari (Content Blocker). Другие приложения Safari не закрывает.";
-"parental_filter_system_gated" = "Системный фильтр для всех приложений — после одобрения Apple (не VPN).";
-"parental_filter_system_available" = "Системный фильтр для всех приложений можно включить ниже (не VPN).";
+"parental_filter_system_gated" = "Системный фильтр для всех приложений готовится (не VPN).";
+"parental_filter_system_available" = "Системный фильтр для всех приложений (не VPN): правила родителя применяются шире Safari, когда расширение активно.";
+"family_urgent_signal_title" = "Срочный сигнал семье";
+"family_urgent_signal_body" = "Нужна помощь близкого. Откройте ALADDIN и свяжитесь с ним.";
+"family_urgent_signal_chat" = "🆘 Срочный сигнал семье: %@ (%@)";
+"family_urgent_signal_toggle" = "Срочный сигнал семье";
+"family_urgent_signal_toggle_footer" = "При сильном ударе или по кнопке близкие получат сигнал. Нужно ваше согласие.";
+"family_urgent_signal_send_now" = "Отправить сигнал сейчас";
+"family_urgent_signal_sent" = "Сигнал отправлен семье";
+"scam_comm_notification_title" = "Подозрительный звонок";
+"scam_comm_notification_body" = "Возможный скам: %@. Будьте осторожны.";

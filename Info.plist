@@ -95,8 +95,10 @@
 	<string>ALADDIN uses location while you use the app to set family places and share location in an emergency (SOS).</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ALADDIN needs microphone access for voice messages and voice analysis.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>ALADDIN may read motion and fall-related Health data only to send a family urgent safety signal when you enable it. Not used for diagnosis.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>ALADDIN uses motion data for crash/fall safety signals and family safety monitoring.</string>
+	<string>ALADDIN uses motion to help detect a hard fall and send a family urgent safety signal when you enable it.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>ALADDIN Family needs photo library access to save family security photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

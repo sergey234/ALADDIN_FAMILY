@@ -163,8 +163,12 @@ class AppConfigTests: XCTestCase {
         XCTAssertTrue(AppStoreBuildPolicy.isAppStoreBuild)
         XCTAssertFalse(AppStoreBuildPolicy.allowsAlternativePayments)
         XCTAssertFalse(AppStoreBuildPolicy.allowsSmartDNS)
-        XCTAssertFalse(AppStoreBuildPolicy.allowsSystemFamilyControls)
-        XCTAssertFalse(AppStoreBuildPolicy.allowsHealthKitIntegration)
+        // WAVE3 owner GO 2026-10-17: FC + HealthKit + Comm + Content Filter on for build 10
+        XCTAssertTrue(AppStoreBuildPolicy.allowsSystemFamilyControls)
+        XCTAssertTrue(AppStoreBuildPolicy.allowsHealthKitIntegration)
+        XCTAssertTrue(AppStoreBuildPolicy.allowsCommunicationNotifications)
+        XCTAssertTrue(AppStoreBuildPolicy.allowsSystemContentFilter)
+        XCTAssertFalse(AppStoreBuildPolicy.allowsCriticalAlerts)
         #else
         XCTAssertFalse(AppStoreBuildPolicy.isAppStoreBuild)
         #endif

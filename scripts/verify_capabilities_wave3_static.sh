@@ -153,17 +153,15 @@ else
   echo "OK: H1 unused privacy keys removed"
 fi
 
-# D4: capability flags exist and App Store path keeps Critical/Comm/NE off
+# D4: Critical stays false until Apple Assigned; Comm/NE/FC may be true (owner GO 2026-10-17)
 if grep -q 'allowsCriticalAlerts' Core/Config/AppConfig.swift \
   && grep -q 'allowsCommunicationNotifications' Core/Config/AppConfig.swift \
   && grep -q 'allowsSystemContentFilter' Core/Config/AppConfig.swift \
   && grep -q 'allowsCriticalAlerts' Core/Notifications/NotificationManager.swift; then
-  # APP_STORE_BUILD block must set critical/comm/filter to false (literal near #if)
-  if awk '/#if APP_STORE_BUILD/,/#else/' Core/Config/AppConfig.swift | grep -q 'allowsCriticalAlerts = false' \
-    && awk '/#if APP_STORE_BUILD/,/#else/' Core/Config/AppConfig.swift | grep -q 'allowsSystemContentFilter = false'; then
-    echo "OK: D4 capability flags gated false on App Store path"
+  if awk '/#if APP_STORE_BUILD/,/#else/' Core/Config/AppConfig.swift | grep -q 'allowsCriticalAlerts = false'; then
+    echo "OK: D4 Critical gated false; Comm/NE/FC per owner GO"
   else
-    echo "FAIL: D4 App Store path must keep Critical/NE flags false"
+    echo "FAIL: D4 App Store path must keep allowsCriticalAlerts = false until Assigned"
     FAIL=1
   fi
 else

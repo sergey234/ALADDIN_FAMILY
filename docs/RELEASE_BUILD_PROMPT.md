@@ -168,16 +168,24 @@ gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
 
 Все commits после `6ddf112d` (ahead) — пока только локально.
 
-### Осталось по плану (короткий список)
+### Owner GO 2026-10-17 — в билде **10** (код)
 
-1. **Сверить ASC:** какой Build Ready (8? 10?).  
-2. **GO на push** (и **GO на bump→11**, если 10 уже Ready).  
-3. CI Upload зелёный → TF Ready.  
-4. **Device QA** 2 iPhone (ST + walk-test геозон) = gate перед `allowsSystemFamilyControls=true`.  
-5. После QA + GO: **cap-A1** FC flag on.  
-6. Critical Assigned → код D1–D3 / L11 (не раньше).  
-7. Notes в ASC перед Submit (текст в portal session §3).  
-8. HealthKit / FilterProvider / Comm UI — позже (G/F/E), не блокер текущего ship.
+| Флаг / фича | Статус |
+|-------------|--------|
+| A1 `allowsSystemFamilyControls` | **true** (App Store path) |
+| E1 Communication Notifications | **true** + presenter |
+| F2 Content Filter | target `ALADDINContentFilter` · embed skip until profile |
+| G «Срочный сигнал семье» | motion + manual + loc RU/EN · HK entitlement deferred for CI |
+| Critical Alerts | **false** until `VX53USXWCJ` Assigned |
+
+### Осталось после push 10
+
+1. CI Upload зелёный → TF Ready **10**.  
+2. Device QA 2 iPhone (ST + геозоны + срочный сигнал).  
+3. Portal: App ID `ai.aladdin.ContentFilter` + profile (F4).  
+4. Optional: HealthKit capability on App ID + regen APP profile → add HK entitlement.  
+5. Critical Assigned → D1–D3 / L11.  
+6. Notes ASC перед Submit.
 
 Registry: `.cursor/CAPABILITIES_WAVE3_TASK_REGISTRY.md`.
 

@@ -98,6 +98,38 @@ enum GeofenceFamilyBridge {
         }
     }
 
+    /// WAVE3 G — «Срочный сигнал семье» → soft family chat (existing push path).
+    @MainActor
+    static func notifyParentsUrgentSignal(
+        reason: String,
+        localization: LocalizationManager = .shared,
+        api: APIService? = nil
+    ) {
+        let displayName = currentDisplayName(localization: localization)
+        let message = String(
+            format: localization.localized("family_urgent_signal_chat"),
+            displayName,
+            reason
+        )
+        let service = api ?? APIService.shared
+        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+            ?? UserDefaults.standard.string(forKey: "family_id")
+        service.sendFamilyChatMessage(
+            message: message,
+            familyId: familyId,
+            messageType: "text",
+            voiceUrl: nil,
+            voiceDuration: nil,
+            mediaUrl: nil,
+            mediaType: nil,
+            replyToMessageId: nil
+        ) { result in
+            if case .failure = result {
+                FamilyImOkOfflineQueue.enqueue(message: message, kind: "family_urgent")
+            }
+        }
+    }
+
     private static func currentDisplayName(localization: LocalizationManager) -> String {
         let raw = (UserDefaults.standard.string(forKey: "user_name")
             ?? UserDefaults.standard.string(forKey: "user_display_name")

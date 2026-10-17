@@ -7491,6 +7491,47 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
+                // WAVE3 G — Срочный сигнал семье
+                if AppStoreBuildPolicy.allowsHealthKitIntegration {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Toggle(isOn: Binding(
+                            get: { FamilyUrgentSignalService.shared.isOptedIn },
+                            set: { FamilyUrgentSignalService.shared.isOptedIn = $0 }
+                        )) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(localizationManager.localized("family_urgent_signal_toggle"))
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.textPrimary)
+                                Text(localizationManager.localized("family_urgent_signal_toggle_footer"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .tint(.secondaryGold)
+                        .accessibilityIdentifier("family_urgent_signal_toggle")
+
+                        Button {
+                            HapticFeedback.notification(.warning)
+                            Task {
+                                await FamilyUrgentSignalService.shared.sendUrgentSignal(reason: "manual")
+                            }
+                        } label: {
+                            Text(localizationManager.localized("family_urgent_signal_send_now"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.s)
+                                .background(Color.red.opacity(0.85))
+                                .cornerRadius(CornerRadius.medium)
+                        }
+                        .accessibilityIdentifier("family_urgent_signal_send")
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.white.opacity(0.10))
+                    .cornerRadius(CornerRadius.medium)
+                }
+
                 // Существующие геозоны
                 ForEach($geofences) { $geofence in
                     VStack(alignment: .leading, spacing: Spacing.s) {

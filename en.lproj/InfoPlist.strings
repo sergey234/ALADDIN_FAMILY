@@ -9,7 +9,8 @@
 "NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN uses Always location for family place alerts (home, school, work enter/exit) while the app is closed. Not used for continuous GPS tracking.";
 "NSFaceIDUsageDescription" = "ALADDIN uses Face ID for secure authentication.";
 "NSSpeechRecognitionUsageDescription" = "ALADDIN needs speech recognition for AI voice input and commands.";
-"NSMotionUsageDescription" = "ALADDIN uses motion data for crash/fall safety signals and family safety monitoring.";
+"NSMotionUsageDescription" = "ALADDIN uses motion to help send a family urgent safety signal on a hard impact when you enable it.";
+"NSHealthShareUsageDescription" = "ALADDIN may read Health motion-related data only to send a family urgent safety signal when you enable it.";
 "NSCalendarsUsageDescription" = "ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.";
 "NSCalendarsFullAccessUsageDescription" = "ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.";
 "CFBundleDisplayName" = "ALADDIN X AI";

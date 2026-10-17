@@ -55,6 +55,15 @@ platform :ios do
         puts "✅ Shield Action App Store profile present — embedding ALADDINShieldAction"
       end
 
+      # WAVE3 F2 — Content Filter appex (skip embed until App ID + profile exist).
+      ne_filter_uuid = ENV["PROVISIONING_PROFILE_NE_CONTENT_FILTER_UUID"].to_s
+      if ne_filter_uuid.empty?
+        puts "⚠️  PROVISIONING_PROFILE_NE_CONTENT_FILTER_UUID not set — skipping Content Filter embed"
+        sh("bash scripts/ci_disable_content_filter_embed.sh")
+      else
+        puts "✅ Content Filter App Store profile present — embedding ALADDINContentFilter"
+      end
+
       # Family Controls stays in ALADDIN.entitlements — requires PROVISIONING_PROFILE_APP
       # with com.apple.developer.family-controls (UUID 7a0c48ca… on Mac as of 2026-10-16).
 

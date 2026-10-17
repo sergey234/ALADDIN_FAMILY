@@ -10,17 +10,16 @@ enum AppStoreBuildPolicy {
     static let isAppStoreBuild = true
     static let allowsAlternativePayments = false
     static let allowsSmartDNS = false
-    /// Keep disabled until Apple approves Family Controls Distribution
-    /// and the signed archive contains the entitlement/extensions.
-    static let allowsSystemFamilyControls = false
-    /// HealthKit is excluded until the App Store target has matching capability and privacy copy.
-    static let allowsHealthKitIntegration = false
-    /// WAVE3 cap-D4: Critical Alerts only after Apple Assigned + owner GO.
+    /// WAVE3 A1 — owner GO 2026-10-17: Family Controls Distribution Assigned + profiles.
+    static let allowsSystemFamilyControls = true
+    /// WAVE3 G — «Срочный сигнал семье» (HealthKit / motion); portal HealthKit on App ID required for CI profile.
+    static let allowsHealthKitIntegration = true
+    /// WAVE3 cap-D4: Critical Alerts only after Apple Assigned (`VX53USXWCJ` pending).
     static let allowsCriticalAlerts = false
-    /// WAVE3: Communication Notifications only after entitlement Assigned + GO.
-    static let allowsCommunicationNotifications = false
-    /// WAVE3: system Content Filter / DNS Proxy — never Packet Tunnel.
-    static let allowsSystemContentFilter = false
+    /// WAVE3 E1 — Communication Notifications enabled on App ID (owner GO build 10).
+    static let allowsCommunicationNotifications = true
+    /// WAVE3 F2 — system Content Filter (not Packet Tunnel / VPN).
+    static let allowsSystemContentFilter = true
     #else
     static let isAppStoreBuild = false
     static let allowsAlternativePayments = true
@@ -29,8 +28,8 @@ enum AppStoreBuildPolicy {
     static let allowsHealthKitIntegration = true
     /// Debug: can exercise local critical paths; still no entitlement until Assigned.
     static let allowsCriticalAlerts = false
-    static let allowsCommunicationNotifications = false
-    static let allowsSystemContentFilter = false
+    static let allowsCommunicationNotifications = true
+    static let allowsSystemContentFilter = true
     #endif
 }
 

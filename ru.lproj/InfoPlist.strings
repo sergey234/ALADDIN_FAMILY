@@ -9,7 +9,8 @@
 "NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN использует доступ «Всегда», чтобы присылать алерты о входе и выходе из семейных мест (дом, школа, работа), даже когда приложение закрыто. Не используется для непрерывного GPS-трекинга.";
 "NSFaceIDUsageDescription" = "ALADDIN использует Face ID для безопасного входа.";
 "NSSpeechRecognitionUsageDescription" = "ALADDIN нужно распознавание речи для голосового ввода AI.";
-"NSMotionUsageDescription" = "ALADDIN использует данные движения для сигналов безопасности (падение/авария) и мониторинга семьи.";
+"NSMotionUsageDescription" = "ALADDIN использует движение, чтобы помочь отправить срочный сигнал семье при сильном ударе, если вы это включили.";
+"NSHealthShareUsageDescription" = "ALADDIN может читать данные о движении из Здоровья только для срочного сигнала семье, если вы это включили.";
 "NSCalendarsUsageDescription" = "ALADDIN нужен календарь, чтобы по желанию синхронизировать семейные привычки-напоминания.";
 "NSCalendarsFullAccessUsageDescription" = "ALADDIN нужен календарь, чтобы по желанию синхронизировать семейные привычки-напоминания.";
 "CFBundleDisplayName" = "ALADDIN X AI";

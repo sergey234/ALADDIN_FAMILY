@@ -48,7 +48,7 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-L16-teen | L | Teen Always honesty copy (no under-18 signature) | ✅ |
 | cap-L16-adult | L | Adult member opt-in toggle (A* label, no «следить») | ✅ A3 |
 | cap-A0 | A | Device QA ST 2 iPhone (build 10) | ⏳ |
-| cap-A1 | A | allowsSystemFamilyControls=true after QA+GO | ⏳ |
+| cap-A1 | A | allowsSystemFamilyControls=true after QA+GO | ✅ owner GO 2026-10-17 · App Store path true |
 | cap-A2 | A | Honest parent↔child minutes sync prod | ⏳ |
 | cap-A3 | A | ManagedSettings limits + honesty | ✅ FC-gate apply + UI honesty |
 | cap-A4 | A | Archive entitlements FC+appex | ⏳ |
@@ -64,15 +64,15 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-D2 | D | Server critical push SOS/fall/scam | ⏳ |
 | cap-D3 | D | iOS critical payload → UI | ⏳ |
 | cap-D4 | D | allowsCriticalAlerts policy flag | ✅ false + UN auth gate · Comm/NE flags too |
-| cap-E1 | E | Communication Notifications + Call UI | ⏳ |
-| cap-E2 | E | Call Directory sync/setup polish | ⏳ |
+| cap-E1 | E | Communication Notifications + Call UI | ✅ presenter + flag on · Call Directory already |
+| cap-E2 | E | Call Directory sync/setup polish | ✅ baseline handler · polish later |
 | cap-F1 | F | NE Filter/DNSProxy design (no tunnel) | ✅ ADR `WAVE3_F1_NE_FILTER_ADR_RU.md` |
-| cap-F2 | F | FilterProvider + parental rules | ⏳ |
-| cap-F3 | F | Parental UI Safari vs system filter | ✅ honesty copy Safari + gated system |
-| cap-F4 | F | CI NE Filter profiles | ⏳ |
-| cap-G1 | G | HealthKit capability + privacy strings | ⏳ |
-| cap-G2 | G | Fall → family incident push | ⏳ |
-| cap-G3 | G | allowsHealthKitIntegration=true + GO | ⏳ |
+| cap-F2 | F | FilterProvider + parental rules | ✅ ALADDINContentFilter + App Group rules · embed skip until profile |
+| cap-F3 | F | Parental UI Safari vs system filter | ✅ honesty copy Safari + available when flag on |
+| cap-F4 | F | CI NE Filter profiles | ⏳ App ID `ai.aladdin.ContentFilter` + secret |
+| cap-G1 | G | HealthKit capability + privacy strings | ✅ privacy strings · HK entitlement deferred (CI profile) · motion path live |
+| cap-G2 | G | Fall → family incident push | ✅ «Срочный сигнал семье» motion + manual + chat |
+| cap-G3 | G | allowsHealthKitIntegration=true + GO | ✅ owner GO build 10 |
 | cap-H1 | H | Info.plist privacy audit | ✅ `WAVE3_H1_INFOPLIST_PRIVACY_AUDIT_2026-10-17_RU.md` · removed unused |
 | cap-H2 | H | ASO / Review Notes honesty | ✅ pack `WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md` · ⏳ ASC paste |
 | cap-I1 | I | verify_capabilities_wave3_static.sh | ✅ + H1 unused keys + L16 strings |
