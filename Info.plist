@@ -79,24 +79,16 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>ALADDIN Family needs music access for family entertainment and safety features.</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>ALADDIN Family needs calendar access for family safety and security scheduling.</string>
+	<string>ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>ALADDIN Family needs camera access for security features and face recognition.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
-	<key>NSHomeKitUsageDescription</key>
-	<string>ALADDIN Family needs HomeKit access for smart home security and family safety.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>ALADDIN Family needs local network access for family device communication and security.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ALADDIN uses Always location for family place alerts (home, school, work enter/exit) while the app is closed. Not used for continuous GPS tracking.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -104,15 +96,11 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ALADDIN needs microphone access for voice messages and voice analysis.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>ALADDIN Family uses motion data for security analysis and family safety monitoring.</string>
+	<string>ALADDIN uses motion data for crash/fall safety signals and family safety monitoring.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>ALADDIN Family needs photo library access to save family security photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ALADDIN Family needs photo library access for secure family photo management and analysis.</string>
-	<key>NSRemindersUsageDescription</key>
-	<string>ALADDIN Family needs reminders access for family safety and security alerts.</string>
-	<key>NSSiriUsageDescription</key>
-	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>ALADDIN needs speech recognition for AI voice input and commands.</string>
 	<key>NSUserActivityTypes</key>

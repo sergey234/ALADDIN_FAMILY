@@ -42,37 +42,40 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-L12 | L | UX: WhenInUse → explain → Always only for places | ✅ |
 | cap-L13 | L | Sync geofences :8002 + kill fake/demo coords | ✅ code · soft upsert |
 | cap-L14 | L | Precise Location only setup zone / SOS | ✅ setup helper · SOS later |
-| cap-L15 | L | ASC Privacy labels + Notes «alerts not track» | ⏳ |
-| cap-L16 | L | Member toggle: no track without explicit opt-in | ✅ consent places |
+| cap-L15 | L | ASC Privacy labels + Notes «alerts not track» | ✅ pack `WAVE3_L15_ASC_PRIVACY_LOCATION_PACK_RU.md` · ⏳ галочки ASC |
+| cap-L16 | L | Member toggle: no track without explicit opt-in | ✅ parent consent |
+| cap-L16-copy | L | Owner pick P1–P3 / A1–A3 names → apply RU/EN | ✅ P1+A3 |
+| cap-L16-teen | L | Teen Always honesty copy (no under-18 signature) | ✅ |
+| cap-L16-adult | L | Adult member opt-in toggle (A* label, no «следить») | ✅ A3 |
 | cap-A0 | A | Device QA ST 2 iPhone (build 10) | ⏳ |
 | cap-A1 | A | allowsSystemFamilyControls=true after QA+GO | ⏳ |
 | cap-A2 | A | Honest parent↔child minutes sync prod | ⏳ |
-| cap-A3 | A | ManagedSettings limits + honesty | ⏳ |
+| cap-A3 | A | ManagedSettings limits + honesty | ✅ FC-gate apply + UI honesty |
 | cap-A4 | A | Archive entitlements FC+appex | ⏳ |
 | cap-B1 | B | Shield Action target + FC profile | ✅ code · portal profile ⏳ |
 | cap-B2 | B | Ask Parent / Close + App Group + Loc | ✅ |
 | cap-B3 | B | CI secrets + Fastfile Shield Action | ✅ Fastfile · secret ⏳ |
 | cap-B4 | B | Parent notify on shield ask | ✅ local banner · APNs ⏳ |
-| cap-C1 | C | Apple form Critical Alerts | ⏳ |
-| cap-C2 | C | Apple form Communication Notifications | ⏳ |
-| cap-C3 | C | Apple form NE Content Filter/DNS Proxy (not VPN) | ⏳ |
+| cap-C1 | C | Apple form Critical Alerts | ✅ draft `WAVE3_C1_C2_APPLE_FORMS_DRAFT_RU.md` · ⏳ submit AH |
+| cap-C2 | C | Apple form Communication Notifications | ✅ draft · ⏳ submit AH |
+| cap-C3 | C | Apple form NE Content Filter/DNS Proxy (not VPN) | ✅ draft `WAVE3_C3_NE_CONTENT_FILTER_FORM_DRAFT_RU.md` · ⏳ submit AH |
 | cap-C4 | C | Assigned → App IDs + profiles + secrets | ⏳ |
 | cap-D1 | D | Critical Alerts entitlement + auth | ⏳ |
 | cap-D2 | D | Server critical push SOS/fall/scam | ⏳ |
 | cap-D3 | D | iOS critical payload → UI | ⏳ |
-| cap-D4 | D | allowsCriticalAlerts policy flag | ⏳ |
+| cap-D4 | D | allowsCriticalAlerts policy flag | ✅ false + UN auth gate · Comm/NE flags too |
 | cap-E1 | E | Communication Notifications + Call UI | ⏳ |
 | cap-E2 | E | Call Directory sync/setup polish | ⏳ |
-| cap-F1 | F | NE Filter/DNSProxy design (no tunnel) | ⏳ |
+| cap-F1 | F | NE Filter/DNSProxy design (no tunnel) | ✅ ADR `WAVE3_F1_NE_FILTER_ADR_RU.md` |
 | cap-F2 | F | FilterProvider + parental rules | ⏳ |
-| cap-F3 | F | Parental UI Safari vs system filter | ⏳ |
+| cap-F3 | F | Parental UI Safari vs system filter | ✅ honesty copy Safari + gated system |
 | cap-F4 | F | CI NE Filter profiles | ⏳ |
 | cap-G1 | G | HealthKit capability + privacy strings | ⏳ |
 | cap-G2 | G | Fall → family incident push | ⏳ |
 | cap-G3 | G | allowsHealthKitIntegration=true + GO | ⏳ |
-| cap-H1 | H | Info.plist privacy audit | ⏳ |
-| cap-H2 | H | ASO / Review Notes honesty | ⏳ |
-| cap-I1 | I | verify_capabilities_wave3_static.sh | ⏳ |
+| cap-H1 | H | Info.plist privacy audit | ✅ `WAVE3_H1_INFOPLIST_PRIVACY_AUDIT_2026-10-17_RU.md` · removed unused |
+| cap-H2 | H | ASO / Review Notes honesty | ✅ pack `WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md` · ⏳ ASC paste |
+| cap-I1 | I | verify_capabilities_wave3_static.sh | ✅ + H1 unused keys + L16 strings |
 | cap-I2 | I | Bump 10→11 (GO) | ⏳ |
 | cap-I3 | I | Commit+push CI Upload TF 11 | ⏳ |
 | cap-I4 | I | Device QA build 11 | ⏳ |

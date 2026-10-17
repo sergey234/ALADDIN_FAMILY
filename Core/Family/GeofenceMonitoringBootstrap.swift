@@ -13,6 +13,12 @@ enum GeofenceMonitoringBootstrap {
         requestAlwaysUpgrade: Bool = false
     ) async {
         guard GeofencePlacesConsentStore.hasAccepted else { return }
+        // L16-adult (A3): this device opted out of sharing arrive/leave.
+        guard GeofenceAdultSelfShareStore.isEnabled else {
+            locationManager.stopMonitoringAllRegions()
+            print("ℹ️ GeofenceMonitoringBootstrap: adult self-share off — regions stopped")
+            return
+        }
 
         if requestAlwaysUpgrade {
             switch locationManager.authorizationStatus {
@@ -63,6 +69,9 @@ enum GeofenceMonitoringBootstrap {
     ) -> String {
         if !GeofencePlacesConsentStore.hasAccepted {
             return "geofence_status_needs_consent"
+        }
+        if !GeofenceAdultSelfShareStore.isEnabled {
+            return "geofence_status_need_self_share"
         }
         let status = locationManager.authorizationStatus
         if status == .denied || status == .restricted {

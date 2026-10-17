@@ -2522,14 +2522,24 @@
 "geofence_status_no_coords" = "Не нашли адрес. Проверьте улицу и дом";
 "geofence_status_need_always" = "Нужно разрешение «Всегда»";
 "geofence_status_need_permission" = "Нужно разрешение на местоположение";
-"geofence_status_needs_consent" = "Сначала включите уведомления о местах";
+"geofence_status_needs_consent" = "Сначала включите уведомления о местах семьи";
+"geofence_status_need_self_share" = "Включите «Мои места для семьи»";
 "geofence_family_chat_arrived" = "%@: пришёл(а) — %@";
 "geofence_family_chat_left" = "%@: ушёл(а) — %@";
 "geofence_why_no_push_title" = "Почему нет уведомлений?";
 "geofence_why_no_push_body" = "Нужны три вещи: доступ к месту «Всегда», уведомления ALADDIN и интернет. Даже если пуш не пришёл — событие видно в «Уведомлениях» и в ленте мест.";
 "geofence_why_no_push_enable_notifications" = "Включить уведомления";
+/* L16 P1 — родитель включает в семье */
+"geofence_consent_title" = "Уведомления о местах семьи";
+"geofence_consent_body" = "Семья узнает: пришёл или ушёл из дома, школы, секции, друзей или работы. Без линии маршрута.";
+"geofence_consent_accept" = "Понятно, включить";
+/* L16 A3 — взрослый себе */
+"geofence_adult_share_title" = "Мои места для семьи";
+"geofence_adult_share_body" = "Родные видят: я на месте или ушёл(а). Без маршрута.";
+/* L16 teen — экран Always */
 "geofence_always_title" = "Доступ к месту всегда";
 "geofence_always_body" = "Чтобы знать, что дошли до места, даже когда приложение закрыто. Без линии маршрута.";
+"geofence_always_teen_body" = "Родители узнают только: ты пришёл(а) или ушёл(а) из места. Без линии маршрута по карте.";
 "geofence_always_button" = "Открыть Настройки";
 "geofence_always_button_allow" = "Разрешить «Всегда»";
 "geofences_use_current_location" = "Взять мою текущую точку";
@@ -2851,3 +2861,82 @@
 "family_presence_stamp_date" = "%@ · %@";
 "family_member_origin_server" = "сервер";
 "family_member_origin_pending" = "ожидание";
+
+/* WAVE3 geofence / ImOK / NeedHelp — mirrored from LocManager (2026-10-17) */
+"geofences_title" = "Места семьи";
+"geofences_home" = "Дом";
+"geofences_school" = "Школа";
+"geofences_add" = "Добавить";
+"geofences_add_geofence" = "Добавить место";
+"geofences_empty_title" = "Пока нет мест";
+"geofences_empty_body" = "Добавьте Дом или Школу — с реальным адресом.";
+"geofences_empty_list_hint" = "Нет мест — добавьте Дом или Школу";
+"geofences_radius" = "Радиус";
+"geofences_radius_m" = "м";
+"geofences_name_placeholder" = "Название геозоны";
+"geofences_address_placeholder" = "Адрес (улица, дом)";
+"geofences_name_address_required" = "Введите название и адрес места";
+"geofences_street_lenin" = "ул. Ленина, 12";
+"geofences_street_pushkin" = "ул. Пушкина, 7";
+"geofence_noshow_section_title" = "Ждём к времени";
+"geofence_noshow_roles_hint" = "Родитель видит места ребёнка (если настроено). Супруги не следят друг за другом — каждый настраивает свой телефон.";
+"geofence_noshow_add" = "Добавить";
+"geofence_noshow_pick_place" = "Место";
+"geofence_noshow_pick_time" = "Время";
+"geofence_noshow_grace_label" = "Запас, если задержались";
+"geofence_noshow_weekdays" = "Дни";
+"geofence_noshow_cancel" = "Отмена";
+"geofence_noshow_save" = "Сохранить проверку";
+"geofence_noshow_place_friends" = "Друзья";
+"geofence_noshow_place_club" = "Секция";
+"geofence_noshow_place_disco" = "Дискотека";
+"geofence_noshow_place_custom" = "Своё место";
+"geofence_noshow_push_title" = "Ещё нет на месте";
+"geofence_noshow_push_body" = "%@: ждали к %@, пока нет на месте";
+"geofence_noshow_grace_15" = "15 мин";
+"geofence_noshow_grace_30" = "30 мин";
+"im_ok_button_title" = "Я в порядке";
+"im_ok_button_subtitle" = "Коротко сообщить семье";
+"im_ok_sent_ok" = "Семья получила: вы в порядке";
+"im_ok_confirm_title" = "Я в порядке";
+"im_ok_confirm_body" = "Сообщение отправлено семье";
+"im_ok_family_chat_message" = "%@: я в порядке%@";
+"im_ok_message_battery" = " · заряд %d%%";
+"need_help_button_title" = "Нужна помощь";
+"need_help_button_subtitle" = "Срочно сообщить семье";
+"need_help_confirm_title" = "Отправить семье?";
+"need_help_confirm_send" = "Отправить";
+"need_help_confirm_cancel" = "Отмена";
+"need_help_sent_ok" = "Семья получила: нужна помощь";
+"need_help_push_title" = "Нужна помощь";
+"need_help_push_body" = "%@: нужна помощь — срочно";
+"need_help_family_chat_message" = "%@: нужна помощь%@";
+"need_help_confirm_sent_title" = "Нужна помощь";
+"need_help_confirm_sent_body" = "Сообщение отправлено семье";
+"location_history_title" = "📜 История перемещений";
+"location_frequent_places" = "Частые места";
+"location_visits" = "визитов";
+"location_events_7d" = "События мест за 7 дней";
+"location_events_today" = "События за сегодня";
+"location_events_empty_live" = "Пока нет живых событий за сегодня. Когда ребёнок дойдёт до школы или другой геозоны — здесь появится время и пуш.";
+"location_mall" = "ТРЦ «Галактика»";
+"location_visited_mall" = "Зашёл в торговый центр";
+"location_returned_home" = "Вернулся домой";
+"parental_geofence" = "Геозона";
+"family_geofences" = "Геозоны";
+"location_error_denied" = "Доступ к геолокации запрещен. Разрешите доступ в настройках.";
+"location_error_restricted" = "Доступ к геолокации ограничен.";
+"location_error_unavailable" = "Геолокация недоступна на этом устройстве.";
+"location_error_significant_change_unavailable" = "Significant-Change Location Service недоступен.";
+"location_error_too_many_regions" = "Превышен лимит геозон. Максимум: %d.";
+"location_error_invalid_region" = "Недопустимый радиус геозоны: %.0f метров. Минимум: 100 метров.";
+"location_error_region_monitoring_failed" = "Не удалось начать мониторинг геозоны: %@.";
+
+/* WAVE3 cap-A3 ManagedSettings honesty */
+"app_limits_shield_parent_honesty" = "Лимиты минут сохраняются у родителя. Блокировка приложений (Shield) включается на iPhone ребёнка после настройки Screen Time — не на телефоне родителя.";
+"app_limits_unbound_honesty" = "Приложения ещё не привязаны к Screen Time. Откройте настройку на iPhone ребёнка и выберите приложения.";
+
+/* WAVE3 cap-F3 Safari vs system filter honesty */
+"parental_filter_safari_honesty" = "Сейчас фильтр работает в Safari (Content Blocker). Другие приложения Safari не закрывает.";
+"parental_filter_system_gated" = "Системный фильтр для всех приложений — после одобрения Apple (не VPN).";
+"parental_filter_system_available" = "Системный фильтр для всех приложений можно включить ниже (не VPN).";

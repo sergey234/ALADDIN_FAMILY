@@ -145,6 +145,46 @@ else
   FAIL=1
 fi
 
+# H1: unused privacy claims must stay out of Info.plist
+if grep -qE 'NSHomeKitUsageDescription|NSBluetoothAlwaysUsageDescription|NSAppleMusicUsageDescription|NSSiriUsageDescription|NSLocalNetworkUsageDescription|NSRemindersUsageDescription' Info.plist; then
+  echo "FAIL: H1 unused privacy keys still in Info.plist"
+  FAIL=1
+else
+  echo "OK: H1 unused privacy keys removed"
+fi
+
+# D4: capability flags exist and App Store path keeps Critical/Comm/NE off
+if grep -q 'allowsCriticalAlerts' Core/Config/AppConfig.swift \
+  && grep -q 'allowsCommunicationNotifications' Core/Config/AppConfig.swift \
+  && grep -q 'allowsSystemContentFilter' Core/Config/AppConfig.swift \
+  && grep -q 'allowsCriticalAlerts' Core/Notifications/NotificationManager.swift; then
+  # APP_STORE_BUILD block must set critical/comm/filter to false (literal near #if)
+  if awk '/#if APP_STORE_BUILD/,/#else/' Core/Config/AppConfig.swift | grep -q 'allowsCriticalAlerts = false' \
+    && awk '/#if APP_STORE_BUILD/,/#else/' Core/Config/AppConfig.swift | grep -q 'allowsSystemContentFilter = false'; then
+    echo "OK: D4 capability flags gated false on App Store path"
+  else
+    echo "FAIL: D4 App Store path must keep Critical/NE flags false"
+    FAIL=1
+  fi
+else
+  echo "FAIL: D4 AppStoreBuildPolicy / NotificationManager critical gate missing"
+  FAIL=1
+fi
+
+# L16 copy: P1 + A3 + teen in both Localizable.strings
+LOC_OK=1
+for k in geofence_consent_title geofence_adult_share_title geofence_always_teen_body geofences_title; do
+  if ! grep -q "\"$k\"" Resources/Localization/ru.lproj/Localizable.strings \
+    || ! grep -q "\"$k\"" Resources/Localization/en.lproj/Localizable.strings; then
+    echo "FAIL: L16/loc missing key $k in RU or EN strings"
+    FAIL=1
+    LOC_OK=0
+  fi
+done
+if [[ "$LOC_OK" -eq 1 ]]; then
+  echo "OK: L16 P1/A3/teen + geofences_title in RU+EN strings"
+fi
+
 if [[ "$FAIL" -ne 0 ]]; then
   echo "== FAIL =="
   exit 1

@@ -15,12 +15,22 @@ enum AppStoreBuildPolicy {
     static let allowsSystemFamilyControls = false
     /// HealthKit is excluded until the App Store target has matching capability and privacy copy.
     static let allowsHealthKitIntegration = false
+    /// WAVE3 cap-D4: Critical Alerts only after Apple Assigned + owner GO.
+    static let allowsCriticalAlerts = false
+    /// WAVE3: Communication Notifications only after entitlement Assigned + GO.
+    static let allowsCommunicationNotifications = false
+    /// WAVE3: system Content Filter / DNS Proxy — never Packet Tunnel.
+    static let allowsSystemContentFilter = false
     #else
     static let isAppStoreBuild = false
     static let allowsAlternativePayments = true
     static let allowsSmartDNS = true
     static let allowsSystemFamilyControls = true
     static let allowsHealthKitIntegration = true
+    /// Debug: can exercise local critical paths; still no entitlement until Assigned.
+    static let allowsCriticalAlerts = false
+    static let allowsCommunicationNotifications = false
+    static let allowsSystemContentFilter = false
     #endif
 }
 

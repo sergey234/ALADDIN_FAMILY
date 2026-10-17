@@ -115,7 +115,13 @@ enum ScreenTimeAppLimitsBridge {
         saveTokenMap(map)
         saveRecords(records)
 
-        // Apply shields from selection.
+        // Apply shields from selection — only when Family Controls is allowed in this binary.
+        guard AppStoreBuildPolicy.allowsSystemFamilyControls else {
+            #if DEBUG
+            print("🎚️ SCREEN_TIME bindSelection: FC gated — skip ManagedSettings apply")
+            #endif
+            return
+        }
         let store = ManagedSettingsStore()
         store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
         store.shield.applicationCategories = selection.categoryTokens.isEmpty

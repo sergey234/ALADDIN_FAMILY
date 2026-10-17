@@ -243,7 +243,7 @@ CL didEnter/Exit → GeofenceEventStore.record
 | **cap-L12** | UX progressive: When In Use → экран «зачем Always» → Always **только** при включении мест | Device QA |
 | **cap-L13** | Sync геозон с `:8002` (`/api/location/geofences/*`); убрать demo/fake coords из live UI | curl + UI |
 | **cap-L14** | Precise Location request только setup зоны / SOS (Approximate по умолчанию) | code |
-| **cap-L15** | ASC Privacy Nutrition + Review Notes: geofence alerts, **not** continuous tracking | ASC |
+| **cap-L15** | ASC Privacy Nutrition + Review Notes: geofence alerts, **not** continuous tracking | ✅ pack · ⏳ ASC portal |
 | **cap-L16** | Явный тумблер у члена семьи; нет скрытого GPS «для аналитики» | UI + policy |
 
 ### Фаза A — Закрытие Screen Time (пререквизит build 11)
@@ -368,8 +368,11 @@ Debug/non–App Store: как сейчас, можно true для локаль�
 - [x] **cap-L12** Progressive WhenInUse → Always UX
 - [x] **cap-L13** Sync геозон soft parental upsert + demo blocked (UI local SSOT)
 - [x] **cap-L14** Precise place-setup helper (SOS → L7)
-- [ ] **cap-L15** ASC Privacy labels + Notes (not continuous track)
+- [x] **cap-L15** ASC Privacy pack (`WAVE3_L15_ASC_PRIVACY_LOCATION_PACK_RU.md`) · portal ⏳
 - [x] **cap-L16** Member toggle / no hidden GPS (places consent)
+- [x] **cap-L16-copy** P1 + A3 applied RU/EN
+- [x] **cap-L16-teen** Teen Always honesty copy
+- [x] **cap-L16-adult** Adult toggle A3 «Мои места для семьи»
 
 **One-pager завтра:** [`WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`](WAVE3_TOMORROW_TASKS_2026-10-17_RU.md)
 
@@ -385,7 +388,7 @@ Staging list: `WAVE3_TOMORROW_TASKS` § «Что уже готово».
 - [ ] **cap-A0** Device QA 2 iPhone build 10
 - [ ] **cap-A1** `allowsSystemFamilyControls=true` + test
 - [ ] **cap-A2** Sync minutes prod smoke
-- [ ] **cap-A3** ManagedSettings / honesty
+- [x] **cap-A3** ManagedSettings / honesty (FC-gate + UI)
 - [ ] **cap-A4** Archive entitlements FC
 
 ### B — Shield Action
@@ -397,21 +400,21 @@ Staging list: `WAVE3_TOMORROW_TASKS` § «Что уже готово».
 ### C — Apple forms
 - [ ] **cap-C1** Critical Alerts submitted
 - [ ] **cap-C2** Communication Notifications submitted
-- [ ] **cap-C3** NE Content Filter/DNS Proxy submitted (NOT tunnel)
+- [x] **cap-C3** NE Content Filter draft (`WAVE3_C3_…`) · submit ⏳ AH
 - [ ] **cap-C4** Assigned → App IDs + profiles + secrets
 
 ### D — Critical Alerts
 - [ ] **cap-D1** Entitlement + auth options
 - [ ] **cap-D2** Server critical payload
 - [ ] **cap-D3** iOS routing UI
-- [ ] **cap-D4** Policy flag
+- [x] **cap-D4** Policy flag (Critical/Comm/NE false + UN gate)
 
 ### E — Comm + Call Directory
 - [ ] **cap-E1** Communication Notifications
 - [ ] **cap-E2** Call Directory polish
 
 ### F — NE Filter (no VPN)
-- [ ] **cap-F1** Design ADR
+- [x] **cap-F1** Design ADR (`WAVE3_F1_NE_FILTER_ADR_RU.md`)
 - [ ] **cap-F2** FilterProvider code
 - [ ] **cap-F3** Parental honesty UI
 - [ ] **cap-F4** CI NE profiles
@@ -422,11 +425,11 @@ Staging list: `WAVE3_TOMORROW_TASKS` § «Что уже готово».
 - [ ] **cap-G3** Policy true + GO
 
 ### H — Hygiene
-- [ ] **cap-H1** Plist audit
-- [ ] **cap-H2** Review Notes / ASO
+- [x] **cap-H1** Plist audit (removed HomeKit/BT/Music/Siri/LocalNet/Reminders)
+- [x] **cap-H2** Review Notes pack (`WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md`) · ASC paste ⏳
 
 ### I — Ship
-- [ ] **cap-I1** Static verify script
+- [x] **cap-I1** Static verify script (+ H1/L16/D4)
 - [ ] **cap-I2** Bump 11 (GO)
 - [ ] **cap-I3** CI Upload (GO)
 - [ ] **cap-I4** Device QA 11
@@ -434,7 +437,9 @@ Staging list: `WAVE3_TOMORROW_TASKS` § «Что уже готово».
 
 ---
 
-## 7. ADR: NE Filter vs DNS Proxy (черновик для cap-F1)
+## 7. ADR: NE Filter vs DNS Proxy → полный текст: [`WAVE3_F1_NE_FILTER_ADR_RU.md`](WAVE3_F1_NE_FILTER_ADR_RU.md)
+
+### Кратко (cap-F1 ✅)
 
 | Вариант | Плюс | Минус |
 |---------|------|-------|

@@ -125,6 +125,57 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 
 ---
 
+## L16 — названия (выбор владельца) · copy без «следить»
+
+### Родитель включает функцию в семье (сейчас: «уведомления о местах»)
+
+| # | Название кнопки/тумблера | Подзаголовок (зачем) | Рекомендация |
+|---|--------------------------|----------------------|--------------|
+| **P1** | **Уведомления о местах семьи** | Семья узнает: пришёл или ушёл из дома/школы. Без линии маршрута. | ✅ **рекомендуем** (уже близко к текущему) |
+| **P2** | **Приход и уход из мест** | Только сигнал «на месте» / «ушёл». Не карта и не трек. | альтернатива короче |
+| **P3** | **Безопасные места** | Дом, школа, работа — семья видит приход и уход. | мягче, «product» тон |
+
+**Кто нажимает:** родитель / настраивающий семью (не «подпись ребёнка до 18»).  
+**На телефоне ребёнка:** системный запрос iOS Location Always — отдельно.
+
+### Взрослый член семьи (бабушка, супруг) — opt‑in себе (без слова «следить»)
+
+| # | Название тумблера | Подзаголовок | Рекомендация |
+|---|-------------------|--------------|--------------|
+| **A1** | **Сообщать семье о моих местах** | Семья узнает, когда я прихожу или ухожу из выбранных мест. | ✅ **рекомендуем** |
+| **A2** | **Делиться приходом и уходом** | Только сигналы по местам, которые я сам(а) выбрал(а). | нейтрально |
+| **A3** | **Мои места для семьи** | Родные видят: я на месте или ушёл(а). Без маршрута. | короче |
+
+**Выбор владельца 2026-10-17:** **P1 + A3** (+ teen Always copy) — **применено в коде**.
+
+### Подросток — короткий текст на экране Always (без «подписи до 18»)
+
+| Язык | Текст (черновик) |
+|------|------------------|
+| RU | Родители узнают только: ты пришёл(а) или ушёл(а) из места. Без линии маршрута по карте. |
+| EN | Parents only see when you arrive or leave a place. No route line on the map. |
+
+Задача: **L16-teen-copy** (карточка Always / consent).
+
+---
+
+## Пуш-уведомления — что уже «включено и разрешено Apple»
+
+| Тип | У нас в коде | Нужна заявка Apple? | В TestFlight сейчас |
+|-----|--------------|---------------------|---------------------|
+| Обычные local + remote (alert/badge/sound) | ✅ `NotificationManager` · `remote-notification` в Background Modes | **Нет** — стандарт | ✅ работают, если пользователь разрешил |
+| Provisional | ✅ в options | Нет | тихо, без полного баннера |
+| Гео enter/exit → **локальный** баннер | ✅ L3 important types | Нет | на устройстве с зонами |
+| Гео enter/exit → **APNs родителю** (L4) | ✅ код · **деплой ⏳** | Нет (обычный push) | после «GO на деплой» |
+| Shield «спросить родителя» | ✅ local banner · APNs позже | Нет | после push IPA |
+| **Critical Alerts** (громко сквозь DND) | ❌ флаг/форма WAVE3 C1→D* | **Да** (Account Holder) | нет |
+| Communication Notifications | ❌ WAVE3 C2 | **Да** (portal) | нет |
+
+**Итог:** обычные пуши Apple **разрешены и подключены**. Не подключены только **особые** entitlement (Critical / Comm) — это отдельные формы WAVE3.  
+На устройстве всё равно нужно: Настройки → ALADDIN → Уведомления = Вкл (и не «только важные», если режете гео).
+
+---
+
 ## A. Location — что подходит продукту
 
 ### Делать (лучшее под ALADDIN)
@@ -132,9 +183,9 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 | # | Фича | Как | ID | Статус |
 |---|------|-----|-----|--------|
 | 1 | Геозоны дом/школа/работа → пуш родителю enter/exit | Always + region monitoring · local UN + APNs | L0–L5 · **L4 deploy** | код ✅ · деплой ⏳ |
-| 2 | «Поделиться локацией сейчас» / SOS | When In Use + Precise коротко | **L7** | ⏳ |
-| 3 | Soft presence «я в порядке» | **Без GPS** | **L8** | ⏳ усилить |
-| 4 | Location Bubble / privacy-зоны | Opt-in · premium · честный copy | **L9** | ⏳ |
+| 2 | «Поделиться локацией сейчас» / SOS | When In Use + Precise коротко | **L7** | ✅ код |
+| 3 | Soft presence «я в порядке» | **Без GPS** | **L8** | ✅ код |
+| 4 | Location Bubble / privacy-зоны | Opt-in · premium · честный copy | **L9** | ✅ код |
 | 5 | Battery-friendly | significant-change + точный GPS только у границы | уже в `LocationManager` · **L10** ✅ | не ломать |
 
 ### Не делать / не обещать
@@ -152,11 +203,11 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 | Приоритет | Действие | Заявка Apple? | ID | Статус |
 |-----------|----------|---------------|-----|--------|
 | Высокий | Purpose strings конкретно (геозоны, SOS) RU+EN | Нет | **L5** | ✅ |
-| Высокий | UX: When In Use → объяснение → Always только при местах | Нет | **L12** | ⏳ |
-| Высокий | Sync геозон с `:8002`, убрать фейковые coords в UI | Нет | **L13** (+ L6) | ⏳ |
+| Высокий | UX: When In Use → объяснение → Always только при местах | Нет | **L12** | ✅ код |
+| Высокий | Sync геозон с `:8002`, убрать фейковые coords в UI | Нет | **L13** (+ L6) | ✅ код |
 | Высокий | Parent APNs на enter/exit (не только chat) | Нет | **L4** | код ✅ · деплой ⏳ |
-| Средний | ASC Privacy labels + Review Notes «alerts, not track» | Нет | **L15** · H2 | ⏳ |
-| Средний | Precise только setup зоны / SOS | Нет | **L14** | ⏳ |
+| Средний | ASC Privacy labels + Review Notes «alerts, not track» | Нет | **L15** · H2 | ✅ pack · ⏳ ASC |
+| Средний | Precise только setup зоны / SOS | Нет | **L14** | ✅ код |
 | Низкий | Не добавлять background `location` | — | **L10** | ✅ |
 | Связка | Critical Alerts на выход из зоны / SOS | **Да** (не location) | **L11** · D* · C1 | ⏳ форма |
 
@@ -269,12 +320,45 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 - [x] **L12** Progressive WhenInUse→Always (CTA only)  
 - [x] **L13** Soft sync parental API + demo blocked (UI local SSOT)  
 - [x] **L14** Precise only place-setup helper (+ SOS)  
-- [ ] **L15** ASC Privacy labels location  
-- [x] **L16** Opt-in мест (consent) · no silent GPS  
+- [x] **L15** pack ASC Privacy + Review Notes (`WAVE3_L15_ASC_PRIVACY_LOCATION_PACK_RU.md`) · галочки в портале — владелец  
+- [x] **L16** Opt-in мест (родительский consent) · no silent GPS  
+- [x] **L16-copy** **P1 + A3** применены RU/EN  
+- [x] **L16-teen-copy** текст Always для подростка  
+- [x] **L16-adult** тумблер «Мои места для семьи» (A3)  
+- [x] **Loc audit** geofence/ImOK/NeedHelp/Shield — 100 ключей UI в RU+EN `Localizable.strings` (без сырых ключей)  
+
+### Пуши / Apple
+- [x] Обычные UN + remote-notification  
+- [ ] L4 APNs geo → родитель (деплой)  
+- [x] Critical Alerts — draft формы C1 (`WAVE3_C1_C2_APPLE_FORMS_DRAFT_RU.md`) · submit ⏳ AH  
+- [x] Communication Notifications — draft C2 · submit ⏳ AH  
+- [x] H2 Review Notes pack (`WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md`) · paste ASC ⏳  
 
 ### A Screen Time · B Shield · C Forms · D Critical · E Comm · F NE · G HealthKit · H Hygiene · I Ship  
 (как в MASTER §6 — ids `cap-A*` … `cap-I*`)  
 **B1/B2 код ✅** · **B3** ждёт App ID `ai.aladdin.ShieldAction` + secret · **B4** local parent banner ✅ (APNs позже)
+
+### Hygiene H / verify
+- [x] **H1** Info.plist — убраны HomeKit/BT/Music/Siri/LocalNet/Reminders  
+- [x] **H2** Review Notes pack  
+- [x] **I1** `verify_capabilities_wave3_static.sh` ALL OK (+ H1/L16/D4)  
+- [x] Loc RU+EN geofence/ImOK — 100 ключей, без сырых  
+
+### Flags / forms / ST (код без деплоя)
+- [x] **D4** `allowsCriticalAlerts` / Comm / ContentFilter = false · UN не просит critical  
+- [x] **C3** draft NE Content Filter (не VPN)  
+- [x] **F1** ADR Filter vs DNS Proxy  
+- [x] **A3** ManagedSettings FC-gate + honesty в лимитах  
+- [x] **F3** Parental: Safari CB vs system filter honesty  
+
+### Ship (build 10 → TF)
+- [x] Commit ExtensionKit + L + Shield (`e6d1cadc`, `a4d868e9`)  
+- [ ] Commit uncommitted: L16 copy + loc mirror + H1/H2/L15/C1C2 packs (сказать **«коммить»**)  
+- [ ] **GO на push** → CI Upload SUCCESS  
+- [ ] Walk-test геозон  
+- [ ] **GO на деплой** L4  
+- [ ] Device QA ST (A0) → FC on (A1)  
+- [ ] Xcode только в конце + **GO на сборку**
 
 ---
 

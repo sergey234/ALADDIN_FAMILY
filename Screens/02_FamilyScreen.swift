@@ -7143,10 +7143,36 @@ struct AppLimitsSettingsModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
+                if !AppStoreBuildPolicy.allowsSystemFamilyControls {
+                    Text(localizationManager.localized("screen_time_fc_gated_banner"))
+                        .font(.caption)
+                        .foregroundColor(.warningOrange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 Text(localizationManager.localized("app_limits_token_hint"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
+
+                Text(localizationManager.localized("app_limits_shield_parent_honesty"))
+                    .font(.caption2)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if appLimits.allSatisfy({ $0.tokenHash == nil }) {
+                    Text(localizationManager.localized("app_limits_unbound_honesty"))
+                        .font(.caption2)
+                        .foregroundColor(.warningOrange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if ScreenTimeUsageStore.load()?.isStale == true {
+                    Text(localizationManager.localized("screen_time_stats_stale"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 Button {
                     showChildScreenTimeSetup = true
@@ -7283,6 +7309,8 @@ struct GeofencesSettingsModal: View {
     @State private var isResolvingPlace = false
     /// WAVE3 L6 — GPS pin from “use current location” (avoids geocode miss on coord fallback).
     @State private var pendingSetupCoordinate: CLLocationCoordinate2D? = nil
+    /// L16 A3 — «Мои места для семьи»
+    @State private var adultSelfShareEnabled = GeofenceAdultSelfShareStore.isEnabled
     @State private var showValidationAlert = false
     @State private var validationAlertMessage = ""
     @State private var placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
@@ -7432,6 +7460,37 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
+                // L16 A3 — взрослый: «Мои места для семьи»
+                if placesConsentAccepted {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Toggle(isOn: $adultSelfShareEnabled) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(localizationManager.localized("geofence_adult_share_title"))
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.textPrimary)
+                                Text(localizationManager.localized("geofence_adult_share_body"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .tint(.secondaryGold)
+                        .accessibilityIdentifier("geofence_adult_self_share")
+                        .onChange(of: adultSelfShareEnabled) { on in
+                            GeofenceAdultSelfShareStore.setEnabled(on)
+                            Task {
+                                await GeofenceMonitoringBootstrap.reloadIfNeeded(
+                                    locationManager: locationManager,
+                                    requestAlwaysUpgrade: false
+                                )
+                            }
+                        }
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.white.opacity(0.10))
+                    .cornerRadius(CornerRadius.medium)
+                }
+
                 // Существующие геозоны
                 ForEach($geofences) { $geofence in
                     VStack(alignment: .leading, spacing: Spacing.s) {
@@ -7497,6 +7556,11 @@ struct GeofencesSettingsModal: View {
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        Text(localizationManager.localized("geofence_always_teen_body"))
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("geofence_always_teen_body")
                         Button {
                             if locationManager.authorizationStatus == .authorizedWhenInUse {
                                 locationManager.requestAlwaysUpgradeIfEligible()
@@ -7722,6 +7786,7 @@ struct GeofencesSettingsModal: View {
         .id("geofences_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadGeofences()
+            adultSelfShareEnabled = GeofenceAdultSelfShareStore.isEnabled
             GeofenceNoShowMonitor.checkDue(localization: localizationManager)
             GeofenceNoShowMonitor.resyncCalendarTriggers()
             Task {

@@ -2612,14 +2612,24 @@
 "geofence_status_no_coords" = "Address not found. Check street and house";
 "geofence_status_need_always" = "Needs Always location access";
 "geofence_status_need_permission" = "Needs location permission";
-"geofence_status_needs_consent" = "Turn on place notifications first";
+"geofence_status_needs_consent" = "Turn on family place alerts first";
+"geofence_status_need_self_share" = "Turn on “My places for the family”";
 "geofence_family_chat_arrived" = "%@: arrived — %@";
 "geofence_family_chat_left" = "%@: left — %@";
 "geofence_why_no_push_title" = "Why am I not getting alerts?";
 "geofence_why_no_push_body" = "You need three things: Always location, ALADDIN notifications, and internet. Even if a push is missed, the event still appears in Notifications and the places feed.";
 "geofence_why_no_push_enable_notifications" = "Turn on notifications";
+/* L16 P1 — parent enables in family */
+"geofence_consent_title" = "Family place alerts";
+"geofence_consent_body" = "The family learns when someone arrives or leaves home, school, a club, friends, or work. No route line.";
+"geofence_consent_accept" = "Got it, turn on";
+/* L16 A3 — adult self */
+"geofence_adult_share_title" = "My places for the family";
+"geofence_adult_share_body" = "Family sees: I’m at a place or I’ve left. No route.";
+/* L16 teen — Always screen */
 "geofence_always_title" = "Always location access";
 "geofence_always_body" = "So we know they arrived at a place even when the app is closed. No route line.";
+"geofence_always_teen_body" = "Parents only see when you arrive or leave a place. No route line on the map.";
 "geofence_always_button" = "Open Settings";
 "geofence_always_button_allow" = "Allow Always";
 "geofences_use_current_location" = "Use my current spot";
@@ -2941,3 +2951,82 @@
 "family_presence_stamp_date" = "%@ · %@";
 "family_member_origin_server" = "server";
 "family_member_origin_pending" = "pending";
+
+/* WAVE3 geofence / ImOK / NeedHelp — mirrored from LocManager (2026-10-17) */
+"geofences_title" = "Family places";
+"geofences_home" = "Home";
+"geofences_school" = "School";
+"geofences_add" = "Add";
+"geofences_add_geofence" = "Add place";
+"geofences_empty_title" = "No places yet";
+"geofences_empty_body" = "Add Home or School with a real address.";
+"geofences_empty_list_hint" = "No places — add Home or School";
+"geofences_radius" = "Radius";
+"geofences_radius_m" = "m";
+"geofences_name_placeholder" = "Geofence name";
+"geofences_address_placeholder" = "Address (street, number)";
+"geofences_name_address_required" = "Enter place name and address";
+"geofences_street_lenin" = "Lenin St., 12";
+"geofences_street_pushkin" = "Pushkin St., 7";
+"geofence_noshow_section_title" = "Expected by";
+"geofence_noshow_roles_hint" = "A parent sees a child’s places when set up. Spouses do not track each other — each sets up their own phone.";
+"geofence_noshow_add" = "Add";
+"geofence_noshow_pick_place" = "Place";
+"geofence_noshow_pick_time" = "Time";
+"geofence_noshow_grace_label" = "Grace if running late";
+"geofence_noshow_weekdays" = "Days";
+"geofence_noshow_cancel" = "Cancel";
+"geofence_noshow_save" = "Save check";
+"geofence_noshow_place_friends" = "Friends";
+"geofence_noshow_place_club" = "Club / class";
+"geofence_noshow_place_disco" = "Party";
+"geofence_noshow_place_custom" = "Custom place";
+"geofence_noshow_push_title" = "Not there yet";
+"geofence_noshow_push_body" = "%@: expected by %@, not there yet";
+"geofence_noshow_grace_15" = "15 min";
+"geofence_noshow_grace_30" = "30 min";
+"im_ok_button_title" = "I'm OK";
+"im_ok_button_subtitle" = "Tell the family briefly";
+"im_ok_sent_ok" = "Family got it: you're OK";
+"im_ok_confirm_title" = "I'm OK";
+"im_ok_confirm_body" = "Message sent to the family";
+"im_ok_family_chat_message" = "%@: I'm OK%@";
+"im_ok_message_battery" = " · battery %d%%";
+"need_help_button_title" = "Need help";
+"need_help_button_subtitle" = "Tell the family urgently";
+"need_help_confirm_title" = "Send to family?";
+"need_help_confirm_send" = "Send";
+"need_help_confirm_cancel" = "Cancel";
+"need_help_sent_ok" = "Family got it: need help";
+"need_help_push_title" = "Need help";
+"need_help_push_body" = "%@: need help — urgent";
+"need_help_family_chat_message" = "%@: need help%@";
+"need_help_confirm_sent_title" = "Need help";
+"need_help_confirm_sent_body" = "Message sent to the family";
+"location_history_title" = "📜 Location history";
+"location_frequent_places" = "Frequent places";
+"location_visits" = "visits";
+"location_events_7d" = "Place events — last 7 days";
+"location_events_today" = "Today's events";
+"location_events_empty_live" = "No live events today yet. When your child reaches school or another geofence, the time and a push appear here.";
+"location_mall" = "Galaxy Mall";
+"location_visited_mall" = "Visited the shopping mall";
+"location_returned_home" = "Returned home";
+"parental_geofence" = "Geofence";
+"family_geofences" = "Geofences";
+"location_error_denied" = "Geolocation access denied. Allow access in Settings.";
+"location_error_restricted" = "Geolocation access is restricted.";
+"location_error_unavailable" = "Geolocation is unavailable on this device.";
+"location_error_significant_change_unavailable" = "Significant-Change Location Service is unavailable.";
+"location_error_too_many_regions" = "Geofence limit exceeded. Maximum: %d.";
+"location_error_invalid_region" = "Invalid geofence radius: %.0f meters. Minimum: 100 meters.";
+"location_error_region_monitoring_failed" = "Could not start geofence monitoring: %@.";
+
+/* WAVE3 cap-A3 ManagedSettings honesty */
+"app_limits_shield_parent_honesty" = "Minute limits are saved on the parent phone. App blocking (Shield) applies on the child’s iPhone after Screen Time setup — not on the parent device.";
+"app_limits_unbound_honesty" = "Apps are not bound to Screen Time yet. Open setup on the child’s iPhone and pick apps.";
+
+/* WAVE3 cap-F3 Safari vs system filter honesty */
+"parental_filter_safari_honesty" = "Filtering works in Safari (Content Blocker) today. It does not cover other apps.";
+"parental_filter_system_gated" = "System-wide filter for all apps comes after Apple approval (not a VPN).";
+"parental_filter_system_available" = "System-wide filter for all apps can be enabled below (not a VPN).";

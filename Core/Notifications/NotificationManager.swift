@@ -68,8 +68,14 @@ class NotificationManager: NSObject, ObservableObject {
         print("🔔 Requesting notification authorization from user")
         didRequestAuthorizationThisSession = true
         do {
+            // WAVE3 cap-D4: never request `.criticalAlert` until AppStoreBuildPolicy allows it
+            // (Apple Critical Alerts entitlement Assigned + owner GO). Ordinary alerts always OK.
+            var options: UNAuthorizationOptions = [.alert, .badge, .sound, .provisional]
+            if AppStoreBuildPolicy.allowsCriticalAlerts {
+                options.insert(.criticalAlert)
+            }
             let granted = try await notificationCenter.requestAuthorization(
-                options: [.alert, .badge, .sound, .provisional]
+                options: options
             )
             
             await MainActor.run {
