@@ -329,10 +329,11 @@ Artifact IPA в GitHub ≠ TestFlight. Фикс ExtensionKit в commit; Upload �
 
 ### Пуши / Apple
 - [x] Обычные UN + remote-notification  
-- [ ] L4 APNs geo → родитель (деплой)  
-- [x] Critical Alerts — draft формы C1 (`WAVE3_C1_C2_APPLE_FORMS_DRAFT_RU.md`) · submit ⏳ AH  
+- [x] L4 APNs geo → родитель (деплой MAIN ✅) · walk-test ⏳  
+- [x] Critical Alerts — draft формы C1 · submit ⏳ AH  
 - [x] Communication Notifications — draft C2 · submit ⏳ AH  
-- [x] H2 Review Notes pack (`WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md`) · paste ASC ⏳  
+- [x] H2 Review Notes pack · paste ASC ⏳  
+- [x] **Сессия порталов (клик за кликом):** [`WAVE3_OWNER_PORTAL_SESSION_C1C3_L15_SHIELD_RU.md`](WAVE3_OWNER_PORTAL_SESSION_C1C3_L15_SHIELD_RU.md) — Shield App ID · L15 · C1–C3 
 
 ### A Screen Time · B Shield · C Forms · D Critical · E Comm · F NE · G HealthKit · H Hygiene · I Ship  
 (как в MASTER §6 — ids `cap-A*` … `cap-I*`)  

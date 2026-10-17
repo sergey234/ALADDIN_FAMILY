@@ -52,7 +52,7 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-A2 | A | Honest parent↔child minutes sync prod | ⏳ |
 | cap-A3 | A | ManagedSettings limits + honesty | ✅ FC-gate apply + UI honesty |
 | cap-A4 | A | Archive entitlements FC+appex | ⏳ |
-| cap-B1 | B | Shield Action target + FC profile | ✅ code · portal profile ⏳ |
+| cap-B1 | B | Shield Action target + FC profile | ✅ code · portal: `WAVE3_OWNER_PORTAL_SESSION_…` §1 |
 | cap-B2 | B | Ask Parent / Close + App Group + Loc | ✅ |
 | cap-B3 | B | CI secrets + Fastfile Shield Action | ✅ Fastfile · secret ⏳ |
 | cap-B4 | B | Parent notify on shield ask | ✅ local banner · APNs ⏳ |
