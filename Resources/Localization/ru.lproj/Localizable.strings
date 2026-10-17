@@ -2504,10 +2504,25 @@
 "ai_assistant_error_stream" = "Сейчас не удалось получить ответ. Попробуйте ещё раз.";
 "common_done" = "Готово";
 
-/* ux36-w5 geo+APNs+crash hybrid */
+/* ux36-w5 geo+APNs+crash hybrid · WAVE3 L complete RU */
+"location_left_home" = "Покинул дом";
+"location_arrived_school" = "Прибыл в школу";
+"location_left_school" = "Покинул школу";
+"location_arrived_named" = "Прибыл: %@";
+"location_left_named" = "Ушёл: %@";
+"geofence_school_push_title" = "Дошёл до школы";
+"geofence_school_push_body" = "%@: на месте в школе";
+"geofence_home_push_title" = "Дошёл домой";
+"geofence_home_push_body" = "%@: на месте дома";
 "geofence_place_push_title" = "Место семьи";
 "geofence_place_arrived_body" = "Вы у места: %@";
 "geofence_place_left_body" = "Вы ушли из места: %@";
+"geofence_status_monitoring" = "Отслеживается";
+"geofence_status_ready" = "Адрес найден, подключаем";
+"geofence_status_no_coords" = "Не нашли адрес. Проверьте улицу и дом";
+"geofence_status_need_always" = "Нужно разрешение «Всегда»";
+"geofence_status_need_permission" = "Нужно разрешение на местоположение";
+"geofence_status_needs_consent" = "Сначала включите уведомления о местах";
 "geofence_family_chat_arrived" = "%@: пришёл(а) — %@";
 "geofence_family_chat_left" = "%@: ушёл(а) — %@";
 "geofence_why_no_push_title" = "Почему нет уведомлений?";

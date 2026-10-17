@@ -24,16 +24,21 @@ enum GeofenceMonitoringBootstrap {
             }
         }
 
+        // WAVE3 L1 — geocode even without Always (honest coords), but CL regions need Always.
         guard locationManager.hasRequiredAuthorization() else { return }
 
         let geofences = loadGeofences()
         guard !geofences.isEmpty else { return }
 
         let coordinates = await GeofenceGeocodingService.shared.syncCoordinates(for: geofences)
-        locationManager.loadAndMonitorGeofences(geofences, coordinates: coordinates)
 
         if locationManager.hasRequiredAuthorization(forBackground: true) {
+            locationManager.loadAndMonitorGeofences(geofences, coordinates: coordinates)
             locationManager.startSignificantLocationChanges()
+        } else {
+            // Stop stale regions so UI never claims «monitoring» without Always.
+            locationManager.stopMonitoringAllRegions()
+            print("⚠️ GeofenceMonitoringBootstrap: Always required — regions not started (status=\(locationManager.authorizationStatus.rawValue))")
         }
 
         GeofenceNoShowMonitor.resyncCalendarTriggers()

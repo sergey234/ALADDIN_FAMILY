@@ -712,8 +712,32 @@ extension LocationManager: CLLocationManagerDelegate {
     }
     
     nonisolated func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
+        // WAVE3 L2 — ask iOS for current inside/outside so UI is honest after cold start.
+        manager.requestState(for: region)
         Task { @MainActor in
-            print("✅ LocationManager: Мониторинг геозоны '\(region.identifier)' успешно запущен")
+            print("✅ LocationManager: Мониторинг геозоны '\(region.identifier)' успешно запущен → requestState")
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+        let stateLabel: String
+        switch state {
+        case .inside: stateLabel = "inside"
+        case .outside: stateLabel = "outside"
+        case .unknown: stateLabel = "unknown"
+        @unknown default: stateLabel = "other"
+        }
+        Task { @MainActor in
+            print("📍 LocationManager: state=\(stateLabel) region=\(region.identifier)")
+            // UI-only — do NOT synthesize enter/exit push (would spam every launch if already inside).
+            NotificationCenter.default.post(
+                name: .locationDidDetermineRegionState,
+                object: nil,
+                userInfo: [
+                    "region": region,
+                    "state": stateLabel
+                ]
+            )
         }
     }
 }
@@ -778,4 +802,6 @@ extension Notification.Name {
     static let locationSignificantChange = Notification.Name("locationSignificantChange")
     static let locationDidEnterRegion = Notification.Name("locationDidEnterRegion")
     static let locationDidExitRegion = Notification.Name("locationDidExitRegion")
+    /// WAVE3 L2 — UI-only state after `requestState(for:)` (no synthetic push).
+    static let locationDidDetermineRegionState = Notification.Name("locationDidDetermineRegionState")
 }

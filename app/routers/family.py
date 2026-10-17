@@ -3413,6 +3413,49 @@ async def family_im_ok(
     }
 
 
+class FamilyGeofenceEventBody(BaseModel):
+    """WAVE3 L4 — device reports place enter/exit (no continuous track payload)."""
+
+    place_name: str = Field(..., min_length=1, max_length=120)
+    is_arrival: bool
+    region_id: str = Field(default="", max_length=80)
+    event_type: str = Field(default="geofence_place_arrival", max_length=64)
+    display_name: Optional[str] = Field(default=None, max_length=80)
+
+
+@router.post("/geofence-event")
+@limiter.limit("60/hour")
+async def family_geofence_event(
+    request: Request,
+    body: FamilyGeofenceEventBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """WAVE3 L4 — child/member crossed a place boundary → APNs parents. No lat/lon stored."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def run_sync():
+        from app.services.geofence_family_notify import notify_parents_geofence_event
+
+        return notify_parents_geofence_event(
+            member_user_id=user_id,
+            display_name=(body.display_name or "").strip() or "Член семьи",
+            place_name=body.place_name.strip(),
+            is_arrival=bool(body.is_arrival),
+            region_id=(body.region_id or "").strip() or "unknown",
+            event_type=(body.event_type or "").strip()
+            or ("geofence_place_arrival" if body.is_arrival else "geofence_place_departure"),
+        )
+
+    result = await asyncio.to_thread(run_sync)
+    return {
+        "success": True,
+        "data": True,
+        "message": "geofence_event",
+        "parents_notified": result.get("parents_notified", 0),
+        "skipped_cooldown": result.get("skipped_cooldown", 0),
+    }
+
+
 @router.get("/presence")
 @limiter.limit("60/minute")
 async def family_presence(

@@ -5,8 +5,8 @@
 "NSPhotoLibraryUsageDescription" = "ALADDIN нужен доступ к фото для безопасной работы с семейными снимками.";
 "NSPhotoLibraryAddUsageDescription" = "ALADDIN нужен доступ к фото, чтобы сохранять снимки безопасности.";
 "NSContactsUsageDescription" = "ALADDIN нужен доступ к контактам для безопасного управления членами семьи.";
-"NSLocationWhenInUseUsageDescription" = "ALADDIN нужна геолокация для безопасности семьи и экстренных ситуаций.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN нужна геолокация для безопасности семьи и экстренных ситуаций.";
+"NSLocationWhenInUseUsageDescription" = "ALADDIN использует геолокацию, пока вы в приложении: чтобы задать семейные места и поделиться местоположением в экстренной ситуации (SOS).";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN использует доступ «Всегда», чтобы присылать алерты о входе и выходе из семейных мест (дом, школа, работа), даже когда приложение закрыто. Не используется для непрерывного GPS-трекинга.";
 "NSLocalNetworkUsageDescription" = "ALADDIN нужен доступ к локальной сети для связи устройств семьи.";
 "NSFaceIDUsageDescription" = "ALADDIN использует Face ID для безопасного входа.";
 "NSSpeechRecognitionUsageDescription" = "ALADDIN нужно распознавание речи для голосового ввода AI.";

@@ -1,9 +1,12 @@
 import Foundation
 
-/// UX-36 W5 — hybrid place events: local UN + in-app inbox + soft family-chat (APNs path parents already have).
+/// UX-36 W5 + WAVE3 L4 — local UN + soft family-chat + dedicated parent APNs (server).
 enum GeofenceFamilyBridge {
     private static let throttleSeconds: TimeInterval = 30 * 60
     private static let throttlePrefix = "geofence_family_bridge_throttle_v1_"
+    private static let apiThrottlePrefix = "geofence_family_api_throttle_v1_"
+    /// Dedicated APNs path: shorter than chat soft (5 min) so parent gets timely alert.
+    private static let apiThrottleSeconds: TimeInterval = 5 * 60
 
     /// Returns true if this place+direction is outside the soft-notify throttle window.
     static func shouldSoftNotify(
@@ -57,6 +60,40 @@ enum GeofenceFamilyBridge {
             if case .failure = result {
                 // Keep local path honest — soft enqueue as ImOK-style offline item.
                 FamilyImOkOfflineQueue.enqueue(message: message, kind: "geofence")
+            }
+        }
+    }
+
+    /// WAVE3 L4 — POST /api/family/geofence-event → parent APNs (deploy required on MAIN).
+    @MainActor
+    static func notifyParentsViaAPIIfNeeded(
+        placeName: String,
+        isArrival: Bool,
+        regionId: String,
+        eventType: String,
+        localization: LocalizationManager = .shared,
+        api: APIService? = nil,
+        defaults: UserDefaults = .standard
+    ) {
+        let throttleKey = "\(apiThrottlePrefix)\(regionId)_\(isArrival ? "in" : "out")"
+        let now = Date().timeIntervalSince1970
+        let last = defaults.double(forKey: throttleKey)
+        if last > 0, now - last < apiThrottleSeconds {
+            return
+        }
+        defaults.set(now, forKey: throttleKey)
+
+        let displayName = currentDisplayName(localization: localization)
+        let service = api ?? APIService.shared
+        service.postFamilyGeofenceEvent(
+            placeName: placeName,
+            isArrival: isArrival,
+            regionId: regionId,
+            eventType: eventType,
+            displayName: displayName
+        ) { result in
+            if case .failure(let error) = result {
+                print("⚠️ GeofenceFamilyBridge: geofence-event API failed: \(error.localizedDescription)")
             }
         }
     }

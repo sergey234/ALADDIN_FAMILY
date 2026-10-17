@@ -2594,10 +2594,25 @@
 "ai_assistant_error_stream" = "Couldn’t get an answer right now. Please try again.";
 "common_done" = "Done";
 
-/* ux36-w5 geo+APNs+crash hybrid */
+/* ux36-w5 geo+APNs+crash hybrid · WAVE3 L complete EN */
+"location_left_home" = "Left home";
+"location_arrived_school" = "Arrived at school";
+"location_left_school" = "Left school";
+"location_arrived_named" = "Arrived: %@";
+"location_left_named" = "Left: %@";
+"geofence_school_push_title" = "Arrived at school";
+"geofence_school_push_body" = "%@: at school";
+"geofence_home_push_title" = "Arrived home";
+"geofence_home_push_body" = "%@: at home";
 "geofence_place_push_title" = "Family place";
 "geofence_place_arrived_body" = "You’re at: %@";
 "geofence_place_left_body" = "You left: %@";
+"geofence_status_monitoring" = "Monitoring";
+"geofence_status_ready" = "Address found, connecting";
+"geofence_status_no_coords" = "Address not found. Check street and house";
+"geofence_status_need_always" = "Needs Always location access";
+"geofence_status_need_permission" = "Needs location permission";
+"geofence_status_needs_consent" = "Turn on place notifications first";
 "geofence_family_chat_arrived" = "%@: arrived — %@";
 "geofence_family_chat_left" = "%@: left — %@";
 "geofence_why_no_push_title" = "Why am I not getting alerts?";

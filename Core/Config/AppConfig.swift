@@ -232,6 +232,8 @@ struct AppConfig {
         static let familyIncidents = "/api/family/incidents"
         static let familyImOk = "/api/family/im-ok"
         static let familyPresence = "/api/family/presence"
+        /// WAVE3 L4 — child device reports geofence enter/exit → parent APNs
+        static let familyGeofenceEvent = "/api/family/geofence-event"
 
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"

@@ -1,12 +1,13 @@
 # ML Handoff: ASC Version + Build (ai.aladdin Path B)
 
-**Дата фиксации:** 2026-10-16  
+**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-17 (честный FC push)  
 **Приложение:** `ai.aladdin` / ALADDIN AI (команда **B3WGHSWL79**, org SAUDAPAYDI)  
 **Не путать** с личным TF `family.aladdin.ios` / team `6CJVBBUGSN` / номерами 247–248.
 
-**Канон релиза:** `docs/RELEASE_BUILD_PROMPT.md`  
+**Канон релиза (SSOT — читать первым):** `docs/RELEASE_BUILD_PROMPT.md`  
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
-**Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`
+**Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`  
+**Последний релизный tip:** `6ddf112d` — FC без strip · CI workflow `check-secrets.yml`
 
 ---
 
@@ -166,30 +167,48 @@ UI name: **Build and Upload to App Store**
 ExportOptions: app + ContentBlocker + AntifakeShare + CallDirectory + Widgets + (при наличии) Screen Time appex  
 `ai.aladdin.DeviceActivityMonitor` / `DeviceActivityReport` / `ShieldConfiguration`.
 
-### Screen Time / Family Controls и CI (уроки #585–#587)
+### Screen Time / Family Controls и CI (уроки #585–#588)
 
-**#585 / #586 — Archive FAIL; #587 — cancelled (переход на честный FC):**
+**#585/#586 FAIL → #587 cancelled → #588 честный FC (`6ddf112d`):**
 
-1. Нужен App Store profile **с** `com.apple.developer.family-controls` в secret `PROVISIONING_PROFILE_APP`  
-   (Mac: UUID `7a0c48ca-…`, не старый `09def2b7-…` без FC).  
-2. ST secrets: `PROVISIONING_PROFILE_ST_{MONITOR,REPORT,SHIELD}` + `*_UUID`  
-   → decode: `scripts/decode_screen_time_profiles_ci.sh`  
-   → заливка: `scripts/set_github_st_fc_secrets.sh` (нужен `gh auth login`).  
-3. Strip FC в CI **снят** — entitlement остаётся в Archive.  
-4. Fallback без ST secrets: `scripts/ci_disable_screen_time_embed.sh` (только если UUID пустые).  
-5. `AppStoreBuildPolicy.allowsSystemFamilyControls` → true только после Device QA + GO.
+1. Secret `PROVISIONING_PROFILE_APP` = профиль **с** `family-controls` (не без FC).  
+2. Secrets ST: `PROVISIONING_PROFILE_ST_{MONITOR,REPORT,SHIELD}` + `*_UUID`  
+   → `scripts/decode_screen_time_profiles_ci.sh` · заливка `scripts/set_github_st_fc_secrets.sh`.  
+3. В `Fastfile` **нет** strip FC — entitlement в Archive.  
+4. Полный рецепт push/bump/секреты: **`docs/RELEASE_BUILD_PROMPT.md` §0b, §3–§7**.  
+5. `allowsSystemFamilyControls` → true только после Device QA + GO.
+
+### DeviceActivityReport ExtensionKit (урок `logs_105606115805`)
+
+| Шаг | Результат |
+|-----|-----------|
+| Archive + Export | OK |
+| Upload | **FAILED 409** |
+| GitHub artifact IPA | OK ≠ TestFlight |
+
+Причина: Report собран как **NSExtension** в `PlugIns/`. Нужен **ExtensionKit**:  
+`EXAppExtensionAttributes` · `productType = extensionkit-extension` · embed `Extensions/` (`dstSubfolderSpec = 16`).  
+
+Канон и антипаттерн «вернуть NSExtension»: **`docs/RELEASE_BUILD_PROMPT.md` §4 + §8**.  
+Verify: `./scripts/verify_capabilities_wave3_static.sh`.
+
+Куда смотреть сборку после успешного Upload:  
+ASC → Apps → ALADDIN AI → **TestFlight** → iOS → **1.0.1** → Builds.
 
 ---
 
 ## 8. Порядок работы для следующей ML-системы
 
-1. Прочитать этот handoff + `docs/RELEASE_BUILD_PROMPT.md`.  
-2. `git rev-parse --show-toplevel` · ветка `master` · remote канон.  
-3. Показать фактические Version + Build командами из §3–4.  
-4. **Не** менять номера без явного GO владельца.  
-5. Если Upload падает на closed train — сначала ASC «+» новая version, потом bump marketing в коде, commit, push.  
-6. Не коммитить `telegram_stars_shop_bot/**`, `.env`, секреты.  
-7. Не путать Path A (247/личный team) с Path B.
+1. Прочитать этот handoff + `docs/RELEASE_BUILD_PROMPT.md` (§0 + §0b).  
+2. One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.  
+3. `git rev-parse --show-toplevel` · ветка `master` · remote канон.  
+4. Показать фактические Version + Build командами из §3–4.  
+5. **Не** менять номера / не push без явного GO.  
+6. Перед push: `verify_capabilities_wave3_static.sh` → ALL OK.  
+7. Зелёный релиз = Archive + Export + **Upload**.  
+8. Если Upload падает на closed train — ASC «+» version; если 409 Report — ExtensionKit.  
+9. Не коммитить `telegram_stars_shop_bot/**`, `.env`, секреты.  
+10. Не путать Path A (247/личный team) с Path B.
 
 ---
 
@@ -202,6 +221,9 @@ ExportOptions: app + ContentBlocker + AntifakeShare + CallDirectory + Widgets + 
 | feat(build 10) + ST WAVE2 | `1773deeb` — Build 10, ещё marketing 1.0.0 |
 | Владелец | ASC создал **1.0.1** Подготовка к отправке |
 | GO 2026-10-16 | marketing **1.0.1**, Build **10**, commit + push |
+| GO 2026-10-17 | `6ddf112d` честный FC → CI #588 Upload OK → TF **1.0.1/10** |
+| Run `logs_105606115805` | Archive OK · Upload **FAIL 409** Report NSExtension |
+| Локально (до GO push) | ExtensionKit Report + WAVE3 L-фиксы геозон |
 
 ---
 
@@ -210,6 +232,7 @@ ExportOptions: app + ContentBlocker + AntifakeShare + CallDirectory + Widgets + 
 - Таблица «везде 5 / 247→248 / team 6CJ…» как инструкция для текущего приложения.  
 - Путать **Version** и **Build**.  
 - Повторно пушить тот же Build на closed marketing train.  
-- Считать зелёный Archive = TestFlight.  
+- Считать зелёный Archive / IPA artifact = TestFlight.  
 - Bump build без согласованных extension plists.  
-- Коммит iOS-релиза не на `master`.
+- Коммит iOS-релиза не на `master`.  
+- Вернуть DeviceActivityReport на NSExtension / PlugIns.

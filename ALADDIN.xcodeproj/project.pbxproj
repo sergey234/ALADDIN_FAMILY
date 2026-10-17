@@ -770,7 +770,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		WELLVAL22F90000100C7D34B /* WellnessValuesCardSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */; };
 		WELPRM22F90000100C7D34B /* WellnessPremiumFunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */; };
 		STMON0112F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = STMON0102F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		STREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		STREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		STSHD0112F90000200C7D34B /* ALADDINShieldConfiguration.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = STSHD0102F90000200C7D34B /* ALADDINShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		STMON0302F90000200C7D34B /* DeviceActivityMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMON0012F90000200C7D34B /* DeviceActivityMonitorExtension.swift */; };
 		STMON0312F90000200C7D34B /* ScreenTimeUsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */; };
@@ -865,10 +865,20 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 				AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */,
 				WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */,
 				STMON0112F90000200C7D34B /* ALADDINDeviceActivityMonitor.appex in Embed App Extensions */,
-				STREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed App Extensions */,
 				STSHD0112F90000200C7D34B /* ALADDINShieldConfiguration.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
+		};
+		STREP0EK2F90000200C7D34B /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				STREP0112F90000200C7D34B /* ALADDINDeviceActivityReport.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -1670,7 +1680,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		STREP0082F90000200C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		STREP0092F90000200C7D34B /* ALADDINDeviceActivityReport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINDeviceActivityReport.entitlements; sourceTree = "<group>"; };
 		STREP00A2F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINDeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ALADDINDeviceActivityReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		STSHD0012F90000200C7D34B /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
 		STSHD0082F90000200C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		STSHD0092F90000200C7D34B /* ALADDINShieldConfiguration.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINShieldConfiguration.entitlements; sourceTree = "<group>"; };
@@ -2734,6 +2744,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A0FFFFFB /* Frameworks */,
 				A0FFFFFC /* Resources */,
 				5E61A0A82EFB38ED0039093A /* Embed App Extensions */,
+				STREP0EK2F90000200C7D34B /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
@@ -2861,7 +2872,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			name = ALADDINDeviceActivityReport;
 			productName = ALADDINDeviceActivityReport;
 			productReference = STREP0102F90000200C7D34B /* ALADDINDeviceActivityReport.appex */;
-			productType = "com.apple.product-type.app-extension";
+			productType = "com.apple.product-type.extensionkit-extension";
 		};
 		STSHD0172F90000200C7D34B /* ALADDINShieldConfiguration */ = {
 			isa = PBXNativeTarget;

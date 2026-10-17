@@ -823,6 +823,48 @@ class APIService: ObservableObject {
         )
     }
     
+    /// WAVE3 L4 — report geofence enter/exit so parents get APNs (server deploy required).
+    func postFamilyGeofenceEvent(
+        placeName: String,
+        isArrival: Bool,
+        regionId: String,
+        eventType: String,
+        displayName: String,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let placeName: String
+            let isArrival: Bool
+            let regionId: String
+            let eventType: String
+            let displayName: String
+            enum CodingKeys: String, CodingKey {
+                case placeName = "place_name"
+                case isArrival = "is_arrival"
+                case regionId = "region_id"
+                case eventType = "event_type"
+                case displayName = "display_name"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyGeofenceEvent,
+            body: Body(
+                placeName: placeName,
+                isArrival: isArrival,
+                regionId: regionId,
+                eventType: eventType,
+                displayName: displayName
+            )
+        ) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? response.success))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     func sendFamilyChatMessage(
         message: String?,
         familyId: String?,

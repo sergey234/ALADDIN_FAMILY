@@ -1212,10 +1212,17 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
              "downloaded_file_threat",
              "crash_detection",
              "geofence_noshow",
+             // WAVE3 L3 — all place enter/exit must survive «Important only»
              "geofence_school_arrival",
-             "geofence_home_arrival":
+             "geofence_home_arrival",
+             "geofence_place_arrival",
+             "geofence_place_departure",
+             "geofence_home_departure",
+             "geofence_school_departure":
             return true
         default:
+            // Prefix match: future geofence_* types stay important without whitelist drift
+            if type.hasPrefix("geofence_") { return true }
             return false
         }
     }

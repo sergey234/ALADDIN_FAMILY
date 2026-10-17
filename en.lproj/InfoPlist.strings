@@ -5,8 +5,8 @@
 "NSPhotoLibraryUsageDescription" = "ALADDIN needs photo library access for secure family photo management.";
 "NSPhotoLibraryAddUsageDescription" = "ALADDIN needs photo library access to save family security photos.";
 "NSContactsUsageDescription" = "ALADDIN needs contacts access to help manage family member information securely.";
-"NSLocationWhenInUseUsageDescription" = "ALADDIN needs location access for family safety and emergency features.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN needs location access for family safety and emergency features.";
+"NSLocationWhenInUseUsageDescription" = "ALADDIN uses location while you use the app to set family places and share location in an emergency (SOS).";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN uses Always location for family place alerts (home, school, work enter/exit) while the app is closed. Not used for continuous GPS tracking.";
 "NSLocalNetworkUsageDescription" = "ALADDIN needs local network access for family device communication and security.";
 "NSFaceIDUsageDescription" = "ALADDIN uses Face ID for secure authentication.";
 "NSSpeechRecognitionUsageDescription" = "ALADDIN needs speech recognition for AI voice input and commands.";

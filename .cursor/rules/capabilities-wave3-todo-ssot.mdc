@@ -1,0 +1,32 @@
+---
+description: Capabilities WAVE3 build11+ (cap-*) — Cursor TODO SSOT; merge-only; no Packet Tunnel
+globs:
+alwaysApply: false
+---
+
+# Capabilities WAVE 3 — Cursor TODO policy
+
+**SSOT:** `docs/AppStore/CAPABILITIES_WAVE3_BUILD11_MASTER_PLAN_2026-10-17_RU.md`  
+**Registry:** `.cursor/CAPABILITIES_WAVE3_TASK_REGISTRY.md` · ids `cap-*`
+
+## Scope
+
+- Screen Time close · Shield Action · Critical Alerts · Comm Notifications · NE **Content Filter/DNS Proxy** · HealthKit fall · **Location/Geofences (`cap-L*`)** · privacy hygiene · build **11**
+- **OUT:** Packet Tunnel / in-app VPN · `UIBackgroundModes location` / continuous GPS
+
+## Mandatory TodoWrite
+
+1. Closing: only `TodoWrite` `merge: true` + matching `cap-*` (or small batch being closed).
+2. **Never** `merge: false` unless owner: «восстанови TODO WAVE3 из REGISTRY».
+3. On close: REGISTRY ✅ → plan checklist ☑ → then merge TodoWrite.
+4. Cross-close ST: `st-E1`↔`cap-A0`, `st-D11`↔`cap-A1`, `st-F1`↔`cap-B*`.
+
+## Work order
+
+```
+L0✅ → L3/L5/L1/L2/L10 → L4 (GO deploy) → A0 QA+geofence walk
+→ A FC on → B Shield MUST ∥ C forms → D/E/F/G+L11 → H → I ship 11
+```
+
+Code for Critical/NE/HealthKit App Store path only after Apple Assigned + owner GO.  
+No `xcodebuild` without «GO на сборку». No bump without «GO на bump».

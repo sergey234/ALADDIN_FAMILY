@@ -113,9 +113,19 @@ enum GeofenceEventStore {
                 typeKey = "geofence_place_arrival"
             }
         } else {
-            pushTitleKey = "geofence_place_push_title"
-            pushBodyKey = "geofence_place_left_body"
-            typeKey = "geofence_place_departure"
+            if isSchoolName(name, localization: localization) {
+                pushTitleKey = "geofence_place_push_title"
+                pushBodyKey = "geofence_place_left_body"
+                typeKey = "geofence_school_departure"
+            } else if isHomeName(name, localization: localization) {
+                pushTitleKey = "geofence_place_push_title"
+                pushBodyKey = "geofence_place_left_body"
+                typeKey = "geofence_home_departure"
+            } else {
+                pushTitleKey = "geofence_place_push_title"
+                pushBodyKey = "geofence_place_left_body"
+                typeKey = "geofence_place_departure"
+            }
         }
 
         let correlation = "geofence-\(regionIdentifier)-\(isArrival ? "in" : "out")-\(Int(Date().timeIntervalSince1970 / 60))"
@@ -127,17 +137,25 @@ enum GeofenceEventStore {
                 "type": typeKey,
                 "event_id": correlation,
                 "correlation_id": correlation,
-                "deepLink": "aladdin://family/location"
+                "deepLink": "aladdin://family/location",
+                "priority": "high"
             ],
             delay: 0.2
         )
 
-        // Soft server/APNs path via family chat (throttled).
+        // Soft chat (throttled) + dedicated parent APNs path (L4 — needs server deploy GO).
         Task { @MainActor in
             GeofenceFamilyBridge.softNotifyFamilyIfNeeded(
                 placeName: name,
                 isArrival: isArrival,
                 regionId: regionIdentifier,
+                localization: localization
+            )
+            GeofenceFamilyBridge.notifyParentsViaAPIIfNeeded(
+                placeName: name,
+                isArrival: isArrival,
+                regionId: regionIdentifier,
+                eventType: typeKey,
                 localization: localization
             )
         }

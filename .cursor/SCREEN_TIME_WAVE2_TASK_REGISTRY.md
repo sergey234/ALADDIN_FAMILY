@@ -55,7 +55,7 @@
 | st-E7 | E | Review Notes / ASO honest | ⏳ |
 | st-E8 | E | Privacy Nutrition parental-only | ⏳ |
 | st-E9 | E | Sync stats-план §11 + POST_BUILD8 | ⏳ |
-| st-F1 | F | Shield Action backlog | ⏳ |
+| st-F1 | F | Shield Action → WAVE3 **cap-B1…B4** | ⏳ (см. CAPABILITIES_WAVE3) |
 | st-F2 | F | Main chip v1.1 | ⏳ |
 | st-F3 | F | Analytics ST section v1.1 | ⏳ |
 | st-F4 | F | Push parent on limit | ⏳ |
