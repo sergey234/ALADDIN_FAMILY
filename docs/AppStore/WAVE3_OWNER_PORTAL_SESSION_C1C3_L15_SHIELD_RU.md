@@ -216,8 +216,8 @@ actions on the system shield UI.
 
 | Поле | Ваша запись |
 |------|-------------|
-| Request ID | ________________ |
-| Дата | ________________ |
+| Request ID | **`7KCSST4S7T`** |
+| Дата | **2026-10-17** |
 
 ### Где потом смотреть статус
 https://developer.apple.com/account/resources/identifiers/list  
@@ -227,9 +227,9 @@ https://developer.apple.com/account/resources/identifiers/list
 Пока статус не **Assigned** — profiles/secrets (блок 7 внизу) **не** делаем.
 
 ### Чеклист задачи 1
-- [ ] App ID `ai.aladdin.ShieldAction` есть в списке  
-- [ ] Заявка FC отправлена  
-- [ ] Request ID записан  
+- [x] App ID `ai.aladdin.ShieldAction` есть в списке  
+- [x] Заявка FC отправлена  
+- [x] Request ID записан: **`7KCSST4S7T`** (2026-10-17)
 
 ---
 
@@ -269,10 +269,10 @@ https://developer.apple.com/account/resources/identifiers/list
 Edit → откройте Location → поправьте цели на **App Functionality** · Linked **Yes** · Tracking **No** → Save.
 
 ### Чеклист задачи 2
-- [ ] Location = App Functionality  
-- [ ] Linked to user = Yes  
-- [ ] Used for Tracking = **No**  
-- [ ] Сохранено / опубликовано в ASC  
+- [x] Location = App Functionality  
+- [x] Linked to user = Yes  
+- [x] Used for Tracking = **No**  
+- [x] Сохранено / опубликовано в ASC (2026-10-17)
 
 ---
 
@@ -380,7 +380,7 @@ The user can disable Critical Alerts in iOS Settings.
 ```
 
 5. **Submit**.
-6. Request ID / confirmation: _______________
+6. Request ID / confirmation: **`VX53USXWCJ`** (2026-10-17)
 
 ## Способ B (если ссылка 404 / «нет доступа»)
 
@@ -393,8 +393,8 @@ The user can disable Critical Alerts in iOS Settings.
 Справка Apple: https://developer.apple.com/help/account/capabilities/capability-requests/
 
 ### Чеклист задачи 4
-- [ ] Форма Critical Alerts отправлена  
-- [ ] ID / дата записаны  
+- [x] Форма Critical Alerts отправлена  
+- [x] ID / дата записаны: **`VX53USXWCJ`** (2026-10-17)
 
 ---
 
@@ -516,32 +516,37 @@ TN3134 (content filter + Screen Time): https://developer.apple.com/documentation
 2. Profiles → `+` → App Store → этот App ID → Generate → Download.  
    https://developer.apple.com/account/resources/profiles/list  
 3. GitHub secret `PROVISIONING_PROFILE_ST_SHIELD_ACTION` (+ UUID) — как у Shield Configuration.  
-4. Написать агенту: **`Shield Action secret готов`** (push всё равно в финале).
+4. Написать агенту: **`Shield Action secret готов`** (push всё равно в финале).  
+
+**Done 2026-10-17:** profile `ALADDIN AI ShieldAction App Store` · UUID `22b594dc-86a2-4be8-a105-451017e250e5` · secrets set on `sergey234/ALADDIN_FAMILY` · CI decode wired.
+
+**Main App Store (Invalid → regenerated 2026-10-17):** `ALADDIN_AI_App_Store (3).mobileprovision` · UUID `8b748ae9-af00-4acc-b6bc-1a329e738fe3` · secret `PROVISIONING_PROFILE_APP` updated.  
+Note: Apple NE array on profile may list packet-tunnel among types when Network Extensions is on — product still ships **no** Packet Tunnel / Personal VPN code (Review Notes honesty).
 
 ---
 
 # Итоговый чеклист дня
 
-- [ ] **1** App ID + FC заявка Shield Action  
-- [ ] **2** ASC Privacy Location (не Tracking)  
-- [ ] **3** Review Notes Saved (без Submit)  
-- [ ] **4** Critical Alerts отправлено  
-- [ ] **5** Communication Notifications отправлено  
-- [ ] **6** NE Content Filter / без VPN  
+- [x] **1** App ID + FC заявка Shield Action · **`7KCSST4S7T`**  
+- [x] **2** ASC Privacy Location (не Tracking) · Published  
+- [ ] **3** Review Notes Saved — **отложено** до сборки / Submit (owner)  
+- [x] **4** Critical Alerts · **`VX53USXWCJ`**  
+- [x] **5** Communication Notifications · Enabled (без формы)  
+- [x] **6** NE On · Personal VPN Off  
 
 Параллельно на телефонах: walk-test геозон (L4 на MAIN уже).
 
 ---
 
-# Отчёт агенту (скопируйте и заполните)
+# Отчёт агенту (заполнено 2026-10-17)
 
 ```text
-PORTAL SESSION DONE:
-- 1 ShieldAction App ID: yes/no · FC request ID: ____
-- 2 ASC Privacy Location (App Functionality, Tracking No): yes/no
-- 3 Review Notes Saved (no Submit): yes/no
-- 4 C1 Critical Alerts ID: ____
-- 5 C2 Communication Notifications ID: ____
-- 6 C3 NE Content Filter / NE enabled without VPN: yes/no · request ID: ____
+PORTAL SESSION DONE (2026-10-17):
+- 1 ShieldAction App ID: yes · FC request ID: 7KCSST4S7T
+- 2 ASC Privacy Location (App Functionality, Tracking No): yes
+- 3 Review Notes Saved (no Submit): no — deferred until build/submit
+- 4 C1 Critical Alerts ID: VX53USXWCJ
+- 5 C2 Communication Notifications: Enabled on ai.aladdin (no Request ID)
+- 6 C3 NE without VPN: yes · Personal VPN off · subtypes N/A
 - Walk-test geo: PASS/FAIL — ____
 ```

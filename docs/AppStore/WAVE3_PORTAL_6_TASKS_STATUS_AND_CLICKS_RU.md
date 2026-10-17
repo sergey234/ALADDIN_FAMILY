@@ -10,18 +10,17 @@
 
 | # | Задача | В коде / docs | В портале Apple | Вердикт |
 |---|--------|---------------|-----------------|--------|
-| **1** | App ID `ai.aladdin.ShieldAction` + заявка FC | Код расширения ✅ | Request ID **нет** в таблице; в плане «ждёт App ID» | **Скорее НЕ сделано** → сделать |
+| **1** | App ID `ai.aladdin.ShieldAction` + заявка FC | Код расширения ✅ | App ID ✅ · FC **`7KCSST4S7T`** · письмо **Assigned** FC Distribution 2026-10-17 | **Assigned** → включить на Shield Action + profile |
 | **1b** | FC на main / Monitor | — | Main `952MH6KQWS` · Monitor `L2B4G3Y82L` (2026-10-16) | **Уже подавали** (другое, не Shield Action) |
 | **1c** | App ID Monitor / Report / Shield**Configuration** | — | Инструкция была; Report/ShieldConfig ID в таблице **пусты** | **Проверить в Identifiers** — могли создать без записи |
-| **2** | ASC Privacy Location (WAVE3: не Tracking) | Pack L15 ✅ | В WAVE3 явно «галочки ASC ⏳» | **WAVE3-правки — НЕ подтверждены** → проверить/сделать |
+| **2** | ASC Privacy Location (WAVE3: не Tracking) | Pack L15 ✅ | Precise/Coarse + User ID + Other Content · Func · Linked Yes · Tracking No · Publish 2026-10-17 | **Сделано** |
 | **2b** | App Privacy вообще (старое, 2025) | Старые чеклисты «готово» | Могли заполнять год назад | **Не считать WAVE3 закрытым** |
-| **3** | Review Notes WAVE3 | Pack H2 ✅ | «paste ASC ⏳» | **НЕ вставлено** (или не записано) → сделать |
-| **4** | Critical Alerts форма | Draft ✅ | submit ⏳ AH | **НЕ отправляли** → сделать |
-| **5** | Communication Notifications | Draft ✅ | submit ⏳ AH | **НЕ отправляли** → сделать |
-| **6** | NE Content Filter (не VPN) | Explainer + draft ✅ | submit/enable ⏳ | **НЕ подтверждено** → сделать |
+| **3** | Review Notes WAVE3 | Pack H2 ✅ | Владелец: Save **отложил** до сборки / Submit | **Отложено** (осознанно) |
+| **4** | Critical Alerts форма | Draft ✅ | Request ID **`VX53USXWCJ`** (2026-10-17) | **Сделано** (ждём Apple) |
+| **5** | Communication Notifications | Draft ✅ | Галочка Enabled на `ai.aladdin` (форма не нужна) | **Сделано** |
+| **6** | NE Content Filter (не VPN) | Explainer + draft ✅ | Network Extensions On · Personal VPN Off · подтипы UI нет | **Сделано** |
 
-**Коротко:** раньше делали FC для **main + Monitor** (и планировали Report/Shield Configuration).  
-Шесть задач WAVE3-сессии (Shield **Action**, Privacy WAVE3, Notes WAVE3, C1, C2, C3) — по SSOT **ещё не закрыты владельцем в портале**.
+**Коротко (после сессии владельца 2026-10-17):** портал 1·2·4·5·6 ✅ · Notes (3) отложены до сборки/Submit · ждём Apple Assigned на FC Shield Action + Critical Alerts.
 
 ---
 
@@ -216,21 +215,21 @@ UI уведомления «как входящий» для скам/спам +
 
 # Чеклист дня + отчёт
 
-- [ ] 1 ShieldAction App ID + FC request ID ____  
-- [ ] 2 Privacy Location WAVE3 OK  
-- [ ] 3 Notes Saved (no Submit)  
-- [ ] 4 Critical ID ____  
-- [ ] 5 Comm ID ____  
-- [ ] 6 NE Content Filter без VPN  
+- [x] 1 ShieldAction App ID + FC request ID **`7KCSST4S7T`**  
+- [x] 2 Privacy Location WAVE3 OK (Publish 2026-10-17)  
+- [ ] 3 Notes Saved — **отложено** до сборки / Submit (owner 2026-10-17)  
+- [x] 4 Critical Alerts Request ID **`VX53USXWCJ`**  
+- [x] 5 Comm Notifications Enabled (no Request ID)  
+- [x] 6 NE On · Personal VPN Off  
 
 ```text
-PORTAL SESSION DONE:
-- ShieldAction App ID existed before?: yes/no · created now?: yes/no · FC ID: ____
-- Privacy Location Tracking=No: yes/no
-- Review Notes Saved: yes/no
-- C1 Critical ID: ____
-- C2 Comm ID: ____
-- C3 NE/Filter done without VPN: yes/no · request ID: ____
+PORTAL SESSION DONE (2026-10-17):
+- ShieldAction App ID: created · FC ID: 7KCSST4S7T
+- Privacy Location Tracking=No: yes (Published)
+- Review Notes Saved: no (deferred until build/submit)
+- C1 Critical ID: VX53USXWCJ
+- C2 Comm: Enabled on ai.aladdin (no form)
+- C3 NE without VPN: yes · Personal VPN off · subtypes N/A
 ```
 
 Тексты для копипаста: [`WAVE3_OWNER_PORTAL_SESSION_C1C3_L15_SHIELD_RU.md`](WAVE3_OWNER_PORTAL_SESSION_C1C3_L15_SHIELD_RU.md)

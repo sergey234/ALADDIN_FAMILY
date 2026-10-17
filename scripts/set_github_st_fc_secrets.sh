@@ -63,10 +63,12 @@ set_b64 PROVISIONING_PROFILE_APP
 set_b64 PROVISIONING_PROFILE_ST_MONITOR
 set_b64 PROVISIONING_PROFILE_ST_REPORT
 set_b64 PROVISIONING_PROFILE_ST_SHIELD
+set_b64 PROVISIONING_PROFILE_ST_SHIELD_ACTION
 set_text PROVISIONING_PROFILE_ST_MONITOR_UUID
 set_text PROVISIONING_PROFILE_ST_REPORT_UUID
 set_text PROVISIONING_PROFILE_ST_SHIELD_UUID
+set_text PROVISIONING_PROFILE_ST_SHIELD_ACTION_UUID
 
 echo ""
-echo "✅ All 7 secrets updated on $REPO"
-echo "   Next: commit CI code (remove FC strip + decode ST) and push."
+echo "✅ ST/FC secrets updated on $REPO (incl. Shield Action)"
+echo "   Next: commit CI decode wiring if needed, then push when GO."
