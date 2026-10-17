@@ -42,7 +42,7 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-L12 | L | UX: WhenInUse → explain → Always only for places | ✅ |
 | cap-L13 | L | Sync geofences :8002 + kill fake/demo coords | ✅ code · soft upsert |
 | cap-L14 | L | Precise Location only setup zone / SOS | ✅ setup helper · SOS later |
-| cap-L15 | L | ASC Privacy labels + Notes «alerts not track» | ✅ pack `WAVE3_L15_ASC_PRIVACY_LOCATION_PACK_RU.md` · ⏳ галочки ASC |
+| cap-L15 | L | ASC Privacy labels + Notes «alerts not track» | ✅ Privacy Published · Notes ASC ⏸ до Submit |
 | cap-L16 | L | Member toggle: no track without explicit opt-in | ✅ parent consent |
 | cap-L16-copy | L | Owner pick P1–P3 / A1–A3 names → apply RU/EN | ✅ P1+A3 |
 | cap-L16-teen | L | Teen Always honesty copy (no under-18 signature) | ✅ |
@@ -54,12 +54,12 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-A4 | A | Archive entitlements FC+appex | ⏳ |
 | cap-B1 | B | Shield Action target + FC profile | ✅ code · portal: `WAVE3_OWNER_PORTAL_SESSION_…` §1 |
 | cap-B2 | B | Ask Parent / Close + App Group + Loc | ✅ |
-| cap-B3 | B | CI secrets + Fastfile Shield Action | ✅ Fastfile · secret ⏳ |
+| cap-B3 | B | CI secrets + Fastfile Shield Action | ✅ secrets + decode wiring · commit `60e4a492` · push ⏳ |
 | cap-B4 | B | Parent notify on shield ask | ✅ local banner · APNs ⏳ |
-| cap-C1 | C | Apple form Critical Alerts | ✅ draft `WAVE3_C1_C2_APPLE_FORMS_DRAFT_RU.md` · ⏳ submit AH |
-| cap-C2 | C | Apple form Communication Notifications | ✅ draft · ⏳ submit AH |
-| cap-C3 | C | Apple form NE Content Filter/DNS Proxy (not VPN) | ✅ draft `WAVE3_C3_NE_CONTENT_FILTER_FORM_DRAFT_RU.md` · ⏳ submit AH |
-| cap-C4 | C | Assigned → App IDs + profiles + secrets | ⏳ |
+| cap-C1 | C | Apple form Critical Alerts | ✅ submitted **`VX53USXWCJ`** · ждём Assigned |
+| cap-C2 | C | Apple form Communication Notifications | ✅ Enabled на `ai.aladdin` (self-serve) |
+| cap-C3 | C | Apple form NE Content Filter/DNS Proxy (not VPN) | ✅ NE On · Personal VPN Off (подтипы UI N/A) |
+| cap-C4 | C | Assigned → App IDs + profiles + secrets | ✅ Shield Action FC Assigned + App Group + profile/secrets · Critical ещё ⏳ |
 | cap-D1 | D | Critical Alerts entitlement + auth | ⏳ |
 | cap-D2 | D | Server critical push SOS/fall/scam | ⏳ |
 | cap-D3 | D | iOS critical payload → UI | ⏳ |

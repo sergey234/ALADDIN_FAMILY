@@ -29,30 +29,109 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 
 **Запрещено:** номера 247/248, `family.aladdin.ios`, team `6CJVBBUGSN` как «куда пушить».
 
-**Последний релизный push (канон FC → TF):**  
-`6ddf112d` — `fix(ci): ship Family Controls App Store profiles without strip`  
-CI: workflow **Build and Upload to App Store** = `.github/workflows/check-secrets.yml`  
-Успешный Upload → TestFlight **1.0.1 / build 10** (run вроде **#588**).
+**Что уже в Apple / GitHub (факт на 2026-10-17):**
 
-**Локально (ещё не в origin):**  
-WAVE3 L-фиксы геозон + **DeviceActivityReport → ExtensionKit** (ASC 409) + планы.  
-**Политика владельца:** один **commit+push в конце** всех задач WAVE3-пакета → снова **build 10** (без bump).  
-Не коммитить «по ходу». One-pager: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md` § «Что уже готово».
+| Слой | Факт |
+|------|------|
+| Commit tip **origin/master** | `6ddf112d` — FC profiles without strip |
+| Код в git (номера) | Version **1.0.1** · Build **10** |
+| CI канон | `check-secrets.yml` («Build and Upload to App Store») |
+| Ранее: Upload 409 | Report как NSExtension → нужен **ExtensionKit** (урок §4) |
+| Владелец: «последний успешный приём Apple» | часто помнят **build 8** — **сверить ASC TestFlight** (Ready), не гадать |
+| Локально **ahead of origin** | WAVE3 + ExtensionKit + Shield Action CI + portal docs (**~11 commits**, tip `60e4a492`) — **ещё не в GitHub / не в TF** |
+
+**Правило перед следующим Upload:**  
+ASC → TestFlight → `ai.aladdin` → 1.0.1 → Builds:
+
+- если **build 10 уже Ready** → следующий ship только после **«GO на bump»** → **11** (Apple не примет второй раз тот же CFBundleVersion);  
+- если **10 нет / был UPLOAD FAILED** → можно один push **без bump** (остаёмся на 10) с ExtensionKit + WAVE3.
+
+One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.  
+Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.
+
+---
+
+## 0a. Как агент / ML заходит в GitHub (секреты + Actions) — канон
+
+**Не** логиниться в github.com через браузер с паролем в чате.  
+**Не** вставлять токены / содержимое `.mobileprovision` / base64 в коммит или в ответ пользователю.
+
+### Инструмент
+На Mac владельца уже есть **GitHub CLI** `gh`, аккаунт **`sergey234`**, auth через **keyring** (scopes: `repo`, `read:org`, …).
+
+```bash
+# проверка (без секретов в выводе)
+gh auth status
+# ожидаемо: Logged in to github.com as sergey234
+```
+
+Репозиторий релиза: **`sergey234/ALADDIN_FAMILY`**  
+Remote в git: `git@github.com:sergey234/ALADDIN_FAMILY.git`
+
+### Как обновляли provisioning secrets (2026-10-17)
+
+1. Владелец скачал `.mobileprovision` в `~/Downloads/…`.  
+2. Агент на Mac:
+   - `security cms -D -i …` → UUID, `family-controls`, `group.ai.aladdin`  
+   - `base64 -i file.mobileprovision | tr -d '\n' > …/NAME.b64`  
+   - staging **вне репо**: `~/ALADDIN_VPN_SAFE/github_profile_secrets_staging_*`  
+3. Запись в Actions secrets:
+
+```bash
+gh secret set PROVISIONING_PROFILE_APP --repo sergey234/ALADDIN_FAMILY < …/PROVISIONING_PROFILE_APP.b64
+gh secret set PROVISIONING_PROFILE_ST_SHIELD_ACTION --repo sergey234/ALADDIN_FAMILY < …/….b64
+gh secret set PROVISIONING_PROFILE_ST_SHIELD_ACTION_UUID --repo sergey234/ALADDIN_FAMILY < …/….txt
+# список имён (не значения):
+gh secret list --repo sergey234/ALADDIN_FAMILY | grep PROVISIONING_PROFILE
+```
+
+Альтернатива пачкой (старый скрипт, нужен staging dir): `scripts/set_github_st_fc_secrets.sh`.
+
+### Что лежит в GitHub Actions (релевантное ST/FC)
+
+| Secret | Назначение | Обновлено |
+|--------|------------|-----------|
+| `PROVISIONING_PROFILE_APP` | main `ai.aladdin` App Store (+ FC) | **2026-10-17** UUID `8b748ae9-…` |
+| `PROVISIONING_PROFILE_ST_MONITOR` + `_UUID` | Monitor | 2026-10-16 |
+| `PROVISIONING_PROFILE_ST_REPORT` + `_UUID` | Report | 2026-10-16 |
+| `PROVISIONING_PROFILE_ST_SHIELD` + `_UUID` | Shield **Configuration** | 2026-10-16 |
+| `PROVISIONING_PROFILE_ST_SHIELD_ACTION` + `_UUID` | Shield **Action** | **2026-10-17** UUID `22b594dc-…` |
+
+CI decode: `scripts/decode_screen_time_profiles_ci.sh` (включая Shield Action).  
+Wiring в workflow: `.github/workflows/check-secrets.yml`.
+
+### Как смотреть сборку (после push)
+
+```bash
+gh run list --repo sergey234/ALADDIN_FAMILY --workflow "Build and Upload to App Store" --limit 5
+gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
+# или UI: github.com/sergey234/ALADDIN_FAMILY/actions
+```
+
+Зелёный релиз = шаги **Archive + Export + Upload** все OK. Artifact IPA ≠ TestFlight.
 
 ---
 
 ## 0b. Правильный push + сборка GitHub (копировать)
 
 ```text
-1) toplevel = …/ALADDIN_iOS · branch = master · origin = ALADDIN_FAMILY.git
-2) ./scripts/verify_capabilities_wave3_static.sh   → ALL OK
-   (ExtensionKit Report · no UIBackgroundModes location · L gates)
-3) Ждать GO: bump? → commit? → push?  (можно «GO commit+push» без bump)
-4) git status — нет bot / .env в staging
-5) commit → «GO на push» → git push origin master
-6) GitHub → Actions → «Build and Upload to App Store» (check-secrets.yml)
-7) Зелёный релиз = Archive + Export + Upload  (все три!)
-8) ASC → TestFlight → ai.aladdin → 1.0.1 → Builds → Processing → Ready
+1) cd …/ALADDIN_iOS
+   git rev-parse --show-toplevel   → …/ALADDIN_iOS
+   git branch --show-current       → master
+   git remote -v                   → origin = git@github.com:sergey234/ALADDIN_FAMILY.git
+2) ASC TestFlight: какой максимальный Build Ready на 1.0.1?
+   → если 10 уже Ready → нужен «GO на bump» до 11 ПЕРЕД push
+   → если 10 нет / Upload failed → можно ship на 10 без bump
+3) ./scripts/verify_capabilities_wave3_static.sh   → ALL OK
+4) Ждать явный GO владельца:
+     «GO на bump» / «GO на commit» / «GO на push»
+     (можно одной фразой: «GO commit+push» · bump — только если сказали)
+5) Staging checklist:
+   git diff --cached --name-only | grep -E '^telegram_stars_shop_bot/|^\.env$' && echo STOP || echo OK
+6) commit (если ещё не закоммичено) → «GO на push» →
+   git push origin master
+7) GitHub Actions → «Build and Upload to App Store» (check-secrets.yml)
+8) Дождаться Upload OK → ASC TestFlight → 1.0.1 → Builds → Processing → Ready
 ```
 
 | Не путать | Правда |
@@ -60,8 +139,47 @@ WAVE3 L-фиксы геозон + **DeviceActivityReport → ExtensionKit** (ASC
 | Зелёный Archive / artifact IPA | **≠** TestFlight |
 | `UPLOAD FAILED` в `logs_*.zip` | В ASC **ничего нового** |
 | Job «зелёный» с artifact после fail upload | Читать шаг Upload / `altool` |
+| `git push` без GO | **запрещено** правилами репо |
+| Локальный `xcodebuild` как «релиз» | только CI Upload = релиз TF |
 
 Куда смотреть TF: App Store Connect → Apps → **ALADDIN AI** → **TestFlight** → iOS → version **1.0.1** → Builds.
+
+---
+
+## 0c. План–факт WAVE3 (после build 8 → сейчас) — просто
+
+### Уже в коде (локальный master, часть уже в commits)
+
+| Тема | Факт |
+|------|------|
+| ExtensionKit DeviceActivityReport | ✅ код (фикс ASC 409) |
+| Геозоны L1–L16 + honesty | ✅ код · L4 API на MAIN ✅ · walk-test ⏳ |
+| Shield Action Ask Parent | ✅ target + UI · FC Assigned · profile + secrets ✅ |
+| Privacy ASC Location | ✅ Published (Tracking No) |
+| Critical Alerts форма | ✅ Request **`VX53USXWCJ`** · ждём Assigned |
+| Comm Notifications | ✅ галочка на App ID |
+| NE Content Filter | ✅ Network Extensions On · Personal VPN Off |
+| Review Notes ASC | ⏸ отложено до Submit / сборки |
+| D4 flags Critical/Comm/NE | ✅ `false` до Assigned |
+| CI Shield Action decode | ✅ commit `60e4a492` · **push ⏳** |
+| Main App Store profile | ✅ regenerated · secret APP обновлён |
+
+### Ещё не в origin / не в TestFlight
+
+Все commits после `6ddf112d` (ahead) — пока только локально.
+
+### Осталось по плану (короткий список)
+
+1. **Сверить ASC:** какой Build Ready (8? 10?).  
+2. **GO на push** (и **GO на bump→11**, если 10 уже Ready).  
+3. CI Upload зелёный → TF Ready.  
+4. **Device QA** 2 iPhone (ST + walk-test геозон) = gate перед `allowsSystemFamilyControls=true`.  
+5. После QA + GO: **cap-A1** FC flag on.  
+6. Critical Assigned → код D1–D3 / L11 (не раньше).  
+7. Notes в ASC перед Submit (текст в portal session §3).  
+8. HealthKit / FilterProvider / Comm UI — позже (G/F/E), не блокер текущего ship.
+
+Registry: `.cursor/CAPABILITIES_WAVE3_TASK_REGISTRY.md`.
 
 ---
 
@@ -220,13 +338,14 @@ Apple **Distribution Assigned**. В CI **не снимать** entitlement.
 
 | Секрет GitHub Actions | Содержимое |
 |----------------------|------------|
-| `PROVISIONING_PROFILE_APP` | App Store profile **с** `family-controls` (не старый без FC) |
+| `PROVISIONING_PROFILE_APP` | App Store profile **с** `family-controls` (не старый без FC) · UUID после regen 2026-10-17: `8b748ae9-…` |
 | `PROVISIONING_PROFILE_ST_MONITOR` + `_UUID` | DeviceActivityMonitor App Store |
 | `PROVISIONING_PROFILE_ST_REPORT` + `_UUID` | DeviceActivityReport App Store |
 | `PROVISIONING_PROFILE_ST_SHIELD` + `_UUID` | ShieldConfiguration App Store |
+| `PROVISIONING_PROFILE_ST_SHIELD_ACTION` + `_UUID` | ShieldAction App Store · UUID `22b594dc-…` (2026-10-17) |
 
-Decode в CI: `scripts/decode_screen_time_profiles_ci.sh`  
-Заливка с Mac (если надо обновить): `scripts/set_github_st_fc_secrets.sh` (нужен `gh auth`).
+Decode в CI: `scripts/decode_screen_time_profiles_ci.sh` (Monitor/Report/Shield/**ShieldAction**).  
+Заливка с Mac: `gh secret set …` (§0a) или `scripts/set_github_st_fc_secrets.sh` (нужен `gh auth`).
 
 В `Fastfile`: **нет** вызова `ci_strip_family_controls_entitlement.sh`.  
 Если ST UUID пустые — CI может skip embed ST (fallback); для прод-сборки со Screen Time секреты **должны** быть.
@@ -252,27 +371,40 @@ Decode в CI: `scripts/decode_screen_time_profiles_ci.sh`
 
 ## 7. Рецепт «следующая сборка» (два сценария)
 
-### 7A. Одна сборка 10 в конце пакета (ExtensionKit + WAVE3 L) — **без bump**
+### 7A. Ship текущего пакета **без bump** (только если TF ещё **нет** Ready build 10)
 
 ```text
-A. Доделать код WAVE3-пакета (без промежуточных push)
-B. (Опционально раньше) «GO на деплой» geofence-event на MAIN :8002
-C. В КОНЦЕ: владелец «GO на commit» + «GO на push»
-D. ./scripts/verify_capabilities_wave3_static.sh → ALL OK
-E. Один commit (staging checklist в WAVE3_TOMORROW § пакет) · без bot/.env
-F. push origin master → CI → Upload ЗЕЛЁНЫЙ → TF 1.0.1 / build 10
-G. Если UPLOAD FAILED — читать logs_*.zip шаг Upload
+A. Код WAVE3 уже в локальных commits (ahead of origin) · verify ALL OK
+B. L4 geofence-event на MAIN уже (walk-test отдельно)
+C. Владелец сверил ASC: build 10 НЕ Ready
+D. «GO на push» → git push origin master
+E. CI check-secrets → Archive + Export + Upload все зелёные
+F. TF 1.0.1 / build 10 → Ready
+G. Если UPLOAD FAILED — logs_*.zip · шаг Upload (не путать с artifact)
 ```
 
-### 7B. Сборка 11 (когда скажут GO на bump)
+### 7B. Сборка 11 (если build 10 уже Ready **или** сказали GO на bump)
 
 ```text
-A. Владелец: «GO на bump» (+ commit/push)
-B. В коде: Build 10 → 11 во всех файлах §1A
+A. Владелец: «GO на bump» (+ потом commit/push)
+B. В коде: Build 10 → 11 во всех файлах §1A (+ Shield Action plist если hardcoded)
 C. В этом файле: PREV_BUILD=11  NEXT_BUILD=12
 D. Marketing 1.0.1, ЕСЛИ train ASC ещё открыт
-E. commit → push → CI Upload зелёный
+E. commit → «GO на push» → CI Upload зелёный
 F. TestFlight: Version 1.0.1 · Build 11
+```
+
+### 7C. Наилучший путь «прямо сейчас» (рекомендация пилоту)
+
+```text
+1. ASC TestFlight → посмотреть Ready builds на 1.0.1
+2. Если максимальный Ready ≤ 8 или 10 отсутствует/Failed:
+      → «GO на push» без bump (ship 10 с ExtensionKit+WAVE3+Shield Action)
+3. Если Ready = 10:
+      → «GO на bump» 10→11 → commit → «GO на push»
+4. После Ready: Device QA 2 iPhone (ST + геозоны) → потом FC flag on
+5. Notes ASC — перед Submit, не блокер TF
+6. Critical/Comm ship-код — только после Apple Assigned
 ```
 
 ---

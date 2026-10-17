@@ -1,13 +1,14 @@
 # ML Handoff: ASC Version + Build (ai.aladdin Path B)
 
-**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-17 (честный FC push)  
+**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-17 (portal WAVE3 + secrets + CI Shield Action)  
 **Приложение:** `ai.aladdin` / ALADDIN AI (команда **B3WGHSWL79**, org SAUDAPAYDI)  
 **Не путать** с личным TF `family.aladdin.ios` / team `6CJVBBUGSN` / номерами 247–248.
 
 **Канон релиза (SSOT — читать первым):** `docs/RELEASE_BUILD_PROMPT.md`  
+→ §**0a** как ML/агент пишет secrets через `gh` · §**0b** push+CI · §**0c** план–факт WAVE3 · §**7C** наилучший путь ship  
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
 **Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`  
-**Последний релизный tip:** `6ddf112d` — FC без strip · CI workflow `check-secrets.yml`
+**origin tip:** `6ddf112d` — FC без strip · **локально ahead** WAVE3/ExtensionKit/Shield Action CI (`60e4a492`…) · CI: `check-secrets.yml`
 
 ---
 
