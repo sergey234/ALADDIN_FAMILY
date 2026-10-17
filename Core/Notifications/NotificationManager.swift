@@ -278,7 +278,8 @@ class NotificationManager: NSObject, ObservableObject {
         userInfo: [String: Any] = [:],
         trigger: UNNotificationTrigger,
         sound: UNNotificationSound = .default,
-        badge: NSNumber? = nil
+        badge: NSNumber? = nil,
+        useCriticalAlert: Bool = false
     ) {
         let notificationType = userInfo["type"] as? String ?? ""
         let notificationCenter = UNUserNotificationCenter.current()
@@ -299,11 +300,19 @@ class NotificationManager: NSObject, ObservableObject {
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
-            content.sound = sound
             content.categoryIdentifier = category.rawValue
             content.userInfo = userInfo
             if let badge {
                 content.badge = badge
+            }
+            let wantCritical = useCriticalAlert && AppStoreBuildPolicy.allowsCriticalAlerts
+            if wantCritical {
+                if #available(iOS 15.0, *) {
+                    content.interruptionLevel = .critical
+                }
+                content.sound = .defaultCritical
+            } else {
+                content.sound = sound
             }
 
             let request = UNNotificationRequest(
@@ -315,7 +324,7 @@ class NotificationManager: NSObject, ObservableObject {
                 if let error = error {
                     print("❌ Failed to schedule local notification: \(error)")
                 } else {
-                    print("✅ Local notification scheduled: \(identifier)")
+                    print("✅ Local notification scheduled: \(identifier) critical=\(wantCritical)")
                 }
             }
         }

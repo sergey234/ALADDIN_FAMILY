@@ -23,7 +23,12 @@ final class ContentFilterDataProvider: NEFilterDataProvider {
             return .allow()
         }
         for blocked in blockedHosts {
+            if blocked.isEmpty { continue }
             if host == blocked || host.hasSuffix(".\(blocked)") {
+                return .drop()
+            }
+            // Category seeds from Safari CB (e.g. "facebook", "tiktok") — substring match.
+            if !blocked.contains(".") && host.contains(blocked) {
                 return .drop()
             }
         }

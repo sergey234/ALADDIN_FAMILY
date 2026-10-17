@@ -3028,8 +3028,18 @@
 
 /* WAVE3 cap-F3 Safari vs system filter honesty */
 "parental_filter_safari_honesty" = "Filtering works in Safari (Content Blocker) today. It does not cover other apps.";
-"parental_filter_system_gated" = "System-wide filter for all apps is being prepared (not a VPN).";
-"parental_filter_system_available" = "System-wide filter for all apps (not a VPN): parent rules apply beyond Safari when the extension is active.";
+"parental_filter_system_gated" = "System-wide filter for all apps is being prepared.";
+"parental_filter_system_available" = "System-wide filter for all apps: parent rules apply beyond Safari when the extension is active.";
+"system_filter_toggle_title" = "System filter";
+"system_filter_toggle_footer" = "Broader than Safari: Chrome and other apps where iOS asks the filter.";
+"system_filter_toggle_on_hint" = "System filter is on. Confirm if iOS asked for permission. Often unavailable in Simulator.";
+"system_filter_toggle_off_hint" = "System filter is off. Safari Content Blocker is unchanged.";
+"system_filter_toggle_error_fmt" = "Could not enable system filter: %@. Needs iOS 16+ / a real device after TestFlight.";
+"family_critical_alerts_toggle" = "Critical alerts";
+"family_critical_alerts_footer" = "Urgent family signals and important events may sound even in Do Not Disturb. You can turn this off in iPhone Settings.";
+"family_critical_alerts_on_hint" = "Critical alerts allowed. Check Settings → ALADDIN → Notifications.";
+"family_critical_alerts_off_hint" = "Critical alerts off. Ordinary notifications still work.";
+"family_critical_alerts_error_fmt" = "Could not request critical alerts: %@";
 "family_urgent_signal_title" = "Family urgent safety signal";
 "family_urgent_signal_body" = "A family member may need help. Open ALADDIN and contact them.";
 "family_urgent_signal_chat" = "🆘 Family urgent signal: %@ (%@)";

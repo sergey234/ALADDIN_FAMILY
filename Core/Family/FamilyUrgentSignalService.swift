@@ -85,6 +85,7 @@ final class FamilyUrgentSignalService: ObservableObject {
         let title = loc.localized("family_urgent_signal_title")
         let body = loc.localized("family_urgent_signal_body")
 
+        let useCritical = FamilyCriticalAlertsService.shared.shouldUseCriticalDelivery
         NotificationManager.shared.scheduleLocalNotification(
             identifier: "family.urgent.\(UUID().uuidString)",
             title: title,
@@ -92,9 +93,11 @@ final class FamilyUrgentSignalService: ObservableObject {
             category: .family,
             userInfo: [
                 "type": "family_urgent_signal",
-                "reason": reason
+                "reason": reason,
+                "critical": useCritical
             ],
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.3, repeats: false)
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.3, repeats: false),
+            useCriticalAlert: useCritical
         )
 
         GeofenceFamilyBridge.notifyParentsUrgentSignal(reason: reason)

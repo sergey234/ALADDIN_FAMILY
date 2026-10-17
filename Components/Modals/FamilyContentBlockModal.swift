@@ -76,8 +76,15 @@ struct FamilyContentBlockModal: View {
                         
                         // Список категорий
                         categoriesSection
+
+                        // WAVE3 — системный NE Content Filter, рядом с Safari CB
+                        SystemContentFilterToggleSection(
+                            categories: Array(selectedCategories),
+                            compact: false
+                        )
+                        .environmentObject(localizationManager)
                         
-                        // Инструкция по активации
+                        // Инструкция по активации Safari
                         activationInstructionSection
                         
                         // Кнопки действий
@@ -358,6 +365,12 @@ struct FamilyContentBlockModal: View {
                 let categories = Array(selectedCategories)
                 try await contentBlockerManager.enableContentBlocker(categories: categories)
                 onAppliedCategories?(selectedCategories)
+
+                // Sync hosts into NE Content Filter when parent opted in
+                if SystemContentFilterRulesStore.isOptedIn {
+                    SystemContentFilterRulesStore.syncHostsFromContentCategories(categories)
+                    SystemContentFilterRulesStore.setEnabled(true, categories: categories) { _ in }
+                }
                 
                 // 2. Сохранить настройки через ComponentConfigurationService
                 let isComponentEnabled = await MainActor.run {

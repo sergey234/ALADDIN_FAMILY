@@ -1,26 +1,31 @@
 import Foundation
 import NetworkExtension
 
-/// WAVE3 F2 — parental domain rules in App Group for NE Content Filter (not VPN).
+/// WAVE3 F2/F3 — parental domain rules in App Group for NE Content Filter.
 enum SystemContentFilterRulesStore {
     static let appGroupId = "group.ai.aladdin"
     static let rulesFileName = "content_filter_rules.json"
+    static let optedInDefaultsKey = "system_content_filter_opted_in"
 
     struct RulesPayload: Codable {
         var blockedHosts: [String]
         var updatedAt: TimeInterval
     }
 
+    static var isOptedIn: Bool {
+        get { UserDefaults.standard.bool(forKey: optedInDefaultsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: optedInDefaultsKey) }
+    }
+
     static func saveBlockedHosts(_ hosts: [String]) {
         guard AppStoreBuildPolicy.allowsSystemContentFilter else { return }
         let cleaned = hosts
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            .map { normalizeHostToken($0) }
             .filter { !$0.isEmpty }
         let payload = RulesPayload(blockedHosts: Array(Set(cleaned)).sorted(), updatedAt: Date().timeIntervalSince1970)
         guard let data = try? JSONEncoder().encode(payload) else { return }
         guard let url = containerURL()?.appendingPathComponent(rulesFileName) else { return }
         try? data.write(to: url, options: .atomic)
-        reloadFilterConfiguration()
     }
 
     static func loadBlockedHosts() -> [String] {
@@ -32,16 +37,33 @@ enum SystemContentFilterRulesStore {
         return payload.blockedHosts
     }
 
-    private static func containerURL() -> URL? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
+    /// Sync Safari category patterns + custom parental sites into App Group rules.
+    static func syncHostsFromContentCategories(_ categories: [ContentBlockerCategory]) {
+        var hosts: [String] = []
+        for category in categories {
+            for pattern in category.blockedDomains {
+                hosts.append(normalizeHostToken(pattern))
+            }
+        }
+        if let custom = UserDefaults.standard.array(forKey: "parental_blocked_websites") as? [String] {
+            hosts.append(contentsOf: custom.map { normalizeHostToken($0) })
+        }
+        saveBlockedHosts(hosts)
     }
 
-    /// Ask the system to reload the content filter provider configuration.
-    static func reloadFilterConfiguration() {
-        guard AppStoreBuildPolicy.allowsSystemContentFilter else { return }
+    /// Enable system filter (shows iOS permission UI when supported).
+    static func setEnabled(_ enabled: Bool, categories: [ContentBlockerCategory], completion: @escaping (Result<Void, Error>) -> Void) {
+        guard AppStoreBuildPolicy.allowsSystemContentFilter else {
+            completion(.failure(StoreError.featureDisabled))
+            return
+        }
+        if enabled {
+            syncHostsFromContentCategories(categories)
+        }
         NEFilterManager.shared().loadFromPreferences { error in
             if let error {
-                print("⚠️ SystemContentFilterRulesStore load: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
             }
             let manager = NEFilterManager.shared()
             if manager.providerConfiguration == nil {
@@ -52,13 +74,42 @@ enum SystemContentFilterRulesStore {
                 config.organization = "ALADDIN"
                 manager.providerConfiguration = config
             }
-            manager.isEnabled = true
+            manager.isEnabled = enabled
             manager.saveToPreferences { saveError in
                 if let saveError {
-                    print("⚠️ SystemContentFilterRulesStore save: \(saveError.localizedDescription)")
-                } else {
-                    print("✅ SystemContentFilterRulesStore: filter prefs saved")
+                    completion(.failure(saveError))
+                    return
                 }
+                isOptedIn = enabled
+                completion(.success(()))
+            }
+        }
+    }
+
+    private static func containerURL() -> URL? {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
+    }
+
+    /// `.*facebook.*` → `facebook`; `https://evil.com/path` → `evil.com`
+    private static func normalizeHostToken(_ raw: String) -> String {
+        var s = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        s = s.replacingOccurrences(of: ".*", with: "")
+        if let url = URL(string: s), let host = url.host, !host.isEmpty {
+            return host
+        }
+        if s.hasPrefix("http://") || s.hasPrefix("https://") {
+            if let url = URL(string: s), let host = url.host { return host }
+        }
+        while s.hasPrefix(".") { s.removeFirst() }
+        while s.hasSuffix(".") { s.removeLast() }
+        return s
+    }
+
+    enum StoreError: LocalizedError {
+        case featureDisabled
+        var errorDescription: String? {
+            switch self {
+            case .featureDisabled: return "System content filter is not enabled for this build"
             }
         }
     }

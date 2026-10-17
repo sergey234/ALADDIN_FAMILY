@@ -14,11 +14,11 @@ enum AppStoreBuildPolicy {
     static let allowsSystemFamilyControls = true
     /// WAVE3 G — «Срочный сигнал семье» (HealthKit / motion); portal HealthKit on App ID required for CI profile.
     static let allowsHealthKitIntegration = true
-    /// WAVE3 cap-D4: Critical Alerts only after Apple Assigned (`VX53USXWCJ` pending).
+    /// WAVE3 D1 — flip to true together with `critical-alerts` in ALADDIN.entitlements once `VX53USXWCJ` is Assigned and APP profile regenerated.
     static let allowsCriticalAlerts = false
     /// WAVE3 E1 — Communication Notifications enabled on App ID (owner GO build 10).
     static let allowsCommunicationNotifications = true
-    /// WAVE3 F2 — system Content Filter (not Packet Tunnel / VPN).
+    /// WAVE3 F2 — system Content Filter (no Packet Tunnel).
     static let allowsSystemContentFilter = true
     #else
     static let isAppStoreBuild = false
@@ -26,7 +26,6 @@ enum AppStoreBuildPolicy {
     static let allowsSmartDNS = true
     static let allowsSystemFamilyControls = true
     static let allowsHealthKitIntegration = true
-    /// Debug: can exercise local critical paths; still no entitlement until Assigned.
     static let allowsCriticalAlerts = false
     static let allowsCommunicationNotifications = true
     static let allowsSystemContentFilter = true

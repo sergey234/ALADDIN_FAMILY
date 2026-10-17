@@ -706,26 +706,6 @@ struct ParentalControlScreen: View {
                             }
                             showContentBlockModal = true
                         }
-                    )
-
-                    // WAVE3 cap-F3: honest Safari Content Blocker vs future system NE filter
-                    Text(localizationManager.localized("parental_filter_safari_honesty"))
-                        .font(.caption2)
-                        .foregroundColor(.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, Spacing.xs)
-                    if AppStoreBuildPolicy.allowsSystemContentFilter {
-                        Text(localizationManager.localized("parental_filter_system_available"))
-                            .font(.caption2)
-                            .foregroundColor(.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, Spacing.xs)
-                    } else {
-                        Text(localizationManager.localized("parental_filter_system_gated"))
-                            .font(.caption2)
-                            .foregroundColor(.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, Spacing.xs)
                     }
                     
                     if AppStoreBuildPolicy.allowsSystemFamilyControls {
@@ -903,6 +883,25 @@ struct ParentalControlScreen: View {
                             }
                         )
                     }
+                }
+
+                // WAVE3 — Safari honesty + system NE filter toggle (below cards, next to 🔒 flow)
+                Text(localizationManager.localized("parental_filter_safari_honesty"))
+                    .font(.caption2)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, Spacing.s)
+                if AppStoreBuildPolicy.allowsSystemContentFilter {
+                    SystemContentFilterToggleSection(
+                        categories: contentBlockerManager.activeCategories,
+                        compact: true
+                    )
+                    .environmentObject(localizationManager)
+                } else {
+                    Text(localizationManager.localized("parental_filter_system_gated"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }

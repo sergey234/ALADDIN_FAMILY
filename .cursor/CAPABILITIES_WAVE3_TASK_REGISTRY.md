@@ -60,15 +60,15 @@ A0 Device QA build10 + geofence walk (G11/G12)
 | cap-C2 | C | Apple form Communication Notifications | ✅ Enabled на `ai.aladdin` (self-serve) |
 | cap-C3 | C | Apple form NE Content Filter/DNS Proxy (not VPN) | ✅ NE On · Personal VPN Off (подтипы UI N/A) |
 | cap-C4 | C | Assigned → App IDs + profiles + secrets | ✅ Shield Action FC Assigned + App Group + profile/secrets · Critical ещё ⏳ |
-| cap-D1 | D | Critical Alerts entitlement + auth | ⏳ |
-| cap-D2 | D | Server critical push SOS/fall/scam | ⏳ |
-| cap-D3 | D | iOS critical payload → UI | ⏳ |
-| cap-D4 | D | allowsCriticalAlerts policy flag | ✅ false + UN auth gate · Comm/NE flags too |
+| cap-D1 | D | Critical Alerts entitlement + auth | ✅ код + toggle у «Срочный сигнал» · ⏳ `VX53USXWCJ` Submitted → entitlement убран из `ALADDIN.entitlements` до Assigned + regen APP |
+| cap-D2 | D | Server critical push SOS/fall/scam | ⏳ remote APNs critical header |
+| cap-D3 | D | iOS critical payload → UI | ✅ local urgent uses critical sound/interruption |
+| cap-D4 | D | allowsCriticalAlerts policy flag | ✅ flag wired · сейчас **false** (toggle скрыт) до Assigned |
 | cap-E1 | E | Communication Notifications + Call UI | ✅ presenter + flag on · Call Directory already |
 | cap-E2 | E | Call Directory sync/setup polish | ✅ baseline handler · polish later |
 | cap-F1 | F | NE Filter/DNSProxy design (no tunnel) | ✅ ADR `WAVE3_F1_NE_FILTER_ADR_RU.md` |
-| cap-F2 | F | FilterProvider + parental rules | ✅ ALADDINContentFilter + App Group rules · profile+secrets ready |
-| cap-F3 | F | Parental UI Safari vs system filter | ✅ honesty copy Safari + available when flag on |
+| cap-F2 | F | FilterProvider + parental rules | ✅ ALADDINContentFilter + App Group + toggle → NEFilterManager |
+| cap-F3 | F | Parental UI Safari vs system filter | ✅ toggle «Системный фильтр» рядом с Safari modal + Parental Control |
 | cap-F4 | F | CI NE Filter profiles | ✅ UUID `77be9ff5…` · secrets · decode/Fastfile · **no push until GO** |
 | cap-G1 | G | HealthKit capability + privacy strings | ✅ privacy + `healthkit` entitlement · APP profile `(4)` has HK |
 | cap-G2 | G | Fall → family incident push | ✅ «Срочный сигнал семье» motion + manual + chat |

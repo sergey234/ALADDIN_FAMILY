@@ -7491,7 +7491,7 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
-                // WAVE3 G — Срочный сигнал семье
+                // WAVE3 G — Срочный сигнал семье + D1 Critical Alerts
                 if AppStoreBuildPolicy.allowsHealthKitIntegration {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Toggle(isOn: Binding(
@@ -7510,6 +7510,36 @@ struct GeofencesSettingsModal: View {
                         }
                         .tint(.secondaryGold)
                         .accessibilityIdentifier("family_urgent_signal_toggle")
+
+                        if AppStoreBuildPolicy.allowsCriticalAlerts {
+                            Toggle(isOn: Binding(
+                                get: { FamilyCriticalAlertsService.shared.isOptedIn },
+                                set: { newValue in
+                                    Task {
+                                        await FamilyCriticalAlertsService.shared.setOptedIn(newValue)
+                                    }
+                                }
+                            )) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(localizationManager.localized("family_critical_alerts_toggle"))
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundColor(.textPrimary)
+                                    Text(localizationManager.localized("family_critical_alerts_footer"))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .tint(.secondaryGold)
+                            .accessibilityIdentifier("family_critical_alerts_toggle")
+
+                            if let hint = FamilyCriticalAlertsService.shared.lastStatusMessage, !hint.isEmpty {
+                                Text(hint)
+                                    .font(.caption2)
+                                    .foregroundColor(.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
 
                         Button {
                             HapticFeedback.notification(.warning)

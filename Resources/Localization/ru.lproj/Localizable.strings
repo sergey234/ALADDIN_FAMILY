@@ -2938,8 +2938,18 @@
 
 /* WAVE3 cap-F3 Safari vs system filter honesty */
 "parental_filter_safari_honesty" = "Сейчас фильтр работает в Safari (Content Blocker). Другие приложения Safari не закрывает.";
-"parental_filter_system_gated" = "Системный фильтр для всех приложений готовится (не VPN).";
-"parental_filter_system_available" = "Системный фильтр для всех приложений (не VPN): правила родителя применяются шире Safari, когда расширение активно.";
+"parental_filter_system_gated" = "Системный фильтр для всех приложений готовится.";
+"parental_filter_system_available" = "Системный фильтр для всех приложений: правила родителя применяются шире Safari, когда расширение активно.";
+"system_filter_toggle_title" = "Системный фильтр";
+"system_filter_toggle_footer" = "Шире Safari: Chrome и другие приложения, где система спрашивает фильтр.";
+"system_filter_toggle_on_hint" = "Системный фильтр включён. Если iOS спросил разрешение — подтвердите. На симуляторе часто недоступен.";
+"system_filter_toggle_off_hint" = "Системный фильтр выключен. Safari Content Blocker не затронут.";
+"system_filter_toggle_error_fmt" = "Не удалось включить системный фильтр: %@. На iOS 16+ / реальном устройстве после TestFlight.";
+"family_critical_alerts_toggle" = "Критические оповещения";
+"family_critical_alerts_footer" = "Срочный сигнал и важные семейные события могут звучать даже в «Не беспокоить». Можно выключить в Настройках iPhone.";
+"family_critical_alerts_on_hint" = "Критические оповещения разрешены. Проверьте Настройки → ALADDIN → Уведомления.";
+"family_critical_alerts_off_hint" = "Критические оповещения выключены. Обычные уведомления работают как раньше.";
+"family_critical_alerts_error_fmt" = "Не удалось запросить критические оповещения: %@";
 "family_urgent_signal_title" = "Срочный сигнал семье";
 "family_urgent_signal_body" = "Нужна помощь близкого. Откройте ALADDIN и свяжитесь с ним.";
 "family_urgent_signal_chat" = "🆘 Срочный сигнал семье: %@ (%@)";
