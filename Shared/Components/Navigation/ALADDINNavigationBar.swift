@@ -327,6 +327,7 @@ private extension NavigationManager.ALADDINScreen {
         case .settingsTestSuite: return "nav_screen_settings_test_suite"
         case .devices: return "nav_screen_devices"
         case .referral: return "nav_screen_referral"
+        case .promoActivation: return "promo_activation_title"
         case .deviceDetail: return "nav_screen_device_detail"
         case .familyChat: return "nav_screen_family_chat"
         case .familyList: return "family_list_title"

@@ -30,6 +30,41 @@ private enum MagicAuthLinkParser {
     }
 }
 
+private enum PromoCodeLinkParser {
+    static func extractCode(from url: URL) -> String? {
+        let host = url.host?.lowercased() ?? ""
+        let pathParts = url.pathComponents
+            .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: "/")) }
+            .filter { !$0.isEmpty }
+
+        if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let code = components.queryItems?.first(where: { $0.name.lowercased() == "code" })?.value,
+           let normalized = normalize(code) {
+            return normalized
+        }
+
+        if host == "promo", let first = pathParts.first, let normalized = normalize(first) {
+            return normalized
+        }
+
+        if pathParts.first?.lowercased() == "promo",
+           pathParts.count >= 2,
+           let normalized = normalize(pathParts[1]) {
+            return normalized
+        }
+
+        return nil
+    }
+
+    private static func normalize(_ raw: String) -> String? {
+        let normalized = raw
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+            .filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
+        return normalized.isEmpty ? nil : normalized
+    }
+}
+
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
 /// Предоставляет быстрый доступ к данным пользователя из кеша
@@ -472,6 +507,23 @@ struct ALADDINApp: App {
                         return
                     }
 
+                    if let promoCode = PromoCodeLinkParser.extractCode(from: url) {
+                        navigationManager.pendingPromoCode = promoCode
+                        if hasCompletedOnboarding {
+                            navigationManager.navigateTo(.promoActivation)
+                        }
+                        return
+                    }
+
+                    if let invite = FamilyInviteCodeParser.parse(url.absoluteString) {
+                        navigationManager.pendingFamilyInvitePayload = url.absoluteString
+                        navigationManager.pendingFamilyInviteCode = invite.displayCode
+                        if hasCompletedOnboarding {
+                            navigationManager.navigateTo(.invitationCode)
+                        }
+                        return
+                    }
+
                     if let inviteCode = FamilyReferralInviteRouter.extractInviteCode(from: url) {
                         FamilyReferralInviteRouter.savePendingCode(inviteCode)
                         if hasCompletedOnboarding {
@@ -510,6 +562,12 @@ struct ALADDINApp: App {
                             navigationManager.pendingDeviceBindToken = token
                             navigationManager.navigateTo(.joinDevice)
                         }
+                    }
+                    if navigationManager.pendingFamilyInvitePayload != nil || navigationManager.pendingFamilyInviteCode != nil {
+                        navigationManager.navigateTo(.invitationCode)
+                    }
+                    if navigationManager.pendingPromoCode != nil {
+                        navigationManager.navigateTo(.promoActivation)
                     }
                     consumePendingMagicAuthTokenIfNeeded()
                     FamilyReferralInviteRouter.attachPendingIfNeeded()
@@ -1046,6 +1104,8 @@ struct ALADDINApp: App {
                         AnyView(DevicesScreen().id("devices").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .referral:
                         AnyView(ReferralScreen().id("referral").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .promoActivation:
+                        AnyView(PromoActivationScreen().id("promoActivation").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .deviceDetail:
                         AnyView(DeviceDetailScreen(
                             device: Device(
@@ -1262,9 +1322,23 @@ struct ALADDINApp: App {
                             .environmentObject(localizationManager)
                             .environmentObject(SubscriptionManager.shared))
                     case .qrCode:
-                        AnyView(QRScannerModal(onCodeScanned: { _ in }).id("qrCode").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            QRScannerModal(onCodeScanned: { raw in
+                                if let invite = FamilyInviteCodeParser.parse(raw) {
+                                    navigationManager.pendingFamilyInvitePayload = raw
+                                    navigationManager.pendingFamilyInviteCode = invite.displayCode
+                                    navigationManager.navigateTo(.invitationCode)
+                                } else if let token = DevicePairingLinkParser.extractToken(fromScannedString: raw) {
+                                    navigationManager.pendingDeviceBindToken = token
+                                    navigationManager.navigateTo(.joinDevice)
+                                }
+                            })
+                            .id("qrCode")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                        )
                     case .invitationCode:
-                        AnyView(InvitationCodeInputModal(isPresented: .constant(true)).id("invitationCode").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(InvitationCodeInputModal(isPresented: .constant(true), initialCode: navigationManager.pendingFamilyInviteCode).id("invitationCode").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .joinDevice:
                         AnyView(
                             JoinDeviceScreen()

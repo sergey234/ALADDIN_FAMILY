@@ -23,6 +23,11 @@ class NavigationManager: ObservableObject {
     /// Токен из `aladdin://bind?token=` или Universal Link — подставляется на экране присоединения.
     @Published var pendingDeviceBindToken: String? = nil
 
+    /// Код/QR payload приглашения в семью (`FAM-...` или JSON с `family_id`) после сканера.
+    @Published var pendingFamilyInviteCode: String? = nil
+    @Published var pendingFamilyInvitePayload: String? = nil
+    @Published var pendingPromoCode: String? = nil
+
     /// Child content catalog category + age when navigating via mnemo deep link / push.
     @Published var childContentCategory: String = ChildCategoryKey.games
     @Published var childContentAgeGroup: ChildInterfaceScreen.AgeGroup = .school
@@ -99,6 +104,7 @@ class NavigationManager: ObservableObject {
         case devices = "20_DevicesScreen"
         case joinDevice = "28_JoinDeviceScreen"
         case referral = "21_ReferralScreen"
+        case promoActivation = "PromoActivationScreen"
         case deviceDetail = "22_DeviceDetailScreen"
         case familyChat = "23_FamilyChatScreen"
         case paymentQR = "25_PaymentQRScreen"
@@ -184,6 +190,7 @@ class NavigationManager: ObservableObject {
             case .devices: return "Устройства"
             case .joinDevice: return "Присоединить устройство"
             case .referral: return "Реферальная программа"
+            case .promoActivation: return LocalizationManager.shared.localized("promo_activation_title")
             case .deviceDetail: return "Детали устройства"
             case .familyChat: return "Семейный чат"
             case .paymentQR: return "Оплата QR"
@@ -300,6 +307,7 @@ class NavigationManager: ObservableObject {
             case .familyProtector: return "sparkles"
             case .childGoalEditor: return "target"
             case .activationCode: return "key.fill"
+            case .promoActivation: return "gift.fill"
             case .threatProtection: return "shield.lefthalf.filled"
             case .threatProtectionSettings: return "gearshape.2.fill"
             case .iotSecurity: return "wifi"
@@ -321,7 +329,7 @@ class NavigationManager: ObservableObject {
             // Служебные экраны настроек — никогда в быстром меню (и в Debug тоже).
             case .settingsTest, .settingsTestSuite, .settingsFallback:
                 return false
-            case .loading, .mainWithRegistration, .qrCode, .invitationCode:
+            case .loading, .mainWithRegistration, .qrCode, .invitationCode, .promoActivation:
                 #if DEBUG
                 return true
                 #else
