@@ -3230,3 +3230,14 @@
 "promo_error_device_code" = "This is a device code. Use a promo code from the ALADDIN team for bonus access.";
 "promo_error_backend_not_ready" = "Promo code server is not connected in production yet. This will work after /api/promo is deployed.";
 "biometric_auth_reason" = "Confirm your identity to access ALADDIN.";
+
+/* App Store review prompt (after onboarding, once) */
+"store_review_title" = "We strive to get better!";
+"store_review_subtitle" = "Rate the ALADDIN app!";
+"store_review_why" = "It helps the project grow.";
+"store_review_body" = "Your reviews and recommendations are welcome!";
+"store_review_not_now" = "Not now";
+"store_review_cta" = "Rate us";
+"store_review_signoff_line1" = "Kind regards,";
+"store_review_signoff_line2" = "the ALADDIN AI team";
+"store_review_stars_a11y" = "Five stars";

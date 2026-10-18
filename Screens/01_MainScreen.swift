@@ -28,6 +28,7 @@ struct MainScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
+    @State private var showAppStoreReviewPrompt = false
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -332,6 +333,27 @@ struct MainScreen: View {
             let logCopy = debugLog
             Task {
                 saveDebugLog(logCopy)
+            }
+
+            // App Store review invite: 1× после онбординга (pending ставится при complete).
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 900_000_000)
+                guard AppStoreReviewPrompt.consumePendingForDisplay() else { return }
+                showAppStoreReviewPrompt = true
+            }
+        }
+        .overlay {
+            if showAppStoreReviewPrompt {
+                AppStoreReviewPromptCard(
+                    onDismiss: { showAppStoreReviewPrompt = false },
+                    onRate: {
+                        showAppStoreReviewPrompt = false
+                        AppStoreReviewPrompt.openWriteReviewPage()
+                    }
+                )
+                .environmentObject(localizationManager)
+                .transition(.opacity)
+                .zIndex(50)
             }
         }
         .onAppear {

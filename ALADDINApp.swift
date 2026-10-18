@@ -227,6 +227,7 @@ private enum EarlyOnboardingLaunchReset {
         guard fromEnv || fromArgv else { return }
 
         UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        AppStoreReviewPrompt.resetForQA()
         UserDefaults.standard.synchronize()
         #if DEBUG
         print("🌍 ONBOARDING_LAUNCH: hasCompletedOnboarding сброшен (env=\(fromEnv), argv=\(fromArgv))")

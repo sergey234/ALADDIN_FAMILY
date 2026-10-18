@@ -99,6 +99,18 @@ class AppConfigTests: XCTestCase {
     func testBundleIdentifier() throws {
         XCTAssertEqual(AppConfig.bundleIdentifier, "ai.aladdin")
     }
+
+    func testAppStoreWriteReviewURL() throws {
+        XCTAssertEqual(AppConfig.appStoreID, "6809577681")
+        XCTAssertEqual(
+            AppConfig.appStoreWriteReviewURL.absoluteString,
+            "itms-apps://itunes.apple.com/app/id6809577681?action=write-review"
+        )
+        XCTAssertEqual(
+            AppConfig.appStoreWriteReviewHTTPSURL.absoluteString,
+            "https://apps.apple.com/app/id6809577681?action=write-review"
+        )
+    }
     
     func testAppDisplayName() throws {
         XCTAssertEqual(AppConfig.appDisplayName, "ALADDIN - AI Защита Семьи")

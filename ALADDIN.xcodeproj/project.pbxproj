@@ -141,6 +141,8 @@
 		5E6F394A2F15C20000CEC103 /* PasswordResetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */; };
 		5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394B2F15B07D00CEC103 /* ComponentAnalytics.swift */; };
 		5E6F394C2F15C20000CEC104 /* AIFeedbackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */; };
+		ASRDCARD02F90000100C7D34B /* AppStoreReviewPromptCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASRDCARD01F90000100C7D34B /* AppStoreReviewPromptCard.swift */; };
+		ASRPRMPT02F90000100C7D34B /* AppStoreReviewPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASRPRMPT01F90000100C7D34B /* AppStoreReviewPrompt.swift */; };
 		5E6F394E2F15B74F00CEC103 /* RetryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394D2F15B74E00CEC103 /* RetryManager.swift */; };
 		5E6F39552F16C52100CEC103 /* PhishingProtectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39542F16C52000CEC103 /* PhishingProtectionSettingsModal.swift */; };
 		5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */; };
@@ -1044,6 +1046,8 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PasswordResetSheet.swift; path = Shared/Components/PasswordResetSheet.swift; sourceTree = "<group>"; };
 		5E6F394B2F15B07D00CEC103 /* ComponentAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAnalytics.swift; path = Core/Analytics/ComponentAnalytics.swift; sourceTree = "<group>"; };
 		5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIFeedbackSheet.swift; path = Shared/Components/AIFeedbackSheet.swift; sourceTree = "<group>"; };
+		ASRDCARD01F90000100C7D34B /* AppStoreReviewPromptCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppStoreReviewPromptCard.swift; path = Shared/Components/AppStoreReviewPromptCard.swift; sourceTree = "<group>"; };
+		ASRPRMPT01F90000100C7D34B /* AppStoreReviewPrompt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppStoreReviewPrompt.swift; path = Core/Managers/AppStoreReviewPrompt.swift; sourceTree = "<group>"; };
 		5E6F394D2F15B74E00CEC103 /* RetryManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RetryManager.swift; path = Core/Network/RetryManager.swift; sourceTree = "<group>"; };
 		5E6F394F2F16644900CEC103 /* ComponentAPIIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAPIIntegrationTests.swift; path = Tests/Integration/ComponentAPIIntegrationTests.swift; sourceTree = "<group>"; };
 		5E6F39522F16645C00CEC103 /* ComponentAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAPITests.swift; path = Tests/Integration/ComponentAPITests.swift; sourceTree = "<group>"; };
@@ -2015,6 +2019,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E7056C32F547C0B0065BDC4 /* FamilyChatView.swift */,
 				5E7056C12F547B9E0065BDC4 /* FeatureGateView.swift */,
 				5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */,
+				ASRPRMPT01F90000100C7D34B /* AppStoreReviewPrompt.swift */,
 				5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */,
 				5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */,
 				5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */,
@@ -2366,6 +2371,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */,
 				5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */,
 				5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */,
+				ASRDCARD01F90000100C7D34B /* AppStoreReviewPromptCard.swift */,
 				5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */,
 				C3A100012F72B001A0000003 /* WelcomeCardForCreator.swift */,
 				B1000130B1000130B1000130 /* AddMoreMemberCard.swift */,
@@ -3221,6 +3227,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				E7F8B0112FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift in Sources */,
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */,
+				ASRPRMPT02F90000100C7D34B /* AppStoreReviewPrompt.swift in Sources */,
 				5E7057032FA12A010065BDC4 /* FamilyLocalStore.swift in Sources */,
 				5E7057062FA12A020065BDC4 /* FamilyReconcileService.swift in Sources */,
 				5E8A10022FA12A100065BDC4 /* NotificationAppSettingsSync.swift in Sources */,
@@ -3721,6 +3728,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
 				5E6F394A2F15C20000CEC103 /* PasswordResetSheet.swift in Sources */,
 				5E6F394C2F15C20000CEC104 /* AIFeedbackSheet.swift in Sources */,
+				ASRDCARD02F90000100C7D34B /* AppStoreReviewPromptCard.swift in Sources */,
 				5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,

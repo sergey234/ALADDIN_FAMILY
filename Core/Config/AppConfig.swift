@@ -179,6 +179,21 @@ struct AppConfig {
     static let bundleIdentifier = "ai.aladdin"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
+    /// Apple ID в App Store Connect (ALADDIN AI · SAUDAPAYDI). Lookup: `bundleId=ai.aladdin`.
+    static let appStoreID = "6809577681"
+    /// Страница приложения в App Store (https — для шаринга / браузера).
+    static var appStoreProductURL: URL {
+        URL(string: "https://apps.apple.com/app/id\(appStoreID)")!
+    }
+    /// Форма отзыва в **приложении** App Store (`itms-apps` — не Safari).
+    /// На Simulator App Store нет → open упадёт / Safari «недействителен»; проверять на устройстве.
+    static var appStoreWriteReviewURL: URL {
+        URL(string: "itms-apps://itunes.apple.com/app/id\(appStoreID)?action=write-review")!
+    }
+    /// HTTPS-вариант той же страницы отзыва (fallback / копирование ссылки).
+    static var appStoreWriteReviewHTTPSURL: URL {
+        URL(string: "https://apps.apple.com/app/id\(appStoreID)?action=write-review")!
+    }
 
     /// Маркетинговое имя в шапке/онбординге: ключ `app.name` в `Localizable.strings` (сейчас «ALADDIN AI»). Если таблица не подхватилась, не показываем сырой ключ `app.name`.
     static var localizedAppMarketingName: String {
@@ -862,6 +877,10 @@ extension AppConfig {
         /// Явный выбор языка на шаге 0 онбординга (отличить от эвристики/дефолта).
         static let hasChosenLanguageOnce = "hasChosenLanguageOnce"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
+        /// Показать lotus-карточку отзыва App Store после онбординга (один раз).
+        static let pendingAppStoreReviewPrompt = "pending_app_store_review_prompt"
+        /// Уже показывали / закрыли приглашение оценить в App Store.
+        static let hasAskedAppStoreReviewAfterOnboarding = "has_asked_app_store_review_after_onboarding"
         /// После добавления устройства на другом экране — при следующем показе главной принудительно обновить дашборд.
         static let pendingMainDashboardDevicesRefresh = "pending_main_dashboard_devices_refresh"
         /// После изменения локального ростера (`FamilyMembersUpdated`) — не откладывать `GET /api/family/stats` из‑за 8s throttle / TTL главной.

@@ -3141,3 +3141,14 @@
 "promo_error_device_code" = "Это код устройства. Для бонуса нужен промокод от команды ALADDIN.";
 "promo_error_backend_not_ready" = "Сервер промокодов ещё не подключён на проде. Код появится после выката /api/promo.";
 "biometric_auth_reason" = "Подтвердите личность для доступа к ALADDIN.";
+
+/* App Store review prompt (after onboarding, once) */
+"store_review_title" = "Мы стремимся стать лучше!";
+"store_review_subtitle" = "Оцените приложение ALADDIN!";
+"store_review_why" = "Это помогает проекту расти.";
+"store_review_body" = "Ваши отзывы и рекомендации приветствуются!";
+"store_review_not_now" = "Не сейчас";
+"store_review_cta" = "Оценить нас";
+"store_review_signoff_line1" = "С уважением,";
+"store_review_signoff_line2" = "команда ALADDIN AI";
+"store_review_stars_a11y" = "Пять звёзд";
