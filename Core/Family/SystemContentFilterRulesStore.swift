@@ -6,9 +6,6 @@ enum SystemContentFilterRulesStore {
     static let appGroupId = "group.ai.aladdin"
     static let rulesFileName = "content_filter_rules.json"
     static let optedInDefaultsKey = "system_content_filter_opted_in"
-    /// Must match `ALADDINContentFilter` PRODUCT_BUNDLE_IDENTIFIER.
-    static let filterDataProviderBundleId = "ai.aladdin.ContentFilter"
-
     struct RulesPayload: Codable {
         var blockedHosts: [String]
         var updatedAt: TimeInterval
@@ -114,13 +111,13 @@ enum SystemContentFilterRulesStore {
                 return
             }
             let manager = NEFilterManager.shared()
+            // iOS: provider bundle is the embedded appex (`ai.aladdin.ContentFilter`).
+            // `filterDataProviderBundleIdentifier` is macOS-only — do not set it here.
             let config = manager.providerConfiguration ?? NEFilterProviderConfiguration()
             config.filterBrowsers = true
             config.filterSockets = true
             config.username = "ALADDIN Family"
             config.organization = "ALADDIN"
-            // Without an explicit provider bundle id, iOS often fails save / never prompts Allow.
-            config.filterDataProviderBundleIdentifier = filterDataProviderBundleId
             manager.providerConfiguration = config
             manager.localizedDescription = "ALADDIN Safe Sites"
             manager.isEnabled = enabled
