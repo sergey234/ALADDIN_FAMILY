@@ -6,6 +6,8 @@ enum SystemContentFilterRulesStore {
     static let appGroupId = "group.ai.aladdin"
     static let rulesFileName = "content_filter_rules.json"
     static let optedInDefaultsKey = "system_content_filter_opted_in"
+    /// Must match `ALADDINContentFilter` PRODUCT_BUNDLE_IDENTIFIER.
+    static let filterDataProviderBundleId = "ai.aladdin.ContentFilter"
 
     struct RulesPayload: Codable {
         var blockedHosts: [String]
@@ -72,12 +74,24 @@ enum SystemContentFilterRulesStore {
     }
 
     /// Enable system filter (shows iOS permission UI when supported).
+    /// Not available in Simulator — Apple does not load NEFilter providers there.
     static func setEnabled(_ enabled: Bool, categories: [ContentBlockerCategory], completion: @escaping (Result<Void, Error>) -> Void) {
+        VisualLogger.shared.log(
+            "➡️ SYSTEM_FILTER setEnabled=\(enabled) allows=\(AppStoreBuildPolicy.allowsSystemContentFilter)",
+            level: .info,
+            category: "CONTENT_FILTER"
+        )
         guard AppStoreBuildPolicy.allowsSystemContentFilter else {
+            VisualLogger.shared.log("❌ SYSTEM_FILTER featureDisabled", level: .error, category: "CONTENT_FILTER")
             completion(.failure(StoreError.featureDisabled))
             return
         }
         #if targetEnvironment(simulator)
+        VisualLogger.shared.log(
+            "⚠️ SYSTEM_FILTER simulator — NEFilterManager not supported",
+            level: .warning,
+            category: "CONTENT_FILTER"
+        )
         if enabled {
             completion(.failure(StoreError.simulatorUnavailable))
             return
@@ -91,28 +105,49 @@ enum SystemContentFilterRulesStore {
         }
         NEFilterManager.shared().loadFromPreferences { error in
             if let error {
+                VisualLogger.shared.log(
+                    "❌ SYSTEM_FILTER loadFromPreferences: \(Self.errorDigest(error))",
+                    level: .error,
+                    category: "CONTENT_FILTER"
+                )
                 completion(.failure(error))
                 return
             }
             let manager = NEFilterManager.shared()
-            if manager.providerConfiguration == nil {
-                let config = NEFilterProviderConfiguration()
-                config.filterBrowsers = true
-                config.filterSockets = true
-                config.username = "ALADDIN Family"
-                config.organization = "ALADDIN"
-                manager.providerConfiguration = config
-            }
+            let config = manager.providerConfiguration ?? NEFilterProviderConfiguration()
+            config.filterBrowsers = true
+            config.filterSockets = true
+            config.username = "ALADDIN Family"
+            config.organization = "ALADDIN"
+            // Without an explicit provider bundle id, iOS often fails save / never prompts Allow.
+            config.filterDataProviderBundleIdentifier = filterDataProviderBundleId
+            manager.providerConfiguration = config
+            manager.localizedDescription = "ALADDIN Safe Sites"
             manager.isEnabled = enabled
             manager.saveToPreferences { saveError in
                 if let saveError {
+                    VisualLogger.shared.log(
+                        "❌ SYSTEM_FILTER saveToPreferences: \(Self.errorDigest(saveError))",
+                        level: .error,
+                        category: "CONTENT_FILTER"
+                    )
                     completion(.failure(saveError))
                     return
                 }
+                VisualLogger.shared.log(
+                    "✅ SYSTEM_FILTER save ok enabled=\(enabled) hosts=\(loadBlockedHosts().count)",
+                    level: .success,
+                    category: "CONTENT_FILTER"
+                )
                 isOptedIn = enabled
                 completion(.success(()))
             }
         }
+    }
+
+    private static func errorDigest(_ error: Error) -> String {
+        let ns = error as NSError
+        return "domain=\(ns.domain) code=\(ns.code) desc=\(ns.localizedDescription)"
     }
 
     private static func containerURL() -> URL? {

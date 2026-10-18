@@ -3107,13 +3107,13 @@
 "parental_filter_system_gated" = "System-wide filter for all apps is being prepared.";
 "parental_filter_system_available" = "System-wide filter for all apps: parent rules apply beyond Safari when the extension is active.";
 "system_filter_toggle_title" = "System filter";
-"system_filter_toggle_footer" = "Blocks sites in Safari, Chrome, and other apps — not Safari only.";
+"system_filter_toggle_footer" = "A separate iOS permission (not the Safari extension). Works on a real iPhone only.";
 "system_filter_toggle_on_hint" = "On. If iPhone asked for permission, tap Allow.";
-"system_filter_toggle_off_hint" = "Off. Safari blocking is unchanged.";
+"system_filter_toggle_off_hint" = "Off. Safari extension blocking is unchanged.";
 "system_filter_toggle_error_fmt" = "Could not turn on. Allow the filter in the iPhone prompt and try again.";
-"system_filter_toggle_error_simulator" = "Does not turn on in Simulator. Try on iPhone.";
+"system_filter_toggle_error_simulator" = "Apple’s system filter does not run in Simulator. Test on a real iPhone (turn off other VPNs).";
 "system_filter_toggle_error_disabled" = "System filtering is not enabled in this build.";
-"system_filter_toggle_error_permission" = "iPhone did not allow the filter. Open Settings and allow ALADDIN, then try again.";
+"system_filter_toggle_error_permission" = "iPhone did not allow the system filter. This is not the Safari extension — wait for Allow, turn off other VPNs, and try again.";
 "system_filter_toggle_error_extension" = "System filter is not available in this build. Check the Network Extension entitlement/profile.";
 "family_critical_alerts_toggle" = "Critical alerts";
 "family_critical_alerts_footer" = "Urgent family signals and important events may sound even in Do Not Disturb. You can turn this off in iPhone Settings.";

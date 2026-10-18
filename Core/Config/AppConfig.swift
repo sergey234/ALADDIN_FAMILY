@@ -9,7 +9,8 @@ enum AppStoreBuildPolicy {
     #if APP_STORE_BUILD
     static let isAppStoreBuild = true
     static let allowsAlternativePayments = false
-    static let allowsSmartDNS = false
+    /// Bypass / Safe Sites (DNS) card on Family — entitlement `dns-settings` is in ALADDIN.entitlements + TF profile.
+    static let allowsSmartDNS = true
     /// WAVE3 A1 — owner GO 2026-10-17: Family Controls Distribution Assigned + profiles.
     static let allowsSystemFamilyControls = true
     /// WAVE3 G — «Срочный сигнал семье» (HealthKit / motion); portal HealthKit on App ID required for CI profile.
@@ -18,7 +19,7 @@ enum AppStoreBuildPolicy {
     static let allowsCriticalAlerts = false
     /// WAVE3 E1 — Communication Notifications enabled on App ID (owner GO build 10).
     static let allowsCommunicationNotifications = true
-    /// WAVE3 F2 — system Content Filter (no Packet Tunnel).
+    /// WAVE3 F2 — system Content Filter (no Packet Tunnel). Portal C3 done 2026-10-17; appex `ai.aladdin.ContentFilter`.
     static let allowsSystemContentFilter = true
     #else
     static let isAppStoreBuild = false

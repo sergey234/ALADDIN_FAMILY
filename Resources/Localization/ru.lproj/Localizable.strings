@@ -3018,13 +3018,13 @@
 "parental_filter_system_gated" = "Системный фильтр для всех приложений готовится.";
 "parental_filter_system_available" = "Системный фильтр для всех приложений: правила родителя применяются шире Safari, когда расширение активно.";
 "system_filter_toggle_title" = "Системный фильтр";
-"system_filter_toggle_footer" = "Блокирует сайты не только в Safari, но и в Chrome и других приложениях.";
+"system_filter_toggle_footer" = "Отдельное разрешение iOS (не расширение Safari). Работает только на реальном iPhone.";
 "system_filter_toggle_on_hint" = "Включено. Если iPhone спросил разрешение — нажмите «Разрешить».";
-"system_filter_toggle_off_hint" = "Выключено. Блокировка в Safari не меняется.";
+"system_filter_toggle_off_hint" = "Выключено. Блокировка в Safari (расширение) не меняется.";
 "system_filter_toggle_error_fmt" = "Не включилось. Разрешите фильтр в окне iPhone и попробуйте снова.";
-"system_filter_toggle_error_simulator" = "На симуляторе не включается. Проверьте на iPhone.";
+"system_filter_toggle_error_simulator" = "На симуляторе системный фильтр Apple не работает. Проверьте на реальном iPhone (без другого VPN).";
 "system_filter_toggle_error_disabled" = "Системный фильтр не включён в этой сборке.";
-"system_filter_toggle_error_permission" = "iPhone не разрешил фильтр. Откройте Настройки, разрешите ALADDIN и попробуйте снова.";
+"system_filter_toggle_error_permission" = "iPhone не разрешил системный фильтр. Это не Safari-расширение: дождитесь окна «Разрешить», выключите другой VPN и попробуйте снова.";
 "system_filter_toggle_error_extension" = "Системный фильтр недоступен в этой сборке. Нужно проверить Network Extension entitlement/profile.";
 "family_critical_alerts_toggle" = "Критические оповещения";
 "family_critical_alerts_footer" = "Срочный сигнал и важные семейные события могут звучать даже в «Не беспокоить». Можно выключить в Настройках iPhone.";

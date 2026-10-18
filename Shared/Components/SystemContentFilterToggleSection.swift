@@ -57,7 +57,12 @@ struct SystemContentFilterToggleSection: View {
     private func apply(_ enabled: Bool) {
         isBusy = true
         statusMessage = nil
+        // Optimistic flash so the switch is not “dead”; we snap back on failure.
+        isOn = enabled
         HapticFeedback.impact(.light)
+        #if DEBUG
+        print("🔍 [SYSTEM_FILTER] toggle → \(enabled)")
+        #endif
         SystemContentFilterRulesStore.setEnabled(enabled, categories: categories) { result in
             DispatchQueue.main.async {
                 isBusy = false
@@ -74,6 +79,9 @@ struct SystemContentFilterToggleSection: View {
                         for: error,
                         localization: localizationManager
                     )
+                    #if DEBUG
+                    print("❌ [SYSTEM_FILTER] \(error.localizedDescription)")
+                    #endif
                     HapticFeedback.notification(.error)
                 }
             }
