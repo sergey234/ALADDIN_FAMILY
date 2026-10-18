@@ -37,6 +37,13 @@ _BIND_MAX_FAILS = 10
 PAIRING_PIN_TTL_MINUTES = 15
 
 
+def _api_error(error_code: str, message: str, next_action: Optional[str] = None) -> Dict[str, str]:
+    detail = {"error_code": error_code, "message": message}
+    if next_action:
+        detail["next_action"] = next_action
+    return detail
+
+
 def _bind_rate_check(user_key: str) -> None:
     now = time.time()
     with _BIND_FAIL_LOCK:
@@ -46,7 +53,7 @@ def _bind_rate_check(user_key: str) -> None:
             logger.warning("device_bind_rate_limited", extra={"user_key": user_key})
             raise HTTPException(
                 status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Too many pairing attempts. Try again later.",
+                detail=_api_error("device_pairing_rate_limited", "Too many pairing attempts", "wait_and_retry"),
             )
 
 
@@ -152,6 +159,11 @@ def _ensure_family_devices_table(db: Session) -> None:
             "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS is_scanning_enabled BOOLEAN NOT NULL DEFAULT TRUE;"
         )
     )
+    db.execute(
+        text(
+            "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS model_name TEXT;"
+        )
+    )
     db.commit()
     _devices_ddl_checked = True
 
@@ -160,7 +172,11 @@ class AddDeviceBody(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     type: str = Field(..., min_length=1, max_length=32)
     owner: str = Field(..., min_length=1, max_length=200)
-    owner_member_id: Optional[str] = Field(None, max_length=128)
+    owner_member_id: Optional[str] = Field(None, alias="ownerMemberId", max_length=128)
+    model_name: Optional[str] = Field(None, alias="modelName", max_length=128)
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class DeviceSettingsUpdateBody(BaseModel):
@@ -208,7 +224,7 @@ def devices_list(
             text(
                 """
                 SELECT id, name, owner_label AS owner, type, status, last_active,
-                       pairing_token, short_pin, owner_member_id
+                       pairing_token, short_pin, owner_member_id, model_name
                 FROM aladdin_family_devices
                 WHERE user_id = :uid
                 ORDER BY created_at DESC
@@ -223,6 +239,9 @@ def devices_list(
             om = item.pop("owner_member_id", None)
             if om:
                 item["ownerMemberId"] = om
+            model_name = item.pop("model_name", None)
+            if model_name:
+                item["modelName"] = model_name
             if item.get("pairing_token") is None:
                 item.pop("pairing_token", None)
             if item.get("short_pin") is None:
@@ -259,14 +278,15 @@ def devices_create(
             detail="Invalid device type",
         )
     owner_mid = (body.owner_member_id or "").strip() or None
+    model_name = (body.model_name or "").strip() or None
     try:
         _ensure_family_devices_table(db)
         db.execute(
             text(
                 """
                 INSERT INTO aladdin_family_devices
-                (id, user_id, name, type, owner_label, status, last_active, pairing_token, short_pin, pairing_token_sha256, owner_member_id)
-                VALUES (:id, :uid, :name, :type, :owner, 'protected', :now, :ptoken, :spin, :ptoken_sha, :omid)
+                (id, user_id, name, type, owner_label, status, last_active, pairing_token, short_pin, pairing_token_sha256, owner_member_id, model_name)
+                VALUES (:id, :uid, :name, :type, :owner, 'protected', :now, :ptoken, :spin, :ptoken_sha, :omid, :model_name)
                 """
             ),
             {
@@ -280,6 +300,7 @@ def devices_create(
                 "spin": short_pin,
                 "ptoken_sha": token_sha,
                 "omid": owner_mid,
+                "model_name": model_name,
             },
         )
         db.commit()
@@ -302,6 +323,8 @@ def devices_create(
     }
     if owner_mid:
         out_create["ownerMemberId"] = owner_mid
+    if model_name:
+        out_create["modelName"] = model_name
     return out_create
 
 
@@ -325,7 +348,7 @@ def devices_bind(
     if not token and not pin:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="token or pin required",
+            detail=_api_error("token_or_pin_required", "Token or PIN required", "enter_pin_or_scan_qr"),
         )
 
     _bind_rate_check(rate_key)
@@ -405,7 +428,7 @@ def devices_bind(
                     )
                     raise HTTPException(
                         status.HTTP_409_CONFLICT,
-                        detail="Pairing token already used",
+                        detail=_api_error("device_pairing_used", "Device pairing token already used", "create_new_pairing_code"),
                     )
             _bind_rate_record_fail(rate_key)
             logger.info(
@@ -414,7 +437,7 @@ def devices_bind(
             )
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
-                detail="Pairing not found, expired, or already used",
+                detail=_api_error("device_pairing_not_found", "Device pairing not found or expired", "create_new_pairing_code"),
             )
         db.commit()
         logger.info("device_bind_ok", extra={"mode": "token" if token else "pin", "user": uid})

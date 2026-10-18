@@ -1529,6 +1529,8 @@ struct DeviceResponse: Decodable, Identifiable {
     let type: String // "iphone", "mac", "ipad", "android"
     let status: String // "protected", "warning", "danger", "inactive"
     let lastActive: String
+    /// Hardware marketing model when backend stores it (`iPhone 13 Pro`, `iPhone SE (3rd)`).
+    let modelName: String?
     /// Привязка к участнику семьи (`MEM_*`), если бэкенд отдал поле.
     let ownerMemberId: String?
     /// Если бэкенд возвращает данные для экрана сопряжения после `POST /api/devices`.
@@ -1539,6 +1541,10 @@ struct DeviceResponse: Decodable, Identifiable {
         case id, name, owner, type, status
         case ownerMemberIdCamel = "ownerMemberId"
         case ownerMemberIdSnake = "owner_member_id"
+        case modelNameCamel = "modelName"
+        case modelNameSnake = "model_name"
+        case deviceModelSnake = "device_model"
+        case model
         case lastActiveSnake = "last_active"
         case lastActiveCamel = "lastActive"
         case pairingTokenSnake = "pairing_token"
@@ -1554,6 +1560,11 @@ struct DeviceResponse: Decodable, Identifiable {
         owner = try c.decode(String.self, forKey: .owner)
         type = try c.decode(String.self, forKey: .type)
         status = try c.decode(String.self, forKey: .status)
+        let modelCamel = try c.decodeIfPresent(String.self, forKey: .modelNameCamel)
+        let modelSnake = try c.decodeIfPresent(String.self, forKey: .modelNameSnake)
+        let deviceModel = try c.decodeIfPresent(String.self, forKey: .deviceModelSnake)
+        let modelPlain = try c.decodeIfPresent(String.self, forKey: .model)
+        modelName = [modelCamel, modelSnake, deviceModel, modelPlain].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let omCamel = try c.decodeIfPresent(String.self, forKey: .ownerMemberIdCamel)
         let omSnake = try c.decodeIfPresent(String.self, forKey: .ownerMemberIdSnake)
         ownerMemberId = [omCamel, omSnake].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -1570,13 +1581,15 @@ struct DeviceResponse: Decodable, Identifiable {
     }
 }
 
-struct DeviceDetailResponse: Codable {
+struct DeviceDetailResponse: Decodable {
     let id: String
     let name: String
     let owner: String
     let type: String
     let status: String
     let lastActive: String
+    /// Hardware marketing model when backend stores it (`iPhone 13 Pro`, `iPhone SE (3rd)`).
+    let modelName: String?
     /// Опционально: стабильная связь с участником семьи (`ownerMemberId` в JSON).
     let ownerMemberId: String?
     let ipAddress: String?
@@ -1586,6 +1599,76 @@ struct DeviceDetailResponse: Codable {
     let dataUsage: Int64 // bytes
     let batteryLevel: Int? // 0-100%
     let isProtected: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, owner, type, status
+        case lastActiveCamel = "lastActive"
+        case lastActiveSnake = "last_active"
+        case modelNameCamel = "modelName"
+        case modelNameSnake = "model_name"
+        case deviceModelSnake = "device_model"
+        case model
+        case ownerMemberIdCamel = "ownerMemberId"
+        case ownerMemberIdSnake = "owner_member_id"
+        case ipAddressCamel = "ipAddress"
+        case ipAddressSnake = "ip_address"
+        case osVersionCamel = "osVersion"
+        case osVersionSnake = "os_version"
+        case appVersionCamel = "appVersion"
+        case appVersionSnake = "app_version"
+        case threatsBlockedCamel = "threatsBlocked"
+        case threatsBlockedSnake = "threats_blocked"
+        case dataUsageCamel = "dataUsage"
+        case dataUsageSnake = "data_usage"
+        case batteryLevelCamel = "batteryLevel"
+        case batteryLevelSnake = "battery_level"
+        case isProtectedCamel = "isProtected"
+        case isProtectedSnake = "is_protected"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        owner = try c.decode(String.self, forKey: .owner)
+        type = try c.decode(String.self, forKey: .type)
+        status = try c.decode(String.self, forKey: .status)
+        lastActive = [
+            try c.decodeIfPresent(String.self, forKey: .lastActiveCamel),
+            try c.decodeIfPresent(String.self, forKey: .lastActiveSnake)
+        ].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? ""
+        modelName = [
+            try c.decodeIfPresent(String.self, forKey: .modelNameCamel),
+            try c.decodeIfPresent(String.self, forKey: .modelNameSnake),
+            try c.decodeIfPresent(String.self, forKey: .deviceModelSnake),
+            try c.decodeIfPresent(String.self, forKey: .model)
+        ].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        ownerMemberId = [
+            try c.decodeIfPresent(String.self, forKey: .ownerMemberIdCamel),
+            try c.decodeIfPresent(String.self, forKey: .ownerMemberIdSnake)
+        ].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let ipCamel = try c.decodeIfPresent(String.self, forKey: .ipAddressCamel)
+        let ipSnake = try c.decodeIfPresent(String.self, forKey: .ipAddressSnake)
+        ipAddress = ipCamel ?? ipSnake
+        let osCamel = try c.decodeIfPresent(String.self, forKey: .osVersionCamel)
+        let osSnake = try c.decodeIfPresent(String.self, forKey: .osVersionSnake)
+        osVersion = osCamel ?? osSnake
+        let appCamel = try c.decodeIfPresent(String.self, forKey: .appVersionCamel)
+        let appSnake = try c.decodeIfPresent(String.self, forKey: .appVersionSnake)
+        appVersion = appCamel ?? appSnake
+        let threatsCamel = try c.decodeIfPresent(Int.self, forKey: .threatsBlockedCamel)
+        let threatsSnake = try c.decodeIfPresent(Int.self, forKey: .threatsBlockedSnake)
+        threatsBlocked = threatsCamel ?? threatsSnake ?? 0
+        let usageCamel = try c.decodeIfPresent(Int64.self, forKey: .dataUsageCamel)
+        let usageSnake = try c.decodeIfPresent(Int64.self, forKey: .dataUsageSnake)
+        dataUsage = usageCamel ?? usageSnake ?? 0
+        let batteryCamel = try c.decodeIfPresent(Int.self, forKey: .batteryLevelCamel)
+        let batterySnake = try c.decodeIfPresent(Int.self, forKey: .batteryLevelSnake)
+        batteryLevel = batteryCamel ?? batterySnake
+        let protectedCamel = try c.decodeIfPresent(Bool.self, forKey: .isProtectedCamel)
+        let protectedSnake = try c.decodeIfPresent(Bool.self, forKey: .isProtectedSnake)
+        isProtected = protectedCamel ?? protectedSnake ?? false
+    }
 }
 
 // ✅ ДОБАВЛЕНО: Device Settings Response (для синхронизации между устройствами)

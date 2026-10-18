@@ -89,6 +89,106 @@ enum AgeGroup: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum FamilyInviteCodeParser {
+    struct Payload: Equatable {
+        let familyId: String
+        let displayCode: String
+        let inviteToken: String?
+    }
+
+    private struct QRPayload: Decodable {
+        let type: String?
+        let family_id: String?
+        let familyId: String?
+        let invite_token: String?
+        let inviteToken: String?
+        let code: String?
+    }
+
+    static func parse(_ raw: String) -> Payload? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        if let data = trimmed.data(using: .utf8),
+           let qr = try? JSONDecoder().decode(QRPayload.self, from: data),
+           qr.type == nil || qr.type == "family_registration" {
+            let rawFamilyId = qr.family_id ?? qr.familyId ?? qr.code
+            guard let payload = parseFamilyId(rawFamilyId) else { return nil }
+            let token = (qr.invite_token ?? qr.inviteToken)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return Payload(
+                familyId: payload.familyId,
+                displayCode: payload.displayCode,
+                inviteToken: token?.isEmpty == false ? token : nil
+            )
+        }
+
+        if let url = URL(string: trimmed), url.scheme != nil {
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+            let query = components.queryItems ?? []
+            let host = components.host?.lowercased()
+            let pathParts = components.path.split(separator: "/").map(String.init)
+            let pathCode: String?
+            if pathParts.count >= 3,
+               pathParts[0].lowercased() == "family",
+               pathParts[1].lowercased() == "invite" {
+                pathCode = pathParts[2]
+            } else if host == "family",
+                      pathParts.count >= 2,
+                      pathParts[0].lowercased() == "invite" {
+                pathCode = pathParts[1]
+            } else if host == "invite",
+                      pathParts.count >= 1,
+                      pathParts[0].uppercased().hasPrefix("FAM") {
+                pathCode = pathParts[0]
+            } else if pathParts.count >= 2,
+                      pathParts[0].lowercased() == "invite",
+                      pathParts[1].uppercased().hasPrefix("FAM") {
+                pathCode = pathParts[1]
+            } else {
+                pathCode = nil
+            }
+            let rawFamilyId = query.first(where: { ["family_id", "familyId", "code"].contains($0.name) })?.value ?? pathCode
+            guard let payload = parseFamilyId(rawFamilyId) else { return nil }
+            let token = query.first(where: { ["invite_token", "inviteToken"].contains($0.name) })?.value?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return Payload(
+                familyId: payload.familyId,
+                displayCode: payload.displayCode,
+                inviteToken: token?.isEmpty == false ? token : nil
+            )
+        }
+
+        return parseFamilyId(trimmed)
+    }
+
+    static func displayCode(fromFamilyId familyId: String) -> String? {
+        parseFamilyId(familyId)?.displayCode
+    }
+
+    static func inviteCodeForDisplay(fromScannedString raw: String) -> String? {
+        parse(raw)?.displayCode
+    }
+
+    private static func parseFamilyId(_ raw: String?) -> Payload? {
+        guard let raw else { return nil }
+        let alnum = raw
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+            .filter { $0.isLetter || $0.isNumber }
+
+        guard alnum.hasPrefix("FAM") else { return nil }
+        let body = String(alnum.dropFirst(3).prefix(12))
+        guard body.count == 12, body.allSatisfy({ $0.isLetter || $0.isNumber }) else { return nil }
+
+        let familyId = "FAM_\(body)"
+        let first = String(body.prefix(4))
+        let second = String(body.dropFirst(4).prefix(4))
+        let third = String(body.dropFirst(8).prefix(4))
+        return Payload(familyId: familyId, displayCode: "FAM-\(first)-\(second)-\(third)", inviteToken: nil)
+    }
+}
+
 struct FamilyMember: Codable, Identifiable {
     let id: String
     var name: String
@@ -150,6 +250,8 @@ class FamilyRegistrationViewModel: ObservableObject {
     
     @Published var familyID: String?
     @Published var recoveryCode: String?
+    @Published var familyInviteQRPayload: String?
+    @Published var lastJoinedMemberId: String?
     @Published var familyMembers: [FamilyMember] = []
     
     @Published var isLoading: Bool = false
@@ -556,6 +658,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                 case .success(let response):
                     self?.familyID = response.family_id
                     self?.recoveryCode = response.recovery_code
+                    self?.familyInviteQRPayload = response.qr_code_data
 
                     FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: response.family_id)
                     FamilyLocalStore.persistFamilyId(response.family_id)
@@ -943,38 +1046,25 @@ class FamilyRegistrationViewModel: ObservableObject {
         guard let role = selectedRole,
               let ageGroup = selectedAgeGroup,
               let letter = selectedLetter else {
+            errorMessage = LocalizationManager.shared.localized("invitation_join_profile_required")
             return
         }
 
-        // ✅ ЗАДАЧА 67: Санитизация кода семьи перед обработкой
-        do {
-            let sanitizedCode = try code.sanitizedAsFamilyId()
-            joinFamilySanitized(withCode: sanitizedCode)
-
-        } catch let error as InputSanitizer.SanitizationError {
-            errorMessage = error.localizedDescription
-            #if DEBUG
-            print("❌ FamilyRegistrationViewModel: Ошибка санитизации кода семьи: \(error.localizedDescription)")
-            #endif
-        } catch {
-            errorMessage = "Произошла неизвестная ошибка при обработке кода семьи."
+        guard let invitePayload = FamilyInviteCodeParser.parse(code) else {
+            errorMessage = LocalizationManager.shared.localized("invitation_invalid_code")
+            return
         }
+
+        joinFamilySanitized(with: invitePayload, role: role, ageGroup: ageGroup, letter: letter)
     }
 
-    // ✅ ЗАДАЧА 67: Приватный метод с санитизированными данными
-    private func joinFamilySanitized(withCode sanitizedCode: String) {
-        guard let role = selectedRole,
-              let ageGroup = selectedAgeGroup,
-              let letter = selectedLetter else {
-            return
-        }
-
+    private func joinFamilySanitized(with invitePayload: FamilyInviteCodeParser.Payload, role: FamilyRole, ageGroup: AgeGroup, letter: String) {
         isLoading = true
 
-        let familyId = extractFamilyID(from: sanitizedCode)
-        
         let request = JoinFamilyRequest(
-            family_id: familyId,
+            family_id: invitePayload.familyId,
+            invite_code: invitePayload.displayCode,
+            invite_token: invitePayload.inviteToken,
             role: role.serverValue,  // ✅ ИСПРАВЛЕНО: Подросток → "child" для сервера
             age_group: ageGroup.serverValue,  // ✅ ИСПРАВЛЕНО: Используем serverValue
             personal_letter: letter,
@@ -994,6 +1084,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                     }
 
                     self?.familyID = data.family_id
+                    self?.lastJoinedMemberId = data.your_member_id
 
                     FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: data.family_id)
                     FamilyLocalStore.persistFamilyId(data.family_id)
@@ -1541,10 +1632,43 @@ struct CreateFamilyRequest: Codable {
 
 struct JoinFamilyRequest: Codable {
     let family_id: String
+    let invite_code: String?
+    let invite_token: String?
     let role: String
     let age_group: String
     let personal_letter: String
     let device_type: String
+}
+
+struct FamilyInviteCreateRequest: Codable {
+    let family_id: String?
+}
+
+struct FamilyInvitePreflightRequest: Codable {
+    let family_id: String
+    let invite_code: String?
+    let invite_token: String?
+}
+
+struct FamilyInviteResponse: Codable {
+    let success: Bool
+    let family_id: String
+    let invite_code: String
+    let invite_token: String
+    let expires_at: String
+    let qr_code_data: String
+    let message: String?
+    let error: String?
+}
+
+struct FamilyInvitePreflightResponse: Codable {
+    let success: Bool
+    let family_id: String
+    let invite_code: String
+    let expires_at: String
+    let can_join: Bool
+    let message: String?
+    let error: String?
 }
 
 
@@ -1559,6 +1683,13 @@ extension NetworkManager {
     
     func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<JoinFamilyResponse, Error>) -> Void) {
         post(endpoint: AppConfig.Endpoint.joinFamily, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func preflightFamilyInvite(
+        request: FamilyInvitePreflightRequest,
+        completion: @escaping (Result<FamilyInvitePreflightResponse, Error>) -> Void
+    ) {
+        post(endpoint: AppConfig.Endpoint.familyInvitePreflight, body: request, requiresAuth: false, completion: completion)
     }
     
     func recoverFamily(familyID: String, completion: @escaping (Result<RecoverFamilyResponse, Error>) -> Void) {

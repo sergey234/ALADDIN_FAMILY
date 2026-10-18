@@ -65,12 +65,24 @@ struct JoinDeviceScreen: View {
                                 .foregroundColor(.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
+                            Text(localizationManager.localized("join_device_family_invite_hint"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+
                             TextField(localizationManager.localized("join_device_placeholder"), text: $pinCode)
                                 .textFieldStyle(ALADDINTextFieldStyle())
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.center)
                                 .font(.system(size: 24, weight: .bold, design: .monospaced))
                                 .onChange(of: pinCode) { newValue in
+                                    if let invite = FamilyInviteCodeParser.parse(newValue) {
+                                        navigationManager.pendingFamilyInvitePayload = newValue
+                                        navigationManager.pendingFamilyInviteCode = invite.displayCode
+                                        pinCode = ""
+                                        errorMessage = localizationManager.localized("device_pairing_wrong_flow_family_code")
+                                        return
+                                    }
                                     let digits = newValue.filter { $0.isNumber }
                                     pinCode = String(digits.prefix(6))
                                 }
@@ -109,6 +121,10 @@ struct JoinDeviceScreen: View {
                 if let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
                     ?? URL(string: raw).flatMap({ DevicePairingLinkParser.extractToken(from: $0) }) {
                     bindWithToken(token)
+                } else if let invite = FamilyInviteCodeParser.parse(raw) {
+                    navigationManager.pendingFamilyInvitePayload = raw
+                    navigationManager.pendingFamilyInviteCode = invite.displayCode
+                    errorMessage = localizationManager.localized("device_pairing_wrong_flow_family_code")
                 } else {
                     errorMessage = localizationManager.localized("join_device_error_title")
                 }
@@ -126,6 +142,9 @@ struct JoinDeviceScreen: View {
         .alert(localizationManager.localized("join_device_error_title"), isPresented: .constant(errorMessage != nil)) {
             Button(localizationManager.localized("common_ok")) {
                 errorMessage = nil
+                if navigationManager.pendingFamilyInvitePayload != nil || navigationManager.pendingFamilyInviteCode != nil {
+                    navigationManager.navigateTo(.invitationCode)
+                }
             }
         } message: {
             if let error = errorMessage {

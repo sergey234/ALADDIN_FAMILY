@@ -100,7 +100,7 @@ struct DeviceDetailScreen: View {
                         .frame(height: 112)
                         .accessibilityLabel(String(format: localizationManager.localized("device_detail_device_type"), device.type.rawValue))
                     
-                    Text(device.name)
+                    Text(DeviceDisplayNameResolver.displayTitle(device: device, detail: deviceDetail))
                         .font(.h1)
                         .foregroundColor(.textPrimary)
                         .accessibilityAddTraits(.isHeader)
@@ -556,13 +556,13 @@ struct DeviceInfoView: View {
             InfoRow(
                 icon: "app.fill",
                 title: localizationManager.localized("device_detail_info_type"),
-                value: humanizedDeviceType(deviceDetail?.type ?? device.type.rawValue),
+                value: DeviceMarketingName.genericDisplayName(for: deviceDetail?.type ?? device.type.rawValue),
                 color: .secondaryGold
             )
             InfoRow(
                 icon: "phone.fill",
                 title: localizationManager.localized("device_detail_info_model"),
-                value: resolvedModelName(deviceDetail: deviceDetail, device: device),
+                value: DeviceDisplayNameResolver.displayTitle(device: device, detail: deviceDetail),
                 color: .secondaryGold
             )
             // ✅ ИСПРАВЛЕНО: Используем реальные данные из API вместо hardcoded значений
@@ -586,46 +586,6 @@ struct DeviceInfoView: View {
         .accessibilityIdentifier("device_detail_screen_time_status")
     }
 
-    private func humanizedDeviceType(_ raw: String) -> String {
-        let key = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        switch key {
-        case "iphone", "ios", "phone":
-            return "iPhone"
-        case "ipad":
-            return "iPad"
-        case "android":
-            return "Android"
-        default:
-            return raw.isEmpty ? "iPhone" : raw
-        }
-    }
-
-    /// Prefer hardware marketing name when this looks like the current device; else stored name + role.
-    private func resolvedModelName(deviceDetail: DeviceDetailResponse?, device: Device) -> String {
-        let stored = (deviceDetail?.name ?? device.name).trimmingCharacters(in: .whitespacesAndNewlines)
-        let marketing = DeviceMarketingName.displayName()
-        let looksLikeProfileLabel = stored.contains("•") || stored.localizedCaseInsensitiveContains("parent")
-            || stored.localizedCaseInsensitiveContains("родител")
-            || stored.localizedCaseInsensitiveContains("ребён")
-            || stored.localizedCaseInsensitiveContains("ребен")
-            || stored.localizedCaseInsensitiveContains("люд")
-            || stored.localizedCaseInsensitiveContains("elderly")
-            || stored.localizedCaseInsensitiveContains("child")
-            || stored.localizedCaseInsensitiveContains("teen")
-        if looksLikeProfileLabel || stored.isEmpty {
-            let role = FamilyMemberDisplayNameFormatter.displayName(
-                storedName: deviceDetail?.owner ?? device.owner,
-                localization: localizationManager
-            )
-            return DeviceMarketingName.modelPlusRole(roleLabel: role)
-        }
-        // If stored is generic "iPhone", upgrade to marketing name.
-        if stored.caseInsensitiveCompare("iPhone") == .orderedSame
-            || stored.caseInsensitiveCompare("iPad") == .orderedSame {
-            return marketing
-        }
-        return stored
-    }
 }
 
 // MARK: - Device Stats View

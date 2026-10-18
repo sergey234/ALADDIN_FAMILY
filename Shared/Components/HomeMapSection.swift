@@ -117,7 +117,7 @@ struct HomeMapSection: View {
 
             NavigationLink(destination: DeviceDetailScreen(device: device)) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(device.name)
+                    Text(DeviceDisplayNameResolver.displayTitle(device: device))
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.textPrimary)
                         .lineLimit(1)

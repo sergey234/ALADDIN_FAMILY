@@ -19,6 +19,26 @@ enum DeviceMarketingName {
         }
     }
 
+    static var currentDeviceIdentifier: String? {
+        UIDevice.current.identifierForVendor?.uuidString
+    }
+
+    static func genericDisplayName(for rawType: String) -> String {
+        let normalized = rawType.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        switch normalized {
+        case "iphone", "ios", "phone", "smartphone":
+            return "iPhone"
+        case "ipad", "tablet":
+            return "iPad"
+        case "mac", "macos":
+            return "Mac"
+        case "android":
+            return "Android"
+        default:
+            return rawType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "iPhone" : rawType
+        }
+    }
+
     static func machineCode() -> String {
         var systemInfo = utsname()
         uname(&systemInfo)
@@ -61,4 +81,73 @@ enum DeviceMarketingName {
         "x86_64": "Simulator",
         "arm64": "Simulator"
     ]
+}
+
+enum DeviceDisplayNameResolver {
+    static func displayTitle(
+        storedName: String,
+        modelName: String?,
+        deviceId: String,
+        typeRaw: String
+    ) -> String {
+        if let explicitModel = cleaned(modelName), !explicitModel.isEmpty {
+            return explicitModel
+        }
+
+        let stored = storedName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let genericType = DeviceMarketingName.genericDisplayName(for: typeRaw)
+
+        if isCurrentDevice(deviceId), shouldPreferHardwareName(storedName: stored, genericType: genericType) {
+            return DeviceMarketingName.displayName()
+        }
+
+        if shouldPreferHardwareName(storedName: stored, genericType: genericType) {
+            return genericType
+        }
+
+        return stored.isEmpty ? genericType : stored
+    }
+
+    static func displayTitle(device: Device) -> String {
+        displayTitle(
+            storedName: device.name,
+            modelName: device.modelName,
+            deviceId: device.id,
+            typeRaw: device.type.rawValue
+        )
+    }
+
+    static func displayTitle(device: Device, detail: DeviceDetailResponse?) -> String {
+        displayTitle(
+            storedName: detail?.name ?? device.name,
+            modelName: detail?.modelName ?? device.modelName,
+            deviceId: detail?.id ?? device.id,
+            typeRaw: detail?.type ?? device.type.rawValue
+        )
+    }
+
+    private static func cleaned(_ value: String?) -> String? {
+        value?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func isCurrentDevice(_ deviceId: String) -> Bool {
+        guard let current = DeviceMarketingName.currentDeviceIdentifier else { return false }
+        return deviceId.caseInsensitiveCompare(current) == .orderedSame
+    }
+
+    private static func shouldPreferHardwareName(storedName: String, genericType: String) -> Bool {
+        if storedName.isEmpty { return true }
+        if storedName.caseInsensitiveCompare(genericType) == .orderedSame { return true }
+        if storedName.contains("·") || storedName.contains("•") { return true }
+
+        let lower = storedName.lowercased()
+        return lower.contains("parent")
+            || lower.contains("child")
+            || lower.contains("teen")
+            || lower.contains("elderly")
+            || lower.contains("родител")
+            || lower.contains("ребен")
+            || lower.contains("ребён")
+            || lower.contains("люд")
+    }
 }

@@ -3053,10 +3053,12 @@ class APIService: ObservableObject {
         let type: String // "iphone", "ipad", "mac", "android"
         let owner: String
         let ownerMemberId: String?
+        let modelName: String?
         
         enum CodingKeys: String, CodingKey {
             case name, type, owner
             case ownerMemberId = "owner_member_id"
+            case modelName = "model_name"
         }
         
         func encode(to encoder: Encoder) throws {
@@ -3067,6 +3069,9 @@ class APIService: ObservableObject {
             if let mid = ownerMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), !mid.isEmpty {
                 try c.encode(mid, forKey: .ownerMemberId)
             }
+            if let model = modelName?.trimmingCharacters(in: .whitespacesAndNewlines), !model.isEmpty {
+                try c.encode(model, forKey: .modelName)
+            }
         }
     }
     
@@ -3075,9 +3080,10 @@ class APIService: ObservableObject {
         type: String,
         owner: String,
         ownerMemberId: String? = nil,
+        modelName: String? = nil,
         completion: @escaping (Result<DeviceResponse, Error>) -> Void
     ) {
-        let request = AddDeviceRequest(name: name, type: type, owner: owner, ownerMemberId: ownerMemberId)
+        let request = AddDeviceRequest(name: name, type: type, owner: owner, ownerMemberId: ownerMemberId, modelName: modelName)
         networkManager.post(endpoint: AppConfig.Endpoint.devices, body: request, completion: completion)
     }
     

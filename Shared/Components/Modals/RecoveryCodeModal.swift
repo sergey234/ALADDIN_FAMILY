@@ -450,10 +450,25 @@ struct FamilyInviteShareModal: View {
                 switch result {
                 case .success(let response):
                     invite = response
-                case .failure:
-                    errorMessage = localizationManager.localized("family_invite_create_failed")
+                case .failure(let error):
+                    errorMessage = inviteCreateErrorMessage(for: error)
                 }
             }
+        }
+    }
+
+    private func inviteCreateErrorMessage(for error: Error) -> String {
+        switch NetworkError.from(error) {
+        case .notFound:
+            return localizationManager.localized("family_invite_create_route_unavailable")
+        case .forbidden, .unauthorized:
+            return localizationManager.localized("family_invite_create_forbidden")
+        case .conflict:
+            return localizationManager.localized("family_invite_create_family_full")
+        case .noConnection, .timeout, .serverUnavailable, .dnsResolutionFailed, .badGateway, .serviceUnavailable:
+            return localizationManager.localized("family_invite_create_network_failed")
+        default:
+            return localizationManager.localized("family_invite_create_failed")
         }
     }
 

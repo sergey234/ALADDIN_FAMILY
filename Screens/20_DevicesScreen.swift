@@ -516,6 +516,7 @@ struct DevicesScreen: View {
         return Device(
             id: response.id,
             name: response.name,
+            modelName: response.modelName,
             owner: response.owner,
             type: deviceType,
             status: deviceStatus,
@@ -591,11 +592,11 @@ struct DeviceCard: View {
             
             // Информация об устройстве
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(device.name)
+                Text(displayDeviceTitle)
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
                     .accessibilityLabel(
-                        String(format: localizationManager.localized("devices_device_name_accessibility_fmt"), device.name)
+                        String(format: localizationManager.localized("devices_device_name_accessibility_fmt"), displayDeviceTitle)
                     )
                 
                 Text(displayOwnerName)
@@ -647,11 +648,15 @@ struct DeviceCard: View {
         .accessibilityLabel(
             String(
                 format: localizationManager.localized("devices_card_accessibility_fmt"),
-                device.name,
+                displayDeviceTitle,
                 displayOwnerName,
                 device.status.localizedName(localizationManager)
             )
         )
+    }
+
+    private var displayDeviceTitle: String {
+        DeviceDisplayNameResolver.displayTitle(device: device)
     }
 
     private var displayOwnerName: String {
@@ -694,14 +699,16 @@ struct Device: Identifiable, Hashable {
     /// Идентификатор устройства на сервере (как в `GET /api/devices`); для API и UserDefaults.
     let id: String
     let name: String
+    let modelName: String?
     let owner: String
     let type: DeviceType
     let status: DeviceStatus
     let lastActive: String
     
-    init(id: String, name: String, owner: String, type: DeviceType, status: DeviceStatus, lastActive: String) {
+    init(id: String, name: String, modelName: String? = nil, owner: String, type: DeviceType, status: DeviceStatus, lastActive: String) {
         self.id = id
         self.name = name
+        self.modelName = modelName
         self.owner = owner
         self.type = type
         self.status = status
@@ -1053,9 +1060,20 @@ struct AddDeviceView: View {
     /// Удобное имя по умолчанию: тип устройства и владелец (пользователь может отредактировать поле).
     private func makeSuggestedDeviceName() -> String {
         let owner = selectedOwnerDisplayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let type = selectedDeviceType.rawValue
+        let type = suggestedHardwareModelName()
         if owner.isEmpty { return type }
         return "\(type) · \(owner)"
+    }
+
+    private func suggestedHardwareModelName() -> String {
+        switch selectedDeviceType {
+        case .iphone where UIDevice.current.userInterfaceIdiom == .phone:
+            return DeviceMarketingName.displayName()
+        case .ipad where UIDevice.current.userInterfaceIdiom == .pad:
+            return DeviceMarketingName.displayName()
+        default:
+            return selectedDeviceType.rawValue
+        }
     }
     
     private func syncSelectedOwnerWithMembersList() {
@@ -1161,7 +1179,8 @@ struct AddDeviceView: View {
             name: effectiveDeviceName,
             type: deviceTypeString,
             owner: selectedOwnerDisplayName,
-            ownerMemberId: ownerMemberIdForAPI()
+            ownerMemberId: ownerMemberIdForAPI(),
+            modelName: suggestedHardwareModelName()
         ) { result in
             DispatchQueue.main.async {
                 isLoading = false

@@ -188,14 +188,27 @@ struct AddMemberOptionsScreen: View {
                                 }
 
                                 if hasExistingFamilyOnDevice {
-                                    optionButton(
-                                        icon: "qrcode",
-                                        title: localizationManager.localized("family_invite_show_qr_title"),
-                                        description: localizationManager.localized("family_invite_show_qr_desc"),
-                                        color: Color(red: 0.35, green: 0.75, blue: 1.0),
-                                        enabled: canManageFamilyRosterFromCache && canAddHere
-                                    ) {
-                                        showFamilyInviteShare = true
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        optionButton(
+                                            icon: "qrcode",
+                                            title: localizationManager.localized("family_invite_person_primary_title"),
+                                            description: localizationManager.localized("family_invite_person_primary_desc"),
+                                            color: Color(red: 0.35, green: 0.75, blue: 1.0),
+                                            enabled: canManageFamilyRosterFromCache && canAddHere
+                                        ) {
+                                            showFamilyInviteShare = true
+                                        }
+                                        if !canManageFamilyRosterFromCache {
+                                            Text(localizationManager.localized("add_member_admin_only_notice"))
+                                                .font(.caption2)
+                                                .foregroundColor(.orange.opacity(0.95))
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        } else if !canAddHere {
+                                            Text(localizationManager.localized("family_invite_full_hint"))
+                                                .font(.caption2)
+                                                .foregroundColor(Color(red: 1.0, green: 0.84, blue: 0.35))
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
                                     }
                                 }
 
