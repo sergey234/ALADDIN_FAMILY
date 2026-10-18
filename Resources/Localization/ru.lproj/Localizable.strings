@@ -3044,6 +3044,10 @@
 "family_invite_full_hint" = "Семья заполнена. Чтобы создать QR-приглашение, освободите место или обновите тариф.";
 "family_invite_share_title" = "Приглашение в семью";
 "family_invite_share_subtitle" = "Покажите этот QR участнику семьи или отправьте FAM-код. Это добавляет человека, не устройство.";
+"family_invite_tap_code_hint" = "Нажмите, чтобы скопировать код";
+"family_invite_copy_link" = "Ссылка";
+"family_invite_code_copied" = "FAM-код скопирован";
+"family_invite_link_copied" = "Ссылка приглашения скопирована";
 "family_invite_loading" = "Создаём приглашение...";
 "family_invite_expires_at_fmt" = "Действует до: %@";
 "family_invite_missing_family" = "Не найден ID семьи. Обновите экран «Семья» и попробуйте снова.";

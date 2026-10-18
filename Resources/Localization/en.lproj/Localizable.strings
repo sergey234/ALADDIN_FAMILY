@@ -3133,6 +3133,10 @@
 "family_invite_full_hint" = "The family is full. Free a seat or upgrade the plan before creating a QR invite.";
 "family_invite_share_title" = "Family invite";
 "family_invite_share_subtitle" = "Show this QR to a family member or share the FAM code. It adds a person, not a device.";
+"family_invite_tap_code_hint" = "Tap to copy the code";
+"family_invite_copy_link" = "Link";
+"family_invite_code_copied" = "FAM code copied";
+"family_invite_link_copied" = "Invite link copied";
 "family_invite_loading" = "Creating invite...";
 "family_invite_expires_at_fmt" = "Expires: %@";
 "family_invite_missing_family" = "Family ID is missing. Refresh Family and try again.";

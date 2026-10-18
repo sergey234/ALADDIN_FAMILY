@@ -304,6 +304,7 @@ struct FamilyInviteShareModal: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showShareSheet = false
+    @State private var copyFeedback: String?
 
     private var displayCode: String {
         guard let invite else { return "" }
@@ -313,8 +314,23 @@ struct FamilyInviteShareModal: View {
     }
 
     private var inviteLink: String {
+        guard let invite else { return "" }
         let encoded = displayCode.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? displayCode
-        return "https://aladdin-ai.ru/family/invite/\(encoded)"
+        var components = URLComponents(string: "https://aladdin-ai.ru/family/invite/\(encoded)")
+        components?.queryItems = [
+            URLQueryItem(name: "invite_token", value: invite.invite_token)
+        ]
+        return components?.string ?? "https://aladdin-ai.ru/family/invite/\(encoded)"
+    }
+
+    private var inviteDeepLink: String {
+        guard let invite else { return "" }
+        let encoded = displayCode.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? displayCode
+        var components = URLComponents(string: "aladdin://family/invite/\(encoded)")
+        components?.queryItems = [
+            URLQueryItem(name: "invite_token", value: invite.invite_token)
+        ]
+        return components?.string ?? "aladdin://family/invite/\(encoded)"
     }
 
     var body: some View {
@@ -381,7 +397,7 @@ struct FamilyInviteShareModal: View {
                 .foregroundColor(.white.opacity(0.78))
                 .multilineTextAlignment(.center)
 
-            if let qrImage = generateQRCode(from: invite.qr_code_data) {
+            if let qrImage = generateQRCode(from: inviteDeepLink) {
                 Image(uiImage: qrImage)
                     .interpolation(.none)
                     .resizable()
@@ -392,23 +408,48 @@ struct FamilyInviteShareModal: View {
                     .cornerRadius(18)
             }
 
-            Text(displayCode)
-                .font(.system(size: 20, weight: .bold, design: .monospaced))
-                .foregroundColor(.white)
+            Button {
+                copyInviteCode()
+            } label: {
+                VStack(spacing: 6) {
+                    Text(displayCode)
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("family_invite_tap_code_hint"))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.64))
+                }
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(Color.white.opacity(0.10))
                 .cornerRadius(12)
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                Button(localizationManager.localized("recovery_copy")) {
+                    copyInviteCode()
+                }
+                Button(localizationManager.localized("family_invite_copy_link")) {
+                    copyInviteLink()
+                }
+            }
 
             Text(String(format: localizationManager.localized("family_invite_expires_at_fmt"), formattedExpiration(invite.expires_at)))
                 .font(.caption)
                 .foregroundColor(.white.opacity(0.68))
                 .multilineTextAlignment(.center)
 
+            if let copyFeedback {
+                Text(copyFeedback)
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .multilineTextAlignment(.center)
+            }
+
             HStack(spacing: 12) {
                 Button(localizationManager.localized("recovery_copy")) {
-                    UIPasteboard.general.string = displayCode
-                    HapticFeedback.notification(.success)
+                    copyInviteCode()
                 }
                 .font(.headline)
                 .foregroundColor(.secondaryGold)
@@ -417,16 +458,26 @@ struct FamilyInviteShareModal: View {
                 .background(Color.white.opacity(0.10))
                 .cornerRadius(12)
 
-                Button(localizationManager.localized("recovery_share")) {
-                    showShareSheet = true
+                Button(localizationManager.localized("family_invite_copy_link")) {
+                    copyInviteLink()
                 }
                 .font(.headline)
-                .foregroundColor(.black)
+                .foregroundColor(.secondaryGold)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(Color.secondaryGold)
+                .background(Color.white.opacity(0.10))
                 .cornerRadius(12)
             }
+
+            Button(localizationManager.localized("recovery_share")) {
+                showShareSheet = true
+            }
+            .font(.headline)
+            .foregroundColor(.black)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.secondaryGold)
+            .cornerRadius(12)
         }
         .padding(18)
         .background(Color.white.opacity(0.08))
@@ -479,10 +530,22 @@ struct FamilyInviteShareModal: View {
             inviteLink
         )
         var items: [Any] = [text]
-        if let invite, let qrImage = generateQRCode(from: invite.qr_code_data) {
+        if invite != nil, let qrImage = generateQRCode(from: inviteDeepLink) {
             items.append(qrImage)
         }
         return items
+    }
+
+    private func copyInviteCode() {
+        UIPasteboard.general.string = displayCode
+        copyFeedback = localizationManager.localized("family_invite_code_copied")
+        HapticFeedback.notification(.success)
+    }
+
+    private func copyInviteLink() {
+        UIPasteboard.general.string = inviteLink
+        copyFeedback = localizationManager.localized("family_invite_link_copied")
+        HapticFeedback.notification(.success)
     }
 
     private func formattedExpiration(_ raw: String) -> String {
