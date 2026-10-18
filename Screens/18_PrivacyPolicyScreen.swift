@@ -165,6 +165,10 @@ struct PrivacyPolicyScreen: View {
                     title: localizationManager.localized("privacy_policy_section_5"),
                     content: localizationManager.localized("privacy_policy_section_5_content")
                 )
+                privacySection(
+                    title: localizationManager.localized("privacy_policy_section_6"),
+                    content: localizationManager.localized("privacy_policy_section_6_content")
+                )
             } else {
                 ForEach(PrivacyMainSection.allCases, id: \.self) { section in
                     privacySectionCard(section: section)
@@ -365,6 +369,11 @@ struct PrivacyPolicyScreen: View {
                         title: localizationManager.localized("privacy_policy_section_5"),
                         content: localizationManager.localized("privacy_policy_section_5_content")
                     )
+
+                    privacySection(
+                        title: localizationManager.localized("privacy_policy_section_6"),
+                        content: localizationManager.localized("privacy_policy_section_6_content")
+                    )
                 }
             }
             .padding(Spacing.m)
@@ -420,6 +429,8 @@ struct WebView: UIViewRepresentable {
 struct PrivacyPolicyScreen_Previews: PreviewProvider {
     static var previews: some View {
         PrivacyPolicyScreen()
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
     }
 }
 
@@ -647,7 +658,8 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_responsibility_content_1"),
                 localizationManager.localized("privacy_policy_section_responsibility_content_2"),
                 localizationManager.localized("privacy_policy_section_responsibility_content_3"),
-                localizationManager.localized("privacy_policy_section_responsibility_content_4")
+                localizationManager.localized("privacy_policy_section_responsibility_content_4"),
+                localizationManager.localized("privacy_policy_section_responsibility_content_5")
             ]
         case .contacts:
             return [
@@ -689,7 +701,8 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_final_content_1"),
                 localizationManager.localized("privacy_policy_section_final_content_2"),
                 localizationManager.localized("privacy_policy_section_final_content_3"),
-                localizationManager.localized("privacy_policy_section_final_content_4")
+                localizationManager.localized("privacy_policy_section_final_content_4"),
+                localizationManager.localized("privacy_policy_section_final_content_5")
             ]
         }
     }
@@ -786,7 +799,8 @@ enum PrivacyMainSection: String, CaseIterable {
                 "Отсутствие сбора персональных данных",
                 "Анонимная модель аккаунта (роль и возрастная группа)",
                 "Соответствие требованиям 152-ФЗ",
-                "Регулярный аудит системы"
+                "Регулярный аудит системы",
+                "Функции безопасности и подсказки ALADDIN являются вспомогательными: они могут ошибаться и не заменяют родителя, экстренные службы, банк, врача, юриста или другого специалиста."
             ]
         case .contacts:
             return [

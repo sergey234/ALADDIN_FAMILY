@@ -1,5 +1,4 @@
 import SwiftUI
-import WebKit
 
 /**
  * 📜 Terms of Service Screen
@@ -54,9 +53,6 @@ struct TermsOfServiceScreen: View {
         }
         .navigationBarHidden(true)
         .id("terms_of_service_lang_\(localizationManager.currentLanguage.rawValue)")
-        .task {
-            print("🚨 TermsOfServiceScreen загружен!")
-        }
     }
     
     // MARK: - Header Card
@@ -188,6 +184,8 @@ struct TermsOfServiceScreen: View {
 struct TermsOfServiceScreen_Previews: PreviewProvider {
     static var previews: some View {
         TermsOfServiceScreen()
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
     }
 }
 
@@ -334,16 +332,20 @@ enum TermsSection: String, CaseIterable {
             ]
         case .liability:
             return [
-                "Не несем ответственности за неправильное использование",
-                "Не гарантируем 100% защиту от всех угроз",
-                "Не несем ущерб от действий третьих лиц",
-                "Вы несете ответственность за свои действия",
-                "Используйте приложение на свой риск",
+                "Используйте приложение законно и с учётом ограничений функций.",
+                "ALADDIN не является экстренной, медицинской, юридической, банковской или операторской службой.",
+                "Пользователь, родитель или законный представитель отвечает за настройки, разрешения и свои действия.",
+                "Функции приложения помогают снижать риски, но не заменяют самостоятельную проверку и профессиональную помощь.",
+                "Использование приложения означает согласие с этими ограничениями.",
                 "Запись звонков — только по вашей инициативе; вы отвечаете за согласие собеседника и законность",
                 "Мы не гарантируем полноту и качество записи и распознавания речи",
                 "Мы не несём ответственности за убытки от телефонного мошенничества и за решения по выжимке или кнопкам после звонка",
-                "Раздел «Звонки» — вспомогательный инструмент, не юр./банковская консультация и не услуга оператора",
-                "Используя запись и память звонков, вы принимаете эти ограничения"
+                "Раздел «Звонки» — вспомогательный инструмент, не юридическая или банковская консультация и не услуга оператора связи",
+                "Используя запись и память звонков, вы принимаете эти ограничения",
+                "ALADDIN предоставляет семейную защиту, Antifake, Безопасные сайты, SOS, AI-подсказки, Wellness, мониторинг, уведомления и другие функции как вспомогательные инструменты.",
+                "Они помогают снижать риски, но не гарантируют точность, непрерывность, доступность, обнаружение, блокировку или предотвращение всех угроз, мошенничества, обходов, ошибок, аварий, потерь данных, вреда или неправомерных действий других людей.",
+                "Решения принимает пользователь, родитель или законный представитель. При угрозе жизни, здоровью, деньгам или правам обращайтесь в экстренные службы, банк, врача, юриста или иной профильный орган.",
+                "В максимальной степени, разрешённой законом, ALADDIN AI и SAUDAPAYDI, TOO не несут ответственности за прямой или косвенный ущерб, убытки, неверные решения, пропущенные угрозы, действия третьих лиц, сбои iOS, сети, функции «Безопасные сайты», устройства, сторонних сервисов, пользовательских настроек или неправильное использование приложения."
             ]
         case .termination:
             return [
@@ -516,7 +518,11 @@ extension TermsSection {
                 localizationManager.localized("terms_section_liability_content_7"),
                 localizationManager.localized("terms_section_liability_content_8"),
                 localizationManager.localized("terms_section_liability_content_9"),
-                localizationManager.localized("terms_section_liability_content_10")
+                localizationManager.localized("terms_section_liability_content_10"),
+                localizationManager.localized("terms_section_liability_content_11"),
+                localizationManager.localized("terms_section_liability_content_12"),
+                localizationManager.localized("terms_section_liability_content_13"),
+                localizationManager.localized("terms_section_liability_content_14")
             ]
         case .termination:
             return [
