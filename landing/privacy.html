@@ -1,21 +1,66 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" translate="no" class="notranslate">
 <head>
+  <meta name="google" content="notranslate">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Политика конфиденциальности — ALADDIN AI</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260718p2">
+  <style id="lang-switch-critical">
+    nav.lang-switch button.lang-switch__btn {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+      border: 2px solid #d4a84a;
+      border-radius: 999px;
+      padding: 6px 14px;
+      min-width: 44px;
+      font: 700 13px/1.2 inherit;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      background-color: #2c2412;
+      background-image: linear-gradient(180deg, #3d3218 0%, #2a2210 100%);
+      color: #f5c86e;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(245, 200, 110, 0.12);
+    }
+    nav.lang-switch button.lang-switch__btn:hover {
+      background-color: #4a3d1e;
+      background-image: linear-gradient(180deg, #5a4a24 0%, #3d3218 100%);
+      border-color: #f5c86e;
+      color: #ffe08a;
+    }
+    nav.lang-switch button.lang-switch__btn--active {
+      background-color: #f5c86e;
+      background-image: linear-gradient(135deg, #ffe08a 0%, #f5c86e 45%, #e8b650 100%);
+      border-color: #f8d07a;
+      color: #1a1208;
+      box-shadow: 0 3px 16px rgba(245, 200, 110, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+    nav.lang-switch button.lang-switch__btn--active:hover {
+      background-color: #f8d07a;
+      background-image: linear-gradient(135deg, #fff0b0 0%, #f8d07a 50%, #f5c86e 100%);
+      color: #1a1208;
+    }
+  </style>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-legal-page="privacy">
+  <nav class="lang-switch" aria-label="Language switcher">
+    <button type="button" class="lang-switch__btn lang-switch__btn--active" data-lang="ru" aria-pressed="true">RU</button>
+    <button type="button" class="lang-switch__btn" data-lang="en" aria-pressed="false">EN</button>
+  </nav>
+
   <header class="hero">
     <div class="hero__content">
-      <a href="index.html" class="cta ghost" style="margin-bottom: 24px;">← Назад на главную</a>
-      <h1>Политика конфиденциальности</h1>
-      <p>Системы семейной безопасности ALADDIN AI</p>
-      <p style="opacity: 0.7; margin-top: 16px;">Версия 2.1 | 1 июня 2026</p>
+      <a href="index.html" class="cta ghost" style="margin-bottom: 24px;" data-i18n="legal.back">← Назад на главную</a>
+      <h1 data-legal-meta="h1">Политика конфиденциальности</h1>
+      <p data-legal-meta="subtitle">Системы семейной безопасности ALADDIN AI</p>
+      <p style="opacity: 0.7; margin-top: 16px;" data-legal-meta="version">Версия 2.1 | 1 июня 2026</p>
     </div>
   </header>
 
@@ -267,13 +312,13 @@
         <p>
           📞 Телефон: <a href="tel:+79270051577">+7 (927) 005-15-77</a><br>
           🌐 Сайт: <a href="https://aladdin-ai.ru" target="_blank" rel="noopener">https://aladdin-ai.ru</a><br>
-          💬 Telegram-бот: <a href="https://t.me/aladdin_support_bot" target="_blank" rel="noopener">@aladdin_support_bot</a>
+          💬 Telegram-бот: <a href="https://t.me/AladdinChatAI_bot" target="_blank" rel="noopener">@AladdinChatAI_bot</a>
         </p>
         
         <p style="margin-top: 16px;"><strong>14.2. Для технической поддержки:</strong></p>
         <p>
           🌐 Сайт: <a href="https://aladdin-ai.ru" target="_blank" rel="noopener">https://aladdin-ai.ru</a><br>
-          💬 Telegram-бот: <a href="https://t.me/aladdin_support_bot" target="_blank" rel="noopener">@aladdin_support_bot</a><br>
+          💬 Telegram-бот: <a href="https://t.me/AladdinChatAI_bot" target="_blank" rel="noopener">@AladdinChatAI_bot</a><br>
           💬 Чат в приложении ALADDIN AI
         </p>
       </section>
@@ -303,7 +348,7 @@
         
         <p style="margin-top: 20px;"><strong>16.2. ChaCha20-Poly1305 🔒 (Быстрое)</strong></p>
         <p><strong>Что это:</strong> Как <strong>спортивный автомобиль</strong> - быстрый и надёжный. Создан Google для мобильных устройств. Работает быстрее AES на телефонах.</p>
-        <p><strong>Где используем:</strong> VPN подключение (когда нужна скорость), мобильные устройства, энергосберегающий режим VPN.</p>
+        <p><strong>Где используем:</strong> мобильные устройства, энергосберегающий режим шифрования, защита данных в приложении.</p>
         <p><strong>Защита:</strong> ⭐⭐⭐⭐⭐ Максимальная | <strong>Скорость:</strong> ⚡ Очень быстрая (меньше нагрузка на батарею)</p>
         
         <p style="margin-top: 20px;"><strong>16.3. XChaCha20-Poly1305 🛡️ (Космический уровень)</strong></p>
@@ -332,6 +377,27 @@
         <p><strong>18.6. Кризис.</strong> Подсказка: взрослый, которому доверяете, и линии помощи (112, 8-800-2000-122). ALADDIN не вызывает специалиста.</p>
       </section>
 
+      <!-- 20. Безопасные сайты -->
+      <section style="margin-bottom: 40px; background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10B981; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #34D399;">20. Безопасные сайты</h2>
+        <ul>
+          <li>Функция «Безопасные сайты» помогает дополнительно проверять адреса сайтов и усиливать защиту семьи от обхода.</li>
+          <li>Для работы на iPhone может потребоваться системная настройка «Безопасные сайты», которую пользователь включает в настройках iOS.</li>
+          <li>ALADDIN может обрабатывать статус включения функции, технические события настройки и обезличенные результаты проверок безопасности.</li>
+          <li>Функции безопасности и подсказки ALADDIN являются вспомогательными: они могут ошибаться и не заменяют родителя, экстренные службы, банк, врача, юриста или другого специалиста.</li>
+          <li>Мы не показываем в приложении сырые технические ключи и не используем эти данные для отслеживания между приложениями и сайтами.</li>
+        </ul>
+      </section>
+
+      <!-- 21. Ограничение ответственности -->
+      <section style="margin-bottom: 40px; background: rgba(245, 158, 11, 0.08); border-left: 4px solid #F59E0B; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #F59E0B;">21. Ограничение ответственности</h2>
+        <ul>
+          <li>Функции безопасности и подсказки ALADDIN являются вспомогательными: они могут ошибаться и не заменяют родителя, экстренные службы, банк, врача, юриста или другого специалиста.</li>
+          <li>Полный текст ограничения ответственности ALADDIN AI и SAUDAPAYDI, TOO опубликован в <a href="terms.html">Условиях использования</a>.</li>
+        </ul>
+      </section>
+
       <!-- 17. Ключевые особенности политики -->
       <section style="margin-bottom: 40px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #F59E0B; padding: 20px; border-radius: 8px;">
         <h2 style="color: #F59E0B;">17. Ключевые особенности политики ALADDIN</h2>
@@ -344,8 +410,8 @@
           <li>✅ <strong>Автоматическое удаление</strong> — Данные не хранятся дольше необходимого</li>
           <li>✅ <strong>Тройное военное шифрование</strong> — AES-256 + ChaCha20 + XChaCha20</li>
           <li>✅ <strong>Российские серверы</strong> — Данные обрабатываются в РФ (152-ФЗ)</li>
-          <li>✅ <strong>Zero-logs VPN</strong> — Не храним историю посещений</li>
-          <li>✅ <strong>Энергосбережение VPN</strong> — Экономия 30-40% батареи в день</li>
+          <li>✅ <strong>Без истории посещений</strong> — Не храним историю посещений сайтов</li>
+          <li>✅ <strong>Энергосбережение на устройстве</strong> — Экономия батареи за счёт эффективного шифрования</li>
         </ul>
         <div style="background: rgba(16, 185, 129, 0.2); padding: 16px; border-radius: 8px; margin-top: 20px; text-align: center; border: 2px solid #10B981;">
           <p><strong style="color: #10B981;">Система ALADDIN AI обеспечивает максимальную безопасность при полном соблюдении российского законодательства! 🛡️</strong></p>
@@ -357,13 +423,13 @@
 
   <footer style="padding: 40px clamp(24px, 5vw, 80px); text-align: center; border-top: 1px solid var(--border);">
     <div class="footer__links">
-      <a href="index.html">Главная</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="consent.html">Согласие ПДн</a>
-      <a href="help-faq.html">Help</a>
+      <a href="index.html" data-i18n="legal.home">Главная</a>
+      <a href="privacy.html" data-i18n="legal.link.privacy">Privacy</a>
+      <a href="terms.html" data-i18n="legal.link.terms">Terms</a>
+      <a href="consent.html" data-i18n="legal.link.consent">Согласие ПДн</a>
+      <a href="help-faq.html" data-i18n="legal.link.help">Help</a>
     </div>
-    <p style="opacity: 0.6; margin-top: 16px;">© 2025 ALADDIN AI. Все права защищены.</p>
+    <p style="opacity: 0.6; margin-top: 16px;" data-i18n="legal.copyright">© 2025 ALADDIN AI. Все права защищены.</p>
   </footer>
 
   <style>
@@ -454,5 +520,10 @@
       }
     }
   </style>
+
+  <script src="i18n-strings.js?v=20260623"></script>
+  <script src="i18n.js?v=20260930notr"></script>
+  <script src="legal-page.js?v=20260623"></script>
+
 </body>
 </html>
