@@ -38,26 +38,20 @@ enum FamilyBatteryCriticalMonitor {
             delay: 0.2
         )
 
-        let api = apiService ?? APIService.shared
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
-            ?? UserDefaults.standard.string(forKey: "family_id")
         let name = UserDefaults.standard.string(forKey: "user_display_name")
             ?? UserDefaults.standard.string(forKey: "user_name")
             ?? localization.localized("battery_critical_member_fallback")
-        let chatMessage = String(
-            format: localization.localized("battery_critical_chat_message"),
-            name,
-            percent
-        )
-        api.sendFamilyChatMessage(
-            message: chatMessage,
-            familyId: familyId,
-            messageType: "text",
-            voiceUrl: nil,
-            voiceDuration: nil,
-            mediaUrl: nil,
-            mediaType: nil,
-            replyToMessageId: nil
-        ) { _ in }
+        let api = apiService ?? APIService.shared
+        Task {
+            _ = await FamilyAutoAlertSender.send(
+                FamilyAutoAlertEvent(
+                    kind: .batteryCritical,
+                    displayName: name,
+                    batteryPercent: percent
+                ),
+                localization: localization,
+                api: api
+            )
+        }
     }
 }

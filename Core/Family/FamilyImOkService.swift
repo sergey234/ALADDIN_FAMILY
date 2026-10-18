@@ -228,6 +228,152 @@ struct FamilyPresenceAPIRow: Codable {
     }
 }
 
+enum FamilyAutoAlertKind: String, Codable, Equatable {
+    case imOk = "im_ok"
+    case needHelp = "need_help"
+    case batteryCritical = "battery_critical"
+    case urgentSignal = "urgent_signal"
+}
+
+struct FamilyAutoAlertEvent: Codable, Equatable, Identifiable {
+    let id: String
+    let kind: FamilyAutoAlertKind
+    let displayName: String
+    let batteryPercent: Int?
+    let locationSuffix: String?
+    let reason: String?
+    let createdAt: Date
+    let legacyPlaintext: String?
+
+    init(
+        id: String = UUID().uuidString,
+        kind: FamilyAutoAlertKind,
+        displayName: String,
+        batteryPercent: Int? = nil,
+        locationSuffix: String? = nil,
+        reason: String? = nil,
+        createdAt: Date = Date(),
+        legacyPlaintext: String? = nil
+    ) {
+        self.id = id
+        self.kind = kind
+        self.displayName = displayName
+        self.batteryPercent = batteryPercent
+        self.locationSuffix = locationSuffix
+        self.reason = reason
+        self.createdAt = createdAt
+        self.legacyPlaintext = legacyPlaintext
+    }
+}
+
+enum FamilyAutoAlertError: LocalizedError {
+    case missingFamilyId
+    case e2eeNotReady
+
+    var errorDescription: String? {
+        switch self {
+        case .missingFamilyId:
+            return "Family id is missing"
+        case .e2eeNotReady:
+            return "Family E2EE is not ready"
+        }
+    }
+}
+
+@MainActor
+enum FamilyAutoAlertSender {
+    static func send(
+        _ event: FamilyAutoAlertEvent,
+        localization: LocalizationManager = .shared,
+        api: APIService? = nil,
+        enqueueOnFailure: Bool = true
+    ) async -> Result<Void, Error> {
+        let service = api ?? APIService.shared
+        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+            ?? UserDefaults.standard.string(forKey: "family_id")
+        guard let familyId, !familyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            if enqueueOnFailure { FamilyImOkOfflineQueue.enqueue(event) }
+            return .failure(FamilyAutoAlertError.missingFamilyId)
+        }
+
+        let e2ee = FamilyE2EEManager.shared
+        if !e2ee.isReady {
+            await e2ee.bootstrap(familyId: familyId)
+        }
+        guard e2ee.isReady else {
+            if enqueueOnFailure { FamilyImOkOfflineQueue.enqueue(event) }
+            return .failure(FamilyAutoAlertError.e2eeNotReady)
+        }
+
+        do {
+            let encrypted = try e2ee.encryptOutgoing(
+                plaintext: message(for: event, localization: localization),
+                messageType: "text",
+                familyId: familyId
+            )
+            return await sendEncrypted(encrypted, familyId: familyId, api: service, event: event, enqueueOnFailure: enqueueOnFailure)
+        } catch {
+            if enqueueOnFailure { FamilyImOkOfflineQueue.enqueue(event) }
+            return .failure(error)
+        }
+    }
+
+    private static func sendEncrypted(
+        _ encrypted: (ciphertext: String, senderDeviceId: String),
+        familyId: String,
+        api: APIService,
+        event: FamilyAutoAlertEvent,
+        enqueueOnFailure: Bool
+    ) async -> Result<Void, Error> {
+        await withCheckedContinuation { continuation in
+            api.sendFamilyChatMessage(
+                message: nil,
+                familyId: familyId,
+                messageType: "text",
+                voiceUrl: nil,
+                voiceDuration: nil,
+                mediaUrl: nil,
+                mediaType: nil,
+                replyToMessageId: nil,
+                envelopeVersion: 2,
+                senderDeviceId: encrypted.senderDeviceId,
+                ciphertext: encrypted.ciphertext
+            ) { result in
+                switch result {
+                case .success:
+                    continuation.resume(returning: .success(()))
+                case .failure(let error):
+                    if enqueueOnFailure { FamilyImOkOfflineQueue.enqueue(event) }
+                    continuation.resume(returning: .failure(error))
+                }
+            }
+        }
+    }
+
+    private static func message(for event: FamilyAutoAlertEvent, localization: LocalizationManager) -> String {
+        if let legacy = event.legacyPlaintext, !legacy.isEmpty {
+            return legacy
+        }
+
+        switch event.kind {
+        case .imOk:
+            let batteryPart = event.batteryPercent.map { String(format: localization.localized("im_ok_message_battery"), $0) } ?? ""
+            return String(format: localization.localized("im_ok_family_chat_message"), event.displayName, batteryPart)
+        case .needHelp:
+            let batteryPart = event.batteryPercent.map { String(format: localization.localized("im_ok_message_battery"), $0) } ?? ""
+            let locationPart = event.locationSuffix ?? ""
+            return String(format: localization.localized("need_help_family_chat_message"), event.displayName, batteryPart + locationPart)
+        case .batteryCritical:
+            let battery = event.batteryPercent ?? 0
+            return String(format: localization.localized("battery_critical_chat_message"), event.displayName, battery)
+        case .urgentSignal:
+            let title = localization.localized("family_urgent_signal_title")
+            let reason = event.reason ?? localization.localized("family_urgent_signal_body")
+            return "\(title): \(event.displayName) · \(reason)"
+        }
+    }
+}
+
 @MainActor
 enum FamilyImOkService {
     static func currentBatteryPercent() -> Int? {
@@ -262,19 +408,15 @@ enum FamilyImOkService {
             )
         )
 
-        let batteryPart: String
-        if let battery {
-            batteryPart = String(format: localization.localized("im_ok_message_battery"), battery)
-        } else {
-            batteryPart = ""
-        }
-        let message = String(
-            format: localization.localized("im_ok_family_chat_message"),
-            displayName,
-            batteryPart
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let chatResult = await sendFamilyChat(message: message, api: api)
+        let chatResult = await FamilyAutoAlertSender.send(
+            FamilyAutoAlertEvent(
+                kind: .imOk,
+                displayName: displayName,
+                batteryPercent: battery
+            ),
+            localization: localization,
+            api: api
+        )
 
         _ = await postImOkPresence(battery: battery, apiService: api)
 
@@ -290,7 +432,6 @@ enum FamilyImOkService {
         case .success:
             return .success(())
         case .failure(let error):
-            FamilyImOkOfflineQueue.enqueue(message: message, kind: "im_ok")
             return .failure(error)
         }
     }
@@ -321,13 +462,6 @@ enum FamilyImOkService {
             )
         )
 
-        let batteryPart: String
-        if let battery {
-            batteryPart = String(format: localization.localized("im_ok_message_battery"), battery)
-        } else {
-            batteryPart = ""
-        }
-
         var locationPart = ""
         if attachLocation, UserDefaults.standard.object(forKey: "parental_sos_enabled") as? Bool != false {
             if let pin = await captureSOSLocationPin(localization: localization, api: api) {
@@ -335,13 +469,16 @@ enum FamilyImOkService {
             }
         }
 
-        let message = String(
-            format: localization.localized("need_help_family_chat_message"),
-            displayName,
-            batteryPart + locationPart
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let chatResult = await sendFamilyChat(message: message, api: api)
+        let chatResult = await FamilyAutoAlertSender.send(
+            FamilyAutoAlertEvent(
+                kind: .needHelp,
+                displayName: displayName,
+                batteryPercent: battery,
+                locationSuffix: locationPart.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : locationPart
+            ),
+            localization: localization,
+            api: api
+        )
 
         // Critical local alert (same device ack). Parent channel = family chat message.
         NotificationManager.shared.sendLocalNotification(
@@ -373,7 +510,6 @@ enum FamilyImOkService {
         case .success:
             return .success(())
         case .failure(let error):
-            FamilyImOkOfflineQueue.enqueue(message: message, kind: "need_help")
             return .failure(error)
         }
     }
@@ -410,30 +546,6 @@ enum FamilyImOkService {
             return " " + String(format: localization.localized("need_help_location_coords"), lat, lon)
         } catch {
             return " " + localization.localized("need_help_location_unavailable")
-        }
-    }
-
-    private static func sendFamilyChat(message: String, api: APIService) async -> Result<Void, Error> {
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
-            ?? UserDefaults.standard.string(forKey: "family_id")
-        return await withCheckedContinuation { continuation in
-            api.sendFamilyChatMessage(
-                message: message,
-                familyId: familyId,
-                messageType: "text",
-                voiceUrl: nil,
-                voiceDuration: nil,
-                mediaUrl: nil,
-                mediaType: nil,
-                replyToMessageId: nil
-            ) { result in
-                switch result {
-                case .success:
-                    continuation.resume(returning: .success(()))
-                case .failure(let error):
-                    continuation.resume(returning: .failure(error))
-                }
-            }
         }
     }
 

@@ -1067,25 +1067,21 @@ struct ElderlyInterfaceScreen: View {
             userInfo: ["type": "sos_family_alarm"],
             delay: 0.1
         )
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
-            ?? UserDefaults.standard.string(forKey: "family_id")
-        APIService.shared.sendFamilyChatMessage(
-            message: message,
-            familyId: familyId,
-            messageType: "text",
-            voiceUrl: nil,
-            voiceDuration: nil,
-            mediaUrl: nil,
-            mediaType: nil,
-            replyToMessageId: nil
-        ) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    criticalActionStatusMessage = localizationManager.localized("sos_alarm_sent_confirm")
-                case .failure:
-                    criticalActionStatusMessage = localizationManager.localized("sos_alarm_sent_local_only")
-                }
+        Task { @MainActor in
+            let result = await FamilyAutoAlertSender.send(
+                FamilyAutoAlertEvent(
+                    kind: .urgentSignal,
+                    displayName: name,
+                    legacyPlaintext: message
+                ),
+                localization: localizationManager,
+                api: APIService.shared
+            )
+            switch result {
+            case .success:
+                criticalActionStatusMessage = localizationManager.localized("sos_alarm_sent_confirm")
+            case .failure:
+                criticalActionStatusMessage = localizationManager.localized("sos_alarm_sent_local_only")
             }
         }
     }

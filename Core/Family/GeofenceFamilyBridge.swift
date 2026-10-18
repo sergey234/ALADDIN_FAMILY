@@ -25,6 +25,7 @@ enum GeofenceFamilyBridge {
     }
 
     /// Soft-notify family via chat (existing push pipeline). Throttled per place+direction.
+    /// Family chat mirror must use E2EE envelope v2 on prod.
     @MainActor
     static func softNotifyFamilyIfNeeded(
         placeName: String,
@@ -45,22 +46,16 @@ enum GeofenceFamilyBridge {
         guard !message.isEmpty else { return }
 
         let service = api ?? APIService.shared
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
-            ?? UserDefaults.standard.string(forKey: "family_id")
-        service.sendFamilyChatMessage(
-            message: message,
-            familyId: familyId,
-            messageType: "text",
-            voiceUrl: nil,
-            voiceDuration: nil,
-            mediaUrl: nil,
-            mediaType: nil,
-            replyToMessageId: nil
-        ) { result in
-            if case .failure = result {
-                // Keep local path honest — soft enqueue as ImOK-style offline item.
-                FamilyImOkOfflineQueue.enqueue(message: message, kind: "geofence")
-            }
+        Task {
+            _ = await FamilyAutoAlertSender.send(
+                FamilyAutoAlertEvent(
+                    kind: .urgentSignal,
+                    displayName: displayName,
+                    legacyPlaintext: message
+                ),
+                localization: localization,
+                api: service
+            )
         }
     }
 
@@ -98,35 +93,26 @@ enum GeofenceFamilyBridge {
         }
     }
 
-    /// WAVE3 G — «Срочный сигнал семье» → soft family chat (existing push path).
+    /// WAVE3 G — «Срочный сигнал семье».
+    /// Family chat mirror must use E2EE envelope v2; primary special endpoint stays in FamilyUrgentSignalService.
     @MainActor
     static func notifyParentsUrgentSignal(
         reason: String,
         localization: LocalizationManager = .shared,
         api: APIService? = nil
     ) {
-        let displayName = currentDisplayName(localization: localization)
-        let message = String(
-            format: localization.localized("family_urgent_signal_chat"),
-            displayName,
-            reason
-        )
         let service = api ?? APIService.shared
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
-            ?? UserDefaults.standard.string(forKey: "family_id")
-        service.sendFamilyChatMessage(
-            message: message,
-            familyId: familyId,
-            messageType: "text",
-            voiceUrl: nil,
-            voiceDuration: nil,
-            mediaUrl: nil,
-            mediaType: nil,
-            replyToMessageId: nil
-        ) { result in
-            if case .failure = result {
-                FamilyImOkOfflineQueue.enqueue(message: message, kind: "family_urgent")
-            }
+        let displayName = currentDisplayName(localization: localization)
+        Task {
+            _ = await FamilyAutoAlertSender.send(
+                FamilyAutoAlertEvent(
+                    kind: .urgentSignal,
+                    displayName: displayName,
+                    reason: reason
+                ),
+                localization: localization,
+                api: service
+            )
         }
     }
 
