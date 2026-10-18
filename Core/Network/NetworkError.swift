@@ -190,15 +190,32 @@ enum NetworkError: Error, LocalizedError {
             }
             return L.localized("network_error_not_found_plain")
         case .conflict(let message):
-            return Self.userFacingDetail(message) ?? L.localized("network_error_conflict_default")
+            // Prefer machine-code map; if nil, keep an already-localized UI string
+            // (NetworkManager may map once — do not strip Cyrillic into conflict_default).
+            return Self.resolvedConflictOrStatusDetail(
+                message,
+                fallbackKey: "network_error_conflict_default"
+            )
         case .tooManyRequests(let message):
-            return Self.userFacingDetail(message) ?? L.localized("network_error_too_many")
+            return Self.resolvedConflictOrStatusDetail(
+                message,
+                fallbackKey: "network_error_too_many"
+            )
         case .internalServerError(let message):
-            return Self.userFacingDetail(message) ?? L.localized("network_error_internal")
+            return Self.resolvedConflictOrStatusDetail(
+                message,
+                fallbackKey: "network_error_internal"
+            )
         case .badGateway(let message):
-            return Self.userFacingDetail(message) ?? L.localized("network_error_bad_gateway")
+            return Self.resolvedConflictOrStatusDetail(
+                message,
+                fallbackKey: "network_error_bad_gateway"
+            )
         case .serviceUnavailable(let message):
-            return Self.userFacingDetail(message) ?? L.localized("network_error_service_unavailable")
+            return Self.resolvedConflictOrStatusDetail(
+                message,
+                fallbackKey: "network_error_service_unavailable"
+            )
             
         // Data Errors
         case .invalidData:
@@ -249,14 +266,78 @@ enum NetworkError: Error, LocalizedError {
     }
 
     /// Drop Cyrillic / technical gateway fragments so EN UI never shows «HTTP ошибка …».
+    /// Machine codes (`device_pairing_used`, …) are mapped first via `localizedMachineDetail`.
     static func userFacingDetail(_ raw: String?) -> String? {
         guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else { return nil }
+        if let mapped = Self.localizedMachineDetail(raw) {
+            return mapped
+        }
         if raw.range(of: #"\p{Script=Cyrillic}"#, options: .regularExpression) != nil { return nil }
         let lower = raw.lowercased()
         if lower.contains("http ошибка") || lower.hasPrefix("http error") { return nil }
         if lower.contains("critical endpoint") { return nil }
         if lower.contains("use explicit router") { return nil }
         return raw
+    }
+
+    /// For `.conflict` / 5xx / 429: map machine codes, else keep a prior UI localization.
+    private static func resolvedConflictOrStatusDetail(_ message: String?, fallbackKey: String) -> String {
+        if let mapped = userFacingDetail(message) {
+            return mapped
+        }
+        if let message = message?.trimmingCharacters(in: .whitespacesAndNewlines), !message.isEmpty {
+            let lower = message.lowercased()
+            if lower.contains("http ошибка") || lower.hasPrefix("http error")
+                || lower.contains("critical endpoint") || lower.contains("use explicit router") {
+                return LocalizationManager.shared.localized(fallbackKey)
+            }
+            // Already localized (often RU) by an earlier `userFacingDetail` pass — keep it.
+            return message
+        }
+        return LocalizationManager.shared.localized(fallbackKey)
+    }
+
+    private static func localizedMachineDetail(_ raw: String) -> String? {
+        let normalized = raw
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        let key: String?
+        switch normalized {
+        case "invalid_invite":
+            key = "family_invite_error_invalid"
+        case "invite_expired":
+            key = "family_invite_error_expired"
+        case "invite_revoked":
+            key = "family_invite_error_revoked"
+        case "invite_max_uses_reached":
+            key = "family_invite_error_used_up"
+        case "family_not_found":
+            key = "family_invite_error_family_not_found"
+        case "family_invite_forbidden":
+            key = "family_invite_error_forbidden"
+        case "already_in_another_family":
+            key = "family_invite_error_already_in_another_family"
+        case "already_in_family":
+            key = "family_invite_error_already_in_family"
+        case "family_roster_full":
+            key = "family_invite_error_family_full"
+        case "personal_letter_taken":
+            key = "family_invite_error_letter_taken"
+        case "device_pairing_used", "pairing_token_already_used":
+            key = "device_pairing_error_used"
+        case "device_pairing_not_found", "pairing_not_found_expired_or_used":
+            key = "device_pairing_error_not_found"
+        case "device_pairing_rate_limited", "too_many_pairing_attempts":
+            key = "device_pairing_error_rate_limited"
+        case "token_or_pin_required":
+            key = "device_pairing_error_token_or_pin_required"
+        default:
+            key = nil
+        }
+        guard let key else { return nil }
+        return LocalizationManager.shared.localized(key)
     }
     
     var failureReason: String? {

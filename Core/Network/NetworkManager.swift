@@ -69,6 +69,16 @@ private let logger = MasterLogger.shared
         if let errorData = try? JSONDecoder().decode([String: String].self, from: data) {
             return errorData["detail"] ?? errorData["message"]
         }
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            if let detail = json["detail"] as? String { return detail }
+            if let message = json["message"] as? String { return message }
+            if let detail = json["detail"] as? [String: Any] {
+                return (detail["error_code"] as? String)
+                    ?? (detail["message"] as? String)
+                    ?? (detail["detail"] as? String)
+            }
+            if let errorCode = json["error_code"] as? String { return errorCode }
+        }
         return nil
     }
 
@@ -1392,9 +1402,11 @@ private let logger = MasterLogger.shared
                     case 404:
                         networkError = .notFound(errorMessage)
                     case 409:
-                        networkError = .conflict(errorMessage)
+                        // Pass raw machine code / detail — `NetworkError.conflict` maps once.
+                        // Pre-localized `errorMessage` was stripped on the second Cyrillic pass → conflict_default.
+                        networkError = .conflict(rawServerMessage)
                     case 429:
-                        networkError = .tooManyRequests(errorMessage)
+                        networkError = .tooManyRequests(rawServerMessage)
                     case 500:
                         networkError = .internalServerError(errorMessage)
                     case 502:
