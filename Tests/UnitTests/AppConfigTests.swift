@@ -47,7 +47,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "11")
+        XCTAssertEqual(AppConfig.buildNumber, "12")
     }
 
     // MARK: - Explicit Security API (B2-00 / GATE-D)
@@ -162,7 +162,7 @@ class AppConfigTests: XCTestCase {
         #if APP_STORE_BUILD
         XCTAssertTrue(AppStoreBuildPolicy.isAppStoreBuild)
         XCTAssertFalse(AppStoreBuildPolicy.allowsAlternativePayments)
-        XCTAssertFalse(AppStoreBuildPolicy.allowsSmartDNS)
+        XCTAssertTrue(AppStoreBuildPolicy.allowsSmartDNS)
         // WAVE3 owner GO 2026-10-17: FC + HealthKit + Comm + Content Filter on for build 10
         XCTAssertTrue(AppStoreBuildPolicy.allowsSystemFamilyControls)
         XCTAssertTrue(AppStoreBuildPolicy.allowsHealthKitIntegration)

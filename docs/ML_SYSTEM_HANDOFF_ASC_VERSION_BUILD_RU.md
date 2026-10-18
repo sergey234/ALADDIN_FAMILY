@@ -1,6 +1,6 @@
 # ML Handoff: ASC Version + Build (ai.aladdin Path B)
 
-**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-17 вечер (TF 1.0.1/10 WAVE3 Ready)
+**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-18 (bump Build **12** · Bypass+CF fix)
 **Приложение:** `ai.aladdin` / ALADDIN AI (команда **B3WGHSWL79**, org SAUDAPAYDI)
 **Не путать** с личным TF `family.aladdin.ios` / team `6CJVBBUGSN` / номерами 247–248.
 
@@ -8,7 +8,7 @@
 → §**0** факт · §**0a** secrets через `gh` · §**0b** push+CI · §**0c** план–факт · §**4** уроки 409/подпись
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`
-**origin tip:** `3f59110c` · CI: `check-secrets.yml` · TF **1.0.1 / 10 Ready** (владелец видит в кабинете)
+**CI:** `check-secrets.yml` · candidate **1.0.1 / 12** (после push · Archive+Upload)
 
 ---
 
@@ -17,11 +17,11 @@
 | Имя | Что это | Ключи в коде | Сейчас (канон) | В App Store Connect |
 |-----|---------|--------------|----------------|---------------------|
 | **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.1** | iOS version **1.0.1** (Подготовка к отправке) |
-| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **11** | TestFlight max Ready **10** |
+| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **12** | TestFlight: **11** был Ready; candidate **12** |
 
-В Xcode должно читаться: **Version 1.0.1 · Build 11**.
+В Xcode должно читаться: **Version 1.0.1 · Build 12**.
 
-- Следующее поднятие **Build** (11→12): только после нового **GO на bump** build.
+- Следующее поднятие **Build** (12→13): только после нового **GO на bump** build.
 - Поднимать **Version** (1.0.1→1.0.2): только если ASC закрыл train / после approve, и только после **GO** + создания новой version в ASC.
 - **Нельзя** заливать новые Build на уже closed/approved marketing train (урок ниже).
 
@@ -32,8 +32,8 @@
 Файл: `docs/RELEASE_BUILD_PROMPT.md`
 
 ```text
-PREV_BUILD = 11
-NEXT_BUILD = 12
+PREV_BUILD = 12
+NEXT_BUILD = 13
 CURRENT_MARKETING_VERSION = 1.0.1
 ```
 
@@ -42,7 +42,7 @@ CURRENT_MARKETING_VERSION = 1.0.1
 
 ---
 
-## 3. Куда менять Build (CFBundleVersion → например 12)
+## 3. Куда менять Build (CFBundleVersion → например 13)
 
 | Файл | Поле |
 |------|------|
@@ -101,21 +101,21 @@ rg 'static let appVersion' Core/Config/AppConfig.swift
 
 ---
 
-## 5. Подтверждение: как должно быть для ASC 1.0.1 + Build 11
+## 5. Подтверждение: как должно быть для ASC 1.0.1 + Build 12
 
-### Build = 11
+### Build = 12
 
 | Файл | Значение |
 |------|----------|
-| `Info.plist` → `CFBundleVersion` | **11** |
-| `project.pbxproj` → `CURRENT_PROJECT_VERSION` | **11** (единственное значение) |
-| `AppConfig.buildNumber` | **11** |
-| `AppConfig.minimumClientBuildForApiContract` | **11** |
-| CallDirectory / ST/NE extensions `CFBundleVersion` | **11** |
-| Widgets | `$(CURRENT_PROJECT_VERSION)` → 11 |
-| `AppConfigTests` (build) | **11** |
+| `Info.plist` → `CFBundleVersion` | **12** |
+| `project.pbxproj` → `CURRENT_PROJECT_VERSION` | **12** (единственное значение) |
+| `AppConfig.buildNumber` | **12** |
+| `AppConfig.minimumClientBuildForApiContract` | **12** |
+| CallDirectory / ST/NE extensions `CFBundleVersion` | **12** |
+| Widgets | `$(CURRENT_PROJECT_VERSION)` → 12 |
+| `AppConfigTests` (build) | **12** |
 | Team `DEVELOPMENT_TEAM` | **B3WGHSWL79** ×20 |
-| Канон PREV/NEXT | PREV=**11** NEXT=**12** |
+| Канон PREV/NEXT | PREV=**12** NEXT=**13** |
 
 ### Version = 1.0.1
 

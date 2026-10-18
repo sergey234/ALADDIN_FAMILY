@@ -4057,7 +4057,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4091,7 +4091,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4250,7 +4250,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -4284,7 +4284,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -4315,7 +4315,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -4341,7 +4341,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -4371,7 +4371,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4405,7 +4405,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4438,7 +4438,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4464,7 +4464,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4488,7 +4488,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4513,7 +4513,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4541,7 +4541,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4575,7 +4575,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4605,7 +4605,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityMonitor/ALADDINDeviceActivityMonitor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityMonitor/Info.plist;
@@ -4631,7 +4631,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityMonitor/ALADDINDeviceActivityMonitor.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityMonitor/Info.plist;
@@ -4657,7 +4657,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityReport/ALADDINDeviceActivityReport.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityReport/Info.plist;
@@ -4683,7 +4683,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityReport/ALADDINDeviceActivityReport.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityReport/Info.plist;
@@ -4709,7 +4709,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldConfiguration/ALADDINShieldConfiguration.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldConfiguration/Info.plist;
@@ -4735,7 +4735,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldConfiguration/ALADDINShieldConfiguration.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldConfiguration/Info.plist;
@@ -4761,7 +4761,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldAction/ALADDINShieldAction.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldAction/Info.plist;
@@ -4786,7 +4786,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentFilter/ALADDINContentFilter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINContentFilter/Info.plist;
@@ -4812,7 +4812,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldAction/ALADDINShieldAction.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldAction/Info.plist;
@@ -4839,7 +4839,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentFilter/ALADDINContentFilter.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINContentFilter/Info.plist;

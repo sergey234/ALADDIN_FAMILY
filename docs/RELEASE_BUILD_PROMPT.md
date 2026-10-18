@@ -11,9 +11,9 @@
 App:          ai.aladdin  (ALADDIN AI)
 Team:         B3WGHSWL79  (SAUDAPAYDI)   ← НЕ 6CJVBBUGSN
 Version:      1.0.1       (= marketing / ASC iOS version)
-Build:        11          (= CFBundleVersion / next upload candidate)
-PREV_BUILD:   11
-NEXT_BUILD:   12          ← подставлять ТОЛЬКО после GO на bump
+Build:        12          (= CFBundleVersion / next upload candidate)
+PREV_BUILD:   12
+NEXT_BUILD:   13          ← подставлять ТОЛЬКО после GO на bump
 CURRENT_MARKETING_VERSION = 1.0.1
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
@@ -23,9 +23,9 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 | Что | Куда смотреть | Сейчас |
 |-----|---------------|--------|
 | Version | ASC «iOS App Version» + код `MARKETING_VERSION` / `appVersion` | **1.0.1** |
-| Build | код `CFBundleVersion` / `buildNumber` | **11** |
-| TestFlight max Ready | ASC TestFlight → iOS version 1.0.1 | **10 Ready** |
-| След. Build | только после следующей фразы владельца **«GO на bump»** | **12** |
+| Build | код `CFBundleVersion` / `buildNumber` | **12** |
+| TestFlight max Ready | ASC TestFlight → iOS version 1.0.1 | **11 Ready** (ожидаемо) |
+| След. Build | только после следующей фразы владельца **«GO на bump»** | **13** |
 | След. Version | только если ASC закрыл train 1.0.1 / approve + **GO** | например **1.0.2** |
 
 **Запрещено:** номера 247/248, `family.aladdin.ios`, team `6CJVBBUGSN` как «куда пушить».
@@ -35,12 +35,12 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 | Слой | Факт |
 |------|------|
 | Commit tip **origin/master** | `3f59110c` — ASC upload checks (HK string · Shield Action id · host NE) |
-| Код в git (номера) | Version **1.0.1** · Build **11** |
-| TestFlight | **1.0.1 / 10 Ready** — WAVE3 бинарь (фильтр, Shield Action, гео, ExtensionKit) |
+| Код в git (номера) | Version **1.0.1** · Build **12** |
+| TestFlight | **1.0.1 / 11** был в ASC; candidate **12** — Bypass card + Content Filter compile fix |
 | CI канон | `check-secrets.yml` («Build and Upload to App Store») |
 | Зелёный релиз | **Archive + Export + Upload** все OK · Job green ≠ TF, если `altool` FAIL |
 | Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER, не имя `… App Store.` (§4c) |
-| След. Upload | текущий candidate **11** после GO на bump; следующий после него — только **12** |
+| След. Upload | текущий candidate **12**; следующий после него — только **13** |
 
 One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.
 Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.
@@ -118,7 +118,7 @@ gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
    git branch --show-current       → master
    git remote -v                   → origin = git@github.com:sergey234/ALADDIN_FAMILY.git
 2) ASC TestFlight: какой максимальный Build Ready на 1.0.1?
-   → вечер 2026-10-17: **10 Ready**; после GO на bump текущий candidate = **11**
+   → 2026-10-18: **11** успешно в ASC; после GO на bump текущий candidate = **12**
    → если максимальный Ready < текущего git Build / Upload failed → можно ship без bump
 3) ./scripts/verify_capabilities_wave3_static.sh   → ALL OK
 4) Ждать явный GO владельца:
@@ -177,7 +177,7 @@ gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
 2. Walk-test геозон · parent APNs (L4 уже на MAIN).
 3. Critical Assigned → entitlement + regen APP + D2 / L11.
 4. H2 Notes в ASC перед Submit.
-5. След. бинарь после текущего candidate 11 — только **«GO на bump 12»**.
+5. След. бинарь после текущего candidate 12 — только **«GO на bump 13»**.
 
 Registry: `.cursor/CAPABILITIES_WAVE3_TASK_REGISTRY.md`.
 
@@ -185,24 +185,24 @@ Registry: `.cursor/CAPABILITIES_WAVE3_TASK_REGISTRY.md`.
 
 ## 1. Два номера — вставлять сюда
 
-### A) Build (номер сборки) — при GO: PREV → NEXT (после bump: 11 → 12)
+### A) Build (номер сборки) — при GO: PREV → NEXT (после bump: 12 → 13)
 
 Везде одно и то же число **NEXT_BUILD**:
 
 | Файл | Поле | Пример сейчас → после bump |
 |------|------|----------------------------|
-| `Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDIN.xcodeproj/project.pbxproj` | **все** `CURRENT_PROJECT_VERSION = …;` | `11` → `12` |
-| `Core/Config/AppConfig.swift` | `buildNumber` **и** `minimumClientBuildForApiContract` | `"11"` → `"12"` |
-| `Tests/UnitTests/AppConfigTests.swift` | assert build | `11` → `12` |
-| `ALADDINCallDirectory/Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDINDeviceActivityMonitor/Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDINDeviceActivityReport/Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDINShieldConfiguration/Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDINShieldAction/Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDINContentFilter/Info.plist` | `CFBundleVersion` | `11` → `12` |
-| `ALADDINWidgets/Info.plist` | обычно `$(CURRENT_PROJECT_VERSION)` | ок, если pbx = 11 |
-| **этот файл** | `PREV_BUILD` / `NEXT_BUILD` | PREV=11, NEXT=12 |
+| `Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDIN.xcodeproj/project.pbxproj` | **все** `CURRENT_PROJECT_VERSION = …;` | `12` → `13` |
+| `Core/Config/AppConfig.swift` | `buildNumber` **и** `minimumClientBuildForApiContract` | `"12"` → `"13"` |
+| `Tests/UnitTests/AppConfigTests.swift` | assert build | `12` → `13` |
+| `ALADDINCallDirectory/Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDINDeviceActivityMonitor/Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDINDeviceActivityReport/Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDINShieldConfiguration/Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDINShieldAction/Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDINContentFilter/Info.plist` | `CFBundleVersion` | `12` → `13` |
+| `ALADDINWidgets/Info.plist` | обычно `$(CURRENT_PROJECT_VERSION)` | ок, если pbx = 12 |
+| **этот файл** | `PREV_BUILD` / `NEXT_BUILD` | PREV=12, NEXT=13 |
 
 Проверка (должно быть одно значение):
 
@@ -403,38 +403,38 @@ Shield Action identifier: `com.apple.ManagedSettings.shield-action-service` (б�
 
 ## 7. Рецепт «следующая сборка» (два сценария)
 
-### 7A. Ship текущего пакета **без bump** (только если TF ещё **нет** Ready build 11)
+### 7A. Ship текущего пакета **без bump** (только если TF ещё **нет** Ready build 12)
 
 ```text
-A. Код WAVE3 уже в локальных commits (ahead of origin) · verify ALL OK
+A. Код (Bypass+CF + bump 12) уже в локальных commits · verify ALL OK
 B. L4 geofence-event на MAIN уже (walk-test отдельно)
-C. Владелец сверил ASC: build 11 НЕ Ready
+C. Владелец сверил ASC: build 12 НЕ Ready
 D. «GO на push» → git push origin master
 E. CI check-secrets → Archive + Export + Upload все зелёные
-F. TF 1.0.1 / build 11 → Ready
+F. TF 1.0.1 / build 12 → Ready
 G. Если UPLOAD FAILED — logs_*.zip · шаг Upload (не путать с artifact)
 ```
 
-### 7B. Сборка 12 (если build 11 уже Ready **или** сказали GO на bump)
+### 7B. Сборка 13 (если build 12 уже Ready **или** сказали GO на bump)
 
 ```text
 A. Владелец: «GO на bump» (+ потом commit/push)
-B. В коде: Build 11 → 12 во всех файлах §1A (+ Shield Action plist если hardcoded)
-C. В этом файле: PREV_BUILD=12  NEXT_BUILD=13
+B. В коде: Build 12 → 13 во всех файлах §1A (+ Shield Action plist если hardcoded)
+C. В этом файле: PREV_BUILD=13  NEXT_BUILD=14
 D. Marketing 1.0.1, ЕСЛИ train ASC ещё открыт
 E. commit → «GO на push» → CI Upload зелёный
-F. TestFlight: Version 1.0.1 · Build 12
+F. TestFlight: Version 1.0.1 · Build 13
 ```
 
 ### 7C. Наилучший путь «прямо сейчас» (рекомендация пилоту)
 
 ```text
 1. ASC TestFlight → посмотреть Ready builds на 1.0.1
-2. Если максимальный Ready = 10:
-      → текущий candidate 11 уже готов к commit/push
-3. Если Ready = 11:
-      → новый «GO на bump» 11→12 → commit → «GO на push»
-4. После Ready: Device QA 2 iPhone (ST + геозоны) → потом FC flag on
+2. Если максимальный Ready = 11:
+      → текущий candidate 12 уже готов к commit/push (этот рецепт)
+3. Если Ready = 12:
+      → новый «GO на bump» 12→13 → commit → «GO на push»
+4. После Ready: Device QA 2 iPhone (ST + геозоны + Bypass + Content Filter)
 5. Notes ASC — перед Submit, не блокер TF
 6. Critical/Comm ship-код — только после Apple Assigned
 ```
@@ -463,8 +463,8 @@ F. TestFlight: Version 1.0.1 · Build 12
 ## 9. Актуальная пара (обновлять после каждого успешного bump)
 
 ```text
-PREV_BUILD = 10
-NEXT_BUILD = 11
+PREV_BUILD = 12
+NEXT_BUILD = 13
 CURRENT_MARKETING_VERSION = 1.0.1
 ```
 

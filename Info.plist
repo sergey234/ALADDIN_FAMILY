@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>11</string>
+	<string>12</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -79,9 +79,9 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSCalendarsUsageDescription</key>
-	<string>ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.</string>
+	<key>NSCalendarsUsageDescription</key>
 	<string>ALADDIN needs calendar access to optionally sync family habit reminders into your calendar.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>ALADDIN Family needs camera access for security features and face recognition.</string>
@@ -89,16 +89,16 @@
 	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>ALADDIN may read motion and fall-related Health data only to send a family urgent safety signal when you enable it. Not used for diagnosis.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>ALADDIN does not write Health records. HealthKit is enabled only to read a fall-related signal for a family urgent alert when you turn it on.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ALADDIN uses Always location for family place alerts (home, school, work enter/exit) while the app is closed. Not used for continuous GPS tracking.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ALADDIN uses location while you use the app to set family places and share location in an emergency (SOS).</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ALADDIN needs microphone access for voice messages and voice analysis.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>ALADDIN may read motion and fall-related Health data only to send a family urgent safety signal when you enable it. Not used for diagnosis.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>ALADDIN does not write Health records. HealthKit is enabled only to read a fall-related signal for a family urgent alert when you turn it on.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>ALADDIN uses motion to help detect a hard fall and send a family urgent safety signal when you enable it.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
