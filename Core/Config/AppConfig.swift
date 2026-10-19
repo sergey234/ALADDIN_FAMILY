@@ -262,6 +262,9 @@ struct AppConfig {
         static let promoRedeem = "/api/promo/redeem"
         /// WAVE3 L4 — child device reports geofence enter/exit → parent APNs
         static let familyGeofenceEvent = "/api/family/geofence-event"
+        /// Last place signal and last shared point for the family. One row per person.
+        static let familyWherePhone = "/api/family/where-phone"
+        static let familyWherePhonePoint = "/api/family/where-phone/point"
 
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"

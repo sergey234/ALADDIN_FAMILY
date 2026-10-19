@@ -95,6 +95,7 @@ struct FamilyScreen: View {
     @State private var showTimeControlModalNew: Bool = false
     @State private var showMonitoringModalNew: Bool = false
     @State private var showLocationModal: Bool = false
+    @State private var showWherePhone: Bool = false
     @State private var showReportsModal: Bool = false
     @State private var showAdditionalModal: Bool = false
     @State private var showBypassProtectionModal: Bool = false
@@ -2571,6 +2572,24 @@ struct FamilyScreen: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("family_open_list")
+
+                            Button {
+                                HapticFeedback.impact(.light)
+                                showWherePhone = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "location.circle.fill")
+                                    Text(localizationManager.localized("where_phone_open"))
+                                        .font(.subheadline.weight(.semibold))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                }
+                                .padding()
+                                .stormGlassCard(cornerRadius: 12)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("family_where_phone")
                         }
 
                         // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
@@ -2611,6 +2630,10 @@ struct FamilyScreen: View {
         }
         .sheet(isPresented: $showLocationModal) {
             FamilyLocationModal(isPresented: $showLocationModal, isEnabled: $isLocationEnabled)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showWherePhone) {
+            WhereIsPhoneScreen(isPresented: $showWherePhone)
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showReportsModal) {

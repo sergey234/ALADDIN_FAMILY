@@ -3152,3 +3152,37 @@
 "store_review_signoff_line1" = "С уважением,";
 "store_review_signoff_line2" = "команда ALADDIN AI";
 "store_review_stars_a11y" = "Пять звёзд";
+
+/* Где телефон — три коротких блока, без живой карты */
+"where_phone_title" = "Где телефон";
+"where_phone_open" = "Где телефон";
+"where_phone_places_title" = "Места";
+"where_phone_places_empty" = "Добавить дом или школу";
+"where_phone_places_none" = "Пока нет сигнала";
+"where_phone_places_waiting" = "%@ · пока нет сигнала";
+"where_phone_share_no_gps" = "Нет точки GPS. В симуляторе: Features → Location.";
+"where_phone_share_denied" = "Место выключено в настройках iPhone.";
+"where_phone_event_line" = "%@ · %@ · %@";
+"where_phone_signal_arrived" = "пришёл · %@";
+"where_phone_signal_left" = "ушёл · %@";
+"where_phone_you" = "Вы";
+"where_phone_share_title" = "Одна точка";
+"where_phone_share_hint" = "Одна точка, не карта.";
+"where_phone_share_empty" = "Точки ещё нет";
+"where_phone_share_button" = "Отправить своё место";
+"where_phone_share_sending" = "Отправляем…";
+"where_phone_share_sent" = "Место отправлено";
+"where_phone_share_fail" = "Место не отправилось";
+"where_phone_person_time" = "%@ · %@";
+"where_phone_ago_now" = "Только что";
+"where_phone_ago_min" = "%d мин назад";
+"where_phone_ago_hour" = "%d ч назад";
+"where_phone_ago_day" = "%d дн назад";
+"where_phone_chat_line" = "Место: %@\n%@";
+"where_phone_lost_title" = "Телефон потерян";
+"where_phone_lost_note" = "Ищите его в Локаторе Apple.";
+"where_phone_lost_button" = "Открыть Локатор";
+"where_phone_lost_step1" = "Откройте «Локатор»";
+"where_phone_lost_step2" = "Вкладка «Устройства»";
+"where_phone_lost_step3" = "Выберите этот iPhone";
+"where_phone_lost_manual" = "Кнопка не открыла Локатор. Пройдите три шага выше.";

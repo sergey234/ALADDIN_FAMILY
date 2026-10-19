@@ -3863,15 +3863,30 @@ async def family_geofence_event(
 
     def run_sync():
         from app.services.geofence_family_notify import notify_parents_geofence_event
+        from app.services.family_where_phone_store import upsert_signal
 
+        display = (body.display_name or "").strip() or "Член семьи"
+        place = body.place_name.strip()
+        arrival = bool(body.is_arrival)
+        try:
+            upsert_signal(
+                user_id=user_id,
+                display_name=display,
+                place_name=place,
+                is_arrival=arrival,
+            )
+        except Exception as exc:
+            import logging
+
+            logging.getLogger(__name__).warning("where_phone signal store failed: %s", exc)
         return notify_parents_geofence_event(
             member_user_id=user_id,
-            display_name=(body.display_name or "").strip() or "Член семьи",
-            place_name=body.place_name.strip(),
-            is_arrival=bool(body.is_arrival),
+            display_name=display,
+            place_name=place,
+            is_arrival=arrival,
             region_id=(body.region_id or "").strip() or "unknown",
             event_type=(body.event_type or "").strip()
-            or ("geofence_place_arrival" if body.is_arrival else "geofence_place_departure"),
+            or ("geofence_place_arrival" if arrival else "geofence_place_departure"),
         )
 
     result = await asyncio.to_thread(run_sync)
@@ -3897,6 +3912,60 @@ async def family_presence(
         from app.services.family_presence_store import list_family_presence
 
         return list_family_presence(user_id=user_id)
+
+    return await asyncio.to_thread(load_sync)
+
+
+class FamilyWherePhonePointBody(BaseModel):
+    """One shared place point. The next point from the same person replaces this one."""
+
+    display_name: Optional[str] = Field(default=None, max_length=80)
+    map_url: str = Field(..., min_length=8, max_length=240)
+
+
+@router.post("/where-phone/point")
+@limiter.limit("30/hour")
+async def family_where_phone_point(
+    request: Request,
+    body: FamilyWherePhonePointBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """Save this person's one place point for the family. No track."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def run_sync():
+        from app.services.family_where_phone_store import upsert_point
+
+        return upsert_point(
+            user_id=user_id,
+            display_name=(body.display_name or "").strip(),
+            map_url=body.map_url.strip(),
+        )
+
+    result = await asyncio.to_thread(run_sync)
+    if not result.get("ok"):
+        err = result.get("error")
+        if err == "bad_map_url":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="bad_map_url")
+        if err in ("no_family", "no_member"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="family_membership_required")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err or "where_phone_point_failed"))
+    return {"ok": True, "member_id": result.get("member_id")}
+
+
+@router.get("/where-phone")
+@limiter.limit("60/minute")
+async def family_where_phone(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    """Last place signal and last shared point per person. A child sees only self."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_where_phone_store import list_where_phone
+
+        return list_where_phone(user_id=user_id)
 
     return await asyncio.to_thread(load_sync)
 

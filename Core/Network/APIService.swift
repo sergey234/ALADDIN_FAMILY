@@ -4886,6 +4886,53 @@ class APIService: ObservableObject {
         )
     }
 
+    /// Last place signal and last shared point for this family. One row per person.
+    func getFamilyWherePhone(
+        completion: @escaping (Result<WherePhoneFamilySnapshot, Error>) -> Void
+    ) {
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyWherePhone,
+            completion: { (result: Result<FamilyWherePhoneAPIResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    completion(.success(response.snapshot()))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        )
+    }
+
+    /// Save this person's one place point. The next point replaces it.
+    func postFamilyWherePhonePoint(
+        displayName: String,
+        mapURL: String,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let displayName: String
+            let mapURL: String
+            enum CodingKeys: String, CodingKey {
+                case displayName = "display_name"
+                case mapURL = "map_url"
+            }
+        }
+        struct Ack: Codable {
+            let ok: Bool
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyWherePhonePoint,
+            body: Body(displayName: displayName, mapURL: mapURL)
+        ) { (result: Result<Ack, Error>) in
+            switch result {
+            case .success(let ack):
+                completion(.success(ack.ok))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     func createWellnessHabit(
         ifThen: String,
         completion: @escaping (Result<WellnessHabitCreateResponse, Error>) -> Void
@@ -5150,18 +5197,40 @@ class APIService: ObservableObject {
     }
     
     // ✅ ИНТЕГРАЦИЯ: Отправить обновление местоположния (План 2026)
-    func reportLocation(latitude: Double, longitude: Double, speed: Double? = nil, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+    func reportLocation(latitude: Double, longitude: Double, speed: Double? = nil, completion: @escaping (Result<Bool, Error>) -> Void) {
         struct LocationReportRequest: Codable {
             let lat: Double
             let lon: Double
             let speed: Double?
         }
+        /// Live MAIN returns `{"status":"success","message":"Location reported"}`.
+        /// Older callers may still wrap the same ack as `{"success":true}`.
+        struct LocationReportAck: Decodable {
+            let status: String?
+            let success: Bool?
+            let message: String?
+
+            var accepted: Bool {
+                if success == true { return true }
+                return status?.lowercased() == "success"
+            }
+        }
         let request = LocationReportRequest(lat: latitude, lon: longitude, speed: speed)
         networkManager.post(
             endpoint: AppConfig.Endpoint.locationReport,
-            body: request,
-            completion: completion
-        )
+            body: request
+        ) { (result: Result<LocationReportAck, Error>) in
+            switch result {
+            case .success(let ack):
+                if ack.accepted {
+                    completion(.success(true))
+                } else {
+                    completion(.failure(NetworkError.businessLogicError(ack.message ?? "Location report was not accepted")))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
     // ✅ ИНТЕГРАЦИЯ: Получить конфигурацию DoH (План 2026)

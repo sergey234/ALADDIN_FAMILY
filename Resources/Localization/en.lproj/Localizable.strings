@@ -3241,3 +3241,37 @@
 "store_review_signoff_line1" = "Kind regards,";
 "store_review_signoff_line2" = "the ALADDIN AI team";
 "store_review_stars_a11y" = "Five stars";
+
+/* Where is the phone — three short blocks, no live map */
+"where_phone_title" = "Where is the phone";
+"where_phone_open" = "Where is the phone";
+"where_phone_places_title" = "Places";
+"where_phone_places_empty" = "Add home or school";
+"where_phone_places_none" = "No signal yet";
+"where_phone_places_waiting" = "%@ · no signal yet";
+"where_phone_share_no_gps" = "No GPS point. In Simulator: Features → Location.";
+"where_phone_share_denied" = "Location is off in iPhone Settings.";
+"where_phone_event_line" = "%@ · %@ · %@";
+"where_phone_signal_arrived" = "arrived · %@";
+"where_phone_signal_left" = "left · %@";
+"where_phone_you" = "You";
+"where_phone_share_title" = "One point";
+"where_phone_share_hint" = "One point, not a map.";
+"where_phone_share_empty" = "No point yet";
+"where_phone_share_button" = "Send my place";
+"where_phone_share_sending" = "Sending…";
+"where_phone_share_sent" = "Place sent";
+"where_phone_share_fail" = "Could not send the place";
+"where_phone_person_time" = "%@ · %@";
+"where_phone_ago_now" = "Just now";
+"where_phone_ago_min" = "%d min ago";
+"where_phone_ago_hour" = "%d h ago";
+"where_phone_ago_day" = "%d d ago";
+"where_phone_chat_line" = "Place: %@\n%@";
+"where_phone_lost_title" = "Phone is lost";
+"where_phone_lost_note" = "Look for it in Find My.";
+"where_phone_lost_button" = "Open Find My";
+"where_phone_lost_step1" = "Open Find My";
+"where_phone_lost_step2" = "Devices tab";
+"where_phone_lost_step3" = "Choose this iPhone";
+"where_phone_lost_manual" = "The button did not open Find My. Use the three steps above.";

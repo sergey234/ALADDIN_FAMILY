@@ -557,6 +557,7 @@
 		FCHLDT22F90000100C7D34B /* FamilyChildThreatCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */; };
 		FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */; };
 		FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL05112F90000100C7D34B /* GeofenceEventStore.swift */; };
+		WPHONE22F90000100C7D34B /* WhereIsPhoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WPHONE12F90000100C7D34B /* WhereIsPhoneScreen.swift */; };
 		UX36W502F90000100C7D34B /* GeofenceFamilyBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W501F90000100C7D34B /* GeofenceFamilyBridge.swift */; };
 		UX36W508F90000100C7D34B /* UX36W5GeoHybridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W507F90000100C7D34B /* UX36W5GeoHybridTests.swift */; };
 		FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL07112F90000100C7D34B /* FamilyDayStripView.swift */; };
@@ -965,6 +966,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
 		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
 		5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
+		WPHONE12F90000100C7D34B /* WhereIsPhoneScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhereIsPhoneScreen.swift; sourceTree = "<group>"; };
 		5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChildContentScreen.swift; sourceTree = "<group>"; };
 		5E0C30BB2EAFF09800FD6647 /* SecurityEducationScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityEducationScreen.swift; sourceTree = "<group>"; };
 		5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsTestSuiteView.swift; path = Screens/SettingsTestSuiteView.swift; sourceTree = "<group>"; };
@@ -1874,6 +1876,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				F12D4A8B90123456ABCD1022 /* ImplementationPlanWorkbenchCard.swift */,
 				F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */,
 				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
+				WPHONE12F90000100C7D34B /* WhereIsPhoneScreen.swift */,
 				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
 				5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */,
 				5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */,
@@ -3689,6 +3692,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5EC3091C2EA6B63F00C7D34B /* 23_FamilyChatScreen.swift in Sources */,
 				5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */,
 				5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */,
+				WPHONE22F90000100C7D34B /* WhereIsPhoneScreen.swift in Sources */,
 				5EC309192EA6B63400C7D34B /* 20_DevicesScreen.swift in Sources */,
 				5ED91A102FAA100100C7D34B /* 28_JoinDeviceScreen.swift in Sources */,
 				5ED91A122FAA100200C7D34B /* DevicePairingLinkParser.swift in Sources */,
