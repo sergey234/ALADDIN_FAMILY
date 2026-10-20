@@ -257,9 +257,6 @@ struct DeviceDetailScreen: View {
             loadDeviceSettings()
             loadDeviceSettingsFromServer()
             loadDeviceDetail()
-            if isThisHandset {
-                HandsetModelReporter.reportKnownDevice(device.id)
-            }
         }
     }
     
@@ -587,6 +584,11 @@ struct DeviceInfoView: View {
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityIdentifier("device_detail_screen_time_status")
+        .onAppear {
+            if isThisHandset {
+                HandsetModelReporter.reportKnownDevice(device.id)
+            }
+        }
     }
 
     /// Generic "iPhone" stored on the server is not a model. On this handset, show the marketing name.
