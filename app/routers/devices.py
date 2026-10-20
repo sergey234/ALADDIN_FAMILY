@@ -180,10 +180,11 @@ class AddDeviceBody(BaseModel):
 
 
 class DeviceSettingsUpdateBody(BaseModel):
-    """Тело iOS `DeviceSettingsRequest` (camelCase)."""
+    """iOS settings patch. Flags are optional so a model-only report does not flip them."""
 
-    isProtectionOn: bool
-    isScanningEnabled: bool
+    isProtectionOn: Optional[bool] = None
+    isScanningEnabled: Optional[bool] = None
+    model_name: Optional[str] = Field(None, alias="modelName", max_length=128)
 
     class Config:
         allow_population_by_field_name = True
@@ -463,6 +464,29 @@ def _api_response_bool(ok: bool, message: Optional[str] = None) -> Dict[str, Any
     }
 
 
+_GENERIC_DEVICE_MODELS = frozenset(
+    {
+        "",
+        "iphone",
+        "ipad",
+        "mac",
+        "android",
+        "phone",
+        "smartphone",
+        "tablet",
+        "ios",
+    }
+)
+
+
+def _specific_model_name(raw: Optional[str]) -> Optional[str]:
+    """A marketing name worth storing. Generic type labels are not."""
+    cleaned = (raw or "").strip()
+    if cleaned.lower() in _GENERIC_DEVICE_MODELS:
+        return None
+    return cleaned[:128]
+
+
 def _fetch_device_row(db: Session, uid: str, device_id: str) -> Optional[Dict[str, Any]]:
     _ensure_family_devices_table(db)
     row = db.execute(
@@ -470,7 +494,7 @@ def _fetch_device_row(db: Session, uid: str, device_id: str) -> Optional[Dict[st
             """
             SELECT id, name, owner_label AS owner, type, status, last_active,
                    pairing_token, short_pin,
-                   owner_member_id,
+                   owner_member_id, model_name,
                    is_protection_on, is_scanning_enabled
             FROM aladdin_family_devices
             WHERE id = :id AND user_id = :uid
@@ -518,30 +542,50 @@ def devices_update_settings(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Обновление флагов защиты/сканирования (iOS `APIService.updateDeviceSettings`)."""
+    """Flags and optional model. A specific model_name never replaces one already stored."""
     uid = _uid_str(current_user)
     if not uid:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
     try:
         _ensure_family_devices_table(db)
         now = _now_iso()
+        sets = ["last_active = :now"]
+        params: Dict[str, Any] = {
+            "id": device_id.strip(),
+            "uid": uid,
+            "now": now,
+        }
+        if body.isProtectionOn is not None:
+            sets.append("is_protection_on = :prot")
+            params["prot"] = body.isProtectionOn
+        if body.isScanningEnabled is not None:
+            sets.append("is_scanning_enabled = :scan")
+            params["scan"] = body.isScanningEnabled
+        specific = _specific_model_name(body.model_name)
+        if specific:
+            sets.append(
+                """
+                model_name = CASE
+                    WHEN model_name IS NULL
+                      OR btrim(model_name) = ''
+                      OR lower(btrim(model_name)) IN (
+                        'iphone','ipad','mac','android','phone','smartphone','tablet','ios'
+                      )
+                    THEN :model
+                    ELSE model_name
+                END
+                """
+            )
+            params["model"] = specific
         res = db.execute(
             text(
-                """
+                f"""
                 UPDATE aladdin_family_devices
-                SET is_protection_on = :prot,
-                    is_scanning_enabled = :scan,
-                    last_active = :now
+                SET {", ".join(sets)}
                 WHERE id = :id AND user_id = :uid
                 """
             ),
-            {
-                "id": device_id.strip(),
-                "uid": uid,
-                "now": now,
-                "prot": body.isProtectionOn,
-                "scan": body.isScanningEnabled,
-            },
+            params,
         )
         db.commit()
         if res.rowcount == 0:
@@ -696,5 +740,8 @@ def devices_get_one(
     }
     if omid:
         detail["ownerMemberId"] = omid
+    stored_model = (row.get("model_name") or "").strip()
+    if stored_model:
+        detail["modelName"] = stored_model
     return detail
 

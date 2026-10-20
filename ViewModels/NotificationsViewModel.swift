@@ -34,6 +34,8 @@ class NotificationsViewModel: ObservableObject {
 
     private let service: NotificationsService
     private let notificationManager = NotificationManager.shared
+    /// Ids and correlation ids hidden by the trash button. Server may still return them until archive succeeds.
+    private static let dismissedIdsKey = "notifications_dismissed_ids_v1"
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
@@ -216,9 +218,11 @@ class NotificationsViewModel: ObservableObject {
 
     @MainActor
     private func applyNotifications(_ newNotifications: [AppNotification], unread: Int) {
-        notifications = newNotifications.sorted { $0.timestamp > $1.timestamp }
-        unreadCount = unread
+        let visible = newNotifications.filter { !isDismissed($0) }
+        notifications = visible.sorted { $0.timestamp > $1.timestamp }
+        unreadCount = visible.filter { !$0.isRead }.count
         isLoading = false
+        _ = unread
     }
 
     /// int-4: после успешной синхронизации добавляем офлайн-события, если их `correlation_id` ещё нет в ответе API.
@@ -407,8 +411,36 @@ class NotificationsViewModel: ObservableObject {
     @MainActor
     func clearAll() {
         logger.business("Clearing all notifications (\(notifications.count) total)")
+        let keys = notifications.flatMap { [$0.id, $0.correlationId] }
+        rememberDismissed(keys)
+        let ids = notifications.map(\.id)
+        notificationManager.clearPersistedSecurityEvents()
         notifications.removeAll()
         updateUnreadCount()
+        for id in ids where !id.isEmpty {
+            APIService.shared.archiveNotification(notificationId: id) { _ in }
+        }
+    }
+
+    private func dismissedKeys() -> Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: Self.dismissedIdsKey) ?? [])
+    }
+
+    private func rememberDismissed(_ keys: [String]) {
+        var set = dismissedKeys()
+        for key in keys {
+            let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { set.insert(trimmed) }
+        }
+        let capped = Array(set.suffix(400))
+        UserDefaults.standard.set(capped, forKey: Self.dismissedIdsKey)
+    }
+
+    private func isDismissed(_ notification: AppNotification) -> Bool {
+        let set = dismissedKeys()
+        if set.contains(notification.id) { return true }
+        let correlation = notification.correlationId.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !correlation.isEmpty && set.contains(correlation)
     }
 
     private func updateUnreadCount() {

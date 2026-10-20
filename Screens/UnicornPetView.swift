@@ -18,6 +18,7 @@ struct UnicornPetView: View {
     @AppStorage("pet_energy") private var energy: Double = 0.8
     @AppStorage("pet_mood") private var mood: Double = 0.7
     @AppStorage("pet_evolution_stage") private var evolutionStage: String = "Teen"
+    @AppStorage("pet_last_tick") private var lastTick: Double = 0
     
     // ✅ ГЕЙМИФИКАЦИЯ: Баланс единорогов с синхронизацией
     @State private var unicornBalance: Int = 0
@@ -95,6 +96,7 @@ struct UnicornPetView: View {
         .navigationBarHidden(true)
         .task {
             print("🚨 UnicornPetView загружен!")
+            applyDecayIfNeeded()
             loadBalance()
         }
         .refreshable {
@@ -371,6 +373,9 @@ struct UnicornPetView: View {
                 unicornBalance = response.balance
                 cachedBalance = response.balance
                 hunger = min(1.0, hunger + 0.2)
+                mood = min(1.0, mood + 0.05)
+                noteCareTick()
+                maybeLevelUp()
                 HapticFeedback.impact(.medium)
             case .failure(let error):
                 balanceError = error.localizedDescription
@@ -397,6 +402,9 @@ struct UnicornPetView: View {
                 unicornBalance = response.balance
                 cachedBalance = response.balance
                 energy = min(1.0, energy + 0.15)
+                mood = min(1.0, mood + 0.1)
+                noteCareTick()
+                maybeLevelUp()
                 HapticFeedback.impact(.medium)
             case .failure(let error):
                 balanceError = error.localizedDescription
@@ -408,7 +416,51 @@ struct UnicornPetView: View {
     /// Погладить питомца (бесплатно)
     private func petPet() {
         love = min(1.0, love + 0.1)
+        mood = min(1.0, mood + 0.05)
+        noteCareTick()
+        maybeLevelUp()
         HapticFeedback.impact(.light)
+    }
+
+    /// Hunger and energy fall over time so the bars are not stuck at 100%.
+    private func applyDecayIfNeeded() {
+        let now = Date().timeIntervalSince1970
+        if lastTick <= 0 {
+            lastTick = now
+            return
+        }
+        let hours = min(48, (now - lastTick) / 3600)
+        guard hours >= 0.5 else { return }
+        hunger = max(0.15, hunger - 0.08 * hours)
+        energy = max(0.15, energy - 0.06 * hours)
+        love = max(0.2, love - 0.03 * hours)
+        mood = max(0.2, mood - 0.03 * hours)
+        lastTick = now
+    }
+
+    private func noteCareTick() {
+        lastTick = Date().timeIntervalSince1970
+    }
+
+    /// All four bars full → next level, bars drop so care matters again.
+    private func maybeLevelUp() {
+        guard love >= 0.99, hunger >= 0.99, energy >= 0.99, mood >= 0.99 else { return }
+        petLevel += 1
+        love = 0.4
+        hunger = 0.4
+        energy = 0.4
+        mood = 0.45
+        switch petLevel {
+        case 10...:
+            evolutionStage = "Legendary"
+        case 6...:
+            evolutionStage = "Adult"
+        case 3...:
+            evolutionStage = "Teen"
+        default:
+            evolutionStage = "Baby"
+        }
+        HapticFeedback.notification(.success)
     }
 }
 

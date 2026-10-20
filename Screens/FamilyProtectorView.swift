@@ -612,12 +612,20 @@ struct QuestDetailView: View {
     @State private var showExplanation = false
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                StormMeshBackground(variant: .family)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: Spacing.l) {
+        ZStack {
+            StormMeshBackground(variant: .family)
+                .ignoresSafeArea()
+            
+            VStack(spacing: Spacing.l) {
+                HStack {
+                    Spacer()
+                    Button(localizationManager.localized("family_protector_close")) {
+                        HapticFeedback.impact(.light)
+                        dismiss()
+                    }
+                    .foregroundColor(.textPrimary)
+                }
+                .padding(.horizontal, Spacing.screenPadding)
                     // Прогресс сценариев
                     if questType != .weeklyTest {
                         Text(String(format: localizationManager.localized("family_protector_scenario_progress"), currentScenario + 1, scenarios.count))
@@ -662,16 +670,6 @@ struct QuestDetailView: View {
                     Spacer()
                 }
                 .padding(.top, Spacing.l)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("family_protector_close")) {
-                        HapticFeedback.impact(.light)
-                        dismiss()
-                    }
-                }
-            }
         }
     }
     

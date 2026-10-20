@@ -3186,3 +3186,16 @@
 "where_phone_lost_step2" = "Вкладка «Устройства»";
 "where_phone_lost_step3" = "Выберите этот iPhone";
 "where_phone_lost_manual" = "Кнопка не открыла Локатор. Пройдите три шага выше.";
+"unicorn_balance_display" = "Единорогов: %d";
+"child_interface_time_enable" = "Включите экранное время";
+"child_interface_time_stale" = "Данные обновятся, когда телефон будет онлайн";
+"child_interface_time_minutes" = "%d мин";
+"child_did_it_title" = "Я сделал";
+"child_did_it_homework" = "Уроки";
+"child_did_it_chores" = "Уборка";
+"child_did_it_reading" = "Чтение";
+"child_did_it_grade" = "Оценка";
+"child_did_it_help" = "Помощь";
+"child_did_it_sent" = "Родителям отправлено";
+"system_filter_open_settings" = "Открыть настройки";
+"system_filter_safari_separate" = "Расширение Safari настраивается отдельно: Настройки → Safari → Расширения → ALADDIN.";

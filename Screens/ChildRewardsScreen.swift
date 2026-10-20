@@ -2015,6 +2015,7 @@ struct ChildRewardsScreen: View {
         HapticFeedback.notification(.success)
         print("✅ Вознаградили ребёнка: +\(amount) 🦄, причина: \(resolvedReason)")
         print("💰 Новый баланс: \(newBalance) 🦄")
+        publishFamilyReward(amount: amount, isReward: true, reason: resolvedReason)
     }
     
     /// Наказание ребёнка (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ!)
@@ -2051,6 +2052,39 @@ struct ChildRewardsScreen: View {
         HapticFeedback.notification(.error)
         print("✅ Наказали ребёнка: -\(amount) 🦄, причина: \(resolvedReason)")
         print("💰 Новый баланс: \(newBalance) 🦄")
+        publishFamilyReward(amount: amount, isReward: false, reason: resolvedReason)
+    }
+
+    /// Balance on the server plus one family-chat line. Local store stays the offline copy.
+    private func publishFamilyReward(amount: Int, isReward: Bool, reason: String) {
+        let childId = (rewardsScopeChildId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let targetId = childId.isEmpty ? userIdFallback : childId
+        let reasonText = reason.isEmpty ? (isReward ? "+" : "-") : reason
+        if isReward {
+            APIService.shared.addGamificationBalance(userId: targetId, amount: amount, reason: reasonText, deviceId: nil) { _ in }
+        } else {
+            APIService.shared.subtractGamificationBalance(userId: targetId, amount: amount, reason: reasonText, deviceId: nil) { _ in }
+        }
+        let sign = isReward ? "+" : "-"
+        let line = "\(sign)\(amount) 🦄 \(reasonText)"
+        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        APIService.shared.sendFamilyChatMessage(
+            message: line,
+            familyId: familyId,
+            messageType: "text",
+            voiceUrl: nil,
+            voiceDuration: nil,
+            mediaUrl: nil,
+            mediaType: nil,
+            replyToMessageId: nil
+        ) { _ in }
+    }
+
+    private var userIdFallback: String {
+        let stored = (UserDefaults.standard.string(forKey: "user_id") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !stored.isEmpty { return stored }
+        return UserDefaults.standard.string(forKey: "your_member_id") ?? "guest"
     }
     
     // MARK: - History Management
@@ -2078,25 +2112,7 @@ struct ChildRewardsScreen: View {
             print("⚠️ Пустой запрос не будет отправлен")
             return
         }
-
-        var requests: [[String: Any]] = []
-        if let stored = UserDefaults.standard.data(forKey: "child_achievement_requests"),
-           let decoded = try? JSONSerialization.jsonObject(with: stored) as? [[String: Any]] {
-            requests = decoded
-        }
-
-        let request: [String: Any] = [
-            "id": UUID().uuidString,
-            "achievement": achievement,
-            "date": ISO8601DateFormatter().string(from: Date())
-        ]
-        requests.append(request)
-
-        if let encoded = try? JSONSerialization.data(withJSONObject: requests) {
-            UserDefaults.standard.set(encoded, forKey: "child_achievement_requests")
-            print("📣 Отправлен запрос родителям: \(achievement)")
-            print("📊 Всего запросов: \(requests.count)")
-        }
+        ChildDidItStore.submit(title: achievement, localization: localizationManager)
     }
 }
 

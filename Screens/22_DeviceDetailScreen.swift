@@ -257,6 +257,9 @@ struct DeviceDetailScreen: View {
             loadDeviceSettings()
             loadDeviceSettingsFromServer()
             loadDeviceDetail()
+            if isThisHandset {
+                HandsetModelReporter.reportKnownDevice(device.id)
+            }
         }
     }
     
@@ -562,7 +565,7 @@ struct DeviceInfoView: View {
             InfoRow(
                 icon: "phone.fill",
                 title: localizationManager.localized("device_detail_info_model"),
-                value: DeviceDisplayNameResolver.displayTitle(device: device, detail: deviceDetail),
+                value: modelLine,
                 color: .secondaryGold
             )
             // ✅ ИСПРАВЛЕНО: Используем реальные данные из API вместо hardcoded значений
@@ -584,6 +587,52 @@ struct DeviceInfoView: View {
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityIdentifier("device_detail_screen_time_status")
+    }
+
+    /// Generic "iPhone" stored on the server is not a model. On this handset, show the marketing name.
+    private var modelLine: String {
+        let typeRaw = deviceDetail?.type ?? device.type.rawValue
+        let generic = DeviceMarketingName.genericDisplayName(for: typeRaw)
+        let stored = (deviceDetail?.modelName ?? device.modelName ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let storedIsGeneric = stored.isEmpty
+            || stored.caseInsensitiveCompare(generic) == .orderedSame
+            || stored.caseInsensitiveCompare("iPhone") == .orderedSame
+            || stored.caseInsensitiveCompare("iPad") == .orderedSame
+        let idiomMatches: Bool = {
+            switch UIDevice.current.userInterfaceIdiom {
+            case .phone: return generic == "iPhone"
+            case .pad: return generic == "iPad"
+            default: return false
+            }
+        }()
+        let hardware = DeviceMarketingName.displayName()
+        if storedIsGeneric && idiomMatches && isThisHandset {
+            if hardware.caseInsensitiveCompare(generic) != .orderedSame {
+                return hardware
+            }
+        }
+        return DeviceDisplayNameResolver.displayTitle(device: device, detail: deviceDetail)
+    }
+
+    private var isThisHandset: Bool {
+        if let current = DeviceMarketingName.currentDeviceIdentifier,
+           device.id.caseInsensitiveCompare(current) == .orderedSame {
+            return true
+        }
+        let remembered = UserDefaults.standard.string(forKey: "aladdin_handset_server_device_id") ?? ""
+        if !remembered.isEmpty, device.id == remembered {
+            return true
+        }
+        let me = (UserDefaults.standard.string(forKey: "current_user_name") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let owner = (deviceDetail?.owner ?? device.owner)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !me.isEmpty, owner.caseInsensitiveCompare(me) == .orderedSame {
+            UserDefaults.standard.set(device.id, forKey: "aladdin_handset_server_device_id")
+            return true
+        }
+        return false
     }
 
 }

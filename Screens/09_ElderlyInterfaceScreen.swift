@@ -191,10 +191,16 @@ struct ElderlyInterfaceScreen: View {
                 .environmentObject(localizationManager)
         }
         .alert(localizationManager.localized("elderly_interface_call_children_question"), isPresented: $showCallChildrenAlert) {
-            // Use role-safe filtering instead of localized string matching.
-            ForEach(emergencyContacts) { member in
-                Button("\(FamilyMemberDisplayNameFormatter.displayName(storedName: member.name, role: member.rawRole, localization: localizationManager)) (\(member.role))") {
-                    callFamilyMember(member.name, member.phone)
+            let callable = emergencyContacts.filter { !$0.phone.isEmpty }
+            if callable.isEmpty {
+                Button(localizationManager.localized("elderly_settings_add_phone")) {
+                    showElderlySettings = true
+                }
+            } else {
+                ForEach(callable) { member in
+                    Button("\(FamilyMemberDisplayNameFormatter.displayName(storedName: member.name, role: member.rawRole, localization: localizationManager)) (\(member.role))") {
+                        callFamilyMember(member.name, member.phone)
+                    }
                 }
             }
             Button(localizationManager.localized("elderly_interface_cancel"), role: .cancel) { }
@@ -1087,11 +1093,16 @@ struct ElderlyInterfaceScreen: View {
     }
     
     private func callFamilyMember(_ name: String, _ phone: String) {
-        // ✅ РЕАЛЬНЫЙ ЗВОНОК: Открываем приложение телефона
+        let trimmed = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !Self.isPlaceholderPhone(trimmed) else {
+            criticalActionStatusMessage = localizationManager.localized("elderly_settings_add_phone")
+            showElderlySettings = true
+            return
+        }
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
         
-        if let url = URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "(", with: "").replacingOccurrences(of: ")", with: ""))"),
+        if let url = URL(string: "tel://\(trimmed.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "(", with: "").replacingOccurrences(of: ")", with: ""))"),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
             criticalActionStatusMessage = "\(localizationManager.localized("elderly_interface_quick_call")): \(name)"
@@ -1153,11 +1164,36 @@ struct ElderlyInterfaceScreen: View {
         }
     }
 
-    private func placeholderPhone(for member: FamilyMemberData) -> String {
-        let source = (member.serverMemberId ?? member.id)
-        let digits = source.filter(\.isNumber)
-        let tail = String(digits.suffix(2)).padding(toLength: 2, withPad: "0", startingAt: 0)
-        return "+7 (999) 000-00-\(tail)"
+    /// Saved family book only. Never invent +7 999 000-00-xx from a member id.
+    private func dialablePhone(for member: FamilyMemberData) -> String {
+        let directory = UnifiedFamilyRoster.phoneDirectory()
+        let keys = [member.canonicalId, member.id, member.serverMemberId ?? ""]
+        for key in keys {
+            let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, let raw = directory[trimmed] else { continue }
+            let phone = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !phone.isEmpty && !Self.isPlaceholderPhone(phone) {
+                return phone
+            }
+        }
+        if let saved = UserDefaults.standard.data(forKey: "elderly_family_contacts_list"),
+           let contacts = try? JSONDecoder().decode([FamilyContact].self, from: saved) {
+            let name = member.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let match = contacts.first(where: {
+                $0.name.trimmingCharacters(in: .whitespacesAndNewlines).caseInsensitiveCompare(name) == .orderedSame
+            }) {
+                let phone = match.phone.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !phone.isEmpty && !Self.isPlaceholderPhone(phone) {
+                    return phone
+                }
+            }
+        }
+        return ""
+    }
+
+    private static func isPlaceholderPhone(_ phone: String) -> Bool {
+        let digits = phone.filter(\.isNumber)
+        return digits.hasPrefix("799900000")
     }
     
     // MARK: - Profile Image Management
@@ -1213,7 +1249,7 @@ struct ElderlyInterfaceScreen: View {
                 rawRole: member.role,
                 status: status,
                 avatar: member.avatar,
-                phone: placeholderPhone(for: member)
+                phone: dialablePhone(for: member)
             )
         }
         
@@ -1637,6 +1673,7 @@ struct ElderlySettingsModal: View {
         }
         .sheet(isPresented: $showEditContactsModal) {
             EditContactsModal(isPresented: $showEditContactsModal)
+                .preferredColorScheme(.dark)
                 .environmentObject(localizationManager)
         }
     }
@@ -1760,7 +1797,7 @@ struct EditContactsModal: View {
             VStack(spacing: Spacing.l) {
                 Text(localizationManager.localized("elderly_settings_edit_contacts_title"))
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white)
 
                 if !canEditContacts {
                     Text(localizationManager.localized("elderly_contacts_edit_permission_notice"))
@@ -1777,7 +1814,7 @@ struct EditContactsModal: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(familyContacts[index].name)
                                         .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(.white)
                                     
                                     Text(familyContacts[index].phone)
                                         .font(.system(size: 16))
@@ -1826,7 +1863,10 @@ struct EditContactsModal: View {
                 Spacer()
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(red: 0.04, green: 0.07, blue: 0.16).ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
+            .preferredColorScheme(.dark)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("elderly_settings_edit_contacts_cancel")) {

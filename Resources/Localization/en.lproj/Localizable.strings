@@ -3275,3 +3275,16 @@
 "where_phone_lost_step2" = "Devices tab";
 "where_phone_lost_step3" = "Choose this iPhone";
 "where_phone_lost_manual" = "The button did not open Find My. Use the three steps above.";
+"unicorn_balance_display" = "Unicorns: %d";
+"child_interface_time_enable" = "Turn on Screen Time";
+"child_interface_time_stale" = "Numbers update when this phone is online";
+"child_interface_time_minutes" = "%d min";
+"child_did_it_title" = "I did it";
+"child_did_it_homework" = "Lessons";
+"child_did_it_chores" = "Tidy up";
+"child_did_it_reading" = "Reading";
+"child_did_it_grade" = "Grade";
+"child_did_it_help" = "Helped";
+"child_did_it_sent" = "Sent to parents";
+"system_filter_open_settings" = "Open Settings";
+"system_filter_safari_separate" = "The Safari extension is separate: Settings → Safari → Extensions → ALADDIN.";

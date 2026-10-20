@@ -3166,6 +3166,31 @@ class APIService: ObservableObject {
         }
     }
 
+    /// One field only. Server writes it when the stored model is empty or a generic type label.
+    func reportHandsetModel(
+        deviceId: String,
+        modelName: String,
+        completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void
+    ) {
+        struct HandsetModelRequest: Codable {
+            let modelName: String
+        }
+        let request = HandsetModelRequest(modelName: modelName)
+        let path = "\(AppConfig.Endpoint.deviceSettings)/\(deviceId)/settings"
+        networkManager.patch(endpoint: path, body: request) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let ok):
+                completion(.success(ok))
+            case .failure(let err):
+                if Self.isHttpMethodNotAllowed(err) {
+                    self.networkManager.put(endpoint: path, body: request, completion: completion)
+                } else {
+                    completion(.failure(err))
+                }
+            }
+        }
+    }
+
     private static func isHttpMethodNotAllowed(_ error: Error) -> Bool {
         if let ne = error as? NetworkError {
             if case .httpError(let code) = ne { return code == 405 }

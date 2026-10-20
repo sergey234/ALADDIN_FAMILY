@@ -449,6 +449,7 @@ struct DevicesScreen: View {
                     var seen = Set<String>()
                     devices = mapped.filter { seen.insert($0.id).inserted }
                     errorMessage = nil
+                    reportHandsetModelIfNeeded(devices)
                 case .failure(let error):
                     devices = []
                     errorMessage = devicesLoadUserMessage(error)
@@ -469,6 +470,7 @@ struct DevicesScreen: View {
                         var seen = Set<String>()
                         devices = mapped.filter { seen.insert($0.id).inserted }
                         errorMessage = nil
+                        reportHandsetModelIfNeeded(devices)
                     case .failure(let error):
                         devices = []
                         errorMessage = devicesLoadUserMessage(error)
@@ -521,6 +523,19 @@ struct DevicesScreen: View {
             type: deviceType,
             status: deviceStatus,
             lastActive: response.lastActive
+        )
+    }
+
+    private func reportHandsetModelIfNeeded(_ devices: [Device]) {
+        HandsetModelReporter.reportFromList(
+            devices.map {
+                HandsetModelReporter.Candidate(
+                    id: $0.id,
+                    owner: $0.owner,
+                    typeRaw: $0.type.rawValue,
+                    modelName: $0.modelName
+                )
+            }
         )
     }
 

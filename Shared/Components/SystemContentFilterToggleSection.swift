@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// WAVE3 — toggle for NE Content Filter, placed next to Safari Content Blocker UX.
 struct SystemContentFilterToggleSection: View {
@@ -46,6 +47,20 @@ struct SystemContentFilterToggleSection: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityIdentifier("system_content_filter_status")
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Text(localizationManager.localized("system_filter_open_settings"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                    .buttonStyle(.plain)
+                    Text(localizationManager.localized("system_filter_safari_separate"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(compact ? Spacing.s : Spacing.m)

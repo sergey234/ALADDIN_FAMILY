@@ -116,6 +116,8 @@ struct ChildInterfaceScreen: View {
                         // НОВОЕ: Возрастные табы
                         ageTabs
 
+                        didItRow
+
                         memoryAcademyHomeCard
                         
                         // 🦄 Мои единороги
@@ -661,7 +663,8 @@ struct ChildInterfaceScreen: View {
     // MARK: - Screen Time Card
     
     private var screenTimeCard: some View {
-        VStack(spacing: 12) {
+        let snapshot = childScreenTimeSnapshot
+        return VStack(spacing: 12) {
             Text("⏰")
                 .font(.system(size: 48))
             
@@ -669,11 +672,11 @@ struct ChildInterfaceScreen: View {
                 .font(.title2)
                 .foregroundColor(.white)
             
-            Text(localizationManager.localized("child_interface_time_minutes", 45))
-                .font(.system(size: 40, weight: .bold))
+            Text(snapshot.value)
+                .font(snapshot.usesLargeNumber ? .system(size: 40, weight: .bold) : .title3.weight(.semibold))
                 .foregroundColor(.green)
+                .multilineTextAlignment(.center)
             
-            // Прогресс бар
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 8)
@@ -682,7 +685,7 @@ struct ChildInterfaceScreen: View {
                     
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.green)
-                        .frame(width: geometry.size.width * 0.25, height: 12)
+                        .frame(width: geometry.size.width * snapshot.progress, height: 12)
                 }
             }
             .frame(height: 12)
@@ -690,6 +693,81 @@ struct ChildInterfaceScreen: View {
         .padding(16)
         .stormGlassCard(cornerRadius: 12)
         .padding(.horizontal, 20)
+    }
+
+    private var childScreenTimeSnapshot: (value: String, progress: Double, usesLargeNumber: Bool) {
+        guard let snap = ScreenTimeUsageStore.load() else {
+            return (localizationManager.localized("child_interface_time_enable"), 0, false)
+        }
+        if snap.isStale || !snap.isTodayInStoredTimezone {
+            return (localizationManager.localized("child_interface_time_stale"), 0, false)
+        }
+        let usedMinutes = max(0, snap.totalSeconds / 60)
+        let limitStored = UserDefaults.standard.string(forKey: "parental_screen_time_limit") ?? "3h/day"
+        let limitMinutes = Self.limitMinutes(from: limitStored)
+        guard limitMinutes > 0 else {
+            let usedLabel = ParentalScreenTimeFormat.formatMinutes(usedMinutes, localization: localizationManager)
+            return (usedLabel, 0, true)
+        }
+        let left = max(0, limitMinutes - usedMinutes)
+        let progress = min(1, max(0, Double(left) / Double(limitMinutes)))
+        let leftLabel = ParentalScreenTimeFormat.formatMinutes(left, localization: localizationManager)
+        return (leftLabel, progress, true)
+    }
+
+    private static func limitMinutes(from stored: String) -> Int {
+        let lower = stored.lowercased()
+        if let range = lower.range(of: #"(\d+)\s*h"#, options: .regularExpression) {
+            let hours = Int(lower[range].filter(\.isNumber)) ?? 0
+            if hours > 0 { return hours * 60 }
+        }
+        if let hours = Int(stored.trimmingCharacters(in: .whitespacesAndNewlines)), hours > 0, hours <= 24 {
+            return hours * 60
+        }
+        return 0
+    }
+
+    private var didItRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_did_it_title"))
+                .font(selectedAge == .kids ? .title3.weight(.bold) : .headline)
+                .foregroundColor(.white)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    didItChip("📚", "child_did_it_homework")
+                    didItChip("🧹", "child_did_it_chores")
+                    didItChip("📖", "child_did_it_reading")
+                    didItChip("🏆", "child_did_it_grade")
+                    didItChip("🤝", "child_did_it_help")
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .accessibilityIdentifier("child_did_it_row")
+    }
+
+    private func didItChip(_ emoji: String, _ key: String) -> some View {
+        Button {
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+            ChildDidItStore.submit(
+                title: localizationManager.localized(key),
+                localization: localizationManager
+            )
+        } label: {
+            HStack(spacing: 6) {
+                Text(emoji)
+                Text(localizationManager.localized(key))
+                    .font(selectedAge == .kids ? .body.weight(.semibold) : .caption.weight(.semibold))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, selectedAge == .kids ? 12 : 8)
+            .background(Color.white.opacity(0.14))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(key)
     }
 
     // MARK: - Mnemo Academy labels
@@ -1413,6 +1491,40 @@ struct ChildEditContactModal: View {
     }
 }
 
+
+enum ChildDidItStore {
+    static func submit(title: String, localization: LocalizationManager) {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        var requests: [[String: Any]] = []
+        if let stored = UserDefaults.standard.data(forKey: "child_achievement_requests"),
+           let decoded = try? JSONSerialization.jsonObject(with: stored) as? [[String: Any]] {
+            requests = decoded
+        }
+        requests.append([
+            "id": UUID().uuidString,
+            "achievement": trimmed,
+            "date": ISO8601DateFormatter().string(from: Date())
+        ])
+        if let encoded = try? JSONSerialization.data(withJSONObject: requests) {
+            UserDefaults.standard.set(encoded, forKey: "child_achievement_requests")
+        }
+
+        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        let chatLine = "\(trimmed). \(localization.localized("child_did_it_sent"))"
+        APIService.shared.sendFamilyChatMessage(
+            message: chatLine,
+            familyId: familyId,
+            messageType: "text",
+            voiceUrl: nil,
+            voiceDuration: nil,
+            mediaUrl: nil,
+            mediaType: nil,
+            replyToMessageId: nil
+        ) { _ in }
+    }
+}
 
 #if DEBUG
 struct ChildInterfaceScreen_Previews: PreviewProvider {

@@ -51,9 +51,8 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
 
             // Important: after Phone.app, we often only see the end event in-process.
             // `hasConnected` stays true on a connected call even when `hasEnded` is true.
-            let wasTracked = activeConnectedCalls.remove(call.uuid) != nil
-            let connected = call.hasConnected || wasTracked
-            guard connected else { return }
+            _ = activeConnectedCalls.remove(call.uuid)
+            // End is enough. Phone.app often wakes us with only hasEnded, without a prior connected event.
             guard !handledEndedCalls.contains(call.uuid) else { return }
             handledEndedCalls.insert(call.uuid)
             if handledEndedCalls.count > 40 {

@@ -59,6 +59,14 @@ enum DeviceMarketingName {
 
     // Keep table small; unknown codes fall back to idiom label.
     private static let table: [String: String] = [
+        "iPhone12,1": "iPhone 11",
+        "iPhone12,3": "iPhone 11 Pro",
+        "iPhone12,5": "iPhone 11 Pro Max",
+        "iPhone12,8": "iPhone SE (2nd)",
+        "iPhone13,1": "iPhone 12 mini",
+        "iPhone13,2": "iPhone 12",
+        "iPhone13,3": "iPhone 12 Pro",
+        "iPhone13,4": "iPhone 12 Pro Max",
         "iPhone14,2": "iPhone 13 Pro",
         "iPhone14,3": "iPhone 13 Pro Max",
         "iPhone14,4": "iPhone 13 mini",
@@ -149,5 +157,81 @@ enum DeviceDisplayNameResolver {
             || lower.contains("ребен")
             || lower.contains("ребён")
             || lower.contains("люд")
+    }
+}
+
+/// Sends this handset's marketing name once. The server keeps a specific name if one is already stored.
+enum HandsetModelReporter {
+    static let handsetIdKey = "aladdin_handset_server_device_id"
+    private static let lock = NSLock()
+    private static var inFlight = Set<String>()
+
+    struct Candidate {
+        let id: String
+        let owner: String
+        let typeRaw: String
+        let modelName: String?
+    }
+
+    static func reportFromList(_ devices: [Candidate]) {
+        let hardware = DeviceMarketingName.displayName()
+        guard isSpecific(hardware) else { return }
+        guard let deviceId = resolveId(devices: devices) else { return }
+        send(deviceId: deviceId, hardware: hardware)
+    }
+
+    static func reportKnownDevice(_ deviceId: String) {
+        let hardware = DeviceMarketingName.displayName()
+        guard isSpecific(hardware) else { return }
+        let trimmed = deviceId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        send(deviceId: trimmed, hardware: hardware)
+    }
+
+    private static func send(deviceId: String, hardware: String) {
+        let sentKey = "aladdin_handset_model_sent_v1_\(deviceId)"
+        if UserDefaults.standard.string(forKey: sentKey) == hardware { return }
+        lock.lock()
+        if inFlight.contains(deviceId) {
+            lock.unlock()
+            return
+        }
+        inFlight.insert(deviceId)
+        lock.unlock()
+        Task { @MainActor in
+            APIService.shared.reportHandsetModel(deviceId: deviceId, modelName: hardware) { result in
+                lock.lock()
+                inFlight.remove(deviceId)
+                lock.unlock()
+                if case .success(let response) = result, response.success {
+                    UserDefaults.standard.set(hardware, forKey: sentKey)
+                    UserDefaults.standard.set(deviceId, forKey: handsetIdKey)
+                }
+            }
+        }
+    }
+
+    private static func resolveId(devices: [Candidate]) -> String? {
+        let remembered = UserDefaults.standard.string(forKey: handsetIdKey) ?? ""
+        if !remembered.isEmpty, devices.contains(where: { $0.id == remembered }) {
+            return remembered
+        }
+        let me = (UserDefaults.standard.string(forKey: "current_user_name") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !me.isEmpty else { return nil }
+        let idiom: String = UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone"
+        let matches = devices.filter { device in
+            device.owner.trimmingCharacters(in: .whitespacesAndNewlines).caseInsensitiveCompare(me) == .orderedSame
+                && device.typeRaw.caseInsensitiveCompare(idiom) == .orderedSame
+                && !isSpecific(device.modelName ?? "")
+        }
+        guard matches.count == 1, let only = matches.first else { return nil }
+        return only.id
+    }
+
+    private static func isSpecific(_ raw: String) -> Bool {
+        let cleaned = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if cleaned.isEmpty { return false }
+        return !["iphone", "ipad", "mac", "android", "phone", "smartphone", "tablet", "ios"].contains(cleaned)
     }
 }

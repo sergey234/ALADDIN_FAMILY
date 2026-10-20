@@ -2602,8 +2602,6 @@ struct FamilyScreen: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(localizationManager.localized("family_content_accessibility"))
-                
-                Spacer()
             }
             // ✅ ИСПРАВЛЕНИЕ: Убираем последний Spacer, который может перекрывать карточки
             // Spacer()  // ЗАКОММЕНТИРОВАНО
@@ -3282,18 +3280,16 @@ extension FamilyScreen {
                 )
                 .environmentObject(localizationManager)
                 
-                if !AppStoreBuildPolicy.isAppStoreBuild {
+                if AppStoreBuildPolicy.allowsSmartDNS {
                     FamilyParentalControlCard(
                         icon: "🚨",
                         title: localizationManager.localized("parental_bypass_protection"),
                         statusBadge: bypassAttemptsToday > 0
                             ? "🚨 \(bypassAttemptsToday)"
-                            : (DNSProtectionManager.shared.isEnabled
+                            : (DNSProtectionManager.shared.runtimeState == .active
                                 ? localizationManager.localized("parental_dns_secure")
                                 : localizationManager.localized("parental_dns_off")),
-                        statusText: DNSProtectionManager.shared.isEnabled
-                            ? localizationManager.localized("parental_dns_status_active")
-                            : localizationManager.localized("parental_dns_status_inactive"),
+                        statusText: localizationManager.localized(DNSProtectionManager.shared.runtimeState.localizationKey),
                         metric: "\(bypassDetectionActive)/3 \(localizationManager.localized("parental_detection_active"))",
                         cardColor: Color.warningOrange.opacity(0.2),
                         borderColor: Color.warningOrange.opacity(0.4),
@@ -3472,7 +3468,7 @@ struct FamilyParentalControlCard: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
-                    .frame(height: 32)
+                    .frame(minHeight: 32)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 // Статус
@@ -3538,7 +3534,7 @@ struct FamilyParentalControlCard: View {
             }
             .frame(height: 24)
         }
-        .frame(height: 190)
+        .frame(minHeight: 190)
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 8)
         .padding(.vertical, 10)
@@ -10348,9 +10344,7 @@ struct FamilyBypassProtectionModal: View {
                     FamilyContentBlockItem(
                         icon: "🌐",
                         title: localizationManager.localized("bypass_smart_dns_title"),
-                        description: dnsProtectionManager.isEnabled
-                            ? localizationManager.localized("parental_dns_status_active")
-                            : localizationManager.localized("bypass_smart_dns_desc"),
+                        description: localizationManager.localized(dnsProtectionManager.runtimeState.localizationKey),
                         isEnabled: Binding(
                             get: { dnsProtectionManager.isEnabled },
                             set: { newValue in
@@ -10362,6 +10356,18 @@ struct FamilyBypassProtectionModal: View {
                             }
                         )
                     )
+
+                    if dnsProtectionManager.runtimeState == .inactive {
+                        Text(localizationManager.localized("bypass_smart_dns_desc"))
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.68))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, Spacing.m)
+                    }
+
+                    if shouldShowSmartDNSSettingsGuide {
+                        smartDNSSettingsGuide
+                    }
 
                     if !dnsProtectionManager.isEnabled,
                        let errRaw = dnsProtectionManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -10500,6 +10506,49 @@ struct FamilyBypassProtectionModal: View {
             applyBypassProtection()
         }
         .withVisualLogger()
+    }
+
+    private var shouldShowSmartDNSSettingsGuide: Bool {
+        dnsProtectionManager.runtimeState == .needsSystemEnable
+            || dnsProtectionManager.runtimeState == .simulatorPreview
+    }
+
+    @ViewBuilder
+    private var smartDNSSettingsGuide: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("bypass_smart_dns_guide_title"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.secondaryGold)
+            Text(localizationManager.localized("bypass_smart_dns_guide_step_1"))
+            Text(localizationManager.localized("bypass_smart_dns_guide_step_2"))
+            Text(localizationManager.localized("bypass_smart_dns_guide_step_3"))
+            Text(localizationManager.localized("bypass_smart_dns_guide_limit"))
+                .foregroundColor(.white.opacity(0.58))
+
+            Button {
+                openSmartDNSSettings()
+            } label: {
+                Label(
+                    localizationManager.localized("bypass_smart_dns_open_settings"),
+                    systemImage: "gearshape.fill"
+                )
+                .font(.caption.weight(.semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.secondaryGold)
+            .accessibilityIdentifier("smart_dns_open_settings")
+        }
+        .font(.caption2)
+        .foregroundColor(.white.opacity(0.76))
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Spacing.m)
+        .accessibilityIdentifier("smart_dns_settings_guide")
+    }
+
+    private func openSmartDNSSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
     }
     
     private func loadBypassStatistics() {
