@@ -1513,16 +1513,18 @@ enum ChildDidItStore {
 
         let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
         let chatLine = "\(trimmed). \(localization.localized("child_did_it_sent"))"
-        APIService.shared.sendFamilyChatMessage(
-            message: chatLine,
-            familyId: familyId,
-            messageType: "text",
-            voiceUrl: nil,
-            voiceDuration: nil,
-            mediaUrl: nil,
-            mediaType: nil,
-            replyToMessageId: nil
-        ) { _ in }
+        Task { @MainActor in
+            APIService.shared.sendFamilyChatMessage(
+                message: chatLine,
+                familyId: familyId,
+                messageType: "text",
+                voiceUrl: nil,
+                voiceDuration: nil,
+                mediaUrl: nil,
+                mediaType: nil,
+                replyToMessageId: nil
+            ) { _ in }
+        }
     }
 }
 
