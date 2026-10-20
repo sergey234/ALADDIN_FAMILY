@@ -259,6 +259,8 @@ struct FamilyHabitRemindersSection: View {
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("family_habit_delivery_line")
 
+        deliveryStatusBlock
+
         if receivesReminders {
             ForEach(FamilyHabitPresetId.allCases) { preset in
                 if service.config.schedule(for: preset).enabled || draft.schedule(for: preset).enabled {
@@ -318,6 +320,52 @@ struct FamilyHabitRemindersSection: View {
         .foregroundColor(.secondaryGold)
         .disabled(isSaving)
         .accessibilityIdentifier("family_habit_save_button")
+    }
+
+    @ViewBuilder
+    private var deliveryStatusBlock: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            statusLine(
+                systemImage: service.isConfiguredOnServer ? "checkmark.icloud.fill" : "icloud.and.arrow.up",
+                textKey: service.isConfiguredOnServer
+                    ? "family_habit_status_server_saved"
+                    : "family_habit_status_server_pending"
+            )
+            statusLine(
+                systemImage: notificationDenied ? "bell.slash.fill" : "bell.badge.fill",
+                textKey: notificationDenied
+                    ? "family_habit_status_push_denied"
+                    : (remindOnThisDevice ? "family_habit_status_push_on" : "family_habit_status_push_off"),
+                isWarning: notificationDenied
+            )
+            statusLine(
+                systemImage: syncAppleCalendar ? "calendar.badge.checkmark" : "calendar",
+                textKey: syncAppleCalendar
+                    ? "family_habit_status_calendar_on"
+                    : "family_habit_status_calendar_off"
+            )
+            statusLine(
+                systemImage: WellnessSessionStore.hasAcceptedConsent ? "heart.text.square.fill" : "heart.text.square",
+                textKey: WellnessSessionStore.hasAcceptedConsent
+                    ? "family_habit_status_wellness_ready"
+                    : "family_habit_status_wellness_consent"
+            )
+        }
+        .padding(.vertical, 6)
+        .accessibilityIdentifier("family_habit_delivery_status_block")
+    }
+
+    private func statusLine(systemImage: String, textKey: String, isWarning: Bool = false) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: systemImage)
+                .font(.caption2.weight(.semibold))
+                .foregroundColor(isWarning ? .warningOrange : .secondaryGold)
+                .frame(width: 16)
+            Text(localizationManager.localized(textKey))
+                .font(.caption2)
+                .foregroundColor(isWarning ? .warningOrange : .white.opacity(0.68))
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     @ViewBuilder
@@ -836,6 +884,18 @@ struct FamilyHabitRemindersSection: View {
             queueMessage = localizationManager.localized("wellness_sync_need_retry")
         } else if outcome.needsManualRetry {
             queueMessage = localizationManager.localized("wellness_sync_need_retry")
+        }
+        switch outcome.wellnessMirrorStatus {
+        case .skippedConsentRequired:
+            queueMessage = localizationManager.localized("family_habit_wellness_optional_consent")
+        case .failedOptional:
+            queueMessage = localizationManager.localized("family_habit_wellness_optional_failed")
+        case .synced:
+            if queueMessage == nil {
+                queueMessage = localizationManager.localized("family_habit_wellness_optional_synced")
+            }
+        case .notNeeded:
+            break
         }
         if outcome.needsManualRetry {
             HapticFeedback.notification(.warning)

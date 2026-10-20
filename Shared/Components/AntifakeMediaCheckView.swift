@@ -309,15 +309,21 @@ struct AntifakeMediaCheckView: View {
                 Text(localizationManager.localized("antifake_contact_caller_label"))
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.white.opacity(0.9))
-                TextField(
-                    localizationManager.localized("antifake_call_caller_id_placeholder"),
-                    text: $viewModel.callerId
-                )
+                TextField(text: $viewModel.callerId) {
+                    Text(localizationManager.localized("antifake_call_caller_id_placeholder"))
+                        .foregroundColor(.white.opacity(0.52))
+                }
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.phonePad)
+                .foregroundColor(.white)
+                .tint(.secondaryGold)
                 .padding(Spacing.m)
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                )
                 .accessibilityIdentifier("\(panelId)_caller_id")
             }
 
@@ -325,14 +331,20 @@ struct AntifakeMediaCheckView: View {
                 Text(localizationManager.localized("antifake_contact_name_label"))
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.white.opacity(0.9))
-                TextField(
-                    localizationManager.localized("antifake_call_display_name_placeholder"),
-                    text: $viewModel.displayName
-                )
+                TextField(text: $viewModel.displayName) {
+                    Text(localizationManager.localized("antifake_call_display_name_placeholder"))
+                        .foregroundColor(.white.opacity(0.52))
+                }
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
+                .foregroundColor(.white)
+                .tint(.secondaryGold)
                 .padding(Spacing.m)
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                )
                 .accessibilityIdentifier("\(panelId)_display_name")
             }
         }

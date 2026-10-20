@@ -24,7 +24,7 @@ class ParentalControlViewModel: ObservableObject {
     @Published var screenTimeLimit: Double = 3
     @Published var allowedApps: [String] = []
     @Published var blockedSitesToday: Int = 12
-    @Published var screenTimeToday: String = "2:45"
+    @Published var screenTimeToday: String = ""
     @Published var appUsage: [AppUsageStatistics] = []
     @Published var familyAuthStatus: AuthorizationStatus = .notDetermined
     @Published var isDNSProtectionEnabled: Bool = false
@@ -158,7 +158,7 @@ class ParentalControlViewModel: ObservableObject {
     func loadChildren() {
         if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
-            self.children = decoded.filter { $0.role == .child || $0.role == .teenager }.map { member in
+            self.children = decoded.filter { FamilyScreenTimeEligibility.isSupervisedMember(role: $0.role) }.map { member in
                 Child(
                     id: member.id,
                     name: member.name,

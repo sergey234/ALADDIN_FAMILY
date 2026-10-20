@@ -343,6 +343,7 @@ struct MainScreenWithRegistration: View {
                     ),
                     recoveryCode: recoveryCode,
                     familyID: familyID,
+                    qrPayload: registrationVM.familyInviteQRPayload,
                     onComplete: {
                         UserDefaults.standard.synchronize()
                         print("✅ RecoveryCodeModal: onComplete вызван → вызываем completeRegistration()")

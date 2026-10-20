@@ -154,12 +154,21 @@ final class FamilyHabitRemindersService: ObservableObject {
     }
 
     struct LocalSaveOutcome {
+        enum WellnessMirrorStatus: Equatable {
+            case notNeeded
+            case synced
+            case skippedConsentRequired
+            case failedOptional
+        }
+
         var notificationsGranted: Bool
         var queuedForServer: Bool
         var needsManualRetry: Bool
         var nextFire: Date?
         /// Localized key when server sync failed (local schedule still applied).
         var syncErrorKey: String?
+        /// Optional mirror into Wellness. Never affects family reminder delivery.
+        var wellnessMirrorStatus: WellnessMirrorStatus = .notNeeded
     }
 
     /// Local cache + daily push first. Server is queued if the request fails.
@@ -178,14 +187,15 @@ final class FamilyHabitRemindersService: ObservableObject {
         let nextFire = earliestNextFire(config: config)
         do {
             try await pushServerOnly(config: config)
-            await syncWellnessHabitsIfOnline(config: config)
+            let wellnessMirrorStatus = await syncWellnessHabitsIfOnline(config: config)
             lastSyncErrorKey = nil
             return LocalSaveOutcome(
                 notificationsGranted: granted,
                 queuedForServer: false,
                 needsManualRetry: false,
                 nextFire: nextFire,
-                syncErrorKey: nil
+                syncErrorKey: nil,
+                wellnessMirrorStatus: wellnessMirrorStatus
             )
         } catch {
             // Soft-fail: keep local presets+custom (already in `config`). Never wipe to empty.
@@ -283,17 +293,30 @@ final class FamilyHabitRemindersService: ObservableObject {
         _ = await saveLocalThenSync(config: next, members: members)
     }
 
-    private func syncWellnessHabitsIfOnline(config: FamilyHabitRemindersConfig) async {
+    private func syncWellnessHabitsIfOnline(config: FamilyHabitRemindersConfig) async -> LocalSaveOutcome.WellnessMirrorStatus {
+        guard FamilyHabitPresetId.allCases.contains(where: { config.schedule(for: $0).enabled }) else {
+            return .notNeeded
+        }
+        guard WellnessSessionStore.hasAcceptedConsent else {
+            // Family reminders are independent. Avoid noisy 403 wellness_consent_required logs.
+            return .skippedConsentRequired
+        }
+
+        var hadFailure = false
         for preset in FamilyHabitPresetId.allCases {
             let schedule = config.schedule(for: preset)
             guard schedule.enabled else { continue }
             let ifThen = ifThenLine(for: preset, schedule: schedule)
-            _ = await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                APIService.shared.createWellnessHabit(ifThen: ifThen) { _ in
-                    continuation.resume()
+            let result: Result<WellnessHabitCreateResponse, Error> = await withCheckedContinuation { continuation in
+                APIService.shared.createWellnessHabit(ifThen: ifThen) { result in
+                    continuation.resume(returning: result)
                 }
             }
+            if case .failure = result {
+                hadFailure = true
+            }
         }
+        return hadFailure ? .failedOptional : .synced
     }
 
     private func ifThenLine(for preset: FamilyHabitPresetId, schedule: FamilyHabitPresetSchedule) -> String {

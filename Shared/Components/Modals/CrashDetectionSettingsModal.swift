@@ -15,9 +15,11 @@ struct CrashDetectionSettingsModal: View {
     private let componentAnalytics = ComponentAnalytics.shared
     private let crashDetectionManager = CrashDetectionManager.shared
     private let apiService = APIService.shared
+    private let pendingSyncKey = "crash_detection_settings_pending_sync"
 
     @State private var sensitivity: CrashDetectionSensitivity = .medium
     @State private var isLoading: Bool = false
+    @State private var pendingSync: Bool = UserDefaults.standard.bool(forKey: "crash_detection_settings_pending_sync")
     @AppStorage("aladdin_crash_detection_consent_v1") private var crashConsentAccepted = false
 
     var body: some View {
@@ -146,6 +148,18 @@ struct CrashDetectionSettingsModal: View {
                 .padding()
                 .background(Color.green.opacity(0.1))
                 .cornerRadius(CornerRadius.medium)
+
+                if pendingSync {
+                    Text(localizationManager.localized("crash_settings_pending_sync"))
+                        .font(.caption)
+                        .foregroundColor(.secondaryGold)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.secondaryGold.opacity(0.10))
+                        .cornerRadius(CornerRadius.medium)
+                        .accessibilityIdentifier("crash_detection_pending_sync")
+                }
             }
         }
         .onAppear {
@@ -171,7 +185,7 @@ struct CrashDetectionSettingsModal: View {
             return
         }
         guard let userId = resolvedUserId() else {
-            toastManager.showError(localizationManager.localized("crash_settings_save_error"))
+            toastManager.showError(localizationManager.localized("crash_settings_save_error_login_required"))
             return
         }
 
@@ -181,6 +195,7 @@ struct CrashDetectionSettingsModal: View {
         Task {
             do {
                 crashDetectionManager.setSensitivity(sensitivity)
+                UserDefaults.standard.set(sensitivity.rawValue, forKey: "crash_detection_pending_sensitivity")
 
                 let apiResponse = try await apiService.updateCrashDetectionSettings(
                     userId: userId,
@@ -214,13 +229,21 @@ struct CrashDetectionSettingsModal: View {
                 )
 
                 await MainActor.run {
+                    UserDefaults.standard.set(false, forKey: pendingSyncKey)
+                    pendingSync = false
                     toastManager.showSuccess(localizationManager.localized("crash_settings_save_success"))
                     isPresented = false
                 }
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
-                    toastManager.showError(localizationManager.localized("crash_settings_save_error"))
+                    if shouldKeepPendingSync(for: error) {
+                        UserDefaults.standard.set(true, forKey: pendingSyncKey)
+                        pendingSync = true
+                        toastManager.showInfo(localizationManager.localized("crash_settings_saved_pending_sync"))
+                    } else {
+                        toastManager.showError(saveErrorMessage(for: error))
+                    }
                 }
                 print("❌ CrashDetectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
                 SyncEngine.shared.publish(
@@ -234,6 +257,28 @@ struct CrashDetectionSettingsModal: View {
                 isLoading = false
             }
         }
+    }
+
+    private func saveErrorMessage(for error: Error) -> String {
+        let raw = error.localizedDescription.lowercased()
+        if raw.contains("location") || raw.contains("motion") || raw.contains("permission") || raw.contains("denied") {
+            return localizationManager.localized("crash_settings_save_error_permissions")
+        }
+        if raw.contains("network") || raw.contains("internet") || raw.contains("offline") || raw.contains("timed out") {
+            return localizationManager.localized("crash_settings_save_error_network")
+        }
+        return localizationManager.localized("crash_settings_save_error")
+    }
+
+    private func shouldKeepPendingSync(for error: Error) -> Bool {
+        let raw = error.localizedDescription.lowercased()
+        return raw.contains("network")
+            || raw.contains("internet")
+            || raw.contains("offline")
+            || raw.contains("timed out")
+            || raw.contains("server")
+            || raw.contains("503")
+            || raw.contains("502")
     }
 }
 

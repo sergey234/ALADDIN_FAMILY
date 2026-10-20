@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UIKit
+import LocalAuthentication
 
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
@@ -52,6 +53,30 @@ protocol NotificationService {
 protocol SecurityService {
     var biometricAuthAvailable: Bool { get }
     func authenticateWithBiometrics() async -> Bool
+}
+
+private final class SecurityServiceAdapter: SecurityService {
+    var biometricAuthAvailable: Bool {
+        var error: NSError?
+        return LAContext().canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+    }
+
+    func authenticateWithBiometrics() async -> Bool {
+        let context = LAContext()
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            return false
+        }
+
+        do {
+            return try await context.evaluatePolicy(
+                .deviceOwnerAuthenticationWithBiometrics,
+                localizedReason: LocalizationManager.shared.localized("biometric_auth_reason")
+            )
+        } catch {
+            return false
+        }
+    }
 }
 
 protocol TariffService {
@@ -284,7 +309,7 @@ class SettingsViewModel: ObservableObject {
         navigationService = nil
         localizationService = nil
         notificationService = nil
-        securityService = nil
+        securityService = SecurityServiceAdapter()
         tariffService = nil
         apiService = nil
         positioningService = nil
@@ -711,14 +736,37 @@ class SettingsViewModel: ObservableObject {
             return
         }
 
+        if enabled {
+            Task { @MainActor in
+                let authenticated = await securityService.authenticateWithBiometrics()
+                guard authenticated else {
+                    print("⚠️ Биометрия не подтверждена пользователем")
+                    self.isBiometricEnabled = false
+                    self.toastService?.showToast(
+                        message: self.localizedStrings.biometricEnableFailed,
+                        type: "error",
+                        duration: 3.0
+                    )
+                    return
+                }
+
+                self.isBiometricEnabled = true
+                self.toastService?.showToast(
+                    message: self.localizedStrings.biometricEnabled,
+                    type: "success",
+                    duration: 2.0
+                )
+            }
+            return
+        }
+
         // Устанавливаем состояние (reactive binding автоматически сохранит в UserDefaults)
-        isBiometricEnabled = enabled
+        isBiometricEnabled = false
 
         // Показываем подтверждение
         if let toastService = toastService {
-            let message = enabled ? localizedStrings.biometricEnabled : localizedStrings.biometricDisabled
             toastService.showToast(
-                message: message,
+                message: localizedStrings.biometricDisabled,
                 type: "success",
                 duration: 2.0
             )
