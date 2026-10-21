@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>12</string>
+	<string>14</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>

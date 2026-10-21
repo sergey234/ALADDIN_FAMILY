@@ -11,9 +11,9 @@
 App:          ai.aladdin  (ALADDIN AI)
 Team:         B3WGHSWL79  (SAUDAPAYDI)   ← НЕ 6CJVBBUGSN
 Version:      1.0.1       (= marketing / ASC iOS version)
-Build:        12          (= CFBundleVersion / next upload candidate)
-PREV_BUILD:   12
-NEXT_BUILD:   13          ← подставлять ТОЛЬКО после GO на bump
+Build:        14          (= CFBundleVersion / next upload candidate)
+PREV_BUILD:   14
+NEXT_BUILD:   15          ← подставлять ТОЛЬКО после GO на bump
 CURRENT_MARKETING_VERSION = 1.0.1
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
@@ -23,9 +23,9 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 | Что | Куда смотреть | Сейчас |
 |-----|---------------|--------|
 | Version | ASC «iOS App Version» + код `MARKETING_VERSION` / `appVersion` | **1.0.1** |
-| Build | код `CFBundleVersion` / `buildNumber` | **12** |
+| Build | код `CFBundleVersion` / `buildNumber` | **14** |
 | TestFlight max Ready | ASC TestFlight → iOS version 1.0.1 | **11 Ready** (ожидаемо) |
-| След. Build | только после следующей фразы владельца **«GO на bump»** | **13** |
+| След. Build | только после следующей фразы владельца **«GO на bump»** | **15** |
 | След. Version | только если ASC закрыл train 1.0.1 / approve + **GO** | например **1.0.2** |
 
 **Запрещено:** номера 247/248, `family.aladdin.ios`, team `6CJVBBUGSN` как «куда пушить».
@@ -35,12 +35,12 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 | Слой | Факт |
 |------|------|
 | Commit tip **origin/master** | `3f59110c` — ASC upload checks (HK string · Shield Action id · host NE) |
-| Код в git (номера) | Version **1.0.1** · Build **12** |
+| Код в git (номера) | Version **1.0.1** · Build **14** |
 | TestFlight | **1.0.1 / 11** был в ASC; candidate **12** — Bypass card + Content Filter compile fix |
 | CI канон | `check-secrets.yml` («Build and Upload to App Store») |
 | Зелёный релиз | **Archive + Export + Upload** все OK · Job green ≠ TF, если `altool` FAIL |
 | Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER, не имя `… App Store.` (§4c) |
-| След. Upload | текущий candidate **12**; следующий после него — только **13** |
+| След. Upload | текущий candidate **14**; следующий после него — только **15** |
 
 One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.
 Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.
@@ -158,7 +158,7 @@ gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
 | Privacy ASC Location | ✅ Published (Tracking No) |
 | Critical Alerts форма | ✅ Request **`VX53USXWCJ`** · ждём Assigned · флаг **false** |
 | Comm Notifications | ✅ галочка на App ID · в билде |
-| Review Notes ASC | ⏸ paste до Submit |
+| Review Notes ASC | ✅ 2.1 закрыт (прод) · What’s New build 12: `docs/AppStore/REVIEW_NOTES_CURRENT.md` |
 | CI Shield / Filter | ✅ decode + UUID в pbx (`67790dff` + `3f59110c`) |
 
 ### Owner GO 2026-10-17 — в билде **10**
@@ -176,7 +176,7 @@ gh run view <RUN_ID> --repo sergey234/ALADDIN_FAMILY
 1. Device QA 2 iPhone (ST + геозоны + фильтр + срочный сигнал).
 2. Walk-test геозон · parent APNs (L4 уже на MAIN).
 3. Critical Assigned → entitlement + regen APP + D2 / L11.
-4. H2 Notes в ASC перед Submit.
+4. Notes: Guideline 2.1 уже закрыт (прод). Для сборки — короткий What’s New: `docs/AppStore/REVIEW_NOTES_CURRENT.md`.
 5. След. бинарь после текущего candidate 12 — только **«GO на bump 13»**.
 
 Registry: `.cursor/CAPABILITIES_WAVE3_TASK_REGISTRY.md`.
@@ -358,7 +358,7 @@ Xcode ищет `PROVISIONING_PROFILE_SPECIFIER` **по имени** из pbx.
 **Утро / one-pager:** `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`
 **OUT:** Packet Tunnel / in-app VPN · `UIBackgroundModes location`.
 
-MUST после TF 10: Device QA 2 iPhone · walk-test геозон · Notes ASC перед Submit.
+MUST после TF: Device QA 2 iPhone · walk-test геозон · Notes = короткий What’s New (2.1 уже закрыт).
 Bump **11** — только «GO на bump». Critical ship-код — после Assigned `VX53USXWCJ`.
 
 ## 5. Family Controls / Screen Time (не ломать)
@@ -435,7 +435,7 @@ F. TestFlight: Version 1.0.1 · Build 13
 3. Если Ready = 12:
       → новый «GO на bump» 12→13 → commit → «GO на push»
 4. После Ready: Device QA 2 iPhone (ST + геозоны + Bypass + Content Filter)
-5. Notes ASC — перед Submit, не блокер TF
+5. Notes ASC — короткий What’s New; 2.1 не переотправлять
 6. Critical/Comm ship-код — только после Apple Assigned
 ```
 
@@ -463,8 +463,8 @@ F. TestFlight: Version 1.0.1 · Build 13
 ## 9. Актуальная пара (обновлять после каждого успешного bump)
 
 ```text
-PREV_BUILD = 12
-NEXT_BUILD = 13
+PREV_BUILD = 14
+NEXT_BUILD = 15
 CURRENT_MARKETING_VERSION = 1.0.1
 ```
 

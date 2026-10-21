@@ -47,7 +47,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "12")
+        XCTAssertEqual(AppConfig.buildNumber, "14")
     }
 
     // MARK: - Explicit Security API (B2-00 / GATE-D)
