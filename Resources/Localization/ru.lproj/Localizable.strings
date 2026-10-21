@@ -3152,6 +3152,8 @@
 "store_review_signoff_line1" = "С уважением,";
 "store_review_signoff_line2" = "команда ALADDIN AI";
 "store_review_stars_a11y" = "Пять звёзд";
+"settings_rate_app_title" = "Оценить в App Store";
+"settings_rate_app_subtitle" = "Написать отзыв, когда сами захотите.";
 
 /* Где телефон — три коротких блока, без живой карты */
 "where_phone_title" = "Где телефон";

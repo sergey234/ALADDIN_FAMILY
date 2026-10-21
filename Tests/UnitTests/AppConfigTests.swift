@@ -457,6 +457,133 @@ final class APIResponseValidatorTests: XCTestCase {
         XCTAssertTrue(envelope.isDefault ?? false)
         XCTAssertEqual(envelope.configuration.componentId, "malware_detection_agent")
     }
+
+    func testReviewPolicySkipsFirstLaunchAndOnboarding() {
+        let calendar = Calendar(identifier: .gregorian)
+        let now = date(2026, 10, 21, calendar: calendar)
+
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: false,
+                    firstOpenAt: now,
+                    usageDayKeys: ["2026-10-21"],
+                    attemptDates: []
+                ),
+                now: now,
+                calendar: calendar
+            ),
+            .skip
+        )
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: true,
+                    firstOpenAt: now,
+                    usageDayKeys: ["2026-10-21"],
+                    attemptDates: []
+                ),
+                now: now,
+                calendar: calendar
+            ),
+            .skip
+        )
+    }
+
+    func testReviewPolicyNeedsThreeDaysAndTwentyOneDayGap() {
+        let calendar = Calendar(identifier: .gregorian)
+        let firstOpen = date(2026, 10, 1, calendar: calendar)
+        let now = date(2026, 10, 22, calendar: calendar)
+
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: true,
+                    firstOpenAt: firstOpen,
+                    usageDayKeys: ["2026-10-01", "2026-10-22"],
+                    attemptDates: []
+                ),
+                now: now,
+                calendar: calendar
+            ),
+            .skip
+        )
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: true,
+                    firstOpenAt: firstOpen,
+                    usageDayKeys: ["2026-10-01", "2026-10-08", "2026-10-22"],
+                    attemptDates: []
+                ),
+                now: now,
+                calendar: calendar
+            ),
+            .request
+        )
+    }
+
+    func testReviewPolicyWaitsAfterAnAttempt() {
+        let calendar = Calendar(identifier: .gregorian)
+        let firstOpen = date(2026, 10, 1, calendar: calendar)
+        let firstAsk = date(2026, 10, 22, calendar: calendar)
+
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: true,
+                    firstOpenAt: firstOpen,
+                    usageDayKeys: ["2026-10-01", "2026-10-08", "2026-10-22", "2026-11-05"],
+                    attemptDates: [firstAsk]
+                ),
+                now: date(2026, 11, 5, calendar: calendar),
+                calendar: calendar
+            ),
+            .skip
+        )
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: true,
+                    firstOpenAt: firstOpen,
+                    usageDayKeys: ["2026-10-01", "2026-10-08", "2026-10-22", "2026-11-13"],
+                    attemptDates: [firstAsk]
+                ),
+                now: date(2026, 11, 13, calendar: calendar),
+                calendar: calendar
+            ),
+            .request
+        )
+    }
+
+    func testReviewPolicyStopsAfterThreeAttemptsInAYear() {
+        let calendar = Calendar(identifier: .gregorian)
+        let firstOpen = date(2026, 1, 1, calendar: calendar)
+        let now = date(2026, 12, 1, calendar: calendar)
+        let attempts = [
+            date(2026, 1, 22, calendar: calendar),
+            date(2026, 3, 15, calendar: calendar),
+            date(2026, 5, 10, calendar: calendar)
+        ]
+
+        XCTAssertEqual(
+            AppStoreReviewPolicy.decision(
+                snapshot: AppStoreReviewPolicy.Snapshot(
+                    onboardingCompleted: true,
+                    firstOpenAt: firstOpen,
+                    usageDayKeys: ["2026-01-01", "2026-01-22", "2026-03-15", "2026-12-01"],
+                    attemptDates: attempts
+                ),
+                now: now,
+                calendar: calendar
+            ),
+            .skip
+        )
+    }
+
+    private func date(_ year: Int, _ month: Int, _ day: Int, calendar: Calendar) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+    }
 }
 
 // MARK: - AppConfig Test Extensions

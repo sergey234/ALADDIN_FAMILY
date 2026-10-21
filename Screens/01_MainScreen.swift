@@ -28,7 +28,6 @@ struct MainScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
-    @State private var showAppStoreReviewPrompt = false
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -335,26 +334,8 @@ struct MainScreen: View {
                 saveDebugLog(logCopy)
             }
 
-            // App Store review invite: 1× после онбординга (pending ставится при complete).
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 900_000_000)
-                guard AppStoreReviewPrompt.consumePendingForDisplay() else { return }
-                showAppStoreReviewPrompt = true
-            }
-        }
-        .overlay {
-            if showAppStoreReviewPrompt {
-                AppStoreReviewPromptCard(
-                    onDismiss: { showAppStoreReviewPrompt = false },
-                    onRate: {
-                        showAppStoreReviewPrompt = false
-                        AppStoreReviewPrompt.openWriteReviewPage()
-                    }
-                )
-                .environmentObject(localizationManager)
-                .transition(.opacity)
-                .zIndex(50)
-            }
+            // Системная оценка: не раньше 21 дня и не в онбординге.
+            await AppStoreReviewPrompt.considerSystemPromptFromQuietScreen()
         }
         .onAppear {
             // perf-1-01: subscription sync отложен — не блокирует первый кадр (.task уже вызвал onAppear).

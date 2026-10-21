@@ -1,0 +1,22 @@
+ALADDIN AI — version 1.0.1, build 13
+Family safety app (roles: parent / child / adult 60+).
+
+Guideline 5.6.3 fix: the custom rating card after onboarding is gone. The app never asks for a rating on first launch or during onboarding. A system StoreKit review prompt may appear only after 21 days and three distinct days of use. Settings has a persistent “Rate in the App Store” link that the person opens themselves.
+
+Status: App is LIVE. Guideline 2.1 answers were already accepted — do NOT re-paste the full 2.1 letter.
+
+--- RU ---
+ALADDIN AI — версия 1.0.1, сборка 13
+
+ЧТО НОВОГО
+• Просьба оценить приложение убрана с первого запуска и из онбординга.
+• Системное окно оценки — только после реального пользования.
+• В настройках есть тихая строка «Оценить в App Store».
+
+--- EN (paste in ASC App Review Notes / Resolution Center) ---
+ALADDIN AI — version 1.0.1, build 13
+
+WHAT’S NEW
+• The rating request was removed from first launch and onboarding.
+• The system review prompt appears only after real use.
+• Settings includes a persistent “Rate in the App Store” link.

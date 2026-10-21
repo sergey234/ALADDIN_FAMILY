@@ -576,6 +576,15 @@ struct SettingsScreen: View {
                     viewModel.showShareSheet = true
                 }
 
+                settingsButton(
+                    "star.fill",
+                    localizationManager.localized("settings_rate_app_title"),
+                    localizationManager.localized("settings_rate_app_subtitle")
+                ) {
+                    AppStoreReviewPrompt.openWriteReviewPage()
+                }
+                .accessibilityIdentifier("settings_rate_app_row")
+
                 Divider()
 
                 // ✅ BUILD 95: Диагностика (лог крашей/предупреждений памяти/Pre-Crash State)

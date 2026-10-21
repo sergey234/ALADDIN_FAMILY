@@ -880,10 +880,16 @@ extension AppConfig {
         /// Явный выбор языка на шаге 0 онбординга (отличить от эвристики/дефолта).
         static let hasChosenLanguageOnce = "hasChosenLanguageOnce"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
-        /// Показать lotus-карточку отзыва App Store после онбординга (один раз).
+        /// Старый флаг карточки после онбординга. Больше не читается, только стирается.
         static let pendingAppStoreReviewPrompt = "pending_app_store_review_prompt"
-        /// Уже показывали / закрыли приглашение оценить в App Store.
+        /// Старый флаг «уже спросили после онбординга». Больше не читается, только стирается.
         static let hasAskedAppStoreReviewAfterOnboarding = "has_asked_app_store_review_after_onboarding"
+        /// Первый запуск главной с новым правилом оценки (unix time).
+        static let appStoreReviewFirstOpenAt = "app_store_review_first_open_at"
+        /// Календарные дни, когда открывали главную (`YYYY-MM-DD`).
+        static let appStoreReviewUsageDays = "app_store_review_usage_days"
+        /// Unix time наших вызовов системного окна оценки.
+        static let appStoreReviewAttemptDates = "app_store_review_attempt_dates"
         /// После добавления устройства на другом экране — при следующем показе главной принудительно обновить дашборд.
         static let pendingMainDashboardDevicesRefresh = "pending_main_dashboard_devices_refresh"
         /// После изменения локального ростера (`FamilyMembersUpdated`) — не откладывать `GET /api/family/stats` из‑за 8s throttle / TTL главной.

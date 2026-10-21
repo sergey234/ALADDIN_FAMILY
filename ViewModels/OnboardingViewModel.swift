@@ -39,7 +39,6 @@ class OnboardingViewModel: ObservableObject {
         // Сохраняем статус онбординга
         // TODO: В будущем заменить на Keychain для безопасности
         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-        AppStoreReviewPrompt.armAfterOnboardingIfNeeded()
     }
 }
 

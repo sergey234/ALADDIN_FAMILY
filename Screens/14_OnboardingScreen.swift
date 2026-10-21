@@ -1240,7 +1240,6 @@ struct OnboardingScreen: View {
                     // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                     hasCompletedOnboarding = true
                     markPrimaryUserRoleParentIfUnset()
-                    AppStoreReviewPrompt.armAfterOnboardingIfNeeded()
                     Task { @MainActor in
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
@@ -1400,7 +1399,6 @@ struct OnboardingScreen: View {
                             // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                             hasCompletedOnboarding = true
                             markPrimaryUserRoleParentIfUnset()
-                            AppStoreReviewPrompt.armAfterOnboardingIfNeeded()
                             Task { @MainActor in
                                 UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                             }
