@@ -96,9 +96,8 @@ enum AppStoreReviewPrompt {
         }
     }
 
-    /// DEBUG / `-RESET_ONBOARDING`.
-    static func resetForQA() {
-        didConsiderThisProcess = false
+    /// DEBUG / `-RESET_ONBOARDING`. Можно звать до MainActor: на старте процесса флаг и так пустой.
+    nonisolated static func resetForQA() {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: AppConfig.UserDefaultsKeys.appStoreReviewFirstOpenAt)
         defaults.removeObject(forKey: AppConfig.UserDefaultsKeys.appStoreReviewUsageDays)
@@ -151,7 +150,7 @@ enum AppStoreReviewPrompt {
     }
 
     /// Старый флаг карточки после онбординга больше не читается.
-    private static func retireLegacyOnboardingPrompt() {
+    nonisolated private static func retireLegacyOnboardingPrompt() {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: AppConfig.UserDefaultsKeys.pendingAppStoreReviewPrompt)
         defaults.removeObject(forKey: AppConfig.UserDefaultsKeys.hasAskedAppStoreReviewAfterOnboarding)
