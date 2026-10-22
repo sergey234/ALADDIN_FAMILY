@@ -171,11 +171,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.1"
-    static let buildNumber = "14"
+    static let buildNumber = "15"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "14"
+    static let minimumClientBuildForApiContract = "15"
     static let bundleIdentifier = "ai.aladdin"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"

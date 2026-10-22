@@ -11,9 +11,9 @@
 App:          ai.aladdin  (ALADDIN AI)
 Team:         B3WGHSWL79  (SAUDAPAYDI)   ← НЕ 6CJVBBUGSN
 Version:      1.0.1       (= marketing / ASC iOS version)
-Build:        14          (= CFBundleVersion / next upload candidate)
-PREV_BUILD:   14
-NEXT_BUILD:   15          ← подставлять ТОЛЬКО после GO на bump
+Build:        15          (= CFBundleVersion / next upload candidate)
+PREV_BUILD:   15
+NEXT_BUILD:   16          ← подставлять ТОЛЬКО после GO на bump
 CURRENT_MARKETING_VERSION = 1.0.1
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
@@ -23,9 +23,9 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 | Что | Куда смотреть | Сейчас |
 |-----|---------------|--------|
 | Version | ASC «iOS App Version» + код `MARKETING_VERSION` / `appVersion` | **1.0.1** |
-| Build | код `CFBundleVersion` / `buildNumber` | **14** |
+| Build | код `CFBundleVersion` / `buildNumber` | **15** |
 | TestFlight max Ready | ASC TestFlight → iOS version 1.0.1 | **11 Ready** (ожидаемо) |
-| След. Build | только после следующей фразы владельца **«GO на bump»** | **15** |
+| След. Build | только после следующей фразы владельца **«GO на bump»** | **16** |
 | След. Version | только если ASC закрыл train 1.0.1 / approve + **GO** | например **1.0.2** |
 
 **Запрещено:** номера 247/248, `family.aladdin.ios`, team `6CJVBBUGSN` как «куда пушить».
@@ -35,12 +35,12 @@ Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 | Слой | Факт |
 |------|------|
 | Commit tip **origin/master** | `3f59110c` — ASC upload checks (HK string · Shield Action id · host NE) |
-| Код в git (номера) | Version **1.0.1** · Build **14** |
+| Код в git (номера) | Version **1.0.1** · Build **15** |
 | TestFlight | **1.0.1 / 11** был в ASC; candidate **12** — Bypass card + Content Filter compile fix |
 | CI канон | `check-secrets.yml` («Build and Upload to App Store») |
 | Зелёный релиз | **Archive + Export + Upload** все OK · Job green ≠ TF, если `altool` FAIL |
 | Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER, не имя `… App Store.` (§4c) |
-| След. Upload | текущий candidate **14**; следующий после него — только **15** |
+| След. Upload | текущий candidate **15**; следующий после него — только **16** |
 
 One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.
 Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.
@@ -463,8 +463,8 @@ F. TestFlight: Version 1.0.1 · Build 13
 ## 9. Актуальная пара (обновлять после каждого успешного bump)
 
 ```text
-PREV_BUILD = 14
-NEXT_BUILD = 15
+PREV_BUILD = 15
+NEXT_BUILD = 16
 CURRENT_MARKETING_VERSION = 1.0.1
 ```
 

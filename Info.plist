@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>14</string>
+	<string>15</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -109,6 +109,7 @@
 	<string>ALADDIN needs speech recognition for AI voice input and commands.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
+		<string>INSendMessageIntent</string>
 		<string>ai.aladdin.activity.security</string>
 		<string>ai.aladdin.activity.family</string>
 		<string>ai.aladdin.activity.emergency</string>

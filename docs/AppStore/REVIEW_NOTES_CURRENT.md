@@ -1,27 +1,23 @@
 # Review Notes — текущий канон (ALADDIN AI)
 
-**Обновлено:** 2026-10-21  
-**App:** `ai.aladdin` · Team **B3WGHSWL79** · Version **1.0.1** · Build **14**  
-**Статус приложения:** **в проде (LIVE)** · Guideline **2.1 уже закрыт** · повторная сдача после **5.6.3**.
+**Обновлено:** 2026-10-23  
+**App:** `ai.aladdin` · Team **B3WGHSWL79** · Version **1.0.1** · Build **15**  
+**Статус:** **LIVE** · Guideline **2.1 закрыт** · build 14 был в Waiting for Review · build 15 = ITMS-90894 plist fix.
 
-## Что вставлять в ASC сейчас
+## Что вставлять в ASC
 
-Только короткий блок **WHAT’S NEW** и ответ в Resolution Center:
+→ [`ALADDIN_AI_Review_Notes_1.0.1_build15_RU.txt`](ALADDIN_AI_Review_Notes_1.0.1_build15_RU.txt)
 
-→ [`ALADDIN_AI_Review_Notes_1.0.1_build14_RU.txt`](ALADDIN_AI_Review_Notes_1.0.1_build14_RU.txt)
+**Не** пересылать полное Guideline 2.1. **Не** заново отправлять 3 IAP.
 
-**Не** пересылать заново полное письмо Guideline 2.1 — оно уже принято.
-
-## Архив (не для повторной отправки)
+## Архив
 
 | Документ | Зачем |
 |----------|--------|
-| `APPLE_GUIDELINE_2_1_*` | Исторический ответ 2.1 (закрыт) |
-| `ALADDIN_AI_App_Review_Reply_SHORT_RU.txt` | Старый короткий reply (build 4 era) |
-| `WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md` | Длинный WAVE3 pack — справочно; для build 12 → короткий What’s New |
-| `APP_STORE_REVIEW_NOTES.md` | **Устарел** (сайт-оплата) — не использовать; IAP в приложении |
+| `ALADDIN_AI_Review_Notes_1.0.1_build14_RU.txt` | 5.6.3 rating prompt |
+| `APPLE_GUIDELINE_2_1_*` | 2.1 закрыт |
+| `WAVE3_H2_REVIEW_NOTES_ASC_PACK_RU.md` | справочно |
 
-## Правило для ML / агента
+## Правило
 
-- Прод + 2.1 ✅ → при новой сборке обновлять **только** What’s New (версия/build + буллеты).
-- Длинные объяснения Content Filter / VPN / IP в Notes **не** писать.
+Новая сборка → только короткий What’s New + bump по `docs/RELEASE_BUILD_PROMPT.md`.

@@ -1,0 +1,20 @@
+ALADDIN AI — version 1.0.1, build 15
+Family safety app (roles: parent / child / adult 60+).
+
+ITMS-90894 fix: Info.plist NSUserActivityTypes now includes INSendMessageIntent (required with Communication Notifications entitlement). Custom activity types kept.
+
+Status: App is LIVE. Guideline 2.1 already accepted — do NOT re-paste the full 2.1 letter. IAP subscriptions unchanged — do not resubmit.
+
+--- RU ---
+ALADDIN AI — версия 1.0.1, сборка 15
+
+ЧТО НОВОГО
+• Исправление ITMS-90894: в Info.plist добавлен INSendMessageIntent для Communication Notifications.
+• Просьба оценить приложение по-прежнему не на первом запуске / онбординге.
+
+--- EN ---
+ALADDIN AI — version 1.0.1, build 15
+
+WHAT’S NEW
+• ITMS-90894 fix: NSUserActivityTypes includes INSendMessageIntent for Communication Notifications.
+• Rating prompt still not shown on first launch or onboarding.
