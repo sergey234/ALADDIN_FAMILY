@@ -3124,7 +3124,7 @@
 "family_urgent_signal_body" = "A family member may need help. Open ALADDIN and contact them.";
 "family_urgent_signal_chat" = "🆘 Family urgent signal: %@ (%@)";
 "family_urgent_signal_toggle" = "Family urgent safety signal";
-"family_urgent_signal_toggle_footer" = "On a hard impact or via the button, family gets a signal. Your consent is required.";
+"family_urgent_signal_toggle_footer" = "Uses Apple Health (HealthKit). In an emergency or via the button, family gets a signal. Your consent is required. Not medical.";
 "family_urgent_signal_send_now" = "Send signal now";
 "family_urgent_signal_sent" = "Signal sent to the family";
 "scam_comm_notification_title" = "Suspicious call";

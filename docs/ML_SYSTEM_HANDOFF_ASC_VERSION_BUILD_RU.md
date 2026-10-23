@@ -1,6 +1,6 @@
 # ML Handoff: ASC Version + Build (ai.aladdin Path B)
 
-**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-18 (bump Build **12** · Bypass+CF fix)
+**Дата фиксации:** 2026-10-16 · **обновлён** 2026-10-23 (Build **15** · ITMS-90894 + HealthKit UI + OB_07)
 **Приложение:** `ai.aladdin` / ALADDIN AI (команда **B3WGHSWL79**, org SAUDAPAYDI)
 **Не путать** с личным TF `family.aladdin.ios` / team `6CJVBBUGSN` / номерами 247–248.
 
@@ -8,7 +8,7 @@
 → §**0** факт · §**0a** secrets через `gh` · §**0b** push+CI · §**0c** план–факт · §**4** уроки 409/подпись
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`
-**CI:** `check-secrets.yml` · candidate **1.0.1 / 12** (после push · Archive+Upload)
+**CI:** `check-secrets.yml` · candidate **1.0.1 / 15** (после **GO на push** · Archive+Upload)
 
 ---
 
@@ -16,12 +16,12 @@
 
 | Имя | Что это | Ключи в коде | Сейчас (канон) | В App Store Connect |
 |-----|---------|--------------|----------------|---------------------|
-| **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.1** | iOS version **1.0.1** (Подготовка к отправке) |
-| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **12** | TestFlight: **11** был Ready; candidate **12** |
+| **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.1** | iOS version **1.0.1** |
+| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **15** | Review был **14**; candidate upload **15** |
 
-В Xcode должно читаться: **Version 1.0.1 · Build 12**.
+В Xcode должно читаться: **Version 1.0.1 · Build 15**.
 
-- Следующее поднятие **Build** (12→13): только после нового **GO на bump** build.
+- Следующее поднятие **Build** (15→16): только после нового **GO на bump** build.
 - Поднимать **Version** (1.0.1→1.0.2): только если ASC закрыл train / после approve, и только после **GO** + создания новой version в ASC.
 - **Нельзя** заливать новые Build на уже closed/approved marketing train (урок ниже).
 
@@ -32,8 +32,8 @@
 Файл: `docs/RELEASE_BUILD_PROMPT.md`
 
 ```text
-PREV_BUILD = 12
-NEXT_BUILD = 13
+PREV_BUILD = 15
+NEXT_BUILD = 16
 CURRENT_MARKETING_VERSION = 1.0.1
 ```
 
@@ -42,7 +42,7 @@ CURRENT_MARKETING_VERSION = 1.0.1
 
 ---
 
-## 3. Куда менять Build (CFBundleVersion → например 13)
+## 3. Куда менять Build (CFBundleVersion → например 16)
 
 | Файл | Поле |
 |------|------|

@@ -147,7 +147,7 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 6:
-            // OB_07: wordmark UR; title — золотой в UL (симметрия), desc поднимается на место title
+            // OB_07: title UL + wordmark UR на одном Y (симметрия по краям; лицо джина свободно)
             return OnboardingFigmaAnchor(
                 wordmark: CGRect(
                     x: OnboardingFigmaScreenLayout.canvasWidth - 96 - OnboardingFigmaScreenLayout.ob07WordmarkTrailing,
@@ -155,7 +155,12 @@ private struct OnboardingFigmaAnchor {
                     width: 96,
                     height: 28
                 ),
-                title: CGRect(x: 16, y: 400, width: 361, height: 60),
+                title: CGRect(
+                    x: OnboardingFigmaScreenLayout.ob07WordmarkTrailing,
+                    y: OnboardingFigmaScreenLayout.ob07WordmarkTop,
+                    width: 160,
+                    height: 28
+                ),
                 desc: CGRect(x: 16, y: 468, width: 361, height: 80),
                 scrim: CGRect(x: 0, y: 400, width: 393, height: 156),
                 scrimMaxOpacity: 0.42,
@@ -393,17 +398,24 @@ private struct OnboardingFigmaAnchoredContent: View {
                     .frame(width: logoW, height: logoH, alignment: .topLeading)
 
                     if isOB07 {
-                        logoView
-                            .frame(maxWidth: geo.size.width, alignment: .trailing)
-                            .padding(.top, OnboardingFigmaScreenLayout.ob07WordmarkTop * vScale)
-                            .padding(.trailing, OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX)
-
-                        ob07CornerTitle(
-                            scaleX: scaleX,
-                            vScale: vScale,
-                            wordmarkHeight: logoH,
-                            maxWidth: geo.size.width - logoW - (OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX * 2)
+                        // Одна линия: Join слева · лого справа. Title ≤ ~42% ширины — не на голове джина.
+                        let sidePad = OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX
+                        let topPad = OnboardingFigmaScreenLayout.ob07WordmarkTop * vScale
+                        let titleMaxW = min(
+                            geo.size.width * 0.42,
+                            max(120, geo.size.width - logoW - sidePad * 3)
                         )
+                        HStack(alignment: .center, spacing: 8) {
+                            ob07CornerTitle(
+                                wordmarkHeight: logoH,
+                                maxWidth: titleMaxW
+                            )
+                            Spacer(minLength: 8)
+                            logoView
+                        }
+                        .padding(.top, topPad)
+                        .padding(.horizontal, sidePad)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     } else {
                         logoView
                             .offset(
@@ -445,8 +457,6 @@ private struct OnboardingFigmaAnchoredContent: View {
 
     @ViewBuilder
     private func ob07CornerTitle(
-        scaleX: CGFloat,
-        vScale: CGFloat,
         wordmarkHeight: CGFloat,
         maxWidth: CGFloat
     ) -> some View {
@@ -456,14 +466,11 @@ private struct OnboardingFigmaAnchoredContent: View {
             font: .system(size: fontSize, weight: .bold, design: .serif),
             color: .secondaryGold,
             lineSpacing: 2,
-            maxLines: 3,
+            maxLines: 2,
             minimumScaleFactor: 0.75
         )
-        .frame(maxWidth: max(120, maxWidth), alignment: .leading)
+        .frame(maxWidth: maxWidth, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
-        .padding(.top, OnboardingFigmaScreenLayout.ob07WordmarkTop * vScale)
-        .padding(.leading, OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .accessibilityAddTraits(.isHeader)
     }
 

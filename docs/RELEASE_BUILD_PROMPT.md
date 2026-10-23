@@ -18,29 +18,31 @@ CURRENT_MARKETING_VERSION = 1.0.1
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
 Корень:       /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+CI:           check-secrets.yml («Build and Upload to App Store»)
 ```
 
 | Что | Куда смотреть | Сейчас |
 |-----|---------------|--------|
 | Version | ASC «iOS App Version» + код `MARKETING_VERSION` / `appVersion` | **1.0.1** |
 | Build | код `CFBundleVersion` / `buildNumber` | **15** |
-| TestFlight max Ready | ASC TestFlight → iOS version 1.0.1 | **11 Ready** (ожидаемо) |
-| След. Build | только после следующей фразы владельца **«GO на bump»** | **16** |
+| Review | ASC · build **14** · 2.1 (код) + 2.5.1 (HealthKit) | ответ письмом + фикс в **15** |
+| След. Build | только после **«GO на bump»** | **16** |
 | След. Version | только если ASC закрыл train 1.0.1 / approve + **GO** | например **1.0.2** |
+| Push | только после **«GO на push»** | `git push origin master` → CI Archive+Upload |
 
 **Запрещено:** номера 247/248, `family.aladdin.ios`, team `6CJVBBUGSN` как «куда пушить».
 
-**Что уже в Apple / GitHub (факт вечер 2026-10-17, владелец видит в кабинете):**
+**Что уже в Apple / GitHub (факт 2026-10-23):**
 
 | Слой | Факт |
 |------|------|
-| Commit tip **origin/master** | `3f59110c` — ASC upload checks (HK string · Shield Action id · host NE) |
-| Код в git (номера) | Version **1.0.1** · Build **15** |
-| TestFlight | **1.0.1 / 11** был в ASC; candidate **12** — Bypass card + Content Filter compile fix |
+| Код в git (номера) | Version **1.0.1** · Build **15** (все plists + pbx ×24 + AppConfig) |
+| Build **15** содержимое | ITMS-90894 · HealthKit UI label · OB_07 Join↔лого · (5.6.3 уже с 14) |
+| Review **14** | ASC: 2.1 «где код» + 2.5.1 HealthKit UI · письмо согласовано |
 | CI канон | `check-secrets.yml` («Build and Upload to App Store») |
 | Зелёный релиз | **Archive + Export + Upload** все OK · Job green ≠ TF, если `altool` FAIL |
-| Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER, не имя `… App Store.` (§4c) |
-| След. Upload | текущий candidate **15**; следующий после него — только **16** |
+| Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER (§4c) |
+| След. Upload | candidate **15** после GO на push; дальше — только **16** после GO на bump |
 
 One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.
 Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.

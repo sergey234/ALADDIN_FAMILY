@@ -1,20 +1,29 @@
 ALADDIN AI — version 1.0.1, build 15
 Family safety app (roles: parent / child / adult 60+).
 
-ITMS-90894 fix: Info.plist NSUserActivityTypes now includes INSendMessageIntent (required with Communication Notifications entitlement). Custom activity types kept.
+Build 15:
+• ITMS-90894: Info.plist NSUserActivityTypes includes INSendMessageIntent.
+• HealthKit (2.5.1): Family screen → “Family urgent safety signal” footer names Apple Health (HealthKit).
+• Onboarding last page: “Join ALADDIN” left · ALADDIN AI logo right (same height).
+• Rating prompt not on first launch / onboarding (5.6.3, since build 14).
 
-Status: App is LIVE. Guideline 2.1 already accepted — do NOT re-paste the full 2.1 letter. IAP subscriptions unchanged — do not resubmit.
+IAP unchanged — do not resubmit subscriptions.
+Resolution Center: answer only the promo-code question + HealthKit location (owner has approved RU reply).
 
 --- RU ---
 ALADDIN AI — версия 1.0.1, сборка 15
 
 ЧТО НОВОГО
-• Исправление ITMS-90894: в Info.plist добавлен INSendMessageIntent для Communication Notifications.
-• Просьба оценить приложение по-прежнему не на первом запуске / онбординге.
+• ITMS-90894: INSendMessageIntent в NSUserActivityTypes.
+• HealthKit: на экране «Семья» в «Срочный сигнал семье» явно указано Apple Health (HealthKit).
+• Онбординг: Join ALADDIN слева, лого ALADDIN AI справа, один уровень.
+• Оценка приложения не на первом запуске / онбординге.
 
 --- EN ---
 ALADDIN AI — version 1.0.1, build 15
 
 WHAT’S NEW
-• ITMS-90894 fix: NSUserActivityTypes includes INSendMessageIntent for Communication Notifications.
-• Rating prompt still not shown on first launch or onboarding.
+• ITMS-90894: NSUserActivityTypes includes INSendMessageIntent.
+• HealthKit labeled on Family → urgent safety signal (Apple Health / HealthKit).
+• Onboarding: Join ALADDIN left · ALADDIN AI logo right, same height.
+• Rating prompt not on first launch or onboarding.
