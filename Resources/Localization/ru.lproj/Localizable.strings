@@ -58,7 +58,8 @@
 "onboarding_data_consent" = "Я согласен с обработкой данных";
 "onboarding_terms_of_service_link" = "Пользовательское соглашение";
 "onboarding_terms_consent" = "Я принимаю пользовательское соглашение";
-"onboarding_have_code" = "У МЕНЯ ЕСТЬ КОД";
+"onboarding_have_code" = "Код App Store";
+"onboarding_have_code_hint" = "Открывает экран кода App Store";
 "onboarding_recover" = "ВОССТАНОВИТЬ";
 "child_content_retry_accessibility_hint" = "Повторить загрузку контента";
 "parent_dashboard_open_unified_limits_hint" = "Открывает единый экран дневных лимитов";

@@ -798,7 +798,8 @@ struct OnboardingScreen: View {
         "onboarding_skip": "Пропустить",
         "onboarding_continue": "ПРОДОЛЖИТЬ",
         "onboarding_start": "НАЧАТЬ",
-        "onboarding_have_code": "У МЕНЯ ЕСТЬ КОД",
+        "onboarding_have_code": "Код App Store",
+        "onboarding_have_code_hint": "Открывает экран кода App Store",
         "onboarding_recover": "ВОССТАНОВИТЬ",
         "onboarding_data_collection_info": "Мы собираем только обезличенные данные для обеспечения безопасности.",
         "onboarding_privacy_policy_link": "Политика конфиденциальности",
@@ -827,7 +828,8 @@ struct OnboardingScreen: View {
         "onboarding_skip": "Skip",
         "onboarding_continue": "CONTINUE",
         "onboarding_start": "GET STARTED",
-        "onboarding_have_code": "I HAVE A CODE",
+        "onboarding_have_code": "Redeem App Store code",
+        "onboarding_have_code_hint": "Opens the App Store code screen",
         "onboarding_recover": "RECOVER",
         "onboarding_data_collection_info": "We collect only anonymized data to ensure security.",
         "onboarding_privacy_policy_link": "Privacy Policy",
@@ -1475,21 +1477,27 @@ struct OnboardingScreen: View {
                     // Дополнительные кнопки на последнем слайде
                     if isFinalOnboardingPage {
                         HStack(spacing: Spacing.m) {
-                            // У меня есть код
+                            // App Store Offer Code — official redeem sheet only (not ALADDIN promo).
                             Button(action: {
-                                showJoinFamily = true
                                 let impactFeedback = UIImpactFeedbackGenerator(style: .light)
                                 impactFeedback.impactOccurred()
+                                StoreManager().presentAppStoreOfferCodeRedemption()
                             }) {
                                 Text(safeLocalized("onboarding_have_code"))
                                     .font(.caption)
                                     .foregroundColor(.secondaryGold)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.7)
+                                    .multilineTextAlignment(.center)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 44)
                                     .background(Color.secondaryGold.opacity(0.15))
                                     .cornerRadius(CornerRadius.medium)
                             }
-                            .accessibilityElement(label: "У меня есть код", hint: "Нажмите для ввода кода семьи")
+                            .accessibilityElement(
+                                label: safeLocalized("onboarding_have_code"),
+                                hint: safeLocalized("onboarding_have_code_hint")
+                            )
 
                             // Восстановить доступ
                             Button(action: {

@@ -58,7 +58,8 @@
 "onboarding_data_consent" = "I agree to data processing";
 "onboarding_terms_of_service_link" = "Terms of Service";
 "onboarding_terms_consent" = "I agree to the Terms of Service";
-"onboarding_have_code" = "I HAVE A CODE";
+"onboarding_have_code" = "Redeem App Store code";
+"onboarding_have_code_hint" = "Opens the App Store code screen";
 "onboarding_recover" = "RECOVER";
 "child_content_retry_accessibility_hint" = "Retry loading child content";
 "parent_dashboard_open_unified_limits_hint" = "Opens the unified daily limits screen";

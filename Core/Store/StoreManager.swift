@@ -652,6 +652,11 @@ class StoreManager: ObservableObject {
         // По умолчанию → нет тарифа
         return ""
     }
+
+    /// Official App Store offer-code sheet (iOS 14+). Does not call ALADDIN `/api/promo/redeem`.
+    func presentAppStoreOfferCodeRedemption() {
+        SKPaymentQueue.default().presentCodeRedemptionSheet()
+    }
 }
 
 // MARK: - Store Error

@@ -5,6 +5,7 @@ Build 15:
 • ITMS-90894: Info.plist NSUserActivityTypes includes INSendMessageIntent.
 • HealthKit (2.5.1): Family screen → “Family urgent safety signal” footer names Apple Health (HealthKit).
 • Onboarding last page: “Join ALADDIN” left · ALADDIN AI logo right (same height).
+• Onboarding last page: “Redeem App Store code” opens the official App Store offer-code sheet (not an in-app unlock).
 • Rating prompt not on first launch / onboarding (5.6.3, since build 14).
 
 IAP unchanged — do not resubmit subscriptions.
@@ -17,6 +18,7 @@ ALADDIN AI — версия 1.0.1, сборка 15
 • ITMS-90894: INSendMessageIntent в NSUserActivityTypes.
 • HealthKit: на экране «Семья» в «Срочный сигнал семье» явно указано Apple Health (HealthKit).
 • Онбординг: Join ALADDIN слева, лого ALADDIN AI справа, один уровень.
+• Онбординг, последняя страница: «Код App Store» открывает официальный экран кода App Store.
 • Оценка приложения не на первом запуске / онбординге.
 
 --- EN ---
@@ -26,4 +28,5 @@ WHAT’S NEW
 • ITMS-90894: NSUserActivityTypes includes INSendMessageIntent.
 • HealthKit labeled on Family → urgent safety signal (Apple Health / HealthKit).
 • Onboarding: Join ALADDIN left · ALADDIN AI logo right, same height.
+• Onboarding last page: “Redeem App Store code” opens the official App Store offer-code sheet.
 • Rating prompt not on first launch or onboarding.
