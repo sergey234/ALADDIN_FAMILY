@@ -3035,7 +3035,7 @@
 "family_urgent_signal_body" = "Нужна помощь близкого. Откройте ALADDIN и свяжитесь с ним.";
 "family_urgent_signal_chat" = "🆘 Срочный сигнал семье: %@ (%@)";
 "family_urgent_signal_toggle" = "Срочный сигнал семье";
-"family_urgent_signal_toggle_footer" = "Использует Apple Health (HealthKit). При экстренной ситуации или по кнопке близкие получат сигнал. Нужно ваше согласие. Не медицина.";
+"family_urgent_signal_toggle_footer" = "Использует Apple Health (HealthKit). При экстренной ситуации или по кнопке близкие получат сигнал. Нужно ваше согласие.";
 "family_urgent_signal_send_now" = "Отправить сигнал сейчас";
 "family_urgent_signal_sent" = "Сигнал отправлен семье";
 "scam_comm_notification_title" = "Подозрительный звонок";
