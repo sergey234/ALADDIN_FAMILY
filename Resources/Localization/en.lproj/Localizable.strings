@@ -1945,7 +1945,7 @@
 "ai_assistant_error_response_failed" = "Failed to get AI response: %@";
 "ai_assistant_error_generic_retry" = "Sorry, an error occurred. Please try again later.";
 "voice_notes_title" = "Voice Notes";
-"voice_notes_settings_entry_subtitle" = "Record, transcribe, and summarize notes with AI";
+"voice_notes_settings_entry_subtitle" = "Say it and get the note.";
 "voice_notes_record" = "Record";
 "voice_notes_pause" = "Pause";
 "voice_notes_play" = "Play";
@@ -1978,7 +1978,36 @@
 "voice_notes_empty_subtitle" = "Tap Start recording to create your first note.";
 "voice_notes_empty_search_title" = "No results found";
 "voice_notes_empty_search_subtitle" = "Try a different query or switch the filter.";
-"voice_notes_local_only_disclaimer" = "Notes stay on this iPhone. Speech recognition uses Apple on-device features.";
+"voice_notes_local_only_disclaimer" = "We turn speech into text on this iPhone.";
+"voice_notes_banner_on_device" = "We turn speech into text on this iPhone.";
+"voice_notes_banner_cloud" = "Apple turns this into text. The recording stays on the phone.";
+"voice_notes_cloud_title" = "Send the recording to Apple?";
+"voice_notes_cloud_body" = "Only this recording. We do not send it unless you agree.";
+"voice_notes_cloud_yes" = "Send";
+"voice_notes_language_missing" = "This iPhone is not ready for this language yet.";
+"voice_notes_long_file" = "A long file: this phone keeps the first minute. A live note stays whole.";
+"voice_notes_long_file_site" = "Full text on the website";
+"voice_notes_mkv_wait" = "Open this file on the website.";
+"voice_notes_mkv_phone" = "This phone cannot open this file.";
+"voice_notes_import" = "Open a file";
+"voice_notes_import_unsupported" = "We cannot open this file yet.";
+"voice_notes_draft" = "Draft while you speak";
+"voice_notes_dictionary" = "Your words";
+"voice_notes_dictionary_note" = "Up to one hundred words. You can erase them.";
+"voice_notes_dictionary_placeholder" = "A name or a word";
+"voice_notes_dictionary_add" = "Add";
+"voice_notes_dictionary_remove" = "Remove";
+"voice_notes_cleaner" = "Cleaner";
+"voice_notes_clear" = "Clear";
+"voice_notes_family" = "For the family";
+"voice_notes_protocol" = "Minutes";
+"voice_notes_read" = "Read it";
+"voice_notes_check" = "Check if this is a scam";
+"voice_notes_restore" = "Put it back";
+"voice_notes_times" = "Phrase times";
+"voice_notes_preset_title" = "Send the text?";
+"voice_notes_preset_body" = "Only the text is sent. The recording stays with you.";
+"voice_notes_preset_yes" = "Send the text";
 "voice_notes_summary_local_soon" = "AI summary soon (local)";
 "call_assistant_section_title" = "Call Assistant";
 "call_assistant_section_subtitle" = "Short call notes for you and your family";
@@ -1988,7 +2017,7 @@
 "call_assistant_save_note" = "Save as note";
 "voice_safety_coach_tip" = "Copy a suspicious link, then say “link” or “check” — we’ll open the check and paste what you copied. Also: alert / idea / remind.";
 "voice_safety_coach_tip_dismiss" = "Got it";
-"voice_safety_local_vs_antifake" = "The note stays on this device. Link checks use ALADDIN protection (may use the network).";
+"voice_safety_local_vs_antifake" = "The note stays on the phone.";
 "voice_safety_opening_antifake" = "Opening check…";
 "voice_safety_clipboard_used" = "Used text from the clipboard";
 "clipboard_safety_secret_blocked" = "This looks like a password, code, or key. We won’t paste or store it for checking.";
@@ -2024,7 +2053,7 @@
 "voice_open_settings" = "Open Settings";
 "voice_notes_start" = "Start recording";
 "voice_notes_stop_save" = "Stop & save";
-"voice_notes_howto" = "Tap Start recording, speak, then Stop & save. Transcription runs on your device.";
+"voice_notes_howto" = "Tap record, speak, then save.";
 "ai_assistant_voice_input_hint" = "Tap to speak, tap again to stop";
 "ai_assistant_voice_via_siri" = "Via Siri";
 "ai_assistant_voice_unavailable_chip" = "Voice unavailable";
@@ -2485,7 +2514,9 @@
 "ai_trust_disclaimer" = "AI can be wrong. It’s a suggestion. If unsure — double-check or ask an adult.";
 
 /* ux36-w1 */
-"voice_notes_privacy_stt_disclaimer" = "Text from here is not copied into hero chat by itself.";
+"voice_notes_privacy_stt_disclaimer" = "Nothing goes to chat on its own.";
+"voice_notes_speech_unavailable_hint" = "Text is not available right now. Check the language in iPhone settings.";
+"voice_structure_privacy" = "Only the text goes to chat, and only if you tap.";
 
 /* ux36-w1 */
 "family_safe_word_title" = "Family secret phrase";

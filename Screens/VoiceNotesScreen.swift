@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct VoiceNotesScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -22,6 +23,7 @@ struct VoiceNotesScreen: View {
     @State private var dayRecapErrorKey: String?
     @State private var showDayRecapHint = false
     @State private var weeklyDigestResult: VoiceWeeklyDigestResult?
+    @State private var dictionaryDraft = ""
     @AppStorage("voice_safety_log_coach_tip_dismissed") private var coachTipDismissed = false
 
     var body: some View {
@@ -41,6 +43,8 @@ struct VoiceNotesScreen: View {
                         }
 
                         privacyBanner
+
+                        dictionarySection
 
                         notesContent
 
@@ -127,6 +131,38 @@ struct VoiceNotesScreen: View {
         } message: {
             Text(localizationManager.localized("voice_notes_speech_permission_message"))
         }
+        .alert(localizationManager.localized("voice_notes_cloud_title"), isPresented: $viewModel.showCloudConsent) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("voice_notes_cloud_yes")) {
+                viewModel.allowAppleCloudAndRetry()
+            }
+        } message: {
+            Text(localizationManager.localized("voice_notes_cloud_body"))
+        }
+        .alert(localizationManager.localized("voice_notes_preset_title"), isPresented: $viewModel.showPresetConsent) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                viewModel.showPresetConsent = false
+            }
+            Button(localizationManager.localized("voice_notes_preset_yes")) {
+                viewModel.confirmPresetNetwork()
+            }
+        } message: {
+            Text(localizationManager.localized("voice_notes_preset_body"))
+        }
+        .fileImporter(
+            isPresented: $viewModel.showImporter,
+            allowedContentTypes: [.audio, .movie, .mpeg4Movie],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                viewModel.importRecording(url: url)
+            }
+        }
+        .onChange(of: viewModel.presetStructure?.id) { _ in
+            if let result = viewModel.presetStructure {
+                structureResult = result
+            }
+        }
         .alert(localizationManager.localized("voice_notes_rename"), isPresented: $showRenameAlert) {
             TextField(localizationManager.localized("voice_notes_rename_placeholder"), text: $renameText)
             Button(localizationManager.localized("common_cancel"), role: .cancel) {}
@@ -203,6 +239,7 @@ struct VoiceNotesScreen: View {
     }
 
     private func runStructure(transcript: String) {
+        guard viewModel.allowsCloudPresets, viewModel.presetNetworkAllowed else { return }
         guard !isStructuring else { return }
         isStructuring = true
         structureErrorKey = nil
@@ -212,7 +249,6 @@ struct VoiceNotesScreen: View {
             do {
                 structureResult = try await VoiceNotesStructureService.structure(transcript: transcript)
             } catch {
-                // Soft-fail: keep prior structureResult; toast + retry alert, no wipe.
                 ToastManager.shared.showWarning(
                     localizationManager.localized("voice_structure_soft_fail")
                 )
@@ -253,9 +289,19 @@ private extension VoiceNotesScreen {
             HStack(spacing: 8) {
                 Image(systemName: "lock.shield")
                     .foregroundColor(.green)
-                Text(localizationManager.localized("voice_notes_local_only_disclaimer"))
+                Text(localizationManager.localized(viewModel.speechBannerKey))
                     .font(.footnote)
                     .foregroundColor(privacyReadableForeground)
+            }
+            if viewModel.longFileNotice {
+                Text(localizationManager.localized("voice_notes_long_file"))
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
+            if viewModel.allowsCloudPresets && (viewModel.longFileNotice || viewModel.speechSiteLink),
+               let site = URL(string: "https://aladdin-ai.ru/speech.html") {
+                Link(localizationManager.localized("voice_notes_long_file_site"), destination: site)
+                    .font(.caption)
             }
             Text(localizationManager.localized("voice_notes_privacy_stt_disclaimer"))
                 .font(.caption)
@@ -270,6 +316,38 @@ private extension VoiceNotesScreen {
                 Text(localizationManager.localized("voice_notes_speech_unavailable_hint"))
                     .font(.caption)
                     .foregroundColor(.orange)
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var dictionarySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("voice_notes_dictionary"))
+                .font(.body.weight(.semibold))
+            Text(localizationManager.localized("voice_notes_dictionary_note"))
+                .font(.caption)
+                .foregroundColor(privacyReadableForeground)
+            HStack {
+                TextField(localizationManager.localized("voice_notes_dictionary_placeholder"), text: $dictionaryDraft)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel(localizationManager.localized("voice_notes_dictionary_placeholder"))
+                Button(localizationManager.localized("voice_notes_dictionary_add")) {
+                    viewModel.addDictionaryPhrase(dictionaryDraft)
+                    dictionaryDraft = ""
+                }
+                .disabled(dictionaryDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.dictionaryPhrases.count >= 100)
+                .accessibilityLabel(localizationManager.localized("voice_notes_dictionary_add"))
+            }
+            ForEach(Array(viewModel.dictionaryPhrases.enumerated()), id: \.offset) { index, phrase in
+                HStack {
+                    Text(phrase).font(.body)
+                    Spacer()
+                    Button(localizationManager.localized("voice_notes_dictionary_remove")) {
+                        viewModel.removeDictionaryPhrase(at: index)
+                    }
+                    .accessibilityLabel(localizationManager.localized("voice_notes_dictionary_remove") + " " + phrase)
+                }
             }
         }
         .padding(.horizontal)
@@ -374,15 +452,30 @@ private extension VoiceNotesScreen {
             onRegenerateSummary: {
                 viewModel.generateSummary(noteId: note.id, forceRegenerate: true)
             },
-            onSendToAI: { text in
+            onSendToAI: viewModel.allowsCloudPresets ? { text in
                 UserDefaults.standard.set(text, forKey: AppConfig.UserDefaultsKeys.pendingAIAssistantDraftMessage)
                 playback.stop()
                 dismiss()
                 navigationManager.navigateTo(.aiAssistant)
+            } : nil,
+            onStructure: { _ in
+                viewModel.requestMinutes(noteId: note.id)
             },
-            onStructure: { text in
-                runStructure(transcript: text)
+            onFamily: {
+                viewModel.requestFamily(noteId: note.id)
             },
+            onCleaner: { viewModel.applyCleaner(noteId: note.id) },
+            onClear: { viewModel.applyClear(noteId: note.id) },
+            onRead: { viewModel.speak(noteId: note.id) },
+            onCheck: {
+                let text = note.transcriptPreview
+                guard !text.hasPrefix("voice_notes_"), !text.isEmpty else { return }
+                navigationManager.navigateToAntifakeShareCheck(
+                    payload: AntifakeSharePayload(mode: .text, value: text, createdAt: Date())
+                )
+            },
+            onRestore: { viewModel.restoreSource(noteId: note.id) },
+            allowsCloudActions: viewModel.allowsCloudPresets,
             isStructuring: isStructuring
         )
             .environmentObject(localizationManager)

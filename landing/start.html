@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru" translate="no" class="notranslate">
+<head>
+  <meta name="google" content="notranslate">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Что сделать? — ALADDIN</title>
+  <meta name="description" content="Правила для ребёнка, антифейк, спокойный режим для старших и личный помощник. На iPhone — в приложении. Проверка смс и звонка — сразу на сайте.">
+  <link rel="canonical" href="https://aladdin-ai.ru/start.html">
+  <link rel="stylesheet" href="styles.css?v=20260718h1">
+  <link rel="stylesheet" href="site-nav.css?v=20260718p3">
+  <link rel="stylesheet" href="help/help-base.css?v=20260718p3">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .start-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .start-choice {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: var(--text);
+      background: #121a2b;
+      border: 1px solid rgba(245, 200, 110, 0.28);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .start-choice:hover, .start-choice:focus-visible { border-color: var(--gold-light); outline: none; }
+    .start-note { margin: 16px 0 0; color: var(--text-muted); }
+    .start-list { margin: 8px 0 0; padding-left: 18px; }
+    .start-list li { margin: 6px 0; }
+    .start-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  </style>
+</head>
+<body class="help-page has-site-header">
+  <header class="site-header site-header--gold" id="site-header">
+    <div class="site-header__inner">
+      <a href="/index.html" class="site-header__brand"><span class="site-header__logo">ALADDIN</span><span class="site-header__tag">AI</span></a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-nav-menu" aria-label="Меню">☰</button>
+      <nav class="site-nav" id="site-nav-menu">
+        <a href="/index.html" class="site-nav__link">Главная</a>
+        <a href="/start.html" class="site-nav__link site-nav__link--cta">Что сделать?</a>
+        <a href="/antifake.html" class="site-nav__link">Проверки</a>
+        <a href="/speech.html" class="site-nav__link" data-nav="speech" data-i18n="nav.speech">Речь</a>
+        <a href="/index.html#pay" class="site-nav__link">Тарифы</a>
+      </nav>
+    </div>
+  </header>
+  <div class="help-wrap">
+    <header class="help-hero">
+      <h1>ALADDIN</h1>
+      <p>Семейная защита на iPhone. Правила для ребёнка. Проверка смс и звонка. Спокойный режим для старших. Личный помощник.</p>
+    </header>
+
+    <section class="help-card" id="step-task" aria-labelledby="task-title">
+      <h2 id="task-title">Что сделать?</h2>
+      <div class="start-choices">
+        <button type="button" class="start-choice" data-path="child">Правила для ребёнка</button>
+        <button type="button" class="start-choice" data-path="fake">Антифейк: смс и звонок</button>
+        <button type="button" class="start-choice" data-path="senior">Спокойный режим для старших</button>
+        <button type="button" class="start-choice" data-path="helper">Личный помощник</button>
+      </div>
+      <p class="start-note">Ещё в приложении: телефоны семьи, чат, награда, игры и уроки.</p>
+    </section>
+
+    <section class="help-card" id="step-where" hidden aria-labelledby="where-title">
+      <h2 id="where-title">Где открыть?</h2>
+      <p id="where-lead" class="start-note"></p>
+      <div class="start-choices">
+        <button type="button" class="start-choice" id="pick-phone">На iPhone</button>
+        <button type="button" class="start-choice" id="pick-site">На этом сайте</button>
+      </div>
+      <p class="start-actions"><button type="button" class="help-btn help-btn--ghost" id="back-task">Назад</button></p>
+    </section>
+
+    <section class="help-card" id="step-phone" hidden aria-labelledby="phone-title">
+      <h2 id="phone-title">На iPhone</h2>
+      <p id="phone-lead"></p>
+      <p>В приложении сами выберете тариф. Здесь оплату открывать не нужно.</p>
+      <div class="start-actions">
+        <a class="help-btn help-btn--gold" href="https://apps.apple.com/app/id6809577681">Скачать ALADDIN</a>
+        <button type="button" class="help-btn help-btn--ghost" id="back-where-phone">Назад</button>
+      </div>
+    </section>
+
+    <section class="help-card" id="step-site" hidden aria-labelledby="site-title">
+      <h2 id="site-title">На этом сайте</h2>
+      <p id="site-lead"></p>
+      <ul class="start-list" id="site-list"></ul>
+      <div class="start-actions" id="site-actions"></div>
+      <p class="start-actions"><button type="button" class="help-btn help-btn--ghost" id="back-where-site">Назад</button></p>
+    </section>
+  </div>
+  <script src="site-nav.js?v=20260718p3"></script>
+  <script>
+    var path = "";
+    var copy = {
+      child: {
+        lead: "Правила для ребёнка: приложения, время и место.",
+        site: "Правила на телефоне ребёнка есть в приложении. На сайте можно проверить смс, звонок, ссылку и QR.",
+        onlyApp: [
+          "Блокировка приложений и сайтов на телефоне ребёнка.",
+          "Экранное время и пауза.",
+          "Геозона: вышел из дома или школы.",
+          "Детский экран, награда, игры и короткий урок."
+        ]
+      },
+      fake: {
+        lead: "Антифейк: проверить смс, звонок, ссылку или QR.",
+        site: "Проверка смс, звонка, ссылки и QR на сайте начинается сразу.",
+        onlyApp: [
+          "Метка на входящем звонке, пока трубку ещё не сняли.",
+          "Три героя в приложении: Аладдин, Джинн и Единорог.",
+          "Телефоны семьи, чат и личный помощник."
+        ]
+      },
+      senior: {
+        lead: "Спокойный режим для старших: крупный экран, напоминание, сигнал семье.",
+        site: "Крупный экран для мамы или папы есть в приложении. На сайте можно проверить подозрительное смс или звонок.",
+        onlyApp: [
+          "Крупные кнопки.",
+          "Напоминание о лекарстве. Это не врач и не диагноз.",
+          "Сигнал семье."
+        ]
+      },
+      helper: {
+        lead: "Личный помощник. Спросить простыми словами, что делать дальше.",
+        site: "Помощник живёт в приложении. На сайте можно проверить смс, звонок, ссылку и QR.",
+        onlyApp: [
+          "Спросить помощника простыми словами.",
+          "Семейный чат.",
+          "Телефоны семьи на одном экране."
+        ]
+      }
+    };
+
+    function show(id) {
+      ["step-task", "step-where", "step-phone", "step-site"].forEach(function (key) {
+        document.getElementById(key).hidden = key !== id;
+      });
+    }
+
+    document.querySelectorAll("[data-path]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        path = button.getAttribute("data-path");
+        document.getElementById("where-lead").textContent = copy[path].lead;
+        show("step-where");
+      });
+    });
+
+    document.getElementById("pick-phone").addEventListener("click", function () {
+      document.getElementById("phone-lead").textContent = copy[path].lead;
+      show("step-phone");
+    });
+
+    document.getElementById("pick-site").addEventListener("click", function () {
+      var item = copy[path];
+      document.getElementById("site-lead").textContent = item.site;
+      document.getElementById("site-list").innerHTML = item.onlyApp.map(function (line) {
+        return "<li>" + line + "</li>";
+      }).join("");
+      var actions = document.getElementById("site-actions");
+      actions.innerHTML = "";
+      var check = document.createElement("a");
+      check.className = "help-btn help-btn--gold";
+      check.href = "/antifake.html";
+      check.textContent = path === "fake" ? "Проверить смс или звонок" : "Проверить на сайте";
+      actions.appendChild(check);
+      if (path !== "fake") {
+        var store = document.createElement("a");
+        store.className = "help-btn help-btn--ghost";
+        store.href = "https://apps.apple.com/app/id6809577681";
+        store.textContent = "Скачать на iPhone";
+        actions.appendChild(store);
+      }
+      show("step-site");
+    });
+
+    var initial = new URLSearchParams(window.location.search).get("path");
+    if (initial && copy[initial]) {
+      path = initial;
+      document.getElementById("where-lead").textContent = copy[path].lead;
+      show("step-where");
+    }
+
+    document.getElementById("back-task").addEventListener("click", function () { show("step-task"); });
+    document.getElementById("back-where-phone").addEventListener("click", function () { show("step-where"); });
+    document.getElementById("back-where-site").addEventListener("click", function () { show("step-where"); });
+  </script>
+</body>
+</html>

@@ -6,6 +6,13 @@ struct VoiceNoteCard: View {
     var onRegenerateSummary: (() -> Void)?
     var onSendToAI: ((String) -> Void)?
     var onStructure: ((String) -> Void)?
+    var onFamily: (() -> Void)?
+    var onCleaner: () -> Void = {}
+    var onClear: () -> Void = {}
+    var onRead: () -> Void = {}
+    var onCheck: () -> Void = {}
+    var onRestore: () -> Void = {}
+    var allowsCloudActions: Bool = true
     var isStructuring: Bool = false
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var waveformSamples: [CGFloat]?
@@ -44,10 +51,32 @@ struct VoiceNoteCard: View {
             }
 
             Text(transcriptText)
-                .font(.subheadline)
+                .font(.body)
                 .foregroundColor(.secondary)
-                .lineLimit(3)
+                .lineLimit(6)
                 .multilineTextAlignment(.leading)
+
+            if !note.segments.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(note.segments.prefix(6).enumerated()), id: \.offset) { _, segment in
+                        Text("\(clock(segment.startSec)) \(segment.text)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(localizationManager.localized("voice_notes_times"))
+            }
+
+            if note.keptFirstMinuteOnly {
+                Text(localizationManager.localized("voice_notes_long_file"))
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                if allowsCloudActions, let site = URL(string: "https://aladdin-ai.ru/speech.html") {
+                    Link(localizationManager.localized("voice_notes_long_file_site"), destination: site)
+                        .font(.caption)
+                }
+            }
 
             if !note.summary.isEmpty {
                 Text(note.summary)
@@ -82,7 +111,7 @@ struct VoiceNoteCard: View {
                     .buttonStyle(.bordered)
                 }
 
-                if !note.audioPath.isEmpty, FileManager.default.fileExists(atPath: note.audioPath) {
+                if allowsCloudActions, !note.audioPath.isEmpty, FileManager.default.fileExists(atPath: note.audioPath) {
                     Button {
                         shareAudioFile(path: note.audioPath)
                     } label: {
@@ -105,12 +134,12 @@ struct VoiceNoteCard: View {
                     .tint(.blue)
                 }
 
-                if let onStructure, !exportText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if let onStructure, allowsCloudActions, !exportText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
                         onStructure(exportText)
                     } label: {
                         Label(
-                            localizationManager.localized("voice_structure_button"),
+                            localizationManager.localized("voice_notes_protocol"),
                             systemImage: isStructuring ? "hourglass" : "list.bullet.rectangle"
                         )
                         .font(.subheadline.weight(.semibold))
@@ -118,8 +147,59 @@ struct VoiceNoteCard: View {
                     }
                     .buttonStyle(.bordered)
                     .disabled(isStructuring)
+                    .accessibilityLabel(localizationManager.localized("voice_notes_protocol"))
                     .accessibilityIdentifier("voice_structure_button")
                 }
+
+                if allowsCloudActions, let onFamily {
+                    Button(action: onFamily) {
+                        Label(localizationManager.localized("voice_notes_family"), systemImage: "person.2")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel(localizationManager.localized("voice_notes_family"))
+                }
+
+                Button(action: onCleaner) {
+                    Label(localizationManager.localized("voice_notes_cleaner"), systemImage: "text.badge.minus")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(localizationManager.localized("voice_notes_cleaner"))
+
+                Button(action: onClear) {
+                    Label(localizationManager.localized("voice_notes_clear"), systemImage: "text.alignleft")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(localizationManager.localized("voice_notes_clear"))
+
+                Button(action: onRead) {
+                    Label(localizationManager.localized("voice_notes_read"), systemImage: "speaker.wave.2")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(localizationManager.localized("voice_notes_read"))
+
+                Button(action: onCheck) {
+                    Label(localizationManager.localized("voice_notes_check"), systemImage: "checkmark.shield")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(localizationManager.localized("voice_notes_check"))
+
+                Button(action: onRestore) {
+                    Label(localizationManager.localized("voice_notes_restore"), systemImage: "arrow.uturn.backward")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(localizationManager.localized("voice_notes_restore"))
             }
 
             if !note.tags.isEmpty {
@@ -196,5 +276,10 @@ private extension VoiceNoteCard {
             return localizationManager.localized(note.transcriptPreview)
         }
         return note.transcriptPreview
+    }
+
+    func clock(_ sec: Double) -> String {
+        let total = max(0, Int(sec))
+        return String(format: "%d:%02d", total / 60, total % 60)
     }
 }

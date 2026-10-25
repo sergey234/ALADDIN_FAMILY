@@ -29,6 +29,9 @@ final class VoiceNotesViewModel: ObservableObject {
         var summaryVersion: Int
         var tags: [String]
         var audioPath: String
+        var segments: [VoiceNoteSegment] = []
+        var sourceTranscript: String = ""
+        var keptFirstMinuteOnly: Bool = false
     }
     
     enum NotesFilter: String, CaseIterable {
@@ -58,6 +61,26 @@ final class VoiceNotesViewModel: ObservableObject {
     @Published var notes: [VoiceNoteItem] = []
     @Published var canUndoDelete: Bool = false
     @Published var localOnlyModeEnabled: Bool = true
+    @Published var liveTranscript: String = ""
+    @Published var speechUsesAppleCloud = false
+    @Published var showCloudConsent = false
+    @Published var showPresetConsent = false
+    @Published var dictionaryPhrases: [String] = []
+    @Published var longFileNotice = false
+    @Published var speechSiteLink = false
+    @Published var showImporter = false
+    @Published var presetStructure: VoiceNotesStructureResult?
+    private var pendingCloudNoteId: UUID?
+    private var sendCurrentRecordingToApple = false
+    private var pendingPreset: PendingPreset?
+    private var presetContinuation: (() -> Void)?
+    private var liveTranscriber: VoiceNotesLiveTranscriber?
+    private let speaker = AVSpeechSynthesizer()
+
+    private enum PendingPreset {
+        case family(UUID)
+        case minutes(UUID)
+    }
     @Published var searchText: String = ""
     @Published var activeFilter: NotesFilter = .all
     @Published var showMicPermissionAlert = false
@@ -70,6 +93,7 @@ final class VoiceNotesViewModel: ObservableObject {
     @Published var pendingStatusNavigation = false
 
     private static let routerEnabledKey = "voiceIntentRouterEnabled"
+    private static let presetConsentKey = "voice_notes_preset_network_allowed"
 
     private let recorderService = VoiceNotesRecorderService()
     private let transcriptionService = VoiceNotesTranscriptionService()
@@ -98,6 +122,8 @@ final class VoiceNotesViewModel: ObservableObject {
             }
         }
         loadNotes()
+        dictionaryPhrases = VoiceNotesDictionary.load()
+        speechUsesAppleCloud = false
     }
 
     deinit {
@@ -179,14 +205,20 @@ final class VoiceNotesViewModel: ObservableObject {
 
     private func beginRecordingAfterPermission() {
         MasterLogger.shared.business("🎙️ VoiceNotes: Recording started")
+        speechSiteLink = false
         recordingState = .recording
         currentStatusText = "voice_notes_status_listening"
         feedbackLogged = false
         startTappedAt = Date()
         do {
+            recorderService.onBuffer = { [weak self] buffer in
+                self?.liveTranscriber?.append(buffer)
+            }
             let url = try recorderService.start()
             recordingURL = url
             recordingStartedAt = Date()
+            liveTranscript = ""
+            startLiveTranscription()
         } catch {
             recordingState = .failed
             currentStatusText = "voice_notes_session_busy"
@@ -203,6 +235,7 @@ final class VoiceNotesViewModel: ObservableObject {
         recordingState = .paused
         currentStatusText = "voice_notes_status_paused"
         recorderService.pause()
+        liveTranscriber?.pause()
         stopTimer()
     }
 
@@ -211,6 +244,7 @@ final class VoiceNotesViewModel: ObservableObject {
         recordingState = .recording
         currentStatusText = "voice_notes_status_listening"
         recorderService.resume()
+        liveTranscriber?.resume()
         startTimer()
     }
 
@@ -220,32 +254,59 @@ final class VoiceNotesViewModel: ObservableObject {
         recordingState = .processing
         currentStatusText = "voice_notes_status_processing"
         stopTimer()
-
+        recorderService.onBuffer = nil
         let finishedURL = recorderService.stop() ?? recordingURL
         let elapsedFromService = Int((recordingStartedAt.map { Date().timeIntervalSince($0) } ?? 0).rounded())
-        let newNote = VoiceNoteItem(
-            id: UUID(),
-            title: generatedTitle(for: Date()),
-            createdAt: Date(),
-            durationSec: max(max(elapsedSec, elapsedFromService), 1),
-            transcriptPreview: "voice_notes_transcript_pending",
-            summary: "",
-            summaryConfidence: 0.0,
-            summaryVersion: 0,
-            tags: [],
-            audioPath: finishedURL?.path ?? ""
-        )
-        notes.insert(newNote, at: 0)
-        persistNotes()
-        showRecordingSavedToast(path: finishedURL?.path ?? "")
-        HapticFeedback.impact(.light)
-        recordingState = .saved
-        currentStatusText = "voice_notes_status_saved"
+        let duration = max(max(elapsedSec, elapsedFromService), 1)
+        let noteId = UUID()
+        let transcriber = liveTranscriber
+        liveTranscriber = nil
         recordingStartedAt = nil
         recordingURL = nil
         elapsedSec = 0
         noiseLevel = 0.0
-        runLocalTranscriptionIfPossible(noteId: newNote.id, localURL: finishedURL)
+
+        func save(transcript: VoiceNotesTranscript) {
+            let text = transcript.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let preview = text.isEmpty ? "voice_notes_transcript_pending" : text
+            let newNote = VoiceNoteItem(
+                id: noteId,
+                title: generatedTitle(for: Date()),
+                createdAt: Date(),
+                durationSec: duration,
+                transcriptPreview: preview,
+                summary: "",
+                summaryConfidence: 0.0,
+                summaryVersion: 0,
+                tags: [],
+                audioPath: finishedURL?.path ?? "",
+                segments: transcript.segments,
+                sourceTranscript: text,
+                keptFirstMinuteOnly: transcript.keptFirstMinuteOnly
+            )
+            notes.insert(newNote, at: 0)
+            persistNotes()
+            showRecordingSavedToast(path: finishedURL?.path ?? "")
+            HapticFeedback.impact(.light)
+            recordingState = .saved
+            currentStatusText = "voice_notes_status_saved"
+            liveTranscript = ""
+            let sendToApple = sendCurrentRecordingToApple
+            sendCurrentRecordingToApple = false
+            if text.isEmpty {
+                runFileTranscription(noteId: noteId, localURL: finishedURL, allowCloud: sendToApple)
+            }
+        }
+
+        if let transcriber {
+            transcriber.finish { transcript in
+                Task { @MainActor in
+                    save(transcript: transcript)
+                }
+            }
+        } else {
+            save(transcript: VoiceNotesTranscript(text: liveTranscript, segments: [], staysOnDevice: true, keptFirstMinuteOnly: false))
+        }
     }
 
     func markInterruption() {
@@ -539,7 +600,10 @@ final class VoiceNotesViewModel: ObservableObject {
                 summaryConfidence: $0.summaryConfidence,
                 summaryVersion: $0.summaryVersion,
                 tags: $0.tags,
-                audioPath: $0.audioPath
+                audioPath: $0.audioPath,
+                segments: $0.segments,
+                sourceTranscript: $0.sourceTranscript,
+                keptFirstMinuteOnly: $0.keptFirstMinuteOnly
             )
         }
     }
@@ -556,7 +620,10 @@ final class VoiceNotesViewModel: ObservableObject {
                 summaryConfidence: $0.summaryConfidence,
                 summaryVersion: $0.summaryVersion,
                 tags: $0.tags,
-                audioPath: $0.audioPath
+                audioPath: $0.audioPath,
+                segments: $0.segments,
+                sourceTranscript: $0.sourceTranscript,
+                keptFirstMinuteOnly: $0.keptFirstMinuteOnly
             )
         }
         store.save(payload)
@@ -568,66 +635,330 @@ final class VoiceNotesViewModel: ObservableObject {
         return "Voice Note • \(formatter.string(from: date))"
     }
 
-    private func runLocalTranscriptionIfPossible(noteId: UUID, localURL: URL?) {
-        guard localOnlyModeEnabled, let localURL else { return }
-        let preferOnDevice = SpeechRecognizerFactory.prefersOnDeviceRecognition
-        transcriptionService.transcribe(url: localURL, preferOnDevice: preferOnDevice) { [weak self] result in
-            guard let self else { return }
-            Task { @MainActor in
-                switch result {
-                case .success(let text):
-                    if let idx = self.notes.firstIndex(where: { $0.id == noteId }) {
-                        self.notes[idx].transcriptPreview = text.isEmpty
-                            ? "ai_assistant_voice_empty_result"
-                            : text
-                        if !text.isEmpty {
-                            self.applyVoiceIntentRouting(noteIndex: idx, transcript: text)
-                        }
-                        self.persistNotes()
-                        self.markTranscriptionResult(success: !text.isEmpty, empty: text.isEmpty)
-                    }
-                case .failure(let error):
-                    if let idx = self.notes.firstIndex(where: { $0.id == noteId }) {
-                        if let e = error as? VoiceNotesTranscriptionError {
-                            switch e {
-                            case .permissionDenied:
-                                self.notes[idx].transcriptPreview = "voice_notes_transcript_permission_denied"
-                                self.showSpeechPermissionAlert = true
-                            case .recognizerUnavailable:
-                                self.notes[idx].transcriptPreview = "voice_notes_transcript_local_unavailable"
-                            case .timedOut:
-                                self.notes[idx].transcriptPreview = "voice_notes_transcript_timeout"
-                            case .failed:
-                                self.notes[idx].transcriptPreview = "voice_notes_transcript_error"
-                            }
-                        } else {
-                            self.notes[idx].transcriptPreview = "voice_notes_transcript_error"
-                        }
-                        self.persistNotes()
-                        self.markTranscriptionResult(success: false, empty: true)
+    var allowsCloudPresets: Bool { !CompanionUserContext.isChildProfile }
+    var presetNetworkAllowed: Bool {
+        UserDefaults.standard.bool(forKey: Self.presetConsentKey)
+    }
+
+    var speechBannerKey: String {
+        speechUsesAppleCloud ? "voice_notes_banner_cloud" : "voice_notes_banner_on_device"
+    }
+
+    func addDictionaryPhrase(_ phrase: String) {
+        dictionaryPhrases.append(phrase)
+        VoiceNotesDictionary.save(dictionaryPhrases)
+        dictionaryPhrases = VoiceNotesDictionary.load()
+    }
+
+    func removeDictionaryPhrase(at index: Int) {
+        guard dictionaryPhrases.indices.contains(index) else { return }
+        dictionaryPhrases.remove(at: index)
+        VoiceNotesDictionary.save(dictionaryPhrases)
+    }
+
+    func applyCleaner(noteId: UUID) {
+        guard let idx = notes.firstIndex(where: { $0.id == noteId }) else { return }
+        rememberSource(at: idx)
+        notes[idx].transcriptPreview = VoiceNotesTextCleanup.cleaner(notes[idx].sourceTranscript)
+        persistNotes()
+    }
+
+    func applyClear(noteId: UUID) {
+        guard let idx = notes.firstIndex(where: { $0.id == noteId }) else { return }
+        rememberSource(at: idx)
+        notes[idx].transcriptPreview = VoiceNotesTextCleanup.makeClear(notes[idx].sourceTranscript)
+        persistNotes()
+    }
+
+    func requestFamily(noteId: UUID) {
+        requestNetworkPreset(.family(noteId))
+    }
+
+    func requestMinutes(noteId: UUID) {
+        requestNetworkPreset(.minutes(noteId))
+    }
+
+    func confirmPresetNetwork() {
+        UserDefaults.standard.set(true, forKey: Self.presetConsentKey)
+        showPresetConsent = false
+        let continuation = presetContinuation
+        presetContinuation = nil
+        if let pending = pendingPreset {
+            pendingPreset = nil
+            switch pending {
+            case .family(let id):
+                runPreset(noteId: id, showPolite: true)
+            case .minutes(let id):
+                runPreset(noteId: id, showPolite: false)
+            }
+        }
+        continuation?()
+    }
+
+    func performIfPresetAllowed(_ action: @escaping () -> Void) {
+        guard allowsCloudPresets else { return }
+        if UserDefaults.standard.bool(forKey: Self.presetConsentKey) {
+            action()
+            return
+        }
+        presetContinuation = action
+        showPresetConsent = true
+    }
+
+    func restoreSource(noteId: UUID) {
+        guard let idx = notes.firstIndex(where: { $0.id == noteId }) else { return }
+        let source = notes[idx].sourceTranscript
+        guard !source.isEmpty else { return }
+        notes[idx].transcriptPreview = source
+        persistNotes()
+    }
+
+    func speak(noteId: UUID) {
+        guard let note = notes.first(where: { $0.id == noteId }) else { return }
+        let text = readableText(note)
+        guard !text.isEmpty else { return }
+        speaker.stopSpeaking(at: .immediate)
+        let locale = LocalizationManager.shared.speechRecognitionLocale.identifier
+        for sentence in VoiceNotesTextCleanup.splitSentences(text) {
+            let utterance = AVSpeechUtterance(string: sentence)
+            utterance.voice = AVSpeechSynthesisVoice(language: locale)
+            speaker.speak(utterance)
+        }
+    }
+
+    func allowAppleCloudAndRetry() {
+        speechUsesAppleCloud = true
+        showCloudConsent = false
+        if let id = pendingCloudNoteId,
+           let note = notes.first(where: { $0.id == id }),
+           !note.audioPath.isEmpty {
+            pendingCloudNoteId = nil
+            runFileTranscription(noteId: id, localURL: URL(fileURLWithPath: note.audioPath), allowCloud: true)
+            return
+        }
+        sendCurrentRecordingToApple = true
+    }
+
+    func importRecording(url: URL) {
+        let ext = url.pathExtension.lowercased()
+        if ext == "mkv" {
+            longFileNotice = false
+            speechSiteLink = allowsCloudPresets
+            currentStatusText = allowsCloudPresets ? "voice_notes_mkv_wait" : "voice_notes_mkv_phone"
+            return
+        }
+        speechSiteLink = false
+        let allowed: Set<String> = ["mp3", "m4a", "wav", "flac", "mp4", "mov"]
+        guard allowed.contains(ext) else {
+            currentStatusText = "voice_notes_import_unsupported"
+            return
+        }
+        let accessed = url.startAccessingSecurityScopedResource()
+        defer { if accessed { url.stopAccessingSecurityScopedResource() } }
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let dest = dir.appendingPathComponent("voice_note_\(UUID().uuidString).\(ext)")
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: url, to: dest)
+        } catch {
+            currentStatusText = "voice_notes_import_unsupported"
+            return
+        }
+        let note = VoiceNoteItem(
+            id: UUID(),
+            title: generatedTitle(for: Date()),
+            createdAt: Date(),
+            durationSec: 1,
+            transcriptPreview: "voice_notes_transcript_pending",
+            summary: "",
+            summaryConfidence: 0,
+            summaryVersion: 0,
+            tags: ["imported"],
+            audioPath: dest.path
+        )
+        notes.insert(note, at: 0)
+        persistNotes()
+        runFileTranscription(noteId: note.id, localURL: dest, allowCloud: false)
+    }
+
+    private func startLiveTranscription() {
+        let live = VoiceNotesLiveTranscriber(
+            dictionary: dictionaryPhrases,
+            onUpdate: { [weak self] text in
+                Task { @MainActor in
+                    self?.liveTranscript = text
+                }
+            },
+            onNeedsCloud: { [weak self] partial in
+                Task { @MainActor in
+                    guard let self else { return }
+                    if !partial.isEmpty { self.liveTranscript = partial }
+                    if self.allowsCloudPresets {
+                        self.showCloudConsent = true
+                    } else {
+                        self.currentStatusText = "voice_notes_language_missing"
                     }
                 }
             }
+        )
+        liveTranscriber = live
+        if SFSpeechRecognizer.authorizationStatus() == .authorized {
+            live.start()
+            return
         }
+        SFSpeechRecognizer.requestAuthorization { [weak self] status in
+            Task { @MainActor in
+                guard let self else { return }
+                if status == .authorized {
+                    self.liveTranscriber?.start()
+                } else {
+                    self.showSpeechPermissionAlert = true
+                }
+            }
+        }
+    }
+
+    private func requestNetworkPreset(_ preset: PendingPreset) {
+        guard allowsCloudPresets else { return }
+        if UserDefaults.standard.bool(forKey: Self.presetConsentKey) {
+            pendingPreset = preset
+            confirmPresetNetwork()
+            return
+        }
+        pendingPreset = preset
+        showPresetConsent = true
+    }
+
+    private func runPreset(noteId: UUID, showPolite: Bool) {
+        guard let note = notes.first(where: { $0.id == noteId }) else { return }
+        let text = readableText(note)
+        guard !text.isEmpty else { return }
+        Task { @MainActor in
+            do {
+                let result = try await VoiceNotesStructureService.structure(transcript: text)
+                guard let idx = self.notes.firstIndex(where: { $0.id == noteId }) else { return }
+                self.rememberSource(at: idx)
+                if showPolite, !result.polite.isEmpty {
+                    self.notes[idx].transcriptPreview = result.polite
+                }
+                self.presetStructure = result
+                self.persistNotes()
+            } catch {
+                self.currentStatusText = "voice_structure_soft_fail"
+            }
+        }
+    }
+
+    private func rememberSource(at index: Int) {
+        if notes[index].sourceTranscript.isEmpty {
+            let current = notes[index].transcriptPreview
+            if !current.hasPrefix("voice_notes_"), !current.hasPrefix("ai_assistant_") {
+                notes[index].sourceTranscript = current
+            }
+        }
+    }
+
+    private func readableText(_ note: VoiceNoteItem) -> String {
+        let raw = note.transcriptPreview
+        if raw.hasPrefix("voice_notes_") || raw.hasPrefix("ai_assistant_") || raw.isEmpty {
+            return note.sourceTranscript
+        }
+        return raw
+    }
+
+    private func runFileTranscription(noteId: UUID, localURL: URL?, allowCloud: Bool) {
+        guard let localURL else { return }
+        if allowCloud { speechUsesAppleCloud = true }
+        transcriptionService.transcribeFile(
+            url: localURL,
+            allowCloud: allowCloud,
+            dictionary: dictionaryPhrases
+        ) { [weak self] result in
+            guard let self else { return }
+            Task { @MainActor in
+                self.applyFileResult(noteId: noteId, result: result, url: localURL)
+            }
+        }
+    }
+
+    private func applyFileResult(noteId: UUID, result: Result<VoiceNotesTranscript, Error>, url: URL) {
+        guard let idx = notes.firstIndex(where: { $0.id == noteId }) else { return }
+        switch result {
+        case .success(let transcript):
+            let text = transcript.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            notes[idx].transcriptPreview = text.isEmpty ? "ai_assistant_voice_empty_result" : text
+            notes[idx].sourceTranscript = text
+            notes[idx].segments = transcript.segments
+            notes[idx].keptFirstMinuteOnly = transcript.keptFirstMinuteOnly
+            longFileNotice = transcript.keptFirstMinuteOnly
+            speechSiteLink = false
+            speechUsesAppleCloud = !transcript.staysOnDevice
+            if !text.isEmpty {
+                applyVoiceIntentRouting(noteIndex: idx, transcript: text)
+            }
+            markTranscriptionResult(success: !text.isEmpty, empty: text.isEmpty)
+        case .failure(let error):
+            if case VoiceNotesTranscriptionError.needsCloudConsent(let partial) = error {
+                if !partial.isEmpty {
+                    notes[idx].transcriptPreview = partial
+                    notes[idx].sourceTranscript = partial
+                } else {
+                    notes[idx].transcriptPreview = "voice_notes_language_missing"
+                }
+                if allowsCloudPresets {
+                    pendingCloudNoteId = noteId
+                    showCloudConsent = true
+                }
+            } else if let e = error as? VoiceNotesTranscriptionError {
+                switch e {
+                case .permissionDenied:
+                    notes[idx].transcriptPreview = "voice_notes_transcript_permission_denied"
+                    showSpeechPermissionAlert = true
+                case .recognizerUnavailable:
+                    notes[idx].transcriptPreview = "voice_notes_transcript_local_unavailable"
+                case .timedOut:
+                    notes[idx].transcriptPreview = "voice_notes_transcript_timeout"
+                case .failed:
+                    notes[idx].transcriptPreview = "voice_notes_transcript_error"
+                case .needsCloudConsent:
+                    break
+                }
+            } else {
+                notes[idx].transcriptPreview = "voice_notes_transcript_error"
+            }
+            markTranscriptionResult(success: false, empty: true)
+        }
+        persistNotes()
+    }
+
+    private func runLocalTranscriptionIfPossible(noteId: UUID, localURL: URL?) {
+        runFileTranscription(noteId: noteId, localURL: localURL, allowCloud: false)
     }
     
     private func autosaveAfterInterruption() {
         guard recordingState == .recording || recordingState == .paused else { return }
         stopTimer()
+        recorderService.onBuffer = nil
         let finishedURL = recorderService.stop() ?? recordingURL
         let elapsedFromService = Int((recordingStartedAt.map { Date().timeIntervalSince($0) } ?? 0).rounded())
+        let noteId = UUID()
         let draft = VoiceNoteItem(
-            id: UUID(),
+            id: noteId,
             title: generatedTitle(for: Date()),
             createdAt: Date(),
             durationSec: max(max(elapsedSec, elapsedFromService), 1),
-            transcriptPreview: "voice_notes_transcript_pending",
+            transcriptPreview: liveTranscript.isEmpty ? "voice_notes_transcript_pending" : liveTranscript,
             summary: "",
             summaryConfidence: 0.0,
             summaryVersion: 0,
             tags: ["autosaved"],
-            audioPath: finishedURL?.path ?? ""
+            audioPath: finishedURL?.path ?? "",
+            sourceTranscript: liveTranscript
         )
+        let transcriber = liveTranscriber
+        liveTranscriber = nil
         notes.insert(draft, at: 0)
         persistNotes()
         showRecordingSavedToast(path: finishedURL?.path ?? "")
@@ -637,11 +968,29 @@ final class VoiceNotesViewModel: ObservableObject {
         recordingURL = nil
         elapsedSec = 0
         noiseLevel = 0.0
+        liveTranscript = ""
         markInterruption()
         ToastManager.shared.showWarning(
             LocalizationManager.shared.localized("voice_recording_interrupted")
         )
-        runLocalTranscriptionIfPossible(noteId: draft.id, localURL: finishedURL)
+        if let transcriber {
+            transcriber.finish { [weak self] transcript in
+                Task { @MainActor in
+                    guard let self, let idx = self.notes.firstIndex(where: { $0.id == noteId }) else { return }
+                    let text = transcript.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if text.isEmpty {
+                        self.runFileTranscription(noteId: noteId, localURL: finishedURL, allowCloud: false)
+                        return
+                    }
+                    self.notes[idx].transcriptPreview = text
+                    self.notes[idx].sourceTranscript = text
+                    self.notes[idx].segments = transcript.segments
+                    self.persistNotes()
+                }
+            }
+        } else {
+            runFileTranscription(noteId: noteId, localURL: finishedURL, allowCloud: false)
+        }
     }
 }
 

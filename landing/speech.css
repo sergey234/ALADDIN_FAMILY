@@ -1,0 +1,302 @@
+/* Страница «Речь» — одна колонка, ночь и золото ALADDIN. */
+.speech {
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto 64px;
+}
+
+.speech__intro h1 {
+  margin: 8px 0 8px;
+  font-family: var(--font-display, "Fraunces", serif);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.speech__intro p {
+  margin: 0 0 21px;
+  max-width: 38rem;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+.speech-card {
+  background: rgba(15, 27, 43, 0.92);
+  border: 1px solid var(--border-gold, rgba(245, 200, 110, 0.28));
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(5, 11, 23, 0.45);
+  padding: 21px;
+}
+
+.speech-card__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  margin-bottom: 21px;
+}
+
+.speech-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.speech-tabs button,
+.speech-large,
+.speech-actions button,
+.speech-dict button,
+.speech-chip,
+.speech-read button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.speech-tabs button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.speech-tabs button[aria-selected="true"] {
+  background: rgba(245, 200, 110, 0.22);
+  color: #fff;
+}
+
+.speech-large {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-gold, rgba(245, 200, 110, 0.28));
+  background: transparent;
+  color: var(--gold, #f5c86e);
+}
+
+.speech-large[aria-pressed="true"] {
+  background: var(--gold, #f5c86e);
+  color: #1a1208;
+}
+
+.speech-drop {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 148px;
+  padding: 21px;
+  border: 1.5px dashed rgba(245, 200, 110, 0.55);
+  border-radius: 18px;
+  background: rgba(245, 200, 110, 0.04);
+  text-align: center;
+  cursor: pointer;
+}
+
+.speech-drop strong {
+  font-size: 1.15rem;
+}
+
+.speech-drop span {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.speech-drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.speech-note,
+.speech-fine,
+.speech-dict p,
+.speech-read p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.speech label.field {
+  display: block;
+  margin: 18px 0 8px;
+  font-size: 0.95rem;
+}
+
+.speech textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(7, 17, 42, 0.65);
+  color: var(--text-light, #f5f7fa);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.speech-card.is-large textarea,
+.speech-card.is-large .speech-result {
+  font-size: 1.45rem;
+  line-height: 1.45;
+}
+
+.speech-dict {
+  margin-top: 16px;
+}
+
+.speech-dict__row {
+  display: flex;
+  gap: 8px;
+}
+
+.speech-dict input {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(7, 17, 42, 0.65);
+  color: inherit;
+  font: inherit;
+}
+
+.speech-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.speech-words li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 999px;
+  background: rgba(245, 200, 110, 0.12);
+}
+
+.speech-words button {
+  min-width: 32px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--gold, #f5c86e);
+}
+
+.speech-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.speech-chip {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 200, 110, 0.35);
+  background: transparent;
+  color: #fff;
+}
+
+.speech-chip[aria-pressed="true"] {
+  background: rgba(245, 200, 110, 0.22);
+}
+
+.speech-result {
+  margin-top: 16px;
+  min-height: 120px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  white-space: pre-wrap;
+}
+
+.speech-result span {
+  color: var(--text-muted);
+}
+
+.speech-actions,
+.speech-read__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.speech-actions button,
+.speech-read button,
+.speech-dict button,
+.speech-linkish {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+}
+
+.speech-gold {
+  background: var(--gold, #f5c86e) !important;
+  color: #1a1208 !important;
+  border-color: transparent !important;
+  font-weight: 650;
+}
+
+button:disabled,
+.speech-gold:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.speech-fine {
+  margin: 18px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.speech-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 13px 0;
+  font-size: 1.02rem;
+}
+
+.speech-voice {
+  margin: 8px 0 0;
+  color: var(--text, #f4efe4);
+  font-size: 1.05rem;
+}
+
+.speech :focus-visible {
+  outline: 2px solid var(--gold, #f5c86e);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .speech-card__bar,
+  .speech-dict__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .speech-tabs button,
+  .speech-large,
+  .speech-actions button,
+  .speech-read button {
+    width: 100%;
+  }
+}

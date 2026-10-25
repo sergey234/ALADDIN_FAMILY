@@ -1831,7 +1831,7 @@
 "ai_assistant_error_response_failed" = "Не удалось получить ответ от AI: %@";
 "ai_assistant_error_generic_retry" = "Извините, произошла ошибка. Попробуйте позже.";
 "voice_notes_title" = "Диктофон";
-"voice_notes_settings_entry_subtitle" = "Запись, транскрипция и AI-резюме заметок";
+"voice_notes_settings_entry_subtitle" = "Скажите и получите текст заметки.";
 "voice_notes_record" = "Запись";
 "voice_notes_pause" = "Пауза";
 "voice_notes_play" = "Воспроизвести";
@@ -1864,7 +1864,36 @@
 "voice_notes_empty_subtitle" = "Нажмите «Начать запись», чтобы создать первую заметку.";
 "voice_notes_empty_search_title" = "Ничего не найдено";
 "voice_notes_empty_search_subtitle" = "Измените запрос или переключите фильтр.";
-"voice_notes_local_only_disclaimer" = "Записи остаются на этом iPhone. Распознавание речи — средствами Apple на устройстве.";
+"voice_notes_local_only_disclaimer" = "Текст считаем на этом iPhone.";
+"voice_notes_banner_on_device" = "Текст считаем на этом iPhone.";
+"voice_notes_banner_cloud" = "Текст считает Apple. Запись на телефоне остаётся.";
+"voice_notes_cloud_title" = "Отправить запись в Apple?";
+"voice_notes_cloud_body" = "Только эта запись. Без согласия никуда не уходит.";
+"voice_notes_cloud_yes" = "Отправить";
+"voice_notes_language_missing" = "На этом iPhone язык ещё не готов.";
+"voice_notes_long_file" = "Длинный готовый файл: на телефоне первая минута. Живую запись собираем целиком.";
+"voice_notes_long_file_site" = "Полный текст на сайте";
+"voice_notes_mkv_wait" = "Этот файл откройте на сайте.";
+"voice_notes_mkv_phone" = "Этот файл на телефоне не открывается.";
+"voice_notes_import" = "Открыть файл";
+"voice_notes_import_unsupported" = "Этот файл пока не открываем.";
+"voice_notes_draft" = "Черновик, пока вы говорите";
+"voice_notes_dictionary" = "Свои слова";
+"voice_notes_dictionary_note" = "До ста слов. Их можно стереть.";
+"voice_notes_dictionary_placeholder" = "Имя или слово";
+"voice_notes_dictionary_add" = "Добавить";
+"voice_notes_dictionary_remove" = "Убрать";
+"voice_notes_cleaner" = "Чище";
+"voice_notes_clear" = "Ясно";
+"voice_notes_family" = "Для семьи";
+"voice_notes_protocol" = "Протокол";
+"voice_notes_read" = "Прочитай";
+"voice_notes_check" = "Проверить, не обман ли это";
+"voice_notes_restore" = "Вернуть как было";
+"voice_notes_times" = "Время фраз";
+"voice_notes_preset_title" = "Отправить текст?";
+"voice_notes_preset_body" = "Уходит только текст. Запись остаётся у вас.";
+"voice_notes_preset_yes" = "Отправить текст";
 "voice_notes_summary_local_soon" = "AI-резюме скоро (локально)";
 "call_assistant_section_title" = "Помощник по звонкам";
 "call_assistant_section_subtitle" = "Короткие заметки о звонке для вас и семьи";
@@ -1875,7 +1904,7 @@
 "call_assistant_toast_saved" = "Заметка помощника по звонкам сохранена";
 "voice_safety_coach_tip" = "Скопируйте подозрительную ссылку, затем скажите «ссылка» или «проверка» — откроем проверку и подставим скопированное. Также: тревога / идея / не забыть.";
 "voice_safety_coach_tip_dismiss" = "Понятно";
-"voice_safety_local_vs_antifake" = "Заметка остаётся на устройстве. Проверка ссылки идёт через защиту ALADDIN (может использовать сеть).";
+"voice_safety_local_vs_antifake" = "Заметка остаётся на телефоне.";
 "voice_safety_opening_antifake" = "Открываю проверку…";
 "voice_safety_clipboard_used" = "Взяли текст из буфера обмена";
 "clipboard_safety_secret_blocked" = "Похоже на пароль, код или ключ. Мы не вставляем такие данные в проверку и не сохраняем их.";
@@ -1911,7 +1940,7 @@
 "voice_open_settings" = "Открыть Настройки";
 "voice_notes_start" = "Начать запись";
 "voice_notes_stop_save" = "Стоп и сохранить";
-"voice_notes_howto" = "Нажмите «Начать запись», говорите, затем «Стоп и сохранить». Транскрипция выполняется на устройстве.";
+"voice_notes_howto" = "Нажмите запись, говорите, затем сохраните.";
 "ai_assistant_voice_input_hint" = "Нажмите для голосового ввода, нажмите снова чтобы остановить";
 "ai_assistant_voice_via_siri" = "Через Siri";
 "ai_assistant_voice_unavailable_chip" = "Голос недоступен";
@@ -2396,7 +2425,9 @@
 "ai_trust_disclaimer" = "AI может ошибаться. Это подсказка. Если сомневаетесь — перепроверьте или спросите взрослого.";
 
 /* ux36-w1 */
-"voice_notes_privacy_stt_disclaimer" = "В чат с героем текст отсюда сам не копируется.";
+"voice_notes_privacy_stt_disclaimer" = "В чат само ничего не уходит.";
+"voice_notes_speech_unavailable_hint" = "Сейчас текст здесь не получится. Проверьте язык в настройках iPhone.";
+"voice_structure_privacy" = "В чат уходит только текст, и только если вы сами нажмёте.";
 
 /* ux36-w1 */
 "family_safe_word_title" = "Семейная секретная фраза";

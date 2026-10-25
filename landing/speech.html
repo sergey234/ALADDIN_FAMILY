@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Речь. ALADDIN</title>
+  <meta name="description" content="Скажите и получите текст. Запись удалим сразу после текста.">
+  <link rel="canonical" href="https://aladdin-ai.ru/speech.html">
+  <link rel="stylesheet" href="styles.css?v=20261025speech">
+  <link rel="stylesheet" href="site-nav.css?v=20261025speech">
+  <link rel="stylesheet" href="speech.css?v=20261025speech">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="has-site-header" data-legal-page="speech">
+  <header class="site-header site-header--gold" id="site-header">
+    <div class="site-header__inner">
+      <a href="/index.html" class="site-header__brand" aria-label="ALADDIN AI — главная">
+        <span class="site-header__logo">ALADDIN</span>
+        <span class="site-header__tag">AI</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-nav-menu" aria-label="Меню">☰</button>
+      <nav class="site-nav" id="site-nav-menu" aria-label="Основная навигация">
+        <a href="/index.html" class="site-nav__link" data-nav="home" data-i18n="nav.home">Главная</a>
+        <a href="/antifake.html" class="site-nav__link site-nav__link--cta" data-nav="antifake" data-i18n="nav.antifake">Antifake Premium</a>
+        <a href="/speech.html" class="site-nav__link" data-nav="speech" data-i18n="nav.speech" aria-current="page">Речь</a>
+        <a href="/family-status.html" class="site-nav__link" data-nav="family" data-i18n="nav.family">Семья</a>
+        <a href="/index.html#pay" class="site-nav__link" data-nav="pay" data-i18n="nav.tariffs">Тарифы</a>
+        <a href="/help-faq.html" class="site-nav__link" data-nav="faq" data-i18n="nav.faq">FAQ</a>
+        <a href="/blog/" class="site-nav__link" data-nav="blog" data-i18n="nav.blog">Блог</a>
+      </nav>
+      <div class="site-header__actions">
+        <nav class="lang-switch lang-switch--embedded" aria-label="Language switcher">
+          <button type="button" class="lang-switch__btn lang-switch__btn--active" data-lang="ru" aria-pressed="true">RU</button>
+          <button type="button" class="lang-switch__btn" data-lang="en" aria-pressed="false">EN</button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="speech">
+    <header class="speech__intro">
+      <h1 data-i18n="speech.h1">Скажите и получите текст</h1>
+      <p data-i18n="speech.lead">Запись удалим сразу после текста.</p>
+      <p data-i18n="trio.title"><strong>Сказать. Прочитать. Проверить.</strong></p>
+      <p data-i18n="trio.say">Диктофон записывает ваши слова в заметку.</p>
+      <p data-i18n="trio.read">«Речь» читает этот текст вслух. Удобно себе и старшим.</p>
+      <p data-i18n="trio.check">Защита смотрит то же сообщение и говорит, не обман ли это.</p>
+      <p data-i18n="trio.why.say">Чтобы не забыть договорённость: скажите и получите текст.</p>
+      <p data-i18n="trio.why.check">Чтобы не нажать опасную ссылку: проверьте сообщение.</p>
+    </header>
+
+    <section class="speech-card" aria-label="Работа с речью">
+      <div class="speech-card__bar">
+        <div class="speech-tabs" role="tablist" aria-label="Режим">
+          <button type="button" id="tab-text" role="tab" aria-selected="true" aria-controls="panel-text" data-i18n="speech.tab.text">В текст</button>
+          <button type="button" id="tab-read" role="tab" aria-selected="false" aria-controls="panel-read" data-i18n="speech.tab.read">Прочитай</button>
+        </div>
+        <button type="button" class="speech-large" id="speech-large" aria-pressed="false" data-i18n="speech.large">Крупно</button>
+      </div>
+
+      <div id="panel-text" role="tabpanel" aria-labelledby="tab-text">
+        <label class="speech-drop">
+          <input id="speech-file" type="file" accept=".mp3,.m4a,.wav,.flac,.mp4,.mov,.mkv,audio/*,video/*">
+          <strong data-i18n="speech.drop">Положите запись сюда</strong>
+          <span data-i18n="speech.drop.hint">Звук или видео, до часа. Пока только русский.</span>
+        </label>
+        <p class="speech-note" id="speech-file-status" role="status"></p>
+        <label class="speech-consent">
+          <input id="speech-people" type="checkbox">
+          <span data-i18n="speech.consent">Люди в записи об этом знают.</span>
+        </label>
+        <div class="speech-read__actions">
+          <button type="button" class="speech-gold" id="speech-make" data-i18n="speech.make">Сделать текст</button>
+          <button type="button" id="speech-listen" data-i18n="speech.listen">Слушать</button>
+        </div>
+        <p class="speech-note" id="speech-listen-phrase" data-i18n="speech.listen.phrase">Говорите. Текст появится по кнопке Стоп. Запись удалим сразу после текста.</p>
+
+        <label class="field" for="speech-source" data-i18n="speech.paste">Или вставьте текст</label>
+        <textarea id="speech-source" data-i18n-placeholder="speech.paste.ph" placeholder="Заметка, собрание или письмо"></textarea>
+
+        <div class="speech-dict">
+          <p data-i18n="speech.dict">Свои слова. Их можно стереть.</p>
+          <div class="speech-dict__row">
+            <input id="speech-word" type="text" maxlength="80" data-i18n-placeholder="speech.word.ph" placeholder="Имя или слово" aria-label="Слово">
+            <button type="button" id="speech-add-word" data-i18n="speech.add">Добавить</button>
+          </div>
+          <ul class="speech-words" id="speech-words"></ul>
+          <button type="button" id="speech-clear-words" data-i18n="speech.dict.clear">Стереть</button>
+        </div>
+
+        <div class="speech-chips" role="group" aria-label="Как оформить текст">
+          <button type="button" class="speech-chip" data-preset="clean" aria-pressed="false" data-i18n="speech.clean">Чище</button>
+          <button type="button" class="speech-chip" data-preset="clear" aria-pressed="false" data-i18n="speech.clear">Ясно</button>
+          <button type="button" class="speech-chip" data-preset="family" aria-pressed="false" data-i18n="speech.family">Для семьи</button>
+          <button type="button" class="speech-chip" data-preset="protocol" aria-pressed="false" data-i18n="speech.protocol">Протокол</button>
+        </div>
+        <p class="speech-note" id="speech-preset-note" role="status"></p>
+        <div class="speech-result" id="speech-result" aria-live="polite"><span id="speech-placeholder" data-i18n="speech.placeholder">Здесь будет текст.</span></div>
+        <div class="speech-actions">
+          <button type="button" id="speech-restore" data-i18n="speech.restore">Вернуть как было</button>
+          <button type="button" class="speech-gold" id="speech-copy" data-i18n="speech.copy">Копировать</button>
+          <button type="button" id="speech-download" data-i18n="speech.download">Скачать</button>
+          <a class="speech-linkish" id="speech-check" href="/antifake.html" data-i18n="speech.check">Проверить, не обман ли это</a>
+        </div>
+      </div>
+
+      <div id="panel-read" role="tabpanel" aria-labelledby="tab-read" hidden>
+        <label class="field" for="speech-read-text" data-i18n="speech.read.label">Текст для чтения</label>
+        <textarea id="speech-read-text" data-i18n-placeholder="speech.read.ph" placeholder="Вставьте текст"></textarea>
+        <div class="speech-read__actions">
+          <button type="button" class="speech-gold" id="speech-speak" data-i18n="speech.speak">Прочитай</button>
+          <button type="button" id="speech-stop" data-i18n="speech.stop">Стоп</button>
+          <button type="button" disabled data-i18n="speech.later">Позже</button>
+        </div>
+        <p data-i18n="speech.read.note">Читает браузер. Никуда не отправляем.</p>
+      </div>
+
+      <p class="speech-fine" data-i18n="speech.fine">Если шумно или люди говорят вместе, метки могут перепутать.</p>
+    </section>
+  </main>
+  <script src="site-nav.js?v=20261025speech"></script>
+  <script src="i18n-strings.js?v=20261025speech7"></script>
+  <script src="i18n.js?v=20261025speech"></script>
+  <script src="speech.js?v=20261025speech7"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+[Unit]
+Description=ALADDIN speech neighbor (localhost only)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/aladdin-speech/app
+ExecStart=/opt/aladdin-speech/venv/bin/uvicorn server:app --host 127.0.0.1 --port 8016 --workers 1
+Environment=HF_HUB_OFFLINE=1
+Environment=TRANSFORMERS_OFFLINE=1
+Environment=PYANNOTE_METRICS_ENABLED=false
+Environment=OMP_NUM_THREADS=2
+Environment=MKL_NUM_THREADS=2
+Restart=on-failure
+RestartSec=5
+MemoryHigh=4G
+MemoryMax=5G
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
