@@ -3,12 +3,8 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What is military encryption AES-256?",
-  "body": "What is military encryption AES-256?\n\nAES-256 is the strongest way to protect information, used by:\nâ¢ Banks\nâ¢ Military\nâ¢ Governments\nâ¢ Special services\n\nIt's like a safe with a million locks â the key is practically impossible to guess!\n\nâ ALADDIN Premium uses AES-256 for maximum protection.",
+  "body": "What is military encryption AES-256?\n\nAES-256 is the strongest way to protect information, used by:\n• Banks\n• Military\n• Governments\n• Special services\n\nIt's like a safe with a million locks — the key is practically impossible to guess!\n\n✅ ALADDIN Premium uses AES-256 for maximum protection.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [
-    "aes",
-    "шифрование",
-    "военное"
-  ],
+  "keywords": [],
   "kb_version": "kb_v1"
 }

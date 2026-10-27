@@ -10,7 +10,13 @@ from typing import List, Optional
 
 from security.services.ai_intent_router import KB_ONLY_INTENTS
 from security.services.hermes_client import chat_once as hermes_chat_once, hermes_available
-from security.services.kb_search_service import kb_search
+
+
+def kb_search_chunks(question: str, *, locale: str, top_k: int, topic: Optional[str]) -> List[dict]:
+    """Indirection so tests can replace search without loading the database driver."""
+    from security.services.kb_search_service import kb_search
+
+    return kb_search(question, locale=locale, top_k=top_k, topic=topic)
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +24,22 @@ LLM_CONTEXT_POLICY_KB_RAG_V1 = "kb_rag_v1"
 RAG_ELIGIBLE_INTENTS = KB_ONLY_INTENTS | frozenset({"general", "app_help"})
 MIN_SCORE = float(os.getenv("AI_RAG_MIN_SCORE", "0.38"))
 TOP_K = int(os.getenv("AI_RAG_TOP_K", "4"))
+_LOC_KEY_HEADING = re.compile(r"(?m)^#{1,6}\s*[a-z][a-z0-9_]{2,80}\s*$")
+# UI status copy must never be served as an answer (ru + en).
+_UI_CHROME_MARKERS = (
+    "could not decrypt",
+    "message protection is still setting up",
+    "secure chat is not set up",
+    "setting up message protection",
+    "setting up end-to-end encryption",
+    "write without protection",
+    "не удалось расшифровать",
+    "защита сообщений ещё настраивается",
+    "защищённый чат на этом телефоне ещё не настроен",
+    "настраиваем защиту сообщений",
+    "настраивается сквозное шифрование",
+    "писать без защиты",
+)
 
 
 def rag_enabled() -> bool:
@@ -50,6 +72,36 @@ class KBRagResult:
     @property
     def grounded(self) -> bool:
         return True
+
+
+def chunk_is_ui_chrome(hit: dict) -> bool:
+    """Localization keys and chat-status strings are not knowledge."""
+    text = (hit.get("text") or "").strip()
+    if not text:
+        return True
+    if _LOC_KEY_HEADING.search(text):
+        return True
+    low = text.lower()
+    return any(marker in low for marker in _UI_CHROME_MARKERS)
+
+
+def _usable_hits(hits: List[dict], intent_id: str) -> List[dict]:
+    usable: List[dict] = []
+    for hit in hits:
+        if chunk_is_ui_chrome(hit):
+            continue
+        topic = (hit.get("topic") or "").strip()
+        source = (hit.get("source") or "").strip()
+        # E2EE UI dumps are topic=e2ee. Real FAQ (data safety) may share the topic.
+        if topic == "e2ee" and intent_id != "e2ee_howto" and source != "UnifiedFAQCatalog":
+            continue
+        usable.append(hit)
+    return usable
+
+
+def _extractive_allowed(intent_id: str, kb_only: bool) -> bool:
+    """Raw chunk is an answer only for handbook intents, never for open chat."""
+    return bool(kb_only) and intent_id in KB_ONLY_INTENTS
 
 
 def _topic_for_intent(intent_id: str) -> Optional[str]:
@@ -127,9 +179,12 @@ def try_kb_rag_answer(
         return None
 
     topic = _topic_for_intent(intent_id)
-    hits = kb_search(question, locale=locale, top_k=TOP_K, topic=topic)
+    hits = _usable_hits(
+        kb_search_chunks(question, locale=locale, top_k=TOP_K, topic=topic),
+        intent_id,
+    )
     if not hits:
-        logger.info("kb_rag: no hits intent=%s locale=%s", intent_id, locale)
+        logger.info("kb_rag: no usable hits intent=%s locale=%s", intent_id, locale)
         return None
     if float(hits[0].get("score") or 0) < MIN_SCORE:
         logger.info(
@@ -145,7 +200,7 @@ def try_kb_rag_answer(
     if hermes_available():
         prompt = _build_rag_prompt(question, hits, locale)
         ok, text, err = hermes_chat_once(prompt, skill="aladdin-security-kb")
-        if ok and text.strip():
+        if ok and text.strip() and not chunk_is_ui_chrome({"text": text}):
             logger.info(
                 "kb_rag: hermes ok intent=%s sources=%s",
                 intent_id,
@@ -159,7 +214,14 @@ def try_kb_rag_answer(
             )
         logger.warning("kb_rag: hermes failed intent=%s err=%s", intent_id, err)
 
+    if not _extractive_allowed(intent_id, kb_only):
+        logger.info("kb_rag: skip extractive intent=%s (model fallback)", intent_id)
+        return None
+
     text = _extractive_answer(hits, locale)
+    if chunk_is_ui_chrome({"text": text}):
+        logger.info("kb_rag: extractive rejected as ui chrome intent=%s", intent_id)
+        return None
     tools.append("kb_rag_v1:extractive")
     logger.info("kb_rag: extractive intent=%s sources=%s", intent_id, sources[:3])
     return KBRagResult(

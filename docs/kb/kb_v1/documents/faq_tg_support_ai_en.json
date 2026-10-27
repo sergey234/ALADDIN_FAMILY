@@ -1,0 +1,10 @@
+{
+  "id": "faq_tg_support_ai_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is the Telegram AI support assistant?",
+  "body": "What is the Telegram AI support assistant?\n\nIn Telegram bot @AladdinchatAI_bot you can ask the ALADDIN support AI. It answers from the app FAQ and guides: antifake, kids, plans, family, network protection.\n\nImportant:\n• Not Companion — answers only about the ALADDIN app.\n• Telegram has no ALADDIN family-chat E2EE — do not enter passwords, SMS codes, or card data.\n• Plan/family facts come from your linked account; disputes go to a human.\n• First tap “Connect Telegram” (/link code), then “Ask the assistant” or send /help_ai in the bot.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

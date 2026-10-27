@@ -63,6 +63,10 @@ try:
         chat_once as openrouter_direct_chat,
         direct_fallback_enabled,
     )
+    from security.services.llm_providers.gemini_client import (
+        chat_once as gemini_chat_once,
+        gemini_fallback_enabled,
+    )
 except ImportError:
     from ai_response_helpers import (  # type: ignore
         dev_fallback_chat,
@@ -79,6 +83,17 @@ except ImportError:
         chat_once as openrouter_direct_chat,
         direct_fallback_enabled,
     )
+    try:
+        from gemini_client import (  # type: ignore
+            chat_once as gemini_chat_once,
+            gemini_fallback_enabled,
+        )
+    except ImportError:
+        def gemini_chat_once(*_a, **_k):  # type: ignore
+            return False, "", "gemini_client missing"
+
+        def gemini_fallback_enabled() -> bool:  # type: ignore
+            return False
 
 try:
     from security.services.ai_prompt_gate import (
@@ -322,6 +337,25 @@ def _hermes_skill_for_intent(intent_id: str) -> Optional[str]:
     return None
 
 
+_EN_LOCK = "Answer only in English. Do not use Russian."
+_RU_LOCK = "Отвечай только по-русски. Не переключайся на английский."
+
+
+def _with_language_lock(message: str, response_language: Optional[str]) -> str:
+    """Force the reply language from the app setting (ru / en), not from a guess."""
+    code = (response_language or "").strip().lower()[:2]
+    if code == "en":
+        line = _EN_LOCK
+    elif code == "ru":
+        line = _RU_LOCK
+    else:
+        return message
+    text = message or ""
+    if text.startswith(line):
+        return text
+    return f"{line}\n\n{text}"
+
+
 def _route_via_hermes(intent_id: str, kb_only: bool) -> bool:
     """KB / open questions → Hermes skill aladdin-security-kb when available."""
     if kb_only:
@@ -345,14 +379,14 @@ def _hermes_prompt_for_chat(
         and sfm_adapter is not None
     ):
         prompt, sources = build_hermes_prompt_with_aggregates(
-            message=cloud_message,
+            message=_with_language_lock(cloud_message, response_language),
             execute_fn=sfm_adapter.execute_function,
             user_id=user_id,
             response_language=response_language,
             include_aggregates=True,
         )
         return prompt, sources
-    return cloud_message, []
+    return _with_language_lock(cloud_message, response_language), []
 
 
 def _try_openrouter_direct_answer(
@@ -383,6 +417,46 @@ def _try_openrouter_direct_answer(
     log_llm_path_metrics(
         ui_context=ui_context,
         llm_path="openrouter_direct",
+        intent=intent_id,
+        tools_used=tools,
+        user_id=user_id,
+        message_len=len(cloud_message),
+    )
+    return _chat_response_from_hermes(
+        response_text=text,
+        intent_id=intent_id,
+        tools_used=tools,
+    )
+
+
+def _try_gemini_answer(
+    *,
+    cloud_message: str,
+    intent_id: str,
+    ui_context: str,
+    user_id: Optional[str] = None,
+) -> Optional[ChatMessageResponse]:
+    """After Hermes + OpenRouter fail → optional Gemini (FEATURE_GEMINI_FALLBACK=1)."""
+    if not gemini_fallback_enabled():
+        return None
+    ok, text, err = gemini_chat_once(
+        cloud_message,
+        ui_context=ui_context,
+    )
+    if not ok or not text.strip() or is_probable_mock_response(text):
+        logger.warning("Gemini fallback failed intent=%s err=%s", intent_id, err)
+        return None
+    tools = [f"gemini:{os.getenv('GEMINI_MODEL', 'gemini-flash-latest')}"]
+    if cloud_message.strip():
+        _safe_record_chat_exchange(
+            user_id=user_id,
+            user_message_redacted=cloud_message[:500],
+            assistant_message=text,
+            ui_context=ui_context,
+        )
+    log_llm_path_metrics(
+        ui_context=ui_context,
+        llm_path="gemini",
         intent=intent_id,
         tools_used=tools,
         user_id=user_id,
@@ -622,7 +696,10 @@ async def _ai_companion_context_chat(
     Skips security KB-RAG / security intent router.
     """
     user_id = user["user_id"] or "anonymous"
-    cloud_message = _llm_message_or_http422(request.message, field="message")
+    cloud_message = _with_language_lock(
+        _llm_message_or_http422(request.message, field="message"),
+        request.response_language,
+    )
     hermes_err: Optional[str] = None
     if hermes_available():
         ok, text, err = hermes_chat_once(cloud_message, skill=None)
@@ -667,6 +744,16 @@ async def _ai_companion_context_chat(
     if or_resp:
         or_resp.intent = "companion_chat"
         return or_resp
+
+    gem_resp = _try_gemini_answer(
+        cloud_message=cloud_message,
+        intent_id="companion_chat",
+        ui_context="companion",
+        user_id=user_id,
+    )
+    if gem_resp:
+        gem_resp.intent = "companion_chat"
+        return gem_resp
 
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         sfm_message = _companion_user_turn_for_sfm(cloud_message)
@@ -745,6 +832,7 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
     try:
         intent = classify_intent(request.message, request.context)
         cloud_message = _llm_message_or_http422(request.message, field="message")
+        llm_message = _with_language_lock(cloud_message, request.response_language)
         rag_locale = None
         try:
             from security.services.kb_rag_service import resolve_locale, try_kb_rag_answer
@@ -792,7 +880,7 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
         if _route_via_hermes(intent.intent_id, intent.kb_only) and hermes_available():
             skill = _hermes_skill_for_intent(intent.intent_id)
             hermes_prompt, agg_sources = _hermes_prompt_for_chat(
-                cloud_message=cloud_message,
+                cloud_message=llm_message,
                 intent_id=intent.intent_id,
                 user_id=request.user_id or user_id,
                 response_language=request.response_language,
@@ -850,13 +938,21 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                     intent.intent_id,
                 )
             or_resp = _try_openrouter_direct_answer(
-                cloud_message=cloud_message,
+                cloud_message=llm_message,
                 intent_id=intent.intent_id,
                 ui_context=request.context,
                 user_id=user_id,
             )
             if or_resp:
                 return or_resp
+            gem_resp = _try_gemini_answer(
+                cloud_message=llm_message,
+                intent_id=intent.intent_id,
+                ui_context=request.context,
+                user_id=user_id,
+            )
+            if gem_resp:
+                return gem_resp
             if intent.kb_only and not mock_allowed():
                 raise_service_unavailable()
 
@@ -969,19 +1065,53 @@ async def ai_assistant_stream(request: StreamRequest, user: dict = Depends(get_c
 
     intent = classify_intent(request.message or "", request.context)
     if _route_via_hermes(intent.intent_id, intent.kb_only):
-        if not hermes_available():
-            raise_service_unavailable()
         cloud_message = _llm_message_or_http422(
             request.message,
             field="message",
             allow_empty=(request.context == "resume" or request.resumeFromIndex > 0),
         )
+        if cloud_message.strip():
+            cloud_message = _with_language_lock(cloud_message, request.response_language)
         skill = _hermes_skill_for_intent(intent.intent_id)
-        ok, text, err = hermes_chat_once(cloud_message, skill=skill)
-        if not ok or not text.strip():
-            logger.warning("Hermes stream path failed: %s", err)
+        if hermes_available():
+            ok, text, err = hermes_chat_once(cloud_message, skill=skill)
+            if ok and text.strip() and not is_probable_mock_response(text):
+                response_text = text
+                log_llm_path_metrics(
+                    ui_context=request.context,
+                    llm_path="hermes",
+                    intent=intent.intent_id,
+                    tools_used=[f"hermes:{skill or 'default'}"],
+                    user_id=user_id,
+                    message_len=len(cloud_message),
+                )
+            else:
+                logger.warning("Hermes stream path failed: %s", err)
+        else:
+            logger.warning("Hermes unavailable for stream; trying OpenRouter/Gemini")
+
+        if not response_text:
+            or_resp = _try_openrouter_direct_answer(
+                cloud_message=cloud_message,
+                intent_id=intent.intent_id,
+                ui_context=request.context,
+                user_id=user_id,
+            )
+            if or_resp and or_resp.response.strip():
+                response_text = or_resp.response
+
+        if not response_text:
+            gem_resp = _try_gemini_answer(
+                cloud_message=cloud_message,
+                intent_id=intent.intent_id,
+                ui_context=request.context,
+                user_id=user_id,
+            )
+            if gem_resp and gem_resp.response.strip():
+                response_text = gem_resp.response
+
+        if not response_text and intent.kb_only and not mock_allowed():
             raise_service_unavailable()
-        response_text = text
     elif intent_requires_live_sfm(intent.intent_id):
         require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
 

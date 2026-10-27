@@ -10,7 +10,7 @@
 | app_help / AI copy | `Core/Localization/LocalizationManager.swift` (`faq_ai_*`, `ai_*`) |
 | Onboarding | локализация onboarding keys |
 | Тарифы | локализация tariff/subscription keys |
-| E2EE howto | локализация e2ee / family chat keys |
+| E2EE howto | `curated/family_chat_e2ee_e2ee_{ru,en}.json` — не статусы кнопок |
 
 ## Формат документа (ingest R1.2)
 
@@ -35,15 +35,17 @@
 | Файл | Описание |
 |------|----------|
 | `manifest.json` | Версия, счётчики, topics |
-| `documents/*.json` | 78 документов (39 ru + 39 en) |
-| `chunks.jsonl` | 87 чанков для ingest |
+| `documents/*.json` | FAQ + curated (ru и en) |
+| `curated/*.json` | советы, которые экспорт не имеет права затереть |
+| `chunks.jsonl` | чанки для ingest; без `### ключ_локализации` |
 
 ## Скрипты
 
 ```bash
-python3 tools/export_kb_v1.py
-python3 tools/ingest_kb_v1_chunks.py
+./tools/rebuild_kb_v1.sh
 ```
+
+Скрипт экспортирует FAQ, поверх кладёт `curated/`, собирает `chunks.jsonl` и падает, если в чанке снова есть `### ключ_локализации` или статус «Could not decrypt». Статусы семейного чата в справочник не экспортируются.
 
 ## Следующий шаг (R1.3)
 

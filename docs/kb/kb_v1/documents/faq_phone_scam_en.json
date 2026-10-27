@@ -3,10 +3,8 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What is phone fraud?",
-  "body": "What is phone fraud?\n\nPhone scammers call and deceive people:\nâ¢ \"Hello, this is the bank! Your account is blocked, tell me your password\"\nâ¢ \"This is the police! Your son has problems, we need money\"\nâ¢ \"Congratulations! You won a million! Transfer 5000â½ to receive\"\n\nRemember: NEVER tell passwords over the phone!\n\nâ ALADDIN warns about suspicious calls and helps you assess the risk.",
+  "body": "What is phone fraud?\n\nPhone scammers call and deceive people:\n• \"Hello, this is the bank! Your account is blocked, tell me your password\"\n• \"This is the police! Your son has problems, we need money\"\n• \"Congratulations! You won a million! Transfer 5000₽ to receive\"\n\nRemember: NEVER tell passwords over the phone!\n\n✅ ALADDIN checks a call recording after the conversation and helps assess risk.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [
-    "phone scam"
-  ],
+  "keywords": [],
   "kb_version": "kb_v1"
 }

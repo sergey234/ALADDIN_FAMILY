@@ -1,0 +1,10 @@
+{
+  "id": "faq_website_antifake_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "How to check suspicious content on the website?",
+  "body": "How to check suspicious content on the website?\n\nOpen aladdin-ai.ru/antifake on a computer or phone browser.\n\n**14-day free trial** on this device (Start trial button) **or** Family/Premium — enter your activation code.\n\n1. Text tab — paste an SMS, email, or link → Check.\n2. Voice — upload a recording or voice message (up to 25 MB).\n3. Video — a \"bank\" clip or deepfake.\n4. Call — recording after the conversation + caller number (if you remember); incoming labels — in the app (Call Filter).\n\nResult: likely fake / uncertain / likely real. An assessment, not a legal verdict.\n\nIn the app with Family/Premium — check history and family alerts.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

@@ -3,10 +3,8 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What are viruses and trojans?",
-  "body": "What are viruses and trojans?\n\nA virus in your phone is like a cold for a computer. It can:\nâ¢ Delete your photos\nâ¢ Steal passwords\nâ¢ Break your phone\n\nA trojan is a virus that hides in a beautiful program (like the Trojan horse from the fairy tale). You think you downloaded a game, but it's actually a virus!\n\nâ ALADDIN detects threats and warns you before harm is done.",
+  "body": "What are viruses and trojans?\n\nA virus in your phone is like a cold for a computer. It can:\n• Delete your photos\n• Steal passwords\n• Break your phone\n\nA trojan is a virus that hides in a beautiful program (like the Trojan horse from the fairy tale). You think you downloaded a game, but it's actually a virus!\n\n✅ ALADDIN detects threats and warns you before harm is done.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [
-    "viruses trojans"
-  ],
+  "keywords": [],
   "kb_version": "kb_v1"
 }

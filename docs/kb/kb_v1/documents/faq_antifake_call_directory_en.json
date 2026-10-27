@@ -1,0 +1,10 @@
+{
+  "id": "faq_antifake_call_directory_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "How do scam labels on incoming calls work?",
+  "body": "How do scam labels on incoming calls work?\n\nOpen Authenticity Check → **Call** tab → Incoming labels section → guide and Sync.\n\nNumbers come only from ALADDIN's server.\n\nA label appears on incoming calls when the number is listed. iOS 18+: Settings → Apps → Phone → Call Blocking & Identification → **ALADDIN Call Filter**.\n\nThis does not block every unknown caller — only labels known scam numbers.\n\nALADDIN does not listen to calls in real time (iOS rules). If you have a recording, check it in the Call tab after the conversation.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

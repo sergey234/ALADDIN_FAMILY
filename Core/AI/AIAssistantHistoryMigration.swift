@@ -72,41 +72,49 @@ enum AIAssistantResponseSanitizer {
     static func sanitize(_ raw: String) -> Result {
         var droppedNoise = false
         let L = LocalizationManager.shared
-        let lines = raw.components(separatedBy: .newlines).compactMap { line -> String? in
-            let t = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            if t.isEmpty { return nil }
-            if t.hasPrefix("session_id:") { droppedNoise = true; return nil }
-            if t.hasPrefix("⚠") || t.hasPrefix("Warning:") { droppedNoise = true; return nil }
+        let rawLines = raw.components(separatedBy: .newlines)
+        var kept: [String] = []
+        var index = 0
+        while index < rawLines.count {
+            let t = rawLines[index].trimmingCharacters(in: .whitespacesAndNewlines)
+            index += 1
+            if t.isEmpty { continue }
+            if t.hasPrefix("session_id:") { droppedNoise = true; continue }
+            if t.hasPrefix("⚠") || t.hasPrefix("Warning:") { droppedNoise = true; continue }
             let low = t.lowercased()
             if dropSubstrings.contains(where: { low.contains($0) }) {
                 droppedNoise = true
-                return nil
+                continue
             }
-            // Resolve `### some_loc_key` → human localized string (never show raw keys).
-            let ns = t as NSString
-            let full = NSRange(location: 0, length: ns.length)
-            if let m = markdownKeyHeading.firstMatch(in: t, options: [], range: full),
-               m.numberOfRanges >= 2 {
-                let key = ns.substring(with: m.range(at: 1))
-                let localized = L.localized(key)
-                if localized != key {
-                    droppedNoise = true
-                    return localized
-                }
+            // A `### loc_key` line is a key, not a second sentence.
+            // If the handbook already has the sentence underneath, keep that once.
+            if localizationKeyHeading(in: t) != nil {
                 droppedNoise = true
-                return nil
+                if nextContentLine(in: rawLines, from: index) != nil {
+                    continue
+                }
+                if let key = localizationKeyHeading(in: t) {
+                    let localized = L.localized(key)
+                    if localized != key {
+                        kept.append(localized)
+                    }
+                }
+                continue
             }
-            // Bare localization-key line without markdown.
             if t.range(of: #"^[a-z][a-z0-9_]{2,80}$"#, options: .regularExpression) != nil {
                 let localized = L.localized(t)
                 if localized != t {
                     droppedNoise = true
-                    return localized
+                    if nextContentLine(in: rawLines, from: index) == localized {
+                        continue
+                    }
+                    kept.append(localized)
+                    continue
                 }
             }
-            return t
+            kept.append(t)
         }
-        let cleaned = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleaned = kept.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
         if !cleaned.isEmpty {
             return Result(displayText: cleaned, strippedTechnicalNoise: droppedNoise)
         }
@@ -116,5 +124,27 @@ enum AIAssistantResponseSanitizer {
 
     static func userFacingText(from raw: String) -> String {
         sanitize(raw).displayText
+    }
+
+    private static func localizationKeyHeading(in line: String) -> String? {
+        let ns = line as NSString
+        let full = NSRange(location: 0, length: ns.length)
+        guard let match = markdownKeyHeading.firstMatch(in: line, options: [], range: full),
+              match.numberOfRanges >= 2 else {
+            return nil
+        }
+        return ns.substring(with: match.range(at: 1))
+    }
+
+    private static func nextContentLine(in lines: [String], from index: Int) -> String? {
+        var cursor = index
+        while cursor < lines.count {
+            let trimmed = lines[cursor].trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+            cursor += 1
+        }
+        return nil
     }
 }

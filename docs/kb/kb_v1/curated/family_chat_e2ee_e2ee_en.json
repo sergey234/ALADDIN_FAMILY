@@ -1,0 +1,10 @@
+{
+  "id": "family_chat_e2ee_e2ee_en",
+  "locale": "en",
+  "topic": "e2ee",
+  "title": "Family chat encryption",
+  "body": "If a family message won’t open: wait a few seconds and try again, or open Family Chat on another family phone so keys can sync.\n\nIf secure chat isn’t ready yet: wait 5–10 seconds. If it still fails, open Family Chat once on another family device, then return here.\n\nWhile we set up protection you’ll see a short “setting up” status — usually it finishes in a few seconds.",
+  "source": "curated",
+  "keywords": ["family chat", "encryption", "secure chat", "decrypt"],
+  "kb_version": "kb_v1"
+}

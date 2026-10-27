@@ -1,0 +1,10 @@
+{
+  "id": "faq_antifake_after_call_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "How do I check a call recording after a conversation?",
+  "body": "How do I check a call recording after a conversation?\n\nAfter a call, ALADDIN can remind you to open the Call tab (toggle in **Check a recording**).\n\nUpload your recording if you have one and optionally enter the number from Recents in the Phone app.\n\niOS does not expose the number to apps automatically — enter it manually if you remember it.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

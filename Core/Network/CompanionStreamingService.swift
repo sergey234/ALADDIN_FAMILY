@@ -343,11 +343,21 @@ final class CompanionStreamingService: ObservableObject {
         continuation.finish()
     }
 
-    /// Prod может отдавать 404 на `/stream` (nginx / старый deploy) — тогда отвечаем через `/chat`.
-    private static func shouldFallbackStreamToChat(_ error: Error) -> Bool {
+    /// Prod может отдавать 404/504 на `/stream` — тогда один раз отвечаем через `/chat`.
+    static func shouldFallbackStreamToChat(_ error: Error) -> Bool {
+        if let urlError = error as? URLError, urlError.code == .timedOut {
+            return true
+        }
         let ns = error as NSError
+        if ns.domain == NSURLErrorDomain && ns.code == NSURLErrorTimedOut {
+            return true
+        }
+        let low = ns.localizedDescription.lowercased()
+        if low.contains("timed out") || low.contains("timeout") {
+            return true
+        }
         guard ns.domain == "CompanionStream" else { return false }
-        return ns.code == 404 || ns.code == 405 || ns.code == 502 || ns.code == 503
+        return [404, 405, 502, 503, 504].contains(ns.code)
     }
 
     private func deliverViaChatFallback(

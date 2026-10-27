@@ -3,12 +3,8 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What is crash detection?",
-  "body": "What is crash detection?\n\nCrash detection is when your phone notices a sharp impact while moving.\n\nHow it works:\nâ¢ Device sensors detect a strong collision\nâ¢ ALADDIN shows a warning\nâ¢ You decide whether to call for help\n\nâ ï¸ False alarms are possible â always check the situation!\n\nâ ALADDIN helps you reach loved ones faster, but is not a substitute for calling emergency services.",
+  "body": "What is crash detection?\n\nCrash detection is when your phone notices a sharp impact while moving.\n\nHow it works:\n• Device sensors detect a strong collision\n• ALADDIN shows a warning\n• You decide whether to call for help\n\n⚠️ False alarms are possible — always check the situation!\n\n✅ ALADDIN helps you reach loved ones faster, but is not a substitute for calling emergency services.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [
-    "авария",
-    "дтп",
-    "crash"
-  ],
+  "keywords": [],
   "kb_version": "kb_v1"
 }

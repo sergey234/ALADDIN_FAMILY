@@ -36,5 +36,5 @@ def kb_search(
         logger.warning("kb_search embedding path failed: %s", exc)
 
     return kb_vector_store.search_lexical_fallback(
-        q, locale=locale, top_k=top_k, kb_version="kb_v1"
+        q, locale=locale, top_k=top_k, topic=topic, kb_version="kb_v1"
     )

@@ -3,7 +3,7 @@
   "locale": "en",
   "topic": "app_help",
   "title": "How does the AI assistant work?",
-  "body": "How does the AI assistant work?\n\nThe ALADDIN AI assistant does not train on your phone or store chats to train a model. It answers from the in-app knowledge base and live protection data from the server. Enable “Cloud AI assistant” in Settings for cloud replies.",
+  "body": "How does the AI assistant work?\n\nThe ALADDIN AI assistant does not train on your phone or store chats to train a model. It answers from the in-app knowledge base and live protection data from the server. Turn on the smart assistant in Settings for server replies.",
   "source": "LocalizationManager",
   "keywords": [],
   "kb_version": "kb_v1"

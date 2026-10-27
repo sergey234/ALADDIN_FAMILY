@@ -1,0 +1,10 @@
+{
+  "id": "faq_antifake_apple_limits_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What can Antifake do on iPhone — and what can't it?",
+  "body": "What can Antifake do on iPhone — and what can't it?\n\nALADDIN checks text, links, audio, and video only when you tap Check or share content via the Share sheet.\n\nWe do not listen to all phone calls in the background — iOS forbids that. We do not hang up automatically or intercept FaceTime or messengers.\n\nCall labels apply only to numbers in our verified database (Call Directory), not every unknown caller.\n\nOn aladdin-ai.ru/antifake — **14-day free trial** or Family/Premium with a code; 25 MB file limit. In the app — Family/Premium only.\n\nResults are assessments (likely fake / uncertain / likely real), not legal verdicts.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

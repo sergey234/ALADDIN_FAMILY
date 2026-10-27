@@ -1,16 +1,17 @@
 {
   "kb_version": "kb_v1",
-  "generated_at": "2026-05-21T22:06:19.289454+00:00",
+  "generated_at": "2026-10-27T14:28:20.914461+00:00",
   "locales": [
     "ru",
     "en"
   ],
-  "document_count": 78,
+  "document_count": 116,
   "sources": [
     "UnifiedFAQCatalog",
     "LocalizationManager"
   ],
   "topics": [
+    "antifake_marketing",
     "app_help",
     "e2ee",
     "onboarding",

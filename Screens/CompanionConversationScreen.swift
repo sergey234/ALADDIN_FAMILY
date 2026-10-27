@@ -36,6 +36,8 @@ struct CompanionConversationScreen: View {
     @State private var isLoadingState = true
     @State private var lipSyncPhase: CGFloat = 0
     @State private var errorText: String?
+    /// Last user line to send again. Nil means the retry button only reloads the thread.
+    @State private var retrySendText: String?
     @State private var feedbackBusyId: UUID?
     @State private var streamingHeroIndex: Int?
     @State private var showResumeStream = false
@@ -272,7 +274,17 @@ struct CompanionConversationScreen: View {
                             .font(.caption)
                             .foregroundStyle(.orange)
                             .fixedSize(horizontal: false, vertical: true)
-                        if shouldOfferCompanionLoadRetry(errorText) {
+                        if let pending = retrySendText, !pending.isEmpty {
+                            Button(localizationManager.localized("companion_error_retry")) {
+                                self.errorText = nil
+                                self.retrySendText = nil
+                                self.input = pending
+                                Task { await sendText(echoUserBubble: false) }
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.secondaryGold)
+                            .accessibilityIdentifier("companion_error_retry_send")
+                        } else if shouldOfferCompanionLoadRetry(errorText) {
                             Button(localizationManager.localized("companion_error_retry")) {
                                 self.errorText = nil
                                 Task { await loadState() }
@@ -291,6 +303,7 @@ struct CompanionConversationScreen: View {
                         familyPdfOnly = false
                     }
                     self.errorText = nil
+                    self.retrySendText = nil
                     showAssistantBusyHint = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -1895,19 +1908,16 @@ struct CompanionConversationScreen: View {
         }
         streamingHeroIndex = nil
         showResumeStream = false
-        if messages.indices.contains(index) {
-            messages[index] = CompanionChatBubble(
-                id: messages[index].id,
-                text: localizationManager.localized("companion_conversation_send_failed"),
-                isUser: false
-            )
-        } else {
-            messages.append(CompanionChatBubble(text: localizationManager.localized("companion_conversation_send_failed"), isUser: false))
+        if messages.indices.contains(index), !messages[index].isUser {
+            let trimmed = messages[index].text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                messages.remove(at: index)
+            }
         }
         heroEmotion = .alert
     }
 
-    private func sendText() async {
+    private func sendText(echoUserBubble: Bool = true) async {
         isInputFocused = false
         guard !crisisInputBlocked else {
             errorText = localizationManager.localized("wellness_crisis_deep_blocked")
@@ -1932,7 +1942,10 @@ struct CompanionConversationScreen: View {
         }
         input = ""
         errorText = nil
-        messages.append(CompanionChatBubble(text: text, isUser: true))
+        retrySendText = nil
+        if echoUserBubble {
+            messages.append(CompanionChatBubble(text: text, isUser: true))
+        }
         isSending = true
         showResumeStream = false
         streamEmotionDebouncer.cancel()
@@ -1970,6 +1983,7 @@ struct CompanionConversationScreen: View {
                 } else {
                     errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
                 }
+                retrySendText = text
                 handleStreamFailure(at: heroIdx)
             }
         )
@@ -2005,6 +2019,9 @@ struct CompanionConversationScreen: View {
                     errorText = gate.errorDescription
                 } else {
                     errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
+                }
+                if retrySendText == nil {
+                    retrySendText = messages.last(where: { $0.isUser })?.text
                 }
                 handleStreamFailure(at: heroIdx)
             }

@@ -215,25 +215,37 @@ def search_lexical_fallback(
     *,
     locale: str,
     top_k: int = 5,
+    topic: Optional[str] = None,
     kb_version: str = "kb_v1",
 ) -> List[Dict[str, Any]]:
     """Used when embeddings API unavailable (dev / credits)."""
     ensure_schema()
     q = f"%{query.strip()[:200]}%"
+    filters = [
+        "kb_version = :kb_version",
+        "locale = :locale",
+        "(chunk_text ILIKE :q OR title ILIKE :q)",
+    ]
+    params: Dict[str, Any] = {
+        "kb_version": kb_version,
+        "locale": locale,
+        "q": q,
+        "top_k": top_k,
+    }
+    if topic:
+        filters.append("topic = :topic")
+        params["topic"] = topic
     sql = text(
-        """
+        f"""
         SELECT chunk_id, parent_id, topic, title, chunk_text, source, 0.5 AS score
         FROM aladdin_kb_chunks
-        WHERE kb_version = :kb_version AND locale = :locale
-          AND (chunk_text ILIKE :q OR title ILIKE :q)
+        WHERE {' AND '.join(filters)}
         LIMIT :top_k
         """
     )
     rows: List[Dict[str, Any]] = []
     with _engine().connect() as conn:
-        result = conn.execute(
-            sql, {"kb_version": kb_version, "locale": locale, "q": q, "top_k": top_k}
-        )
+        result = conn.execute(sql, params)
         for row in result.mappings():
             rows.append(
                 {

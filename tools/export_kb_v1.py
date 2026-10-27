@@ -12,6 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SUPPORT_SWIFT = ROOT / "Screens" / "13_SupportScreen.swift"
 LOCALIZATION_SWIFT = ROOT / "Core" / "Localization" / "LocalizationManager.swift"
 OUT_DIR = ROOT / "docs" / "kb" / "kb_v1" / "documents"
+CURATED_DIR = ROOT / "docs" / "kb" / "kb_v1" / "curated"
+# Chat UI status strings. Handbook text for these topics lives in curated/.
+SKIP_KEY_PREFIXES = ("family_chat_e2ee", "family_chat_legacy")
 
 FAQ_ENTRY_RE = re.compile(
     r'UnifiedFAQEntry\(\s*id:\s*"([^"]+)"[^)]*questionKey:\s*"([^"]+)"[^)]*answerKey:\s*"([^"]+)"[^)]*keywords:\s*\[([^\]]*)\]',
@@ -145,9 +148,11 @@ def export_key_groups(
             continue
         parts = []
         for k in keys:
+            if k.startswith(SKIP_KEY_PREFIXES):
+                continue
             v = table[k].strip()
             if v:
-                parts.append(f"### {k}\n{v}")
+                parts.append(v)
         if not parts:
             continue
         title = f"{prefix.rstrip('_')} {title_suffix}".strip()
@@ -190,24 +195,6 @@ def main() -> int:
             title_suffix="(overview)",
         )
     )
-    docs.extend(
-        export_key_groups(
-            ru,
-            en,
-            prefix="family_chat_e2ee",
-            topic="e2ee",
-            source="LocalizationManager",
-        )
-    )
-    docs.extend(
-        export_key_groups(
-            ru,
-            en,
-            prefix="family_chat_legacy",
-            topic="e2ee",
-            source="LocalizationManager",
-        )
-    )
     # AI app_help single keys
     for key in ("faq_ai_how_works", "ai_assistant_subtitle", "ai_error_consent_required"):
         for locale, table in (("ru", ru), ("en", en)):
@@ -227,13 +214,27 @@ def main() -> int:
                 )
             )
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for old in OUT_DIR.glob("*.json"):
-        old.unlink()
+    by_id = {doc["id"]: doc for doc in docs}
+    if CURATED_DIR.is_dir():
+        for path in sorted(CURATED_DIR.glob("*.json")):
+            curated = json.loads(path.read_text(encoding="utf-8"))
+            doc_id = str(curated.get("id") or "").strip()
+            if not doc_id:
+                print(f"FAIL: curated file without id: {path.name}", file=sys.stderr)
+                return 1
+            by_id[doc_id] = curated
 
-    for doc in docs:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    written: set[str] = set()
+    for doc in by_id.values():
         path = OUT_DIR / f"{doc['id']}.json"
         path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        written.add(path.name)
+    for old in OUT_DIR.glob("*.json"):
+        if old.name not in written:
+            old.unlink()
+
+    docs = list(by_id.values())
 
     manifest = {
         "kb_version": "kb_v1",

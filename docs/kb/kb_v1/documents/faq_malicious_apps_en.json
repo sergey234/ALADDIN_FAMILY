@@ -3,11 +3,8 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What are malicious apps?",
-  "body": "What are malicious apps?\n\nA malicious app is a program that looks normal, but does bad things:\nâ¢ Steals your photos\nâ¢ Reads messages\nâ¢ Sees where you are\nâ¢ Spends your money\nâ¢ Infects phone with virus\n\nThey often hide in:\nâ¢ Free games\nâ¢ \"Cool\" programs\nâ¢ Apps from unknown developers\n\nâ ALADDIN checks apps and warns of danger before you open or download them.",
+  "body": "What are malicious apps?\n\nA malicious app is a program that looks normal, but does bad things:\n• Steals your photos\n• Reads messages\n• Sees where you are\n• Spends your money\n• Infects phone with virus\n\nThey often hide in:\n• Free games\n• \"Cool\" programs\n• Apps from unknown developers\n\n✅ ALADDIN checks apps and warns of danger before you open or download them.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [
-    "вредоносные приложения",
-    "malware app"
-  ],
+  "keywords": [],
   "kb_version": "kb_v1"
 }

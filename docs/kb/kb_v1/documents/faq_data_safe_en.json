@@ -1,12 +1,10 @@
 {
   "id": "faq_data_safe_en",
   "locale": "en",
-  "topic": "security_faq",
+  "topic": "e2ee",
   "title": "Are my data safe?",
-  "body": "Are my data safe?\n\nYes, your data is reliably protected! ð\n\nWe use:\nâ¢ Military-grade encryption (like banks and the military)\nâ¢ Processing in line with applicable laws\nâ¢ Strong data protection practices\nâ¢ Premium â extended profile privacy settings",
+  "body": "Are my data safe?\n\nYes, your data is reliably protected! 🔒\n\nWe use:\n• Military-grade encryption (like banks and the military)\n• Processing in line with applicable laws\n• Strong data protection practices\n• Premium — extended profile privacy settings",
   "source": "UnifiedFAQCatalog",
-  "keywords": [
-    "data safe"
-  ],
+  "keywords": [],
   "kb_version": "kb_v1"
 }

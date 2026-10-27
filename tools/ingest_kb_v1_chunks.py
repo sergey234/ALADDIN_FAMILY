@@ -17,6 +17,15 @@ MAX_CHARS = 800 * 4
 TARGET_CHARS = 500 * 4
 
 
+def normalize_text(text: str) -> str:
+    return (
+        text.replace("\u2028", "\n")
+        .replace("\u2029", "\n")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+    )
+
+
 def split_paragraphs(text: str) -> list[str]:
     parts = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     if parts:
@@ -65,7 +74,7 @@ def main() -> int:
     rows: list[dict] = []
     for path in sorted(DOCS_DIR.glob("*.json")):
         doc = json.loads(path.read_text(encoding="utf-8"))
-        parts = chunk_body(doc["id"], doc.get("body", ""))
+        parts = chunk_body(doc["id"], normalize_text(doc.get("body", "")))
         for idx, text in enumerate(parts):
             if len(text) < 40:
                 continue
