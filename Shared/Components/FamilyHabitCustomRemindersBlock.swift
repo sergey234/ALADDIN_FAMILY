@@ -28,14 +28,14 @@ struct FamilyHabitCustomRemindersBlock: View {
 
             Text(localizationManager.localized("family_habit_custom_audience_hint"))
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(.white.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("family_habit_custom_audience_hint")
 
             if sortedCustom.isEmpty {
                 Text(localizationManager.localized("family_habit_custom_empty"))
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.92))
                     .accessibilityIdentifier("family_habit_custom_empty")
             } else {
                 ForEach(Array(sortedCustom.enumerated()), id: \.element.id) { index, item in
@@ -70,7 +70,7 @@ struct FamilyHabitCustomRemindersBlock: View {
             .accessibilityIdentifier("family_habit_custom_add")
         }
         .padding(Spacing.s)
-        .background(Color.white.opacity(0.06))
+        .background(Color.white.opacity(0.14))
         .cornerRadius(CornerRadius.medium)
         .accessibilityIdentifier("family_habit_custom_block")
         .sheet(item: $editorDraft) { draft in
@@ -133,7 +133,7 @@ struct FamilyHabitCustomRemindersBlock: View {
                             .lineLimit(1)
                         Text(item.scheduleSummaryLine(localization: localizationManager))
                             .font(.caption2)
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.white.opacity(0.92))
                             .lineLimit(1)
                     }
                 }
@@ -183,7 +183,7 @@ struct FamilyHabitCustomRemindersBlock: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(localizationManager.localized("family_habit_custom_templates_label"))
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(.white.opacity(0.92))
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(FamilyHabitCustomQuickTemplate.allCases) { template in

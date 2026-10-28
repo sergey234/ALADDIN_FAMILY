@@ -34,7 +34,7 @@ struct FamilyChallengesSection: View {
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     Text(localizationManager.localized("family_challenge_subtitle"))
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(.white.opacity(0.92))
                     Text(
                         String(
                             format: localizationManager.localized("family_challenge_limit_fmt"),
@@ -43,7 +43,7 @@ struct FamilyChallengesSection: View {
                         )
                     )
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.55))
+                    .foregroundColor(.white.opacity(0.92))
 
                     ForEach(service.challenges) { challenge in
                         challengeRow(challenge)
@@ -54,7 +54,7 @@ struct FamilyChallengesSection: View {
                     } else if service.challenges.isEmpty {
                         Text(localizationManager.localized("family_challenge_ask_parent"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.white.opacity(0.92))
                     }
 
                     if let statusNote {
@@ -112,13 +112,13 @@ struct FamilyChallengesSection: View {
                         .foregroundColor(.white)
                     Text(localizationManager.localized("family_challenge_section_hint"))
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(.white.opacity(0.92))
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.92))
             }
         }
         .buttonStyle(.plain)
@@ -194,7 +194,7 @@ struct FamilyChallengesSection: View {
             }
         }
         .padding(10)
-        .background(Color.white.opacity(0.06))
+        .background(Color.white.opacity(0.14))
         .cornerRadius(12)
     }
 

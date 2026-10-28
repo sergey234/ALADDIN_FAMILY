@@ -101,10 +101,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 2:
+            // Описание на 36 pt выше: третья строка была под точками страниц (низ chrome y=698).
             return OnboardingFigmaAnchor(
                 wordmark: nil,
                 title: CGRect(x: 16, y: 552, width: 361, height: 60),
-                desc: CGRect(x: 14, y: 630, width: 361, height: 80),
+                desc: CGRect(x: 14, y: 594, width: 361, height: 96),
                 scrim: CGRect(x: 0, y: 500, width: 393, height: 320),
                 scrimMaxOpacity: 0.40,
                 maxTitleLines: 4,
@@ -784,7 +785,7 @@ struct OnboardingScreen: View {
         "onboarding_page1_title": "Защита всей семьи в кармане",
         "onboarding_page1_desc": "Комплексная система защиты от основных киберугроз",
         "onboarding_page2_title": "Ваш персональный агент безопасности",
-        "onboarding_page2_desc": "ИИ охраняет вашу семью 24/7 + Многоуровневая система защиты ⭐⭐⭐⭐⭐! Военные технологии шифрования",
+        "onboarding_page2_desc": "ИИ охраняет вашу семью 24/7 + Многоуровневая система защита ⭐⭐⭐⭐⭐",
         "onboarding_page3_title": "Родительский контроль",
         "onboarding_page3_desc": "Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI",
         "onboarding_page4_title": "Аналитика рисков",
@@ -814,7 +815,7 @@ struct OnboardingScreen: View {
         "onboarding_page1_title": "Family protection in your pocket",
         "onboarding_page1_desc": "Comprehensive protection against major cyber threats",
         "onboarding_page2_title": "Your personal security assistant",
-        "onboarding_page2_desc": "AI guards your family 24/7 + Multi-layer protection ⭐⭐⭐⭐⭐! Military-grade encryption",
+        "onboarding_page2_desc": "AI guards your family 24/7 + Multi-layer protection system ⭐⭐⭐⭐⭐",
         "onboarding_page3_title": "Parental control",
         "onboarding_page3_desc": "See and protect your children's digital activity",
         "onboarding_page4_title": "Risk analytics",

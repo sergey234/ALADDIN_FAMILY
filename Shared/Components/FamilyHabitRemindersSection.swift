@@ -76,12 +76,12 @@ struct FamilyHabitRemindersSection: View {
                     } else {
                         Text(localizationManager.localized("family_habit_ask_parent"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.white.opacity(0.92))
                     }
 
                     Text(localizationManager.localized("family_habit_not_bedtime_hint"))
                         .font(.caption2)
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.white.opacity(0.92))
                 }
                 .padding(.top, Spacing.s)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -147,14 +147,14 @@ struct FamilyHabitRemindersSection: View {
                         .foregroundColor(.white)
                     Text(localizationManager.localized("family_habit_section_subtitle"))
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(.white.opacity(0.92))
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: isSectionExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.92))
             }
         }
         .buttonStyle(.plain)
@@ -237,7 +237,7 @@ struct FamilyHabitRemindersSection: View {
             .accessibilityIdentifier("family_habit_eventkit_toggle")
             Text(localizationManager.localized("family_habit_eventkit_subtitle"))
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.65))
+                .foregroundColor(.white.opacity(0.92))
         }
 
         Toggle(
@@ -255,7 +255,7 @@ struct FamilyHabitRemindersSection: View {
 
         Text(deliveryAudienceLine)
             .font(.caption2)
-            .foregroundColor(.white.opacity(0.7))
+            .foregroundColor(.white.opacity(0.92))
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("family_habit_delivery_line")
 
@@ -268,7 +268,7 @@ struct FamilyHabitRemindersSection: View {
                         Text(preset.emoji)
                         Text(localizationManager.localized(preset.titleKey))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.85))
+                            .foregroundColor(.white.opacity(0.92))
                         Spacer()
                         Button {
                             Task { await markDone(preset: preset) }
@@ -304,7 +304,7 @@ struct FamilyHabitRemindersSection: View {
         if let queueMessage {
             Text(queueMessage)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.75))
+                .foregroundColor(.white.opacity(0.92))
         }
 
         Button {
@@ -363,7 +363,7 @@ struct FamilyHabitRemindersSection: View {
                 .frame(width: 16)
             Text(localizationManager.localized(textKey))
                 .font(.caption2)
-                .foregroundColor(isWarning ? .warningOrange : .white.opacity(0.68))
+                .foregroundColor(isWarning ? .warningOrange : .white.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -382,11 +382,11 @@ struct FamilyHabitRemindersSection: View {
                         if preset == .water {
                             Text(schedule.waterSummaryLine(localization: localizationManager))
                                 .font(.caption2)
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(.white.opacity(0.92))
                         } else if preset == .medicine {
                             Text(schedule.windowSummaryLine(localization: localizationManager))
                                 .font(.caption2)
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(.white.opacity(0.92))
                         }
                     }
                     Spacer()
@@ -416,7 +416,7 @@ struct FamilyHabitRemindersSection: View {
                         .foregroundColor(.white)
                     Text(item.scheduleSummaryLine(localization: localizationManager))
                         .font(.caption2)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(.white.opacity(0.92))
                 }
                 Spacer()
                 Button {
@@ -438,7 +438,7 @@ struct FamilyHabitRemindersSection: View {
         }
         Text(localizationManager.localized("family_habit_member_status_hint"))
             .font(.caption2)
-            .foregroundColor(.white.opacity(0.6))
+            .foregroundColor(.white.opacity(0.92))
     }
 
     @MainActor
@@ -486,7 +486,7 @@ struct FamilyHabitRemindersSection: View {
                     if preset == .water, binding.wrappedValue.enabled, !waterDetailsExpanded {
                         Text(binding.wrappedValue.waterSummaryLine(localization: localizationManager))
                             .font(.caption2)
-                            .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.white.opacity(0.92))
                     }
                 }
                 Spacer(minLength: 8)
@@ -502,7 +502,7 @@ struct FamilyHabitRemindersSection: View {
                     medicineWindowEditor(binding: binding)
                     Text(localizationManager.localized("family_habit_medicine_disclaimer"))
                         .font(.caption2)
-                        .foregroundColor(.white.opacity(0.65))
+                        .foregroundColor(.white.opacity(0.92))
                         .accessibilityIdentifier("family_habit_medicine_disclaimer")
                 } else {
                     simpleTimeRow(binding: binding)
@@ -523,11 +523,11 @@ struct FamilyHabitRemindersSection: View {
             HStack {
                 Text(localizationManager.localized("family_habit_water_details_toggle"))
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.85))
+                    .foregroundColor(.white.opacity(0.92))
                 Spacer()
                 Image(systemName: waterDetailsExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption2.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.white.opacity(0.92))
             }
         }
         .buttonStyle(.plain)
@@ -537,12 +537,12 @@ struct FamilyHabitRemindersSection: View {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 Text(localizationManager.localized("family_habit_water_liters_label"))
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.92))
                 litersPicker(binding: binding)
 
                 Text(localizationManager.localized("family_habit_water_interval_label"))
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.92))
                 intervalPicker(binding: binding)
 
                 timeWindowRow(
@@ -593,7 +593,7 @@ struct FamilyHabitRemindersSection: View {
                 if !slots.isEmpty {
                     Text(localizationManager.localized("family_habit_water_slots_label"))
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(.white.opacity(0.92))
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 6) {
                             ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
@@ -615,7 +615,7 @@ struct FamilyHabitRemindersSection: View {
                 }
             }
             .padding(Spacing.s)
-            .background(Color.white.opacity(0.06))
+            .background(Color.white.opacity(0.14))
             .cornerRadius(CornerRadius.medium)
         }
     }
@@ -626,7 +626,7 @@ struct FamilyHabitRemindersSection: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("family_habit_water_interval_label"))
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.white.opacity(0.92))
             intervalPicker(binding: binding)
 
             timeWindowRow(
@@ -676,7 +676,7 @@ struct FamilyHabitRemindersSection: View {
             if !slots.isEmpty {
                 Text(localizationManager.localized("family_habit_water_slots_label"))
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.92))
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
@@ -698,7 +698,7 @@ struct FamilyHabitRemindersSection: View {
             }
         }
         .padding(Spacing.s)
-        .background(Color.white.opacity(0.06))
+        .background(Color.white.opacity(0.14))
         .cornerRadius(CornerRadius.medium)
         .accessibilityIdentifier("family_habit_medicine_window_editor")
     }
@@ -763,7 +763,7 @@ struct FamilyHabitRemindersSection: View {
         HStack {
             Text(localizationManager.localized(labelKey))
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.white.opacity(0.92))
             Spacer()
             Stepper(
                 timeLabel(hour: hour.wrappedValue, minute: minute.wrappedValue),
@@ -793,7 +793,7 @@ struct FamilyHabitRemindersSection: View {
         HStack {
             Text(localizationManager.localized("family_habit_time_label"))
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.white.opacity(0.92))
             Stepper(
                 timeLabel(hour: binding.wrappedValue.hour, minute: binding.wrappedValue.minute),
                 onIncrement: { adjustTime(binding: binding, deltaMinutes: 15) },
