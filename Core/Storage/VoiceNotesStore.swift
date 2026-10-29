@@ -12,6 +12,9 @@ final class VoiceNotesStore {
         var summaryVersion: Int
         var tags: [String]
         var audioPath: String
+        var segments: [VoiceNoteSegment]
+        var sourceTranscript: String
+        var keptFirstMinuteOnly: Bool
 
         init(
             id: UUID,
@@ -23,7 +26,10 @@ final class VoiceNotesStore {
             summaryConfidence: Double,
             summaryVersion: Int,
             tags: [String],
-            audioPath: String
+            audioPath: String,
+            segments: [VoiceNoteSegment] = [],
+            sourceTranscript: String = "",
+            keptFirstMinuteOnly: Bool = false
         ) {
             self.id = id
             self.title = title
@@ -35,10 +41,14 @@ final class VoiceNotesStore {
             self.summaryVersion = summaryVersion
             self.tags = tags
             self.audioPath = audioPath
+            self.segments = segments
+            self.sourceTranscript = sourceTranscript
+            self.keptFirstMinuteOnly = keptFirstMinuteOnly
         }
 
         enum CodingKeys: String, CodingKey {
             case id, title, createdAt, durationSec, transcriptPreview, summary, summaryConfidence, summaryVersion, tags, audioPath
+            case segments, sourceTranscript, keptFirstMinuteOnly
         }
 
         init(from decoder: Decoder) throws {
@@ -53,6 +63,9 @@ final class VoiceNotesStore {
             summaryVersion = try c.decodeIfPresent(Int.self, forKey: .summaryVersion) ?? (summary.isEmpty ? 0 : 1)
             tags = try c.decode([String].self, forKey: .tags)
             audioPath = try c.decode(String.self, forKey: .audioPath)
+            segments = try c.decodeIfPresent([VoiceNoteSegment].self, forKey: .segments) ?? []
+            sourceTranscript = try c.decodeIfPresent(String.self, forKey: .sourceTranscript) ?? ""
+            keptFirstMinuteOnly = try c.decodeIfPresent(Bool.self, forKey: .keptFirstMinuteOnly) ?? false
         }
     }
 

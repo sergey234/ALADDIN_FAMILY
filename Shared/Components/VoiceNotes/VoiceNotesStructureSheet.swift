@@ -18,6 +18,12 @@ struct VoiceNotesStructureSheet: View {
                         section(titleKey: "voice_structure_people", items: result.people)
                         section(titleKey: "voice_structure_urgent", items: result.urgent)
                         section(titleKey: "voice_structure_list", items: result.listCandidates)
+                        if !result.polite.isEmpty {
+                            Text(localizationManager.localized("voice_notes_family"))
+                                .font(.subheadline.weight(.semibold))
+                            Text(result.polite)
+                                .font(.body)
+                        }
 
                         if let raw = result.rawFallback, !raw.isEmpty {
                             Text(localizationManager.localized("voice_structure_raw_fallback"))

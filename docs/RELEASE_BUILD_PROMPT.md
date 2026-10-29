@@ -11,9 +11,9 @@
 App:          ai.aladdin  (ALADDIN AI)
 Team:         B3WGHSWL79  (SAUDAPAYDI)   ← НЕ 6CJVBBUGSN
 Version:      1.0.1       (= marketing / ASC iOS version)
-Build:        15          (= CFBundleVersion / next upload candidate)
-PREV_BUILD:   15
-NEXT_BUILD:   16          ← подставлять ТОЛЬКО после GO на bump
+Build:        16          (= CFBundleVersion / next upload candidate)
+PREV_BUILD:   16
+NEXT_BUILD:   17          ← подставлять ТОЛЬКО после GO на bump
 CURRENT_MARKETING_VERSION = 1.0.1
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
@@ -24,9 +24,9 @@ CI:           check-secrets.yml («Build and Upload to App Store»)
 | Что | Куда смотреть | Сейчас |
 |-----|---------------|--------|
 | Version | ASC «iOS App Version» + код `MARKETING_VERSION` / `appVersion` | **1.0.1** |
-| Build | код `CFBundleVersion` / `buildNumber` | **15** |
+| Build | код `CFBundleVersion` / `buildNumber` | **16** |
 | Review | ASC · build **14** · 2.1 (код) + 2.5.1 (HealthKit) | ответ письмом + фикс в **15** |
-| След. Build | только после **«GO на bump»** | **16** |
+| След. Build | только после **«GO на bump»** | **17** |
 | След. Version | только если ASC закрыл train 1.0.1 / approve + **GO** | например **1.0.2** |
 | Push | только после **«GO на push»** | `git push origin master` → CI Archive+Upload |
 
@@ -36,13 +36,13 @@ CI:           check-secrets.yml («Build and Upload to App Store»)
 
 | Слой | Факт |
 |------|------|
-| Код в git (номера) | Version **1.0.1** · Build **15** (все plists + pbx ×24 + AppConfig) |
+| Код в git (номера) | Version **1.0.1** · Build **16** (все plists + pbx ×24 + AppConfig) |
 | Build **15** содержимое | ITMS-90894 · HealthKit UI label · OB_07 Join↔лого · (5.6.3 уже с 14) |
 | Review **14** | ASC: 2.1 «где код» + 2.5.1 HealthKit UI · письмо согласовано |
 | CI канон | `check-secrets.yml` («Build and Upload to App Store») |
 | Зелёный релиз | **Archive + Export + Upload** все OK · Job green ≠ TF, если `altool` FAIL |
 | Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER (§4c) |
-| След. Upload | candidate **15** после GO на push; дальше — только **16** после GO на bump |
+| След. Upload | candidate **16** после GO на push; дальше — только **17** после GO на bump |
 
 One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.
 Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.

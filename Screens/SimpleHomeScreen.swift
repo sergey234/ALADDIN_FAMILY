@@ -15,6 +15,8 @@ struct SimpleHomeScreen: View {
     @State private var showChildDoor = false
     @State private var showPayPainsMenu = false
     @State private var pendingMoreNavigation: (() -> Void)?
+    /// После раздела из «Все разделы» — снова открыть меню (назад ≠ сразу Удобный режим).
+    @State private var restorePayPainsMenuOnReturn = false
     /// Сначала закрыть sheet «Ребёнок», потом navigate — иначе переход под sheet и «ничего не видно».
     @State private var pendingChildNavigation: (() -> Void)?
     @State private var showSoftReview = false
@@ -107,6 +109,14 @@ struct SimpleHomeScreen: View {
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
         }
+        .onChange(of: navigationManager.currentScreen) { screen in
+            guard screen == .simpleHome, restorePayPainsMenuOnReturn else { return }
+            restorePayPainsMenuOnReturn = false
+            // После анимации goBack / dismiss sheet — снова «Все разделы».
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                showPayPainsMenu = true
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToVoiceDayRecap"))) { _ in
             showVoiceNotes = true
         }
@@ -152,7 +162,7 @@ struct SimpleHomeScreen: View {
             payPainsDoor(
                 titleKey: "pay_pains_door_child_title",
                 subtitleKey: "pay_pains_door_child_subtitle",
-                systemImage: "figure.and.child.holdinghands",
+                systemImage: "figure.2.and.child.holdinghands",
                 identifier: "pay_pains_door_child",
                 prominent: false
             ) {
@@ -596,7 +606,8 @@ struct SimpleHomeScreen: View {
     private var payPainsMenuSheet: some View {
         WellnessNavigationStack {
             ZStack {
-                StormMeshBackground(variant: .premium)
+                // Как заставка ALADDIN AI: синяя ночь → золотой восход, стекло storm.
+                StormMeshBackground(variant: .premiumSunrise)
                 ScrollView {
                     VStack(spacing: Spacing.m) {
                         // Отличается от белого List: тёмный glass + serif title (иконка/золото ALADDIN).
@@ -609,56 +620,64 @@ struct SimpleHomeScreen: View {
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_plan",
                             systemImage: "creditcard.fill",
-                            id: "pay_pains_menu_plan"
+                            id: "pay_pains_menu_plan",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateTo(.tariffs)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_settings",
                             systemImage: "gearshape.fill",
-                            id: "pay_pains_menu_settings"
+                            id: "pay_pains_menu_settings",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateTo(.settings)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_protection",
                             systemImage: "shield.fill",
-                            id: "pay_pains_menu_protection"
+                            id: "pay_pains_menu_protection",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateTo(.networkProtection)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_ai_friends",
                             systemImage: "person.2.wave.2.fill",
-                            id: "pay_pains_menu_ai_friends"
+                            id: "pay_pains_menu_ai_friends",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_ai_helper",
                             systemImage: "brain.head.profile",
-                            id: "pay_pains_menu_ai_helper"
+                            id: "pay_pains_menu_ai_helper",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateTo(.aiAssistant)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_family_chat",
                             systemImage: "message.fill",
-                            id: "pay_pains_menu_family_chat"
+                            id: "pay_pains_menu_family_chat",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateTo(.familyChat)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_notifications_analytics",
                             systemImage: "bell.fill",
-                            id: "pay_pains_menu_notifications_analytics"
+                            id: "pay_pains_menu_notifications_analytics",
+                            restoreMenuOnBack: true
                         ) {
                             navigationManager.navigateTo(.notifications)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_full_screen",
                             systemImage: "rectangle.split.2x1",
-                            id: "pay_pains_menu_full_screen"
+                            id: "pay_pains_menu_full_screen",
+                            restoreMenuOnBack: false
                         ) {
                             navigationManager.navigateToRoot(.main)
                         }
@@ -671,6 +690,7 @@ struct SimpleHomeScreen: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(localizationManager.localized("wellness_done")) {
                         pendingMoreNavigation = nil
+                        restorePayPainsMenuOnReturn = false
                         showPayPainsMenu = false
                     }
                 }
@@ -683,9 +703,11 @@ struct SimpleHomeScreen: View {
         titleKey: String,
         systemImage: String,
         id: String,
+        restoreMenuOnBack: Bool,
         action: @escaping () -> Void
     ) -> some View {
         Button {
+            restorePayPainsMenuOnReturn = restoreMenuOnBack
             pendingMoreNavigation = action
             showPayPainsMenu = false
             showMoreSheet = false
@@ -705,6 +727,7 @@ struct SimpleHomeScreen: View {
             }
             .padding(Spacing.m)
             .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+            .contentShape(Rectangle())
             .stormGlassCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)
@@ -733,8 +756,13 @@ struct SimpleHomeScreen: View {
                 navigationManager.goBackToPreviousScreen(reason: "SimpleHome.onBack")
             } label: {
                 Image(systemName: "chevron.left")
-                    .font(.body.weight(.semibold))
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Circle())
+                    .background(Circle().fill(Color.orange.opacity(0.2)))
             }
+            .buttonStyle(.plain)
             .accessibilityLabel(localizationManager.localized("simple_home_a11y_back"))
             .accessibilityIdentifier("simple_home_back")
 
@@ -888,7 +916,8 @@ struct SimpleHomeScreen: View {
     private var openFullMainButton: some View {
         Button {
             HapticFeedback.impact(.light)
-            navigationManager.goBackToPreviousScreen(reason: "SimpleHome.openFullMain")
+            // Явный переход на расширенный экран (не «назад» к Main в стеке).
+            navigationManager.navigateToRoot(.main)
         } label: {
             HStack {
                 Image(systemName: "rectangle.split.2x1")

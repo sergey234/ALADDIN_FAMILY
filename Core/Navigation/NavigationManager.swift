@@ -657,9 +657,13 @@ class NavigationManager: ObservableObject {
                 endManualPaymentQRClose()
                 appendLog("⚠️ Стек пуст при PaymentQR — fallback на Tariffs")
             } else {
-                print("⬅️ DEBUG NavigationManager.goBack: Возврат на .main")
-                currentScreen = .main
-                appendLog("⬅️ Стек пуст — возврат на .main")
+                // Pay-pains: вход = SimpleHome; не выбрасывать на старую сетку Main.
+                let fallback: ALADDINScreen = PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch()
+                    ? .simpleHome
+                    : .main
+                print("⬅️ DEBUG NavigationManager.goBack: Возврат на \(fallback) (стек пуст)")
+                currentScreen = fallback
+                appendLog("⬅️ Стек пуст — возврат на \(fallback)")
             }
             return
         }
@@ -722,11 +726,14 @@ class NavigationManager: ObservableObject {
         navigateToRoot(.main)
     }
 
-    /// Единый «Назад» как у карточек Main: предыдущий экран в стеке, иначе Main.
+    /// Единый «Назад» как у карточек Main: предыдущий экран в стеке, иначе вход (SimpleHome / Main).
     /// Использовать из Settings / Profile / Family / Simple destinations — не `switchToMainScreen()` вслепую.
     func goBackToPreviousScreen(reason: String? = nil) {
         if canGoBack {
             goBack(reason: reason ?? "goBackToPreviousScreen")
+        } else if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
+            appendLog("⬅️ goBackToPreviousScreen: стек пуст → SimpleHome")
+            navigateToRoot(.simpleHome)
         } else {
             appendLog("⬅️ goBackToPreviousScreen: стек пуст → Main")
             switchToMainScreen()

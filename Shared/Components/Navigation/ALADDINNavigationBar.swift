@@ -67,11 +67,13 @@ struct ALADDINNavigationBar: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(width: 44, height: 44)
+                            .contentShape(Circle())
                             .background(
                                 Circle()
                                     .fill(Color.orange.opacity(0.2))
                             )
                     }
+                    .buttonStyle(.plain)
                     .accessibilityLabel("Назад")
                     .accessibilityIdentifier("aladdin_nav_back")
                 } else {

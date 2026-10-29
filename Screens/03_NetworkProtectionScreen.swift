@@ -304,129 +304,137 @@ struct NetworkProtectionScreen: View {
                 subtitle: localizationManager.localized("component.emergency_help.subtitle"),
                 isExpanded: $emergencyHelpExpanded
             ) {
-                SecurityFeatureRow(
-                    componentId: "crash_detection_agent",
-                    title: localizationManager.localized("component.crash_detection_agent.title"),
-                    description: localizationManager.localized("component.crash_detection_agent.desc"),
-                    isEnabled: $viewModel.crashDetectionEnabled,
-                    hasSettings: true,
-                    onToggle: { newValue in
-                        logger.toggleChanged("Crash Detection", newValue: newValue, screen: "NetworkProtection")
-                        viewModel.toggleCrashDetectionSync(newValue)
-                    },
-                    onSettingsTap: { showCrashDetectionSettings = true }
-                )
-                
-                if viewModel.crashDetectionUnavailableOnThisDevice
-                    || viewModel.crashDetectionNeedsOpenSettings
-                    || ((viewModel.errorMessage ?? "").isEmpty == false && !viewModel.crashDetectionEnabled) {
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        HStack(alignment: .top, spacing: Spacing.xs) {
-                            Image(systemName: "exclamationmark.triangle.fill")
+                // F1: авария/эвакуатор/диспетчер спрятаны (§20–21). Код и ключи не удаляем.
+                if !PayPainsHiddenComponents.isComponentHidden("crash_detection_agent") {
+                    SecurityFeatureRow(
+                        componentId: "crash_detection_agent",
+                        title: localizationManager.localized("component.crash_detection_agent.title"),
+                        description: localizationManager.localized("component.crash_detection_agent.desc"),
+                        isEnabled: $viewModel.crashDetectionEnabled,
+                        hasSettings: true,
+                        onToggle: { newValue in
+                            logger.toggleChanged("Crash Detection", newValue: newValue, screen: "NetworkProtection")
+                            viewModel.toggleCrashDetectionSync(newValue)
+                        },
+                        onSettingsTap: { showCrashDetectionSettings = true }
+                    )
+
+                    if viewModel.crashDetectionUnavailableOnThisDevice
+                        || viewModel.crashDetectionNeedsOpenSettings
+                        || ((viewModel.errorMessage ?? "").isEmpty == false && !viewModel.crashDetectionEnabled) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            HStack(alignment: .top, spacing: Spacing.xs) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.warningOrange)
+                                Text(
+                                    viewModel.crashDetectionUnavailableReason
+                                        ?? viewModel.errorMessage
+                                        ?? localizationManager.localized("crash_detection_error_retry")
+                                )
+                                .font(.caption)
                                 .foregroundColor(.warningOrange)
-                            Text(
-                                viewModel.crashDetectionUnavailableReason
-                                    ?? viewModel.errorMessage
-                                    ?? localizationManager.localized("crash_detection_error_retry")
-                            )
-                            .font(.caption)
-                            .foregroundColor(.warningOrange)
-                            .fixedSize(horizontal: false, vertical: true)
-                        }
-                        if viewModel.crashDetectionNeedsOpenSettings {
-                            Button {
-                                if let url = URL(string: UIApplication.openSettingsURLString) {
-                                    UIApplication.shared.open(url)
-                                }
-                            } label: {
-                                Text(localizationManager.localized("crash_detection_open_settings"))
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(.secondaryGold)
+                                .fixedSize(horizontal: false, vertical: true)
                             }
-                            .accessibilityIdentifier("crash_detection_open_settings")
+                            if viewModel.crashDetectionNeedsOpenSettings {
+                                Button {
+                                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                } label: {
+                                    Text(localizationManager.localized("crash_detection_open_settings"))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(.secondaryGold)
+                                }
+                                .accessibilityIdentifier("crash_detection_open_settings")
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Spacing.m)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, Spacing.m)
+
+                    #if DEBUG
+                    Button(action: {
+                        logger.buttonTap("Test Crash Detection", screen: "NetworkProtection")
+                        guard LocationManager.shared.hasRequiredAuthorization() else {
+                            ToastManager.shared.showWarning(
+                                localizationManager.localized("crash_detection_location_required_for_test")
+                            )
+                            return
+                        }
+                        Task {
+                            await CrashDetectionManager.shared.simulateCrashForDiagnostics(gForce: 5.0)
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                            VStack(alignment: .leading) {
+                                Text(localizationManager.localized("network_protection_debug_simulate_crash"))
+                                    .foregroundColor(.red)
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                Text(localizationManager.localized("network_protection_debug_gforce_critical"))
+                                    .foregroundColor(.red.opacity(0.7))
+                                    .font(.caption)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal)
+                    #endif
                 }
 
-                #if DEBUG
-                // Диагностика: не попадает в пользовательские Release-сборки
-                Button(action: {
-                    logger.buttonTap("Test Crash Detection", screen: "NetworkProtection")
-                    guard LocationManager.shared.hasRequiredAuthorization() else {
-                        ToastManager.shared.showWarning(
-                            localizationManager.localized("crash_detection_location_required_for_test")
-                        )
-                        return
-                    }
-                    Task {
-                        await CrashDetectionManager.shared.simulateCrashForDiagnostics(gForce: 5.0)
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        VStack(alignment: .leading) {
-                            Text(localizationManager.localized("network_protection_debug_simulate_crash"))
-                                .foregroundColor(.red)
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                            Text(localizationManager.localized("network_protection_debug_gforce_critical"))
-                                .foregroundColor(.red.opacity(0.7))
-                                .font(.caption)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.gray)
-                    }
-                    .padding()
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                if !PayPainsHiddenComponents.isComponentHidden("roadside_assistance_agent") {
+                    SecurityFeatureRow(
+                        componentId: "roadside_assistance_agent",
+                        title: localizationManager.localized("component.roadside_assistance_agent.title"),
+                        description: localizationManager.localized("component.roadside_assistance_agent.desc"),
+                        isEnabled: $viewModel.roadsideAssistanceEnabled,
+                        hasSettings: true,
+                        onToggle: { newValue in
+                            logger.toggleChanged("Roadside Assistance", newValue: newValue, screen: "NetworkProtection")
+                            viewModel.toggleRoadsideAssistanceSync(newValue)
+                        },
+                        onSettingsTap: { showRoadsideAssistance = true }
                     )
                 }
-                .padding(.horizontal)
-                #endif
-                
-                SecurityFeatureRow(
-                    componentId: "roadside_assistance_agent",
-                    title: localizationManager.localized("component.roadside_assistance_agent.title"),
-                    description: localizationManager.localized("component.roadside_assistance_agent.desc"),
-                    isEnabled: $viewModel.roadsideAssistanceEnabled,
-                    hasSettings: true,
-                    onToggle: { newValue in
-                        logger.toggleChanged("Roadside Assistance", newValue: newValue, screen: "NetworkProtection")
-                        viewModel.toggleRoadsideAssistanceSync(newValue)
-                    },
-                    onSettingsTap: { showRoadsideAssistance = true }
-                )
-                
-                SecurityFeatureRow(
-                    componentId: "emergency_response_bot",
-                    title: localizationManager.localized("component.emergency_response_bot.title"),
-                    description: localizationManager.localized("component.emergency_response_bot.desc"),
-                    isEnabled: $viewModel.emergencyResponseEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in
-                        logger.toggleChanged("Emergency Response", newValue: newValue, screen: "NetworkProtection")
-                        viewModel.toggleEmergencyResponseSync(newValue)
-                    }
-                )
-                
-                SecurityFeatureRow(
-                    componentId: "emergency_event_manager",
-                    title: localizationManager.localized("component.emergency_event_manager.title"),
-                    description: localizationManager.localized("component.emergency_event_manager.desc"),
-                    isEnabled: $viewModel.emergencyEventEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in
-                        logger.toggleChanged("Emergency Event", newValue: newValue, screen: "NetworkProtection")
-                        viewModel.toggleEmergencyEventSync(newValue)
-                    }
-                )
+
+                if !PayPainsHiddenComponents.isComponentHidden("emergency_response_bot") {
+                    SecurityFeatureRow(
+                        componentId: "emergency_response_bot",
+                        title: localizationManager.localized("component.emergency_response_bot.title"),
+                        description: localizationManager.localized("component.emergency_response_bot.desc"),
+                        isEnabled: $viewModel.emergencyResponseEnabled,
+                        hasSettings: false,
+                        onToggle: { newValue in
+                            logger.toggleChanged("Emergency Response", newValue: newValue, screen: "NetworkProtection")
+                            viewModel.toggleEmergencyResponseSync(newValue)
+                        }
+                    )
+                }
+
+                if !PayPainsHiddenComponents.isComponentHidden("emergency_event_manager") {
+                    SecurityFeatureRow(
+                        componentId: "emergency_event_manager",
+                        title: localizationManager.localized("component.emergency_event_manager.title"),
+                        description: localizationManager.localized("component.emergency_event_manager.desc"),
+                        isEnabled: $viewModel.emergencyEventEnabled,
+                        hasSettings: false,
+                        onToggle: { newValue in
+                            logger.toggleChanged("Emergency Event", newValue: newValue, screen: "NetworkProtection")
+                            viewModel.toggleEmergencyEventSync(newValue)
+                        }
+                    )
+                }
             }
             
             // Раздел 2: Защита от угроз
@@ -2053,16 +2061,23 @@ struct NetworkProtectionSettingsView: View {
                     }
                 }
                 
-                Section(localizationManager.localized("network_protection_security_section")) {
-                    HStack {
-                        Text(localizationManager.localized("network_protection_kill_switch"))
-                        Spacer()
-                        Toggle("", isOn: $killSwitch)
-                    }
-                    HStack {
-                        Text(localizationManager.localized("network_protection_dns_leak"))
-                        Spacer()
-                        Toggle("", isOn: $dnsLeakProtection)
+                if !PayPainsHiddenComponents.isUIElementHidden("network_kill_switch")
+                    || !PayPainsHiddenComponents.isUIElementHidden("network_dns_leak") {
+                    Section(localizationManager.localized("network_protection_security_section")) {
+                        if !PayPainsHiddenComponents.isUIElementHidden("network_kill_switch") {
+                            HStack {
+                                Text(localizationManager.localized("network_protection_kill_switch"))
+                                Spacer()
+                                Toggle("", isOn: $killSwitch)
+                            }
+                        }
+                        if !PayPainsHiddenComponents.isUIElementHidden("network_dns_leak") {
+                            HStack {
+                                Text(localizationManager.localized("network_protection_dns_leak"))
+                                Spacer()
+                                Toggle("", isOn: $dnsLeakProtection)
+                            }
+                        }
                     }
                 }
                 
@@ -2331,15 +2346,18 @@ struct NetworkProtectionHelpView: View {
                             answer: localizationManager.localized("network_protection_help_proxy_answer")
                         )
                         
-                        HelpCard(
-                            question: localizationManager.localized("network_protection_help_kill_switch_question"),
-                            answer: localizationManager.localized("network_protection_help_kill_switch_answer")
-                        )
-                        
-                        HelpCard(
-                            question: localizationManager.localized("network_protection_help_dns_leak_question"),
-                            answer: localizationManager.localized("network_protection_help_dns_leak_answer")
-                        )
+                        if !PayPainsHiddenComponents.isUIElementHidden("network_help_kill_switch") {
+                            HelpCard(
+                                question: localizationManager.localized("network_protection_help_kill_switch_question"),
+                                answer: localizationManager.localized("network_protection_help_kill_switch_answer")
+                            )
+                        }
+                        if !PayPainsHiddenComponents.isUIElementHidden("network_help_dns_leak") {
+                            HelpCard(
+                                question: localizationManager.localized("network_protection_help_dns_leak_question"),
+                                answer: localizationManager.localized("network_protection_help_dns_leak_answer")
+                            )
+                        }
                     }
                     .padding(.horizontal)
                 }

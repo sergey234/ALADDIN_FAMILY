@@ -11,6 +11,8 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
     case growWarm
     case warm
     case premium
+    /// Меню «Все разделы»: синяя ночь → золотой восход (как заставка ALADDIN AI), стекло storm.
+    case premiumSunrise
     case ai
     case data
     case neutral
@@ -27,6 +29,7 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
         case .growWarm: return "Grow Warm"
         case .warm: return "Warm"
         case .premium: return "Premium"
+        case .premiumSunrise: return "Premium Sunrise"
         case .ai: return "AI"
         case .data: return "Data"
         case .neutral: return "Neutral"
@@ -38,6 +41,7 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
         switch self {
         case .legal: return .stormBase
         case .growWarm: return .stormGrowWarmBase
+        case .premiumSunrise: return Color(hex: "#0A1638")
         default: return .stormDeep
         }
     }
@@ -46,6 +50,7 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
     fileprivate var scrimColor: Color {
         switch self {
         case .legal: return .stormBase
+        case .premiumSunrise: return .goldWarm
         default: return .stormDeep
         }
     }
@@ -53,6 +58,8 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
     fileprivate var bottomScrimOpacity: CGFloat {
         switch self {
         case .legal: return 0
+        // Восход снизу — не гасить золото тёмным scrim.
+        case .premiumSunrise: return 0.10
         default: return 0.28
         }
     }
@@ -60,6 +67,7 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
     fileprivate var scrimStartY: CGFloat {
         switch self {
         case .legal: return 0.35
+        case .premiumSunrise: return 0.82
         default: return 0.68
         }
     }
@@ -70,7 +78,7 @@ enum StormMeshVariant: String, CaseIterable, Identifiable {
 
     fileprivate var showsAtmosphereLayer: Bool {
         switch self {
-        case .hub, .premium, .family, .shield: return true
+        case .hub, .premium, .premiumSunrise, .family, .shield: return true
         default: return false
         }
     }
@@ -137,6 +145,8 @@ struct StormMeshBackground: View {
                 violet: 0.12,
                 goldTrailing: true
             )
+        case .premiumSunrise:
+            sunriseWash
         case .family:
             stormWash(
                 indigo: 0.26,
@@ -155,6 +165,50 @@ struct StormMeshBackground: View {
         default:
             EmptyView()
         }
+    }
+
+    /// Заставка: midnight/royal blue сверху → золотой восход снизу (стеклянный storm).
+    private var sunriseWash: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(hex: "#07122E"),
+                    Color.stormIndigo.opacity(0.95),
+                    Color(hex: "#1E3A8A").opacity(0.85),
+                    Color.stormDeep.opacity(0.35),
+                    Color.clear
+                ],
+                startPoint: .top,
+                endPoint: UnitPoint(x: 0.5, y: 0.62)
+            )
+            LinearGradient(
+                colors: [
+                    Color.clear,
+                    Color.goldWarm.opacity(0.35),
+                    Color.goldPrimary.opacity(0.55),
+                    Color(hex: "#FDBA74").opacity(0.45)
+                ],
+                startPoint: UnitPoint(x: 0.5, y: 0.42),
+                endPoint: .bottom
+            )
+            // Боковой «просветочный» блик как у premium glass.
+            LinearGradient(
+                colors: [Color.goldPrimary.opacity(0.22), Color.clear],
+                startPoint: .topTrailing,
+                endPoint: UnitPoint(x: 0.45, y: 0.38)
+            )
+            RadialGradient(
+                colors: [
+                    Color.goldPrimary.opacity(0.42),
+                    Color.goldWarm.opacity(0.18),
+                    Color.clear
+                ],
+                center: UnitPoint(x: 0.5, y: 0.92),
+                startRadius: 8,
+                endRadius: 220
+            )
+        }
+        .allowsHitTesting(false)
     }
 
     private func stormWash(
@@ -203,22 +257,37 @@ struct StormMeshBackground: View {
         .allowsHitTesting(false)
     }
 
+    @ViewBuilder
     private var reduceMotionLayer: some View {
-        LinearGradient(
-            colors: [
-                Color.stormIndigo.opacity(0.26),
-                Color.stormDeep,
-                Color.stormViolet.opacity(0.12)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay(alignment: .topTrailing) {
-            Color.goldPrimary.opacity(variant == .premium ? 0.20 : 0.14)
-                .frame(width: 220, height: 180)
-                .offset(x: 40, y: -20)
+        if variant == .premiumSunrise {
+            LinearGradient(
+                colors: [
+                    Color(hex: "#07122E"),
+                    Color.stormIndigo,
+                    Color.goldWarm.opacity(0.55),
+                    Color.goldPrimary.opacity(0.70)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .allowsHitTesting(false)
+        } else {
+            LinearGradient(
+                colors: [
+                    Color.stormIndigo.opacity(0.26),
+                    Color.stormDeep,
+                    Color.stormViolet.opacity(0.12)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .overlay(alignment: .topTrailing) {
+                Color.goldPrimary.opacity(variant == .premium ? 0.20 : 0.14)
+                    .frame(width: 220, height: 180)
+                    .offset(x: 40, y: -20)
+            }
+            .allowsHitTesting(false)
         }
-        .allowsHitTesting(false)
     }
 
     @ViewBuilder
@@ -288,6 +357,15 @@ struct StormMeshBackground: View {
                 .init(color: .stormIndigo, opacity: 0.22, diameter: 260, x: 0.24, y: 0.14),
                 .init(color: .stormLightning, opacity: 0.14, diameter: 200, x: 0.55, y: 0.22),
                 .init(color: .stormViolet, opacity: 0.12, diameter: 280, x: 0.48, y: 0.72)
+            ]
+        case .premiumSunrise:
+            return [
+                .init(color: .stormIndigo, opacity: 0.42, diameter: 380, x: 0.28, y: 0.10),
+                .init(color: Color(hex: "#1D4ED8"), opacity: 0.28, diameter: 300, x: 0.72, y: 0.18),
+                .init(color: .stormLightning, opacity: 0.16, diameter: 220, x: 0.48, y: 0.32),
+                .init(color: .goldPrimary, opacity: 0.38, diameter: 340, x: 0.52, y: 0.88),
+                .init(color: .goldWarm, opacity: 0.28, diameter: 280, x: 0.22, y: 0.82),
+                .init(color: Color(hex: "#FDBA74"), opacity: 0.22, diameter: 260, x: 0.78, y: 0.86)
             ]
         case .ai:
             return [

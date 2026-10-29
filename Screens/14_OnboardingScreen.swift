@@ -1282,9 +1282,10 @@ struct OnboardingScreen: View {
                     Task { @MainActor in
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
-                    navigationManager.navigateToRoot(.main)
                     if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-                        navigationManager.navigateToSimpleHome()
+                        navigationManager.navigateToRoot(.simpleHome)
+                    } else {
+                        navigationManager.navigateToRoot(.main)
                     }
                 }
             )
@@ -1452,11 +1453,12 @@ struct OnboardingScreen: View {
                                 print("ℹ️ OnboardingScreen: Онбординг завершён без JWT — локальный режим до регистрации")
                             }
 
-                            navigationManager.navigateToRoot(.main)
                             if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-                                navigationManager.navigateToSimpleHome()
+                                navigationManager.navigateToRoot(.simpleHome)
+                            } else {
+                                navigationManager.navigateToRoot(.main)
                             }
-                            print("✅ OnboardingScreen: Онбординг завершён, переход на вход (SimpleHome при pay-pains)")
+                            print("✅ OnboardingScreen: Онбординг завершён, вход = SimpleHome (корень) или Main")
                         }
                     }) {
                         Group {

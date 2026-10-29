@@ -2006,8 +2006,8 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     
-    func updateParentalControlSettings(familyId: String, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
-        let request = UpdateParentalControlSettingsRequest(familyId: familyId, childId: childId, isContentFilterEnabled: isContentFilterEnabled, isAppBlockingEnabled: isAppBlockingEnabled, screenTimeLimitHours: screenTimeLimitHours, allowedApps: allowedApps, blockedWebsites: blockedWebsites, bedtime: bedtime, deviceId: deviceId, version: version)
+    func updateParentalControlSettings(familyId: String, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, internetPaused: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
+        let request = UpdateParentalControlSettingsRequest(familyId: familyId, childId: childId, isContentFilterEnabled: isContentFilterEnabled, isAppBlockingEnabled: isAppBlockingEnabled, internetPaused: internetPaused, screenTimeLimitHours: screenTimeLimitHours, allowedApps: allowedApps, blockedWebsites: blockedWebsites, bedtime: bedtime, deviceId: deviceId, version: version)
         networkManager.post(endpoint: AppConfig.Endpoint.parentalControlSettingsUpdate, body: request, completion: completion)
     }
     

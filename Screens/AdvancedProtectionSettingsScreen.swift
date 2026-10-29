@@ -374,49 +374,52 @@ struct AdvancedProtectionSettingsScreen: View {
     
     private var componentsSections: some View {
         VStack(spacing: Spacing.l) {
-            // Safari (Content Blocker)
-            SettingsAccordion(
-                icon: "🌐",
-                title: localizationManager.localized("advanced_safari_section_title"),
-                subtitle: localizationManager.localized("advanced_safari_section_subtitle"),
-                isExpanded: $safariExpanded
-            ) {
-                VStack(spacing: Spacing.m) {
-                    safariCard(
-                        title: localizationManager.localized("advanced_safari_sites_filter_title"),
-                        subtitle: localizationManager.localized("advanced_safari_sites_filter_subtitle"),
-                        isOn: $safariSitesEnabled,
-                        configureAction: { safariSettingsSheet = .sites },
-                        trigger: .sites
-                    )
-                    
-                    safariCard(
-                        title: localizationManager.localized("advanced_safari_social_restriction_title"),
-                        subtitle: localizationManager.localized("advanced_safari_social_restriction_subtitle"),
-                        isOn: $safariSocialEnabled,
-                        configureAction: { safariSettingsSheet = .social },
-                        trigger: .social
-                    )
+            // F1: Safari / семья / мессенджеры / пустая приватность / пустой мониторинг — hide (§20–21).
+            // Код и ключи не удаляем. Фильтр сайтов — на двери «Ребёнок».
+            if !PayPainsHiddenComponents.hideAdvancedSafariSection {
+                SettingsAccordion(
+                    icon: "🌐",
+                    title: localizationManager.localized("advanced_safari_section_title"),
+                    subtitle: localizationManager.localized("advanced_safari_section_subtitle"),
+                    isExpanded: $safariExpanded
+                ) {
+                    VStack(spacing: Spacing.m) {
+                        safariCard(
+                            title: localizationManager.localized("advanced_safari_sites_filter_title"),
+                            subtitle: localizationManager.localized("advanced_safari_sites_filter_subtitle"),
+                            isOn: $safariSitesEnabled,
+                            configureAction: { safariSettingsSheet = .sites },
+                            trigger: .sites
+                        )
+                        safariCard(
+                            title: localizationManager.localized("advanced_safari_social_restriction_title"),
+                            subtitle: localizationManager.localized("advanced_safari_social_restriction_subtitle"),
+                            isOn: $safariSocialEnabled,
+                            configureAction: { safariSettingsSheet = .social },
+                            trigger: .social
+                        )
+                    }
+                    .padding(.top, Spacing.m)
                 }
-                .padding(.top, Spacing.m)
             }
 
-            // Контроль и мониторинг (семья)
-            SettingsAccordion(
-                icon: "👨‍👩‍👧‍👦",
-                title: localizationManager.localized("advanced_family_section_title"),
-                subtitle: localizationManager.localized("advanced_family_section_subtitle"),
-                isExpanded: $familyExpanded
-            ) {
-                VStack(spacing: Spacing.m) {
-                    familyActivityMonitoringCard
-                    familyTimeControlCard
-                    familyAppLimitsCard
+            if !PayPainsHiddenComponents.hideAdvancedFamilySection {
+                SettingsAccordion(
+                    icon: "👨‍👩‍👧‍👦",
+                    title: localizationManager.localized("advanced_family_section_title"),
+                    subtitle: localizationManager.localized("advanced_family_section_subtitle"),
+                    isExpanded: $familyExpanded
+                ) {
+                    VStack(spacing: Spacing.m) {
+                        familyActivityMonitoringCard
+                        familyTimeControlCard
+                        familyAppLimitsCard
+                    }
+                    .padding(.top, Spacing.m)
                 }
-                .padding(.top, Spacing.m)
             }
 
-            // Защита от угроз (42 компонента, агрегатор)
+            // Защита от угроз (агрегатор) — оставляем
             SettingsAccordion(
                 icon: "🛡️",
                 title: localizationManager.localized("component.threat_protection.title"),
@@ -428,247 +431,204 @@ struct AdvancedProtectionSettingsScreen: View {
                 }
                 .padding(.top, Spacing.m)
             }
-            
-            // Раздел: Защита в мессенджерах (6 компонентов)
-            SettingsAccordion(
-                icon: "💬",
-                title: localizationManager.localized("protection_settings_messengers_title"),
-                subtitle: localizationManager.localized("protection_settings_messengers_subtitle"),
-                isExpanded: $messengersExpanded
-            ) {
-                VStack(spacing: Spacing.m) {
-                    // Telegram
+
+            if !PayPainsHiddenComponents.hideAdvancedMessengersSection {
+                messengersSectionLegacy
+            }
+            if !PayPainsHiddenComponents.hideAdvancedPrivacySection {
+                privacySectionLegacy
+            }
+            if !PayPainsHiddenComponents.hideAdvancedMonitoringSection {
+                monitoringSectionLegacy
+            }
+        }
+    }
+
+    /// Legacy-блоки оставлены для отката flag/секций; сейчас скрыты каноном F1.
+    @ViewBuilder
+    private var messengersSectionLegacy: some View {
+        SettingsAccordion(
+            icon: "💬",
+            title: localizationManager.localized("protection_settings_messengers_title"),
+            subtitle: localizationManager.localized("protection_settings_messengers_subtitle"),
+            isExpanded: $messengersExpanded
+        ) {
+            VStack(spacing: Spacing.m) {
+                if !PayPainsHiddenComponents.isComponentHidden("telegram_security_bot") {
                     ComponentToggleCard(
                         componentId: "telegram_security_bot",
                         title: localizationManager.localized("component_telegram_security_bot_title"),
                         description: localizationManager.localized("component_telegram_security_bot_description"),
                         isEnabled: $viewModel.telegramSecurityEnabled,
                         icon: "📱",
-                        onToggle: { value in
-                            viewModel.setTelegramSecurity(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setTelegramSecurity(isEnabled: value) }
                     )
                     .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: telegram_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showTelegramSettings = true
                     }
-                    
-                    // WhatsApp
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("whatsapp_security_bot") {
                     ComponentToggleCard(
                         componentId: "whatsapp_security_bot",
                         title: localizationManager.localized("component_whatsapp_security_bot_title"),
                         description: localizationManager.localized("component_whatsapp_security_bot_description"),
                         isEnabled: $viewModel.whatsappSecurityEnabled,
                         icon: "💬",
-                        onToggle: { value in
-                            viewModel.setWhatsAppSecurity(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setWhatsAppSecurity(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: whatsapp_security_bot", level: .info, category: "ADVANCED.UI")
-                        viewModel.showWhatsAppSettings = true
-                    }
-                    
-                    // Instagram
+                    .onTapGesture { viewModel.showWhatsAppSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("instagram_security_bot") {
                     ComponentToggleCard(
                         componentId: "instagram_security_bot",
                         title: localizationManager.localized("component_instagram_security_bot_title"),
                         description: localizationManager.localized("component_instagram_security_bot_description"),
                         isEnabled: $viewModel.instagramSecurityEnabled,
                         icon: "📷",
-                        onToggle: { value in
-                            viewModel.setInstagramSecurity(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setInstagramSecurity(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: instagram_security_bot", level: .info, category: "ADVANCED.UI")
-                        viewModel.showInstagramSettings = true
-                    }
-                    
-                    // Max Messenger
+                    .onTapGesture { viewModel.showInstagramSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("max_messenger_security_bot") {
                     ComponentToggleCard(
                         componentId: "max_messenger_security_bot",
                         title: localizationManager.localized("component_max_messenger_security_bot_title"),
                         description: localizationManager.localized("component_max_messenger_security_bot_description"),
                         isEnabled: $viewModel.maxMessengerSecurityEnabled,
                         icon: "💭",
-                        onToggle: { value in
-                            viewModel.setMaxMessengerSecurity(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setMaxMessengerSecurity(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: max_messenger_security_bot", level: .info, category: "ADVANCED.UI")
-                        viewModel.showMaxMessengerSettings = true
-                    }
-                    
-                    // Gaming
+                    .onTapGesture { viewModel.showMaxMessengerSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("gaming_security_bot") {
                     ComponentToggleCard(
                         componentId: "gaming_security_bot",
                         title: localizationManager.localized("component_gaming_security_bot_title"),
                         description: localizationManager.localized("component_gaming_security_bot_description"),
                         isEnabled: $viewModel.gamingSecurityEnabled,
                         icon: "🎮",
-                        onToggle: { value in
-                            viewModel.setGamingSecurity(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setGamingSecurity(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: gaming_security_bot", level: .info, category: "ADVANCED.UI")
-                        viewModel.showGamingSettings = true
-                    }
-                    
-                    // Browser
+                    .onTapGesture { viewModel.showGamingSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("browser_security_bot") {
                     ComponentToggleCard(
                         componentId: "browser_security_bot",
                         title: localizationManager.localized("component_browser_security_bot_title"),
                         description: localizationManager.localized("component_browser_security_bot_description"),
                         isEnabled: $viewModel.browserSecurityEnabled,
                         icon: "🌐",
-                        onToggle: { value in
-                            viewModel.setBrowserSecurity(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setBrowserSecurity(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: browser_security_bot", level: .info, category: "ADVANCED.UI")
-                        viewModel.showBrowserSettings = true
-                    }
+                    .onTapGesture { viewModel.showBrowserSettings = true }
                 }
-                .padding(.top, Spacing.m)
             }
-            
-            // Раздел: Приватность (3 компонента)
-            SettingsAccordion(
-                icon: "🔒",
-                title: localizationManager.localized("protection_settings_privacy_title"),
-                subtitle: localizationManager.localized("protection_settings_privacy_subtitle"),
-                isExpanded: $privacyExpanded
-            ) {
-                VStack(spacing: Spacing.m) {
-                    // Approximate location (location_bubble_agent)
+            .padding(.top, Spacing.m)
+        }
+    }
+
+    @ViewBuilder
+    private var privacySectionLegacy: some View {
+        SettingsAccordion(
+            icon: "🔒",
+            title: localizationManager.localized("protection_settings_privacy_title"),
+            subtitle: localizationManager.localized("protection_settings_privacy_subtitle"),
+            isExpanded: $privacyExpanded
+        ) {
+            VStack(spacing: Spacing.m) {
+                if !PayPainsHiddenComponents.isComponentHidden("location_bubble_agent") {
                     ComponentToggleCard(
                         componentId: "location_bubble_agent",
                         title: localizationManager.localized("component_location_bubble_agent_title"),
                         description: localizationManager.localized("component_location_bubble_agent_description"),
                         isEnabled: $viewModel.locationBubbleEnabled,
                         icon: "📍",
-                        onToggle: { value in
-                            viewModel.setLocationBubble(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setLocationBubble(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: location_bubble_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showLocationBubbleSettings = true
-                    }
-                    
-                    // Personal Data Cleanup
+                    .onTapGesture { viewModel.showLocationBubbleSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("personal_data_cleanup_agent") {
                     ComponentToggleCard(
                         componentId: "personal_data_cleanup_agent",
                         title: localizationManager.localized("component_personal_data_cleanup_agent_title"),
                         description: localizationManager.localized("component_personal_data_cleanup_agent_description"),
                         isEnabled: $viewModel.personalDataCleanupEnabled,
                         icon: "🧹",
-                        onToggle: { value in
-                            viewModel.setPersonalDataCleanup(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setPersonalDataCleanup(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: personal_data_cleanup_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showPersonalDataCleanupSettings = true
-                    }
-                    
-                    // Anti Tracker
+                    .onTapGesture { viewModel.showPersonalDataCleanupSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("anti_tracker_agent") {
                     ComponentToggleCard(
                         componentId: "anti_tracker_agent",
                         title: localizationManager.localized("component_anti_tracker_agent_title"),
                         description: localizationManager.localized("component_anti_tracker_agent_description"),
                         isEnabled: $viewModel.antiTrackerEnabled,
                         icon: "🚫",
-                        onToggle: { value in
-                            viewModel.setAntiTracker(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setAntiTracker(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: anti_tracker_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showAntiTrackerSettings = true
-                    }
+                    .onTapGesture { viewModel.showAntiTrackerSettings = true }
                 }
-                .padding(.top, Spacing.m)
             }
-            
-            // Раздел: Мониторинг (4 компонента)
-            SettingsAccordion(
-                icon: "👁️",
-                title: localizationManager.localized("protection_settings_monitoring_title"),
-                subtitle: localizationManager.localized("protection_settings_monitoring_subtitle"),
-                isExpanded: $monitoringExpanded
-            ) {
-                VStack(spacing: Spacing.m) {
-                    // Dark Web Monitoring
+            .padding(.top, Spacing.m)
+        }
+    }
+
+    @ViewBuilder
+    private var monitoringSectionLegacy: some View {
+        SettingsAccordion(
+            icon: "👁️",
+            title: localizationManager.localized("protection_settings_monitoring_title"),
+            subtitle: localizationManager.localized("protection_settings_monitoring_subtitle"),
+            isExpanded: $monitoringExpanded
+        ) {
+            VStack(spacing: Spacing.m) {
+                if !PayPainsHiddenComponents.isComponentHidden("dark_web_monitoring_agent") {
                     ComponentToggleCard(
                         componentId: "dark_web_monitoring_agent",
                         title: localizationManager.localized("component_dark_web_monitoring_agent_title"),
                         description: localizationManager.localized("component_dark_web_monitoring_agent_description"),
                         isEnabled: $viewModel.darkWebMonitoringEnabled,
                         icon: "🌑",
-                        onToggle: { value in
-                            viewModel.setDarkWebMonitoring(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setDarkWebMonitoring(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: dark_web_monitoring_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showDarkWebMonitoringSettings = true
-                    }
-                    
-                    // Identity Theft Protection
+                    .onTapGesture { viewModel.showDarkWebMonitoringSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("russian_identity_theft_protection_agent") {
                     ComponentToggleCard(
                         componentId: "russian_identity_theft_protection_agent",
                         title: localizationManager.localized("component_russian_identity_theft_protection_agent_title"),
                         description: localizationManager.localized("component_russian_identity_theft_protection_agent_description"),
                         isEnabled: $viewModel.identityTheftProtectionEnabled,
                         icon: "🆔",
-                        onToggle: { value in
-                            viewModel.setIdentityTheftProtection(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setIdentityTheftProtection(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: russian_identity_theft_protection_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showIdentityTheftProtectionSettings = true
-                    }
-                    
-                    // AI Categories
+                    .onTapGesture { viewModel.showIdentityTheftProtectionSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("ai_categories_agent") {
                     ComponentToggleCard(
                         componentId: "ai_categories_agent",
                         title: localizationManager.localized("component_ai_categories_agent_title"),
                         description: localizationManager.localized("component_ai_categories_agent_description"),
                         isEnabled: $viewModel.aiCategoriesEnabled,
                         icon: "🤖",
-                        onToggle: { value in
-                            viewModel.setAICategories(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setAICategories(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: ai_categories_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showAICategoriesSettings = true
-                    }
-                    
-                    // Driving Reports
+                    .onTapGesture { viewModel.showAICategoriesSettings = true }
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("driving_reports_agent") {
                     ComponentToggleCard(
                         componentId: "driving_reports_agent",
                         title: localizationManager.localized("component_driving_reports_agent_title"),
                         description: localizationManager.localized("component_driving_reports_agent_description"),
                         isEnabled: $viewModel.drivingReportsEnabled,
                         icon: "🚗",
-                        onToggle: { value in
-                            viewModel.setDrivingReports(isEnabled: value)
-                        }
+                        onToggle: { value in viewModel.setDrivingReports(isEnabled: value) }
                     )
-                    .onTapGesture {
-                        VisualLogger.shared.log("⚙️ Open settings: driving_reports_agent", level: .info, category: "ADVANCED.UI")
-                        viewModel.showDrivingReportsSettings = true
-                    }
+                    .onTapGesture { viewModel.showDrivingReportsSettings = true }
                 }
-                .padding(.top, Spacing.m)
             }
+            .padding(.top, Spacing.m)
         }
     }
 

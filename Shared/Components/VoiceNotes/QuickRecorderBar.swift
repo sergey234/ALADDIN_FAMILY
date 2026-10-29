@@ -34,7 +34,25 @@ struct QuickRecorderBar: View {
                     .foregroundColor(.orange)
             }
 
+            if !viewModel.liveTranscript.isEmpty {
+                Text(viewModel.liveTranscript)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                    .accessibilityLabel(localizationManager.localized("voice_notes_draft"))
+            }
+
             recorderButtons
+
+            if viewModel.recordingState == .idle || viewModel.recordingState == .saved || viewModel.recordingState == .failed {
+                Button {
+                    viewModel.showImporter = true
+                } label: {
+                    Label(localizationManager.localized("voice_notes_import"), systemImage: "folder")
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(localizationManager.localized("voice_notes_import"))
+            }
         }
         .padding()
         .background(.ultraThinMaterial)

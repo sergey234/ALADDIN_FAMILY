@@ -125,14 +125,16 @@ struct AIAssistantScreen: View {
                         navigationManager.goBackToPreviousScreen(reason: "AIAssistant.onBack")
                     }) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(width: 44, height: 44)
+                            .contentShape(Circle())
                             .background(
                                 Circle()
-                                    .fill(Color.white.opacity(0.2))
+                                    .fill(Color.orange.opacity(0.2))
                             )
                     }
+                    .buttonStyle(.plain)
                     .accessibilityLabel(localizationManager.localized("ai_assistant_back"))
                     .accessibilityIdentifier("ai_assistant_nav_back")
                     

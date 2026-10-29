@@ -1467,12 +1467,14 @@ extension ALADDINApp {
             print("🔴 ONBOARDING: Показываем онбординг")
             navigationManager.currentScreen = .onboarding
         } else {
-            print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на главный экран")
-            navigationManager.navigateToRoot(.main)
-            // Pay-pains: вход по умолчанию = SimpleHome (три двери). Main = «Расширенный экран».
+            print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на вход")
+            // Pay-pains: SimpleHome = корень входа. Main только по явному «Полная версия» / Меню.
+            // Раньше: root=.main + push SimpleHome → стек [main, simpleHome] и Main всплывал «сам».
             if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-                navigationManager.navigateToSimpleHome()
-                print("🟢 SIMPLE_HOME: pay-pains / preferred — открыли SimpleHome как вход")
+                navigationManager.navigateToRoot(.simpleHome)
+                print("🟢 SIMPLE_HOME: pay-pains — SimpleHome как корень входа (без Main под ним)")
+            } else {
+                navigationManager.navigateToRoot(.main)
             }
         }
 

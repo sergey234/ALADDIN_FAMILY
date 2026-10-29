@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>15</string>
+	<string>16</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -98,7 +98,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ALADDIN uses location while you use the app to set family places and share location in an emergency (SOS).</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>ALADDIN needs microphone access for voice messages and voice analysis.</string>
+	<string>ALADDIN needs the microphone for notes and voice input.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>ALADDIN uses motion to help detect a hard fall and send a family urgent safety signal when you enable it.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -106,7 +106,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ALADDIN Family needs photo library access for secure family photo management and analysis.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>ALADDIN needs speech recognition for AI voice input and commands.</string>
+	<string>ALADDIN turns speech into text for notes and voice input.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>INSendMessageIntent</string>

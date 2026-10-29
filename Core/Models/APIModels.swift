@@ -3147,6 +3147,8 @@ struct ParentalControlSettingsResponse: Codable {
     let childId: String?
     let isContentFilterEnabled: Bool
     let isAppBlockingEnabled: Bool
+    /// F5: пауза приложений/сайтов (щит держится после закрытия ALADDIN).
+    let internetPaused: Bool
     let screenTimeLimitHours: Int
     let allowedApps: [String]
     let blockedWebsites: [String]
@@ -3160,6 +3162,7 @@ struct ParentalControlSettingsResponse: Codable {
         case childId
         case isContentFilterEnabled
         case isAppBlockingEnabled
+        case internetPaused
         case screenTimeLimitHours
         case allowedApps
         case blockedWebsites
@@ -3175,6 +3178,7 @@ struct ParentalControlSettingsResponse: Codable {
         // optional snake_case compatibility keys (backend variants)
         case is_content_filter_enabled
         case is_app_blocking_enabled
+        case internet_paused
         case screen_time_limit_hours
         case allowed_apps
         case blocked_websites
@@ -3187,6 +3191,7 @@ struct ParentalControlSettingsResponse: Codable {
         childId: String?,
         isContentFilterEnabled: Bool,
         isAppBlockingEnabled: Bool,
+        internetPaused: Bool = false,
         screenTimeLimitHours: Int,
         allowedApps: [String],
         blockedWebsites: [String],
@@ -3199,6 +3204,7 @@ struct ParentalControlSettingsResponse: Codable {
         self.childId = childId
         self.isContentFilterEnabled = isContentFilterEnabled
         self.isAppBlockingEnabled = isAppBlockingEnabled
+        self.internetPaused = internetPaused
         self.screenTimeLimitHours = screenTimeLimitHours
         self.allowedApps = allowedApps
         self.blockedWebsites = blockedWebsites
@@ -3221,6 +3227,10 @@ struct ParentalControlSettingsResponse: Codable {
             (try? container.decode(Bool.self, forKey: .isAppBlockingEnabled))
             ?? (try? container.decode(Bool.self, forKey: .is_app_blocking_enabled))
             ?? (try? container.decode(Bool.self, forKey: .appInstallBlocked))
+            ?? false
+        self.internetPaused =
+            (try? container.decode(Bool.self, forKey: .internetPaused))
+            ?? (try? container.decode(Bool.self, forKey: .internet_paused))
             ?? false
         self.screenTimeLimitHours =
             (try? container.decode(Int.self, forKey: .screenTimeLimitHours))
@@ -3251,6 +3261,7 @@ struct ParentalControlSettingsResponse: Codable {
         try container.encodeIfPresent(childId, forKey: .childId)
         try container.encode(isContentFilterEnabled, forKey: .isContentFilterEnabled)
         try container.encode(isAppBlockingEnabled, forKey: .isAppBlockingEnabled)
+        try container.encode(internetPaused, forKey: .internetPaused)
         try container.encode(screenTimeLimitHours, forKey: .screenTimeLimitHours)
         try container.encode(allowedApps, forKey: .allowedApps)
         try container.encode(blockedWebsites, forKey: .blockedWebsites)
@@ -3266,12 +3277,39 @@ struct UpdateParentalControlSettingsRequest: Codable {
     let childId: String?
     let isContentFilterEnabled: Bool?
     let isAppBlockingEnabled: Bool?
+    let internetPaused: Bool?
     let screenTimeLimitHours: Int?
     let allowedApps: [String]?
     let blockedWebsites: [String]?
     let bedtime: String?
     let deviceId: String?
     let version: Int?
+
+    init(
+        familyId: String,
+        childId: String? = nil,
+        isContentFilterEnabled: Bool? = nil,
+        isAppBlockingEnabled: Bool? = nil,
+        internetPaused: Bool? = nil,
+        screenTimeLimitHours: Int? = nil,
+        allowedApps: [String]? = nil,
+        blockedWebsites: [String]? = nil,
+        bedtime: String? = nil,
+        deviceId: String? = nil,
+        version: Int? = nil
+    ) {
+        self.familyId = familyId
+        self.childId = childId
+        self.isContentFilterEnabled = isContentFilterEnabled
+        self.isAppBlockingEnabled = isAppBlockingEnabled
+        self.internetPaused = internetPaused
+        self.screenTimeLimitHours = screenTimeLimitHours
+        self.allowedApps = allowedApps
+        self.blockedWebsites = blockedWebsites
+        self.bedtime = bedtime
+        self.deviceId = deviceId
+        self.version = version
+    }
 }
 
 struct SettingsHistoryEntry: Codable {
