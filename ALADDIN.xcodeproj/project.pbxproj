@@ -143,6 +143,13 @@
 		5E6F394C2F15C20000CEC104 /* AIFeedbackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */; };
 		ASRDCARD02F90000100C7D34B /* AppStoreReviewPromptCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASRDCARD01F90000100C7D34B /* AppStoreReviewPromptCard.swift */; };
 		ASRPRMPT02F90000100C7D34B /* AppStoreReviewPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASRPRMPT01F90000100C7D34B /* AppStoreReviewPrompt.swift */; };
+		PAYPAINS02F90000100C7D34B /* PayPainsUIFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAYPAINS01F90000100C7D34B /* PayPainsUIFlags.swift */; };
+		PAYPHIDE02F90000100C7D34B /* PayPainsHiddenComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAYPHIDE01F90000100C7D34B /* PayPainsHiddenComponents.swift */; };
+		PAYPREV02F90000100C7D34B /* PayPainsSoftReviewPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAYPREV01F90000100C7D34B /* PayPainsSoftReviewPrompt.swift */; };
+		BEDTIME02F90000100C7D34B /* BedtimeNightLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDTIME01F90000100C7D34B /* BedtimeNightLock.swift */; };
+		PAUSE02F90000100C7D34B /* ParentalInternetPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAUSE01F90000100C7D34B /* ParentalInternetPause.swift */; };
+		PAYPREV04F90000100C7D34B /* PayPainsSoftReviewModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAYPREV03F90000100C7D34B /* PayPainsSoftReviewModal.swift */; };
+		PAYINIT02F90000100C7D34B /* PayPainsMemberInitials.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAYINIT01F90000100C7D34B /* PayPainsMemberInitials.swift */; };
 		5E6F394E2F15B74F00CEC103 /* RetryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394D2F15B74E00CEC103 /* RetryManager.swift */; };
 		5E6F39552F16C52100CEC103 /* PhishingProtectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39542F16C52000CEC103 /* PhishingProtectionSettingsModal.swift */; };
 		5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */; };
@@ -1050,6 +1057,13 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIFeedbackSheet.swift; path = Shared/Components/AIFeedbackSheet.swift; sourceTree = "<group>"; };
 		ASRDCARD01F90000100C7D34B /* AppStoreReviewPromptCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppStoreReviewPromptCard.swift; path = Shared/Components/AppStoreReviewPromptCard.swift; sourceTree = "<group>"; };
 		ASRPRMPT01F90000100C7D34B /* AppStoreReviewPrompt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppStoreReviewPrompt.swift; path = Core/Managers/AppStoreReviewPrompt.swift; sourceTree = "<group>"; };
+		PAYPAINS01F90000100C7D34B /* PayPainsUIFlags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PayPainsUIFlags.swift; path = Core/Managers/PayPainsUIFlags.swift; sourceTree = "<group>"; };
+		PAYPHIDE01F90000100C7D34B /* PayPainsHiddenComponents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PayPainsHiddenComponents.swift; path = Core/Managers/PayPainsHiddenComponents.swift; sourceTree = "<group>"; };
+		PAYPREV01F90000100C7D34B /* PayPainsSoftReviewPrompt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PayPainsSoftReviewPrompt.swift; path = Core/Managers/PayPainsSoftReviewPrompt.swift; sourceTree = "<group>"; };
+		BEDTIME01F90000100C7D34B /* BedtimeNightLock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BedtimeNightLock.swift; path = Core/Family/BedtimeNightLock.swift; sourceTree = "<group>"; };
+		PAUSE01F90000100C7D34B /* ParentalInternetPause.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalInternetPause.swift; path = Core/Family/ParentalInternetPause.swift; sourceTree = "<group>"; };
+		PAYPREV03F90000100C7D34B /* PayPainsSoftReviewModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PayPainsSoftReviewModal.swift; path = Shared/Components/PayPainsSoftReviewModal.swift; sourceTree = "<group>"; };
+		PAYINIT01F90000100C7D34B /* PayPainsMemberInitials.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PayPainsMemberInitials.swift; path = Shared/Utils/PayPainsMemberInitials.swift; sourceTree = "<group>"; };
 		5E6F394D2F15B74E00CEC103 /* RetryManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RetryManager.swift; path = Core/Network/RetryManager.swift; sourceTree = "<group>"; };
 		5E6F394F2F16644900CEC103 /* ComponentAPIIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAPIIntegrationTests.swift; path = Tests/Integration/ComponentAPIIntegrationTests.swift; sourceTree = "<group>"; };
 		5E6F39522F16645C00CEC103 /* ComponentAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAPITests.swift; path = Tests/Integration/ComponentAPITests.swift; sourceTree = "<group>"; };
@@ -2023,6 +2037,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E7056C12F547B9E0065BDC4 /* FeatureGateView.swift */,
 				5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */,
 				ASRPRMPT01F90000100C7D34B /* AppStoreReviewPrompt.swift */,
+				PAYPAINS01F90000100C7D34B /* PayPainsUIFlags.swift */,
+				PAYPHIDE01F90000100C7D34B /* PayPainsHiddenComponents.swift */,
+				PAYPREV01F90000100C7D34B /* PayPainsSoftReviewPrompt.swift */,
 				5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */,
 				5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */,
 				5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */,
@@ -2219,6 +2236,8 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSL13112F90000100C7D34B /* FamilyImOkService.swift */,
 				FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */,
 				STMAIN012F90000200C7D34B /* ScreenTimeUsageStore.swift */,
+				BEDTIME01F90000100C7D34B /* BedtimeNightLock.swift */,
+				PAUSE01F90000100C7D34B /* ParentalInternetPause.swift */,
 				STMAIN032F90000200C7D34B /* ScreenTimeUsageSync.swift */,
 				STMAIN072F90000200C7D34B /* ScreenTimeAppLimitsBridge.swift */,
 				STMAIN092F90000200C7D34B /* ScreenTimeDeviceStatus.swift */,
@@ -2375,6 +2394,8 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */,
 				5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */,
 				ASRDCARD01F90000100C7D34B /* AppStoreReviewPromptCard.swift */,
+				PAYPREV03F90000100C7D34B /* PayPainsSoftReviewModal.swift */,
+				PAYINIT01F90000100C7D34B /* PayPainsMemberInitials.swift */,
 				5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */,
 				C3A100012F72B001A0000003 /* WelcomeCardForCreator.swift */,
 				B1000130B1000130B1000130 /* AddMoreMemberCard.swift */,
@@ -3231,6 +3252,13 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */,
 				ASRPRMPT02F90000100C7D34B /* AppStoreReviewPrompt.swift in Sources */,
+				PAYPAINS02F90000100C7D34B /* PayPainsUIFlags.swift in Sources */,
+				PAYPHIDE02F90000100C7D34B /* PayPainsHiddenComponents.swift in Sources */,
+				PAYPREV02F90000100C7D34B /* PayPainsSoftReviewPrompt.swift in Sources */,
+				BEDTIME02F90000100C7D34B /* BedtimeNightLock.swift in Sources */,
+				PAUSE02F90000100C7D34B /* ParentalInternetPause.swift in Sources */,
+				PAYPREV04F90000100C7D34B /* PayPainsSoftReviewModal.swift in Sources */,
+				PAYINIT02F90000100C7D34B /* PayPainsMemberInitials.swift in Sources */,
 				5E7057032FA12A010065BDC4 /* FamilyLocalStore.swift in Sources */,
 				5E7057062FA12A020065BDC4 /* FamilyReconcileService.swift in Sources */,
 				5E8A10022FA12A100065BDC4 /* NotificationAppSettingsSync.swift in Sources */,

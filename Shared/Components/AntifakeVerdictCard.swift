@@ -12,6 +12,8 @@ struct AntifakeVerdictCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     let verdict: SecurityVerdict
     var variant: AntifakeVerdictCardVariant = .standard
+    /// F10: short type chip (call / link / message / voice / video) — not a separate product card.
+    var checkTypeKey: String? = nil
     /// Phone from call check metadata — required for crowd reports (I-01).
     var reportPhone: String? = nil
 
@@ -220,7 +222,7 @@ struct AntifakeVerdictCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            HStack {
+            HStack(alignment: .top) {
                 Label(
                     localizationManager.localized(presentation.verdictTitleKey),
                     systemImage: presentation.iconName
@@ -229,12 +231,23 @@ struct AntifakeVerdictCard: View {
                     .foregroundColor(.white)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: Spacing.s)
-                Text(localizationManager.localized(presentation.sourceBadgeKey))
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, Spacing.s)
-                    .padding(.vertical, 4)
-                    .background(Color.white.opacity(0.15))
-                    .clipShape(Capsule())
+                VStack(alignment: .trailing, spacing: 4) {
+                    if let checkTypeKey {
+                        Text(localizationManager.localized(checkTypeKey))
+                            .font(.caption.weight(.bold))
+                            .padding(.horizontal, Spacing.s)
+                            .padding(.vertical, 4)
+                            .background(Color.secondaryGold.opacity(0.28))
+                            .clipShape(Capsule())
+                            .accessibilityIdentifier("pay_pains_check_type_badge")
+                    }
+                    Text(localizationManager.localized(presentation.sourceBadgeKey))
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, Spacing.s)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.15))
+                        .clipShape(Capsule())
+                }
             }
 
             Text(localizationManager.localized("antifake_verdict_story_lead"))

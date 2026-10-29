@@ -1368,44 +1368,48 @@ struct ParentalControlScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.bottom, Spacing.xs)
 
-                // 4 компонента защиты детей
-                SecurityFeatureRow(
-                    componentId: "self_harm_detection_agent",
-                    title: localizationManager.localized("component.self_harm_detection_agent.title"),
-                    description: localizationManager.localized("component.self_harm_detection_agent.desc"),
-                    isEnabled: $viewModel.selfHarmDetectionEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleSelfHarmDetection(newValue) }
-                )
-                
-                SecurityFeatureRow(
-                    componentId: "grooming_detection_agent",
-                    title: localizationManager.localized("component.grooming_detection_agent.title"),
-                    description: localizationManager.localized("component.grooming_detection_agent.desc"),
-                    isEnabled: $viewModel.groomingDetectionEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleGroomingDetection(newValue) }
-                )
-                
-                SecurityFeatureRow(
-                    componentId: "online_predators_agent",
-                    title: localizationManager.localized("component.online_predators_agent.title"),
-                    description: localizationManager.localized("component.online_predators_agent.desc"),
-                    isEnabled: $viewModel.onlinePredatorsEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleOnlinePredators(newValue) }
-                )
-                
-                SecurityFeatureRow(
-                    componentId: "psychological_support_agent",
-                    title: localizationManager.localized("component.psychological_support_agent.title"),
-                    description: localizationManager.localized("component.psychological_support_agent.desc"),
-                    isEnabled: $viewModel.psychologicalSupportEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in viewModel.togglePsychologicalSupport(newValue) }
-                )
-                
-                // Улучшенный родительский контроль бот
+                // F1: четыре переключателя «чтение переписок» спрятаны (§20–21). Код/ключи не удаляем.
+                if !PayPainsHiddenComponents.isComponentHidden("self_harm_detection_agent") {
+                    SecurityFeatureRow(
+                        componentId: "self_harm_detection_agent",
+                        title: localizationManager.localized("component.self_harm_detection_agent.title"),
+                        description: localizationManager.localized("component.self_harm_detection_agent.desc"),
+                        isEnabled: $viewModel.selfHarmDetectionEnabled,
+                        hasSettings: false,
+                        onToggle: { newValue in viewModel.toggleSelfHarmDetection(newValue) }
+                    )
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("grooming_detection_agent") {
+                    SecurityFeatureRow(
+                        componentId: "grooming_detection_agent",
+                        title: localizationManager.localized("component.grooming_detection_agent.title"),
+                        description: localizationManager.localized("component.grooming_detection_agent.desc"),
+                        isEnabled: $viewModel.groomingDetectionEnabled,
+                        hasSettings: false,
+                        onToggle: { newValue in viewModel.toggleGroomingDetection(newValue) }
+                    )
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("online_predators_agent") {
+                    SecurityFeatureRow(
+                        componentId: "online_predators_agent",
+                        title: localizationManager.localized("component.online_predators_agent.title"),
+                        description: localizationManager.localized("component.online_predators_agent.desc"),
+                        isEnabled: $viewModel.onlinePredatorsEnabled,
+                        hasSettings: false,
+                        onToggle: { newValue in viewModel.toggleOnlinePredators(newValue) }
+                    )
+                }
+                if !PayPainsHiddenComponents.isComponentHidden("psychological_support_agent") {
+                    SecurityFeatureRow(
+                        componentId: "psychological_support_agent",
+                        title: localizationManager.localized("component.psychological_support_agent.title"),
+                        description: localizationManager.localized("component.psychological_support_agent.desc"),
+                        isEnabled: $viewModel.psychologicalSupportEnabled,
+                        hasSettings: false,
+                        onToggle: { newValue in viewModel.togglePsychologicalSupport(newValue) }
+                    )
+                }
+
                 SecurityFeatureRow(
                     componentId: "parental_control_bot",
                     title: localizationManager.localized("component.parental_control_bot.title"),

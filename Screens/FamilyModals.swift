@@ -2612,7 +2612,12 @@ struct SleepTimeSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+                    // F4: сохранить часы + поставить ночной замок (DeviceActivity на телефоне ребёнка)
+                    BedtimeNightLock.saveAndSchedule(
+                        start: bedtimeStart.wrappedValue,
+                        end: bedtimeEnd.wrappedValue,
+                        enabled: true
+                    )
                     print("✅ Bedtime saved: \(Self.timeFormatter.string(from: bedtimeStart.wrappedValue)) - \(Self.timeFormatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
                     isPresented = false
                 }) {

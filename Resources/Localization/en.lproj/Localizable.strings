@@ -42,17 +42,19 @@
 "onboarding_page1_title" = "Family protection in your pocket";
 "onboarding_page1_desc" = "Comprehensive protection against major cyber threats";
 "onboarding_page2_title" = "Your personal security agent";
-"onboarding_page2_desc" = "AI guards your family 24/7 + Multi-layer protection system ⭐⭐⭐⭐⭐";
+"onboarding_page2_desc" = "We protect your family around the clock. Several layers of protection ⭐⭐⭐⭐⭐";
 "onboarding_page3_title" = "Parental control";
-"onboarding_page3_desc" = "Children's safety education system. You see all your children's internet activity. Self-learning AI protection system";
+"onboarding_page3_desc" = "See what kids do on the internet. Control of the child’s phone.";
 "onboarding_page4_title" = "Risk analytics";
-"onboarding_page4_desc" = "ALADDIN AI analyzes, detects and warns about cyber threats. It constantly learns and improves.";
+"onboarding_page4_desc" = "ALADDIN spots threats and warns you early. It learns and gets better.";
 "onboarding_page5_title" = "Protection for children!";
 "onboarding_page5_desc" = "Children won't be able to visit dangerous sites, online casinos, adult sites, or make purchases in gaming and streaming services";
-"onboarding_page6_title" = "Antifake for people 18+";
-"onboarding_page6_desc" = "AI helps check a suspicious call, news, messages and video.";
-"onboarding_page7_title" = "Join ALADDIN";
-"onboarding_page7_desc" = "Peace of mind for loved ones is priceless. Protection starts today!";
+"onboarding_page6_title" = "Where they are";
+"onboarding_page6_desc" = "We’ll tell you when your child gets home, to school, or to a club.";
+"onboarding_page7_title" = "Antifake for people 18+";
+"onboarding_page7_desc" = "Check a call, news, messages, video, voice, SMS, text, or a link.";
+"onboarding_page8_title" = "Join ALADDIN";
+"onboarding_page8_desc" = "Peace of mind for loved ones is priceless. Protection starts today!";
 "onboarding_data_collection_info" = "We collect only anonymized data to ensure security.";
 "onboarding_privacy_policy_link" = "Privacy Policy";
 "onboarding_data_consent" = "I agree to data processing";
@@ -194,7 +196,7 @@
 "parental.blocked.apps" = "Blocked Apps";
 "parental.schedule" = "Access Schedule";
 "parental.location.history" = "Location History";
-"parental.geofences" = "Geofences";
+"parental.geofences" = "Places";
 
 /* ═══════════════════════════════════════════════════════════════
  * SETTINGS
@@ -2688,7 +2690,7 @@
 "geofence_status_ready" = "Address found, connecting";
 "geofence_status_no_coords" = "Address not found. Check street and house";
 "geofence_status_need_always" = "Needs Always location access";
-"geofence_status_need_permission" = "Needs location permission";
+"geofence_status_need_permission" = "Needs place access";
 "geofence_status_needs_consent" = "Turn on family place alerts first";
 "geofence_status_need_self_share" = "Turn on “My places for the family”";
 "geofence_family_chat_arrived" = "%@: arrived — %@";
@@ -2711,16 +2713,16 @@
 "geofence_always_button_allow" = "Allow Always";
 "geofences_use_current_location" = "Use my current spot";
 "geofences_resolving_coords" = "Finding address…";
-"geofences_geocode_failed" = "Couldn’t find coordinates for this address. Check the street and house, or use your current spot.";
+"geofences_geocode_failed" = "Couldn’t find this address. Check the street and house, or use your current spot.";
 "geofences_demo_address_blocked" = "That’s a demo address. Enter a real family place.";
-"geofences_current_location_failed" = "Couldn’t get your current spot. Check location access.";
+"geofences_current_location_failed" = "Couldn’t get your current spot. Check place access in iPhone Settings.";
 "geofences_current_place_name" = "My place";
 "geofences_coords_fallback_fmt" = "Point %.5f, %.5f";
 "need_help_location_named" = "· place: %@";
 "need_help_location_coords" = "· pin %.5f, %.5f";
 "need_help_location_unavailable" = "· place unavailable right now";
 "im_ok_no_gps_honesty" = "No location — just your OK signal to the family.";
-"location_bubble_honesty_body" = "Approximate place for privacy. Not live tracking and not family geofences.";
+"location_bubble_honesty_body" = "Approximate place for privacy. Not live tracking and not family places.";
 "need_help_confirm_body" = "Family will get an urgent message. If location is allowed, we send one approximate place once (not a track).";
 "shield_ask_parent_push_title" = "Child asked to unlock";
 "shield_ask_parent_push_body" = "They tapped Ask parent on the shield. Open family limits.";
@@ -2975,7 +2977,7 @@
 "calls_suspicious_cta_subtitle" = "Tell family and open the checklist";
 "calls_suspicious_cta_a11y" = "Open screen: asked for money or all calm";
 "elderly_scam_call_directory_cta" = "Turn on number labels";
-"elderly_scam_call_directory_cta_hint" = "Call Filter in iPhone Settings for scam labels";
+"elderly_scam_call_directory_cta_hint" = "Call filtering in iPhone Settings — scam number labels";
 "main_protect_parents_cta" = "Protect parents";
 "main_protect_parents_subtitle" = "Second hand for 60+: calls and family trust";
 "main_more_title" = "More";
@@ -2999,6 +3001,84 @@
 "family_safe_word_no_family_cta" = "Open family connect";
 "simple_home_tile_parents_title" = "Parents 60+";
 "simple_home_tile_parents_subtitle" = "Second hand and post-call checklist";
+
+/* Pay-pains F2 — home entry: family strip + three doors + menu (§23). No trail/bedtime on screen until F4/F9. */
+"pay_pains_family_strip_empty" = "Add your family";
+"pay_pains_family_strip_count_fmt" = "Family · %d %@";
+"pay_pains_family_strip_people_one" = "person";
+"pay_pains_family_strip_people_few" = "people";
+"pay_pains_family_strip_people_many" = "people";
+"pay_pains_family_strip_count" = "Family · %d people";
+"pay_pains_family_strip_count_many" = "Family · %d people";
+"pay_pains_family_strip_add" = "Add";
+"pay_pains_door_check_title" = "Check";
+"pay_pains_door_check_subtitle" = "A call, a message, or a video";
+"pay_pains_door_child_title" = "Child";
+"pay_pains_door_child_subtitle" = "Sites, a limit, and a pause";
+"pay_pains_door_where_title" = "Where they are";
+"pay_pains_door_where_subtitle" = "Map";
+"pay_pains_ai_friends_row" = "AI Friends";
+"pay_pains_menu_button" = "Menu";
+"pay_pains_menu_title" = "All sections";
+"pay_pains_menu_plan" = "Plan";
+"pay_pains_menu_settings" = "Settings";
+"pay_pains_menu_protection" = "Protection";
+"pay_pains_menu_ai_friends" = "AI Friends";
+"pay_pains_menu_ai_helper" = "AI Helper";
+"pay_pains_menu_family_chat" = "Family chat";
+"pay_pains_menu_notifications_analytics" = "Notifications and analytics";
+"pay_pains_menu_notifications_tab" = "Notifications";
+"pay_pains_menu_analytics_tab" = "Analytics";
+"pay_pains_menu_full_screen" = "Full screen";
+"pay_pains_child_pause_title" = "Pause";
+"pay_pains_child_pause_subtitle" = "Close apps and sites";
+"pay_pains_child_pause_sheet_title" = "Pause for your child";
+"pay_pains_child_pause_on" = "Turn pause on";
+"pay_pains_child_pause_off" = "Turn pause off";
+"pay_pains_child_pause_hint" = "Apps and sites will lock on your child's phone. The lock stays even if ALADDIN is closed. We do not turn off Wi‑Fi itself.";
+"pay_pains_child_pause_status_on" = "Pause is on";
+"pay_pains_child_pause_status_off" = "Pause is off";
+"pay_pains_child_pause_saving" = "Saving…";
+"pay_pains_child_pause_error" = "Could not save. Check the connection and try again.";
+"pay_pains_child_sites_title" = "Sites";
+"pay_pains_child_sites_subtitle" = "What they can open";
+"pay_pains_child_limit_title" = "Time limit";
+"pay_pains_child_limit_subtitle" = "How long they can use the phone";
+"pay_pains_child_quiet_minutes_hint" = "Quiet minutes are here too.";
+"pay_pains_child_more_heading" = "More for this child";
+"pay_pains_child_bedtime_title" = "Bedtime";
+"pay_pains_child_bedtime_subtitle" = "When the phone locks";
+"pay_pains_child_reward_title" = "Reward";
+"pay_pains_child_reward_subtitle" = "Give or take";
+"pay_pains_child_minutes_title" = "Minutes";
+"pay_pains_child_minutes_subtitle" = "Time in games";
+"pay_pains_child_screen_title" = "Child's screen";
+"pay_pains_child_screen_subtitle" = "Games and their world";
+"pay_pains_auth_headline" = "Family under protection";
+"pay_pains_auth_or" = "or";
+"pay_pains_auth_add_family" = "+ Add family";
+"pay_pains_family_pc_title" = "Parental control · Child";
+"pay_pains_family_pc_show_all" = "Show all";
+"pay_pains_family_pc_show_less" = "Show less";
+"pay_pains_family_pc_sites" = "Sites";
+"pay_pains_family_pc_time" = "Time / pause";
+"pay_pains_family_pc_where_phone" = "Where's the phone";
+"pay_pains_family_calm_title" = "Peace of mind";
+"pay_pains_family_where_title" = "Where they are";
+"pay_pains_family_together_title" = "Together";
+"pay_pains_family_together_expand" = "More in the family";
+"pay_pains_family_master_title" = "Set up your family in 4 steps";
+"pay_pains_family_master_step1" = "1. Add a person";
+"pay_pains_family_master_step2" = "2. Family safe word";
+"pay_pains_family_master_step3" = "3. Child pause or 60+ protection";
+"pay_pains_family_master_step4" = "4. Done";
+"pay_pains_family_master_cta" = "Start";
+"pay_pains_review_title" = "Do you like ALADDIN?";
+"pay_pains_review_subtitle" = "Tap a star or write a review";
+"pay_pains_review_write" = "Write a review";
+"pay_pains_review_later" = "Later";
+"pay_pains_review_stars_a11y" = "Star rating";
+
 "av_scope_file_only_banner" = "We only check the file you pick. iOS does not allow a full-phone scan by third-party apps.";
 "bank_playbook_title" = "“Bank” call";
 "bank_playbook_step_1" = "Don’t dictate the SMS code";
@@ -3027,9 +3107,9 @@
 "family_incident_playbook_bedtime_step3" = "If it repeats, tighten the night rule for a while.";
 "family_incident_playbook_scam_step1" = "Do not dictate codes or send money after a phone request.";
 "family_incident_playbook_scam_step2" = "Call your loved one yourself and ask what happened.";
-"family_incident_playbook_scam_step3" = "Turn on Call Filter and open the “bank” checklist in the app.";
+"family_incident_playbook_scam_step3" = "Turn on call filtering in iPhone Settings and open the “bank” checklist in the app.";
 "family_incident_playbook_second_hand_step1" = "Make sure the parent has the “asked for money or a code” button.";
-"family_incident_playbook_second_hand_step2" = "Check the safe word and Call Filter on their iPhone.";
+"family_incident_playbook_second_hand_step2" = "Check the safe word and call filtering on their iPhone.";
 "family_incident_playbook_second_hand_step3" = "Say out loud: we do not give codes on a call; we call you.";
 
 /* family time control / presence — 2026-10-16 */
@@ -3037,7 +3117,7 @@
 "duration_hours_fmt" = "%d h";
 "duration_minutes_fmt" = "%d min";
 "duration_unknown" = "—";
-"family_statistics_today_empty" = "Limits are saved. Today’s usage appears after Screen Time reports from the child’s device.";
+"family_statistics_today_empty" = "Minutes appear after a real screen time report from the child’s phone. We do not invent numbers.";
 /* Screen Time app limit labels (stats / App Limits list) */
 "family_whatsapp" = "WhatsApp";
 "family_telegram" = "Telegram";
@@ -3084,7 +3164,7 @@
 "geofences_empty_list_hint" = "No places — add Home or School";
 "geofences_radius" = "Radius";
 "geofences_radius_m" = "m";
-"geofences_name_placeholder" = "Geofence name";
+"geofences_name_placeholder" = "Place name";
 "geofences_address_placeholder" = "Address (street, number)";
 "geofences_name_address_required" = "Enter place name and address";
 "geofences_street_lenin" = "Lenin St., 12";
@@ -3130,7 +3210,7 @@
 "location_visits" = "visits";
 "location_events_7d" = "Place events — last 7 days";
 "location_events_today" = "Today's events";
-"location_events_empty_live" = "No live events today yet. When your child reaches school or another geofence, the time and a push appear here.";
+"location_events_empty_live" = "No events today yet. When your child reaches school or another place, the time and a notification appear here.";
 "location_mall" = "Galaxy Mall";
 "location_visited_mall" = "Visited the shopping mall";
 "location_returned_home" = "Returned home";
@@ -3140,9 +3220,9 @@
 "location_error_restricted" = "Geolocation access is restricted.";
 "location_error_unavailable" = "Geolocation is unavailable on this device.";
 "location_error_significant_change_unavailable" = "Significant-Change Location Service is unavailable.";
-"location_error_too_many_regions" = "Geofence limit exceeded. Maximum: %d.";
-"location_error_invalid_region" = "Invalid geofence radius: %.0f meters. Minimum: 100 meters.";
-"location_error_region_monitoring_failed" = "Could not start geofence monitoring: %@.";
+"location_error_too_many_regions" = "Too many places. Maximum: %d.";
+"location_error_invalid_region" = "Place area too small: %.0f meters. Minimum: 100 meters.";
+"location_error_region_monitoring_failed" = "Could not watch this place: %@.";
 
 /* WAVE3 cap-A3 ManagedSettings honesty */
 "app_limits_shield_parent_honesty" = "Minute limits are saved on the parent phone. App blocking (Shield) applies on the child’s iPhone after Screen Time setup — not on the parent device.";
@@ -3297,7 +3377,7 @@
 "where_phone_places_empty" = "Add home or school";
 "where_phone_places_none" = "No signal yet";
 "where_phone_places_waiting" = "%@ · no signal yet";
-"where_phone_share_no_gps" = "No GPS point. In Simulator: Features → Location.";
+"where_phone_share_no_gps" = "Place not found yet. Turn on place access in iPhone Settings.";
 "where_phone_share_denied" = "Location is off in iPhone Settings.";
 "where_phone_event_line" = "%@ · %@ · %@";
 "where_phone_signal_arrived" = "arrived · %@";
@@ -3334,5 +3414,47 @@
 "child_did_it_grade" = "Grade";
 "child_did_it_help" = "Helped";
 "child_did_it_sent" = "Sent to parents";
+
+"child_did_it_card_subtitle" = "Pick a task or write your own — parents will see it";
+"child_did_it_open_full" = "Custom task / more";
+"child_did_it_send_short" = "Send";
+"child_did_it_sent_banner" = "Sent to parents ✓";
 "system_filter_open_settings" = "Open Settings";
 "system_filter_safari_separate" = "The Safari extension is separate: Settings → Safari → Extensions → ALADDIN.";
+"pay_pains_child_minutes_real_fmt" = "Today · %d min";
+"pay_pains_where_travel_fmt" = "In transit today · %d min";
+"pay_pains_frequent_places_title" = "Frequent places";
+"pay_pains_frequent_places_body" = "After Always access, add home and school. You get a signal when they arrive.";
+"pay_pains_check_type_call" = "Call";
+"pay_pains_check_type_link" = "Link";
+"pay_pains_check_type_message" = "Message";
+"pay_pains_check_type_voice" = "Voice";
+"pay_pains_check_type_video" = "Video";
+"where_phone_map_title" = "Map";
+"where_phone_map_card_title" = "Last point";
+"where_phone_map_empty" = "No point yet. Send place once — it appears on the map.";
+"where_phone_map_point_time" = "%@ · %@";
+"where_phone_trail_title" = "Today’s trail";
+"where_phone_trail_empty" = "Empty for now. Trail is only arrivals and leaves from saved places today.";
+"where_phone_share_hint_map" = "One real point on the map. Not a live all-day track.";
+"privacy_policy_section_not_collected_content_2" = "We do not take phones or email for ads. Home and school only if a parent saved them in Where family.";
+"privacy_policy_section_family_location" = "Family location";
+"privacy_policy_section_family_location_subtitle" = "Home, school, and phone point";
+"privacy_policy_section_family_location_content_1" = "Family location. A parent enters home, school, and other places.";
+"privacy_policy_section_family_location_content_2" = "The child’s phone shares a point only after location is allowed on that phone.";
+"privacy_policy_section_family_location_content_3" = "A parent cannot turn this on in secret.";
+"privacy_policy_section_family_location_content_4" = "We keep the last point and today’s path. We do not sell this data.";
+
+/* Pay-pains F6–F10 */
+
+"elderly_scam_call_push_title" = "The call ended";
+
+"elderly_scam_call_push_body" = "All calm? Open the app — one tap if they asked for money or a card.";
+
+"family_habit_medicine_mode_label" = "How to set times";
+"family_habit_medicine_mode_interval" = "By interval";
+"family_habit_medicine_mode_custom" = "My times";
+"family_habit_medicine_custom_hint" = "Pick exact dose times. You can add several per day.";
+"family_habit_medicine_custom_empty" = "No times yet — add one below.";
+"family_habit_medicine_custom_add" = "Add time";
+"family_habit_medicine_custom_remove" = "Remove time";

@@ -25,6 +25,9 @@ struct FamilyHabitRemindersSection: View {
     @State private var syncAppleCalendar = FamilyHabitEventKitSync.shared.isEnabled
     @State private var persistGeneration = 0
     @State private var isHydrating = true
+    @State private var medicinePickerScratch = Calendar.current.date(
+        bySettingHour: 9, minute: 0, second: 0, of: Date()
+    ) ?? Date()
 
     private var canConfigure: Bool {
         FamilyAccessPolicy.hasPermission(.manageCriticalFamilySettings, members: members)
@@ -620,87 +623,210 @@ struct FamilyHabitRemindersSection: View {
         }
     }
 
-    /// Medicine: same from→until + interval as water (no liters). Matches WindDown-style multi calendar slots.
+    /// Medicine hybrid: (1) окно+интервал  (2) свои часы вручную.
     @ViewBuilder
     private func medicineWindowEditor(binding: Binding<FamilyHabitPresetSchedule>) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(localizationManager.localized("family_habit_water_interval_label"))
+            Text(localizationManager.localized("family_habit_medicine_mode_label"))
                 .font(.caption)
                 .foregroundColor(.white.opacity(0.92))
-            intervalPicker(binding: binding)
+            HStack(spacing: Spacing.xs) {
+                medicineModeChip(
+                    titleKey: "family_habit_medicine_mode_interval",
+                    selected: !binding.wrappedValue.useExplicitSlots
+                ) {
+                    var v = binding.wrappedValue
+                    v.useExplicitSlots = false
+                    binding.wrappedValue = v
+                }
+                medicineModeChip(
+                    titleKey: "family_habit_medicine_mode_custom",
+                    selected: binding.wrappedValue.useExplicitSlots
+                ) {
+                    var v = binding.wrappedValue
+                    if v.explicitSlotMinutes.isEmpty {
+                        var intervalClone = v
+                        intervalClone.useExplicitSlots = false
+                        v.explicitSlotMinutes = FamilyHabitPresetSchedule.normalizedExplicitSlots(
+                            intervalClone.windowNotificationSlots().map { $0.hour * 60 + $0.minute }
+                        )
+                    }
+                    v.useExplicitSlots = true
+                    binding.wrappedValue = v
+                }
+            }
+            .accessibilityIdentifier("family_habit_medicine_mode_picker")
 
-            timeWindowRow(
-                labelKey: "family_habit_water_from_label",
-                hour: Binding(
-                    get: { binding.wrappedValue.hour },
-                    set: { h in
-                        var v = binding.wrappedValue
-                        v.hour = h
-                        binding.wrappedValue = v
-                    }
-                ),
-                minute: Binding(
-                    get: { binding.wrappedValue.minute },
-                    set: { m in
-                        var v = binding.wrappedValue
-                        v.minute = m
-                        binding.wrappedValue = v
-                    }
-                ),
-                binding: binding
-            )
-
-            timeWindowRow(
-                labelKey: "family_habit_water_until_label",
-                hour: Binding(
-                    get: { binding.wrappedValue.endHour },
-                    set: { h in
-                        var v = binding.wrappedValue
-                        v.endHour = h
-                        binding.wrappedValue = v
-                    }
-                ),
-                minute: Binding(
-                    get: { binding.wrappedValue.endMinute },
-                    set: { m in
-                        var v = binding.wrappedValue
-                        v.endMinute = m
-                        binding.wrappedValue = v
-                    }
-                ),
-                binding: binding,
-                endWindow: true
-            )
-
-            let slots = binding.wrappedValue.windowNotificationSlots()
-            if !slots.isEmpty {
-                Text(localizationManager.localized("family_habit_water_slots_label"))
+            if binding.wrappedValue.useExplicitSlots {
+                medicineExplicitSlotsEditor(binding: binding)
+            } else {
+                Text(localizationManager.localized("family_habit_water_interval_label"))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.92))
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
-                            Text(timeLabel(hour: slot.hour, minute: slot.minute))
-                                .font(.caption2.monospacedDigit().weight(.semibold))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color.secondaryGold.opacity(0.22))
-                                .overlay(
-                                    Capsule()
-                                        .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
-                                )
-                                .clipShape(Capsule())
-                                .foregroundColor(.white)
+                intervalPicker(binding: binding)
+
+                timeWindowRow(
+                    labelKey: "family_habit_water_from_label",
+                    hour: Binding(
+                        get: { binding.wrappedValue.hour },
+                        set: { h in
+                            var v = binding.wrappedValue
+                            v.hour = h
+                            binding.wrappedValue = v
+                        }
+                    ),
+                    minute: Binding(
+                        get: { binding.wrappedValue.minute },
+                        set: { m in
+                            var v = binding.wrappedValue
+                            v.minute = m
+                            binding.wrappedValue = v
+                        }
+                    ),
+                    binding: binding
+                )
+
+                timeWindowRow(
+                    labelKey: "family_habit_water_until_label",
+                    hour: Binding(
+                        get: { binding.wrappedValue.endHour },
+                        set: { h in
+                            var v = binding.wrappedValue
+                            v.endHour = h
+                            binding.wrappedValue = v
+                        }
+                    ),
+                    minute: Binding(
+                        get: { binding.wrappedValue.endMinute },
+                        set: { m in
+                            var v = binding.wrappedValue
+                            v.endMinute = m
+                            binding.wrappedValue = v
+                        }
+                    ),
+                    binding: binding,
+                    endWindow: true
+                )
+
+                let slots = binding.wrappedValue.windowNotificationSlots()
+                if !slots.isEmpty {
+                    Text(localizationManager.localized("family_habit_water_slots_label"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.92))
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
+                                Text(timeLabel(hour: slot.hour, minute: slot.minute))
+                                    .font(.caption2.monospacedDigit().weight(.semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.secondaryGold.opacity(0.22))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
+                                    )
+                                    .clipShape(Capsule())
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
+                    .accessibilityIdentifier("family_habit_medicine_slot_chips")
                 }
-                .accessibilityIdentifier("family_habit_medicine_slot_chips")
             }
         }
         .padding(Spacing.s)
         .background(Color.white.opacity(0.14))
         .cornerRadius(CornerRadius.medium)
         .accessibilityIdentifier("family_habit_medicine_window_editor")
+    }
+
+    private func medicineModeChip(titleKey: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(localizationManager.localized(titleKey))
+                .font(.caption.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(selected ? Color.secondaryGold.opacity(0.35) : Color.white.opacity(0.08))
+                .foregroundColor(.white)
+                .cornerRadius(8)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func medicineExplicitSlotsEditor(binding: Binding<FamilyHabitPresetSchedule>) -> some View {
+        Text(localizationManager.localized("family_habit_medicine_custom_hint"))
+            .font(.caption2)
+            .foregroundColor(.white.opacity(0.92))
+            .fixedSize(horizontal: false, vertical: true)
+
+        let slots = binding.wrappedValue.explicitSlotMinutes
+        if slots.isEmpty {
+            Text(localizationManager.localized("family_habit_medicine_custom_empty"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.75))
+        } else {
+            ForEach(slots, id: \.self) { mins in
+                HStack {
+                    Text(timeLabel(hour: mins / 60, minute: mins % 60))
+                        .font(.subheadline.monospacedDigit().weight(.semibold))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button {
+                        var v = binding.wrappedValue
+                        v.removeExplicitSlot(minutesFromMidnight: mins)
+                        binding.wrappedValue = v
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .foregroundColor(.orange.opacity(0.9))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(localizationManager.localized("family_habit_medicine_custom_remove"))
+                }
+            }
+        }
+
+        if slots.count < FamilyHabitPresetSchedule.maxExplicitSlots {
+            DatePicker(
+                "",
+                selection: medicineAddSlotBinding(binding),
+                displayedComponents: .hourAndMinute
+            )
+            .labelsHidden()
+            .colorScheme(.dark)
+            .accessibilityIdentifier("family_habit_medicine_custom_picker")
+
+            Button {
+                let cal = Calendar.current
+                let date = medicineAddSlotDate(binding)
+                var v = binding.wrappedValue
+                v.addExplicitSlot(
+                    hour: cal.component(.hour, from: date),
+                    minute: cal.component(.minute, from: date)
+                )
+                binding.wrappedValue = v
+            } label: {
+                Label(
+                    localizationManager.localized("family_habit_medicine_custom_add"),
+                    systemImage: "plus.circle.fill"
+                )
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.secondaryGold)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("family_habit_medicine_custom_add")
+        }
+    }
+
+    private func medicineAddSlotDate(_ binding: Binding<FamilyHabitPresetSchedule>) -> Date {
+        medicinePickerScratch
+    }
+
+    private func medicineAddSlotBinding(_ binding: Binding<FamilyHabitPresetSchedule>) -> Binding<Date> {
+        Binding(
+            get: { medicinePickerScratch },
+            set: { medicinePickerScratch = $0 }
+        )
     }
 
     private func litersPicker(binding: Binding<FamilyHabitPresetSchedule>) -> some View {

@@ -580,6 +580,10 @@ struct ALADDINApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToAntifakePostCallCheck"))) { _ in
                     navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
                 }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToPostCallSafety"))) { _ in
+                    UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
+                    ElderlyScamCallGate.shared.isPresented = true
+                }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToWellnessWindDown"))) { _ in
                     WellnessSessionStore.setOpenSleepStoriesOnAppear(true)
                     navigationManager.navigateTo(.wellnessHub)
@@ -1465,10 +1469,10 @@ extension ALADDINApp {
         } else {
             print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на главный экран")
             navigationManager.navigateToRoot(.main)
-            // Simple Home Shell opt-in: только для взрослого/родителя (не child/teen/elderly).
-            if Self.shouldOpenSimpleHomeAtLaunch() {
+            // Pay-pains: вход по умолчанию = SimpleHome (три двери). Main = «Расширенный экран».
+            if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
                 navigationManager.navigateToSimpleHome()
-                print("🟢 SIMPLE_HOME: preferred — открыли SimpleHome поверх Main")
+                print("🟢 SIMPLE_HOME: pay-pains / preferred — открыли SimpleHome как вход")
             }
         }
 
@@ -1481,18 +1485,16 @@ extension ALADDINApp {
         print("🚀 App initialization completed in \(String(format: "%.2f", initTime)) seconds")
     }
 
-    /// Opt-in Simple Home at launch — только если не child/teen/elderly роль.
+    /// Стартовый SimpleHome: канон pay-pains (§10 / F3) через `PayPainsUIFlags`.
     private static func shouldOpenSimpleHomeAtLaunch() -> Bool {
-        guard UserDefaults.standard.bool(forKey: "aladdin.simpleHomePreferred") else { return false }
-        let role = (UserDefaults.standard.string(forKey: "current_user_role") ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-        let blocked: Set<String> = ["child", "teenager", "teen", "elderly", "senior"]
-        if blocked.contains(role) {
-            print("🟡 SIMPLE_HOME: preferred ON, но роль \(role) — пропускаем cold-start")
-            return false
+        let open = PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch()
+        if !open {
+            let role = (UserDefaults.standard.string(forKey: "current_user_role") ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            print("🟡 SIMPLE_HOME: cold-start пропуск (role=\(role.isEmpty ? "empty" : role), newUI=\(PayPainsUIFlags.usesNewPayPainsHome))")
         }
-        return true
+        return open
     }
 
     /// Автоматически проверяет и удаляет debug токены при запуске

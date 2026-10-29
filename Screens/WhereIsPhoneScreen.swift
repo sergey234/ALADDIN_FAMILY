@@ -1,13 +1,16 @@
 import SwiftUI
 import CoreLocation
+import MapKit
 
-/// One screen, three situations. No live map. No continuous tracking.
+/// Pay-pains F7–F10: last real point + map, today’s place trail, travel minutes.
+/// No continuous Life360-style tracking.
 struct WhereIsPhoneScreen: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     @State private var placeCount = 0
     @State private var latestEvent: GeofenceDayEvent?
+    @State private var todayTrail: [GeofenceDayEvent] = []
     @State private var shares: [WherePhoneShare] = []
     @State private var remoteSignals: [WherePhoneFamilySignal] = []
     @State private var remotePoints: [WherePhoneFamilyPoint] = []
@@ -15,8 +18,32 @@ struct WhereIsPhoneScreen: View {
     @State private var statusText: String?
     @State private var locatorHint: String?
     @State private var showPlaces = false
+    @State private var mapCoordinate: CLLocationCoordinate2D?
+    @State private var mapPointName: String?
+    @State private var mapPointAt: Date?
+    @State private var travelMinutesToday: Int?
+    @State private var mapRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 55.75, longitude: 37.62),
+        span: MKCoordinateSpan(latitudeDelta: 0.04, longitudeDelta: 0.04)
+    )
 
     @StateObject private var locator = WherePhoneOneShot()
+
+    private struct MapPin: Identifiable {
+        let id = UUID()
+        let coordinate: CLLocationCoordinate2D
+        let title: String
+    }
+
+    private var mapPins: [MapPin] {
+        guard let coordinate = mapCoordinate else { return [] }
+        return [
+            MapPin(
+                coordinate: coordinate,
+                title: mapPointName ?? localizationManager.localized("where_phone_you")
+            )
+        ]
+    }
 
     private var hideOthers: Bool {
         let role = UserDefaults.standard.string(forKey: "current_user_role") ?? ""
@@ -49,11 +76,13 @@ struct WhereIsPhoneScreen: View {
 
     var body: some View {
         FamilyModalBaseView(
-            title: localizationManager.localized("where_phone_title"),
+            title: localizationManager.localized("where_phone_map_title"),
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
+                mapCard
                 placesCard
+                trailCard
                 shareCard
                 lostCard
             }
@@ -67,6 +96,81 @@ struct WhereIsPhoneScreen: View {
             reload()
         }
         .accessibilityIdentifier("where_phone_screen")
+    }
+
+    private var mapCard: some View {
+        card(symbol: "map.fill", titleKey: "where_phone_map_card_title") {
+            if mapCoordinate != nil {
+                // iOS 15+ MapKit (deployment 15.2) — one pin, not a live track.
+                Map(coordinateRegion: $mapRegion, annotationItems: mapPins) { pin in
+                    MapMarker(coordinate: pin.coordinate, tint: .orange)
+                }
+                .frame(height: 168)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .disabled(true)
+                .accessibilityIdentifier("where_phone_map")
+
+                if let at = mapPointAt {
+                    Text(
+                        String(
+                            format: localizationManager.localized("where_phone_map_point_time"),
+                            mapPointName ?? localizationManager.localized("where_phone_you"),
+                            WherePhoneTime.ago(since: at, localization: localizationManager)
+                        )
+                    )
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                Text(localizationManager.localized("where_phone_map_empty"))
+                    .font(.subheadline)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let travelMinutesToday, travelMinutesToday > 0 {
+                Text(
+                    String(
+                        format: localizationManager.localized("pay_pains_where_travel_fmt"),
+                        travelMinutesToday
+                    )
+                )
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.secondaryGold)
+                .accessibilityIdentifier("where_phone_travel_minutes")
+            }
+        }
+    }
+
+    private var trailCard: some View {
+        card(symbol: "list.bullet.rectangle", titleKey: "where_phone_trail_title") {
+            if todayTrail.isEmpty {
+                Text(localizationManager.localized("where_phone_trail_empty"))
+                    .font(.subheadline)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    ForEach(todayTrail) { event in
+                        Text(trailLine(event))
+                            .font(.subheadline)
+                            .foregroundColor(.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .accessibilityIdentifier("where_phone_trail")
+            }
+        }
+    }
+
+    private func trailLine(_ event: GeofenceDayEvent) -> String {
+        let actionKey = event.isArrival ? "where_phone_signal_arrived" : "where_phone_signal_left"
+        let action = String(
+            format: localizationManager.localized(actionKey),
+            event.regionName
+        )
+        return "\(event.time) · \(action)"
     }
 
     private var placesCard: some View {
@@ -96,7 +200,7 @@ struct WhereIsPhoneScreen: View {
 
     private var shareCard: some View {
         card(symbol: "mappin.circle.fill", titleKey: "where_phone_share_title") {
-            Text(localizationManager.localized("where_phone_share_hint"))
+            Text(localizationManager.localized("where_phone_share_hint_map"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
 
@@ -214,7 +318,31 @@ struct WhereIsPhoneScreen: View {
     private func reload() {
         placeCount = WherePhonePlaceCount.current()
         latestEvent = GeofenceEventStore.events(lastDays: 7).first
+        todayTrail = GeofenceEventStore.todayEvents().sorted { $0.createdAt < $1.createdAt }
+        travelMinutesToday = WherePhoneTravel.minutesInTransitToday()
         shares = WherePhoneShareStore.load()
+        if let last = WherePhoneLastPointStore.load() {
+            mapCoordinate = last.coordinate
+            mapPointName = last.name
+            mapPointAt = last.at
+            mapRegion = MKCoordinateRegion(
+                center: last.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            )
+        } else if let share = shares.first, let lat = share.latitude, let lon = share.longitude {
+            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            mapCoordinate = coord
+            mapPointName = share.name
+            mapPointAt = share.createdAt
+            mapRegion = MKCoordinateRegion(
+                center: coord,
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            )
+        } else {
+            mapCoordinate = nil
+            mapPointName = nil
+            mapPointAt = nil
+        }
         APIService.shared.getFamilyWherePhone { result in
             DispatchQueue.main.async {
                 switch result {
@@ -311,13 +439,23 @@ struct WhereIsPhoneScreen: View {
     private func deliver(_ location: CLLocation) {
         isSending = false
         let name = displayName()
-        WherePhoneShareStore.add(name: name, isMine: true)
+        let lat = location.coordinate.latitude
+        let lon = location.coordinate.longitude
+        WherePhoneShareStore.add(name: name, isMine: true, latitude: lat, longitude: lon)
+        WherePhoneLastPointStore.save(name: name, latitude: lat, longitude: lon)
         shares = WherePhoneShareStore.load()
+        mapCoordinate = location.coordinate
+        mapPointName = name
+        mapPointAt = Date()
+        mapRegion = MKCoordinateRegion(
+            center: location.coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+        )
         statusText = localizationManager.localized("where_phone_share_sent")
         let mapURL = String(
             format: "https://maps.apple.com/?ll=%f,%f",
-            location.coordinate.latitude,
-            location.coordinate.longitude
+            lat,
+            lon
         )
         let line = String(
             format: localizationManager.localized("where_phone_chat_line"),
@@ -385,6 +523,8 @@ struct WherePhoneShare: Codable, Identifiable, Equatable {
     let name: String
     let createdAt: Date
     let isMine: Bool
+    let latitude: Double?
+    let longitude: Double?
 }
 
 enum WherePhoneShareStore {
@@ -399,10 +539,23 @@ enum WherePhoneShareStore {
         return items.sorted { $0.createdAt > $1.createdAt }
     }
 
-    static func add(name: String, isMine: Bool, now: Date = Date()) {
+    static func add(
+        name: String,
+        isMine: Bool,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        now: Date = Date()
+    ) {
         var items = load()
         items.insert(
-            WherePhoneShare(id: UUID().uuidString, name: name, createdAt: now, isMine: isMine),
+            WherePhoneShare(
+                id: UUID().uuidString,
+                name: name,
+                createdAt: now,
+                isMine: isMine,
+                latitude: latitude,
+                longitude: longitude
+            ),
             at: 0
         )
         if items.count > maxCount {
@@ -417,6 +570,60 @@ enum WherePhoneShareStore {
         let sorted = shares.sorted { $0.createdAt > $1.createdAt }
         guard hideOthers else { return sorted }
         return sorted.filter(\.isMine)
+    }
+}
+
+/// Last real map pin for F7 (one point, not a live track).
+enum WherePhoneLastPointStore {
+    private static let key = "aladdin_where_phone_last_point_v1"
+
+    struct Point: Codable {
+        let name: String
+        let latitude: Double
+        let longitude: Double
+        let at: Date
+    }
+
+    static func save(name: String, latitude: Double, longitude: Double, at: Date = Date()) {
+        let point = Point(name: name, latitude: latitude, longitude: longitude, at: at)
+        if let data = try? JSONEncoder().encode(point) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+
+    static func load() -> (coordinate: CLLocationCoordinate2D, name: String, at: Date)? {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let point = try? JSONDecoder().decode(Point.self, from: data) else {
+            return nil
+        }
+        return (
+            CLLocationCoordinate2D(latitude: point.latitude, longitude: point.longitude),
+            point.name,
+            point.at
+        )
+    }
+}
+
+/// F10: closed departure→arrival legs today only. No invented trips.
+enum WherePhoneTravel {
+    static func minutesInTransitToday() -> Int? {
+        let events = GeofenceEventStore.todayEvents().sorted { $0.createdAt < $1.createdAt }
+        guard !events.isEmpty else { return nil }
+        var total: TimeInterval = 0
+        var lastDeparture: Date?
+        for event in events {
+            if !event.isArrival {
+                lastDeparture = event.createdAt
+            } else if let dep = lastDeparture {
+                let delta = event.createdAt.timeIntervalSince(dep)
+                if delta > 0, delta < 12 * 60 * 60 {
+                    total += delta
+                }
+                lastDeparture = nil
+            }
+        }
+        let minutes = Int(total / 60)
+        return minutes > 0 ? minutes : nil
     }
 }
 

@@ -81,6 +81,7 @@ struct MainScreenWithRegistration: View {
         registrationZStack
             .overlay(alignment: .topTrailing) { registrationCancelOverlay }
             .overlay(alignment: .topLeading) { registrationAlternativeAuthOverlay }
+            .overlay(alignment: .bottom) { payPainsAuthGlassOverlay }
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Экран регистрации семьи")
             .alert(localizationManager.localized("family_chat_error_title"), isPresented: Binding(
@@ -96,6 +97,11 @@ struct MainScreenWithRegistration: View {
             .task {
                 print("🚨 MainScreenWithRegistration загружен!")
                 try? await Task.sleep(nanoseconds: 500_000_000)
+                // D2: при новом входе ждём Apple или «+ Добавить семью», не авто-модалки.
+                if PayPainsUIFlags.usesNewPayPainsHome {
+                    print("ℹ️ Pay-pains auth glass: ждём выбор пользователя (без auto startRegistration)")
+                    return
+                }
                 print("🚨 Вызываю startRegistration()...")
                 registrationVM.startRegistration()
                 print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
@@ -138,6 +144,72 @@ struct MainScreenWithRegistration: View {
             appleAndMagicLinkAuthPanel
         }
         #endif
+    }
+
+    /// D2: стеклянная панель как Snowball — Apple + «или» + Добавить семью (§25).
+    /// Показывается при pay-pains flag, пока нет тяжёлых модалок регистрации поверх.
+    @ViewBuilder
+    private var payPainsAuthGlassOverlay: some View {
+        if PayPainsUIFlags.usesNewPayPainsHome,
+           !registrationVM.showConsentModal,
+           !registrationVM.showRoleModal,
+           !registrationVM.showAgeGroupModal,
+           !registrationVM.showLetterModal,
+           !registrationVM.isLoading {
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(spacing: Spacing.m) {
+                    Text(localizationManager.localized("pay_pains_auth_headline"))
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    SignInWithAppleButton(.signIn, onRequest: { request in
+                        request.requestedScopes = [.fullName, .email]
+                    }, onCompletion: handleAppleSignInResult)
+                    .signInWithAppleButtonStyle(.white)
+                    .frame(height: 48)
+                    .clipShape(Capsule())
+                    .disabled(isAppleAuthInProgress)
+
+                    if isAppleAuthInProgress {
+                        ProgressView()
+                            .tint(.white)
+                    }
+
+                    HStack {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.25))
+                            .frame(height: 1)
+                        Text(localizationManager.localized("pay_pains_auth_or"))
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                        Rectangle()
+                            .fill(Color.white.opacity(0.25))
+                            .frame(height: 1)
+                    }
+
+                    Button {
+                        HapticFeedback.impact(.light)
+                        registrationVM.startRegistration()
+                    } label: {
+                        Text(localizationManager.localized("pay_pains_auth_add_family"))
+                            .font(.body.weight(.semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.s)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("pay_pains_auth_add_family")
+                }
+                .padding(Spacing.l)
+                .stormGlassCard(cornerRadius: CornerRadius.large)
+                .padding(.horizontal, Spacing.l)
+                .padding(.bottom, Spacing.xl)
+            }
+            .allowsHitTesting(true)
+            .accessibilityIdentifier("pay_pains_auth_glass")
+        }
     }
 
     /// Не показываем поверх модалки согласия (`registrationAlternativeAuthOverlay` уже проверяет `showConsentModal`).

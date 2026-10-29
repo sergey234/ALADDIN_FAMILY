@@ -23,6 +23,10 @@ struct ChildInterfaceScreen: View {
     @State private var selectedImage: UIImage?
     @State private var showChildInstructions: Bool = false
     @State private var showChildSettings: Bool = false
+    /// «Я сделал»: карточка раскрыта по умолчанию (шаблоны видны сразу).
+    @State private var didItExpanded: Bool = true
+    @State private var showDidItRequestModal: Bool = false
+    @State private var didItSentBanner: Bool = false
     
     // MARK: - Navigation Function
     
@@ -154,6 +158,13 @@ struct ChildInterfaceScreen: View {
                 .environmentObject(navigationManager)
                 .environmentObject(localizationManager)
             }
+        }
+        .sheet(isPresented: $showDidItRequestModal) {
+            AchievementRequestModal { achievement in
+                ChildDidItStore.submit(title: achievement, localization: localizationManager)
+                showDidItSentFeedback()
+            }
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showImagePicker) {
             ProfileImagePicker(selectedImage: $selectedImage)
@@ -727,47 +738,124 @@ struct ChildInterfaceScreen: View {
         return 0
     }
 
+    /// Карточка «Я сделал»: раскрывается, шаблоны + своя задача, явный «Отправлено».
+    /// Полный лист = тот же `AchievementRequestModal`, что «Сообщить родителям» в Наградах.
     private var didItRow: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localizationManager.localized("child_did_it_title"))
-                .font(selectedAge == .kids ? .title3.weight(.bold) : .headline)
-                .foregroundColor(.white)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    didItChip("📚", "child_did_it_homework")
-                    didItChip("🧹", "child_did_it_chores")
-                    didItChip("📖", "child_did_it_reading")
-                    didItChip("🏆", "child_did_it_grade")
-                    didItChip("🤝", "child_did_it_help")
+            Button {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    didItExpanded.toggle()
                 }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                HStack(spacing: 12) {
+                    Text("✨")
+                        .font(.system(size: selectedAge == .kids ? 28 : 24))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localizationManager.localized("child_did_it_title"))
+                            .font(selectedAge == .kids ? .title3.weight(.bold) : .headline.weight(.bold))
+                            .foregroundColor(.white)
+                        Text(localizationManager.localized("child_did_it_card_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: didItExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.secondaryGold)
+                }
+                .padding(16)
+                .stormGlassCard(cornerRadius: 16, accentStripColor: Color(hex: "A855F7"))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("child_did_it_card")
+
+            if didItExpanded {
+                VStack(spacing: 8) {
+                    didItTemplateRow("📚", "child_did_it_homework")
+                    didItTemplateRow("🧹", "child_did_it_chores")
+                    didItTemplateRow("📖", "child_did_it_reading")
+                    didItTemplateRow("🏆", "child_did_it_grade")
+                    didItTemplateRow("🤝", "child_did_it_help")
+
+                    Button {
+                        showDidItRequestModal = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.pencil")
+                            Text(localizationManager.localized("child_did_it_open_full"))
+                                .font(.subheadline.weight(.semibold))
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(14)
+                        .stormGlassCard(cornerRadius: 14)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("child_did_it_open_full")
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            if didItSentBanner {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text(localizationManager.localized("child_did_it_sent_banner"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                    Spacer(minLength: 0)
+                }
+                .padding(12)
+                .background(Color.green.opacity(0.22))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .accessibilityIdentifier("child_did_it_sent_banner")
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 16)
         .accessibilityIdentifier("child_did_it_row")
     }
 
-    private func didItChip(_ emoji: String, _ key: String) -> some View {
+    private func didItTemplateRow(_ emoji: String, _ key: String) -> some View {
         Button {
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             ChildDidItStore.submit(
                 title: localizationManager.localized(key),
                 localization: localizationManager
             )
+            showDidItSentFeedback()
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: 12) {
                 Text(emoji)
+                    .font(.title2)
                 Text(localizationManager.localized(key))
-                    .font(selectedAge == .kids ? .body.weight(.semibold) : .caption.weight(.semibold))
+                    .font(selectedAge == .kids ? .body.weight(.semibold) : .subheadline.weight(.semibold))
                     .foregroundColor(.white)
+                Spacer(minLength: 0)
+                Text(localizationManager.localized("child_did_it_send_short"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondaryGold)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, selectedAge == .kids ? 12 : 8)
-            .background(Color.white.opacity(0.14))
-            .clipShape(Capsule())
+            .padding(.horizontal, 14)
+            .padding(.vertical, selectedAge == .kids ? 14 : 12)
+            .stormGlassCard(cornerRadius: 14)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(key)
+    }
+
+    private func showDidItSentFeedback() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            didItSentBanner = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+            withAnimation(.easeOut(duration: 0.25)) {
+                didItSentBanner = false
+            }
+        }
     }
 
     // MARK: - Mnemo Academy labels

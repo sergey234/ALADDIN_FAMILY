@@ -1,6 +1,7 @@
 import CallKit
 import Combine
 import Foundation
+import UIKit
 import UserNotifications
 
 /// Post-call: red/green safety → Calls memory sheet → Antifake reminder push (af-4-03 / eld).
@@ -69,12 +70,21 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
         // 1) Safety first (red/green) — for everyone when toggle is on. Avoid stacking with memory sheet.
         if ElderlyScamCallPolicy.shouldPresentSafetyPrompt(role: role, now: now) {
             UserDefaults.standard.set(now, forKey: AppConfig.UserDefaultsKeys.postCallSafetyLastShownAt)
-            // Arm pending so return-from-Phone still shows the cover if SwiftUI skipped it in background.
+            // Arm pending so return-from-Phone / push tap still shows the cover.
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
-            ElderlyScamCallGate.shared.isPresented = true
-            #if DEBUG
-            print("🛡️ POST_CALL_SAFETY: armed red/green screen (CallKit end)")
-            #endif
+            let appState = UIApplication.shared.applicationState
+            if appState == .active {
+                ElderlyScamCallGate.shared.isPresented = true
+                #if DEBUG
+                print("🛡️ POST_CALL_SAFETY: present full screen (foreground)")
+                #endif
+            } else {
+                // iOS cannot put our UI over Phone.app. Local banner → tap opens the screen.
+                NotificationManager.shared.sendPostCallSafetyNotification()
+                #if DEBUG
+                print("🛡️ POST_CALL_SAFETY: local push (background/inactive)")
+                #endif
+            }
             return
         }
 

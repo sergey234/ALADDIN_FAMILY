@@ -5,15 +5,31 @@ import ManagedSettings
 /// Primary writer for Screen Time day aggregates (PROD P-WRITE).
 final class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     private let store = ManagedSettingsStore()
+    /// Must match `BedtimeNightLock.activityName` / `storeNameRaw` in the main app (F4).
+    /// Extension target is iOS 16+ — named ManagedSettingsStore is available here.
+    private static let bedtimeActivity = DeviceActivityName("aladdin.family.bedtime")
+    private static let bedtimeStore = ManagedSettingsStore(named: .init("aladdin.bedtime"))
 
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
-        refreshUsageSnapshot(reason: "intervalDidStart")
+        if activity == Self.bedtimeActivity {
+            Self.bedtimeStore.shield.applicationCategories = .all()
+            let defaults = UserDefaults(suiteName: ScreenTimeUsageStore.appGroupId) ?? .standard
+            defaults.set(Date().timeIntervalSince1970, forKey: "aladdin.bedtime.shield_on_at")
+        }
+        refreshUsageSnapshot(reason: "intervalDidStart:\(activity.rawValue)")
     }
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
-        refreshUsageSnapshot(reason: "intervalDidEnd")
+        if activity == Self.bedtimeActivity {
+            Self.bedtimeStore.shield.applicationCategories = nil
+            Self.bedtimeStore.shield.applications = nil
+            Self.bedtimeStore.shield.webDomains = nil
+            let defaults = UserDefaults(suiteName: ScreenTimeUsageStore.appGroupId) ?? .standard
+            defaults.set(Date().timeIntervalSince1970, forKey: "aladdin.bedtime.shield_off_at")
+        }
+        refreshUsageSnapshot(reason: "intervalDidEnd:\(activity.rawValue)")
     }
 
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {

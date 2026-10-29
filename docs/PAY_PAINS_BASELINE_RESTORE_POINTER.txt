@@ -1,0 +1,7 @@
+baseline_sha=0cb009d4a481e16482e9cbf94073973fe22a4533
+baseline_tag=pay-pains-baseline-2026-10-29
+safe_dir=/Users/sergejhlystov/ALADDIN_VPN_SAFE/pay_pains_pre_20261029_143544
+zip=/Users/sergejhlystov/ALADDIN_VPN_SAFE/pay_pains_pre_20261029_143544/BACKUP_ALADDIN_CLEAN_20261029_1435.zip
+hot=/Users/sergejhlystov/ALADDIN_VPN_SAFE/pay_pains_pre_20261029_143544/hot
+docs=/Users/sergejhlystov/ALADDIN_VPN_SAFE/pay_pains_pre_20261029_143544/docs
+note=Old BACKUPS/ not copied. Bot not included. No .env.

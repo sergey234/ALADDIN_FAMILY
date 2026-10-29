@@ -66,6 +66,15 @@ struct AntifakeMediaCheckView: View {
         }
     }
 
+    private var checkTypeKey: String {
+        switch viewModel.mediaKind {
+        case .call: return "pay_pains_check_type_call"
+        case .audio: return "pay_pains_check_type_voice"
+        case .video: return "pay_pains_check_type_video"
+        case .document: return "pay_pains_check_type_message"
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             if showsPanelTitle {
@@ -194,6 +203,7 @@ struct AntifakeMediaCheckView: View {
                 AntifakeVerdictCard(
                     verdict: verdict,
                     variant: verdictCardVariant,
+                    checkTypeKey: checkTypeKey,
                     reportPhone: viewModel.mediaKind == .call ? viewModel.callerId : nil
                 )
                     .environmentObject(localizationManager)

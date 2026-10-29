@@ -91,6 +91,12 @@ struct FamilyHabitPresetSchedule: Codable, Equatable {
     var pingIntervalMinutes: Int
     /// Cap due-pings per day.
     var pingMaxPerDay: Int
+    /// Medicine hybrid: `false` = окно+интервал; `true` = свои часы (`explicitSlotMinutes`).
+    var useExplicitSlots: Bool
+    /// Minutes from midnight, sorted unique, max 8 (medicine «свои часы»).
+    var explicitSlotMinutes: [Int]
+
+    static let maxExplicitSlots = 8
 
     static let `default` = FamilyHabitPresetSchedule(
         enabled: false,
@@ -114,6 +120,8 @@ struct FamilyHabitPresetSchedule: Codable, Equatable {
         case pingUntilDone = "ping_until_done"
         case pingIntervalMinutes = "ping_interval_minutes"
         case pingMaxPerDay = "ping_max_per_day"
+        case useExplicitSlots = "use_explicit_slots"
+        case explicitSlotMinutes = "explicit_slot_minutes"
     }
 
     init(
@@ -126,7 +134,9 @@ struct FamilyHabitPresetSchedule: Codable, Equatable {
         dailyLiters: Double = 2.0,
         pingUntilDone: Bool = false,
         pingIntervalMinutes: Int = 20,
-        pingMaxPerDay: Int = 6
+        pingMaxPerDay: Int = 6,
+        useExplicitSlots: Bool = false,
+        explicitSlotMinutes: [Int] = []
     ) {
         self.enabled = enabled
         self.hour = hour
@@ -138,6 +148,8 @@ struct FamilyHabitPresetSchedule: Codable, Equatable {
         self.pingUntilDone = pingUntilDone
         self.pingIntervalMinutes = min(30, max(15, pingIntervalMinutes))
         self.pingMaxPerDay = min(12, max(1, pingMaxPerDay))
+        self.useExplicitSlots = useExplicitSlots
+        self.explicitSlotMinutes = Self.normalizedExplicitSlots(explicitSlotMinutes)
     }
 
     init(from decoder: Decoder) throws {
@@ -155,6 +167,26 @@ struct FamilyHabitPresetSchedule: Codable, Equatable {
         pingIntervalMinutes = min(30, max(15, rawPingInterval))
         let rawPingMax = try c.decodeIfPresent(Int.self, forKey: .pingMaxPerDay) ?? 6
         pingMaxPerDay = min(12, max(1, rawPingMax))
+        useExplicitSlots = try c.decodeIfPresent(Bool.self, forKey: .useExplicitSlots) ?? false
+        explicitSlotMinutes = Self.normalizedExplicitSlots(
+            try c.decodeIfPresent([Int].self, forKey: .explicitSlotMinutes) ?? []
+        )
+    }
+
+    static func normalizedExplicitSlots(_ raw: [Int]) -> [Int] {
+        let clamped = raw.map { min(23 * 60 + 59, max(0, $0)) }
+        return Array(Set(clamped)).sorted().prefix(maxExplicitSlots).map { $0 }
+    }
+
+    mutating func addExplicitSlot(hour h: Int, minute m: Int) {
+        let mins = min(23, max(0, h)) * 60 + min(59, max(0, m))
+        var next = explicitSlotMinutes
+        next.append(mins)
+        explicitSlotMinutes = Self.normalizedExplicitSlots(next)
+    }
+
+    mutating func removeExplicitSlot(minutesFromMidnight: Int) {
+        explicitSlotMinutes = explicitSlotMinutes.filter { $0 != minutesFromMidnight }
     }
 
     static func defaultsMap() -> [FamilyHabitPresetId: FamilyHabitPresetSchedule] {
@@ -207,7 +239,15 @@ struct FamilyHabitPresetSchedule: Codable, Equatable {
     }
 
     /// Shared window slots for water and medicine (same math as WindDown-style calendar repeats).
+    /// Medicine hybrid: if `useExplicitSlots` — только выбранные часы.
     func windowNotificationSlots(maxSlots: Int = 12) -> [(hour: Int, minute: Int)] {
+        if useExplicitSlots {
+            let explicit = Self.normalizedExplicitSlots(explicitSlotMinutes)
+            if !explicit.isEmpty {
+                return explicit.prefix(maxSlots).map { ($0 / 60, $0 % 60) }
+            }
+            return [(hour, minute)]
+        }
         let start = hour * 60 + minute
         var end = endHour * 60 + endMinute
         if end <= start {

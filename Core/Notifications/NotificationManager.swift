@@ -676,6 +676,23 @@ class NotificationManager: NSObject, ObservableObject {
             identifier: "antifake_post_call_\(UUID().uuidString)"
         )
     }
+
+    /// Post-call safety (red/green) when ALADDIN is in background — banner, then open screen on tap.
+    func sendPostCallSafetyNotification() {
+        let L = LocalizationManager.shared
+        sendLocalNotification(
+            title: L.localized("elderly_scam_call_push_title"),
+            body: L.localized("elderly_scam_call_push_body"),
+            category: .security,
+            userInfo: [
+                "type": "post_call_safety",
+                "deepLink": "aladdin://post-call/safety",
+                "priority": "high"
+            ],
+            delay: 0.4,
+            identifier: "post_call_safety_\(UUID().uuidString)"
+        )
+    }
     
     // MARK: - Notification Categories
     
@@ -1358,6 +1375,15 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             return
         }
 
+        if let type = userInfo["type"] as? String, type == "post_call_safety" {
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
+            NotificationCenter.default.post(
+                name: NSNotification.Name("NavigateToPostCallSafety"),
+                object: nil
+            )
+            return
+        }
+
         if let type = userInfo["type"] as? String, type == MnemonicNotificationScheduler.userInfoType {
             let category = userInfo["category"] as? String ?? ChildCategoryKey.games
             NotificationCenter.default.post(
@@ -1399,6 +1425,15 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             if AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
                 NotificationCenter.default.post(
                     name: NSNotification.Name("NavigateToAntifakePostCallCheck"),
+                    object: nil
+                )
+                return
+            }
+            if url.scheme == "aladdin", url.host == "post-call",
+               url.path.contains("safety") || url.path == "/safety" {
+                UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingPostCallSafetyPrompt)
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("NavigateToPostCallSafety"),
                     object: nil
                 )
                 return

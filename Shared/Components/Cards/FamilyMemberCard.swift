@@ -154,9 +154,17 @@ struct FamilyMemberCard: View {
             VStack(spacing: 4) {
                 // Верхняя часть: Аватар и имя
                 HStack(spacing: 4) {
-                    Text(avatar)
-                        .font(.system(size: 16))
-                    
+                    // D3: инициалы в круге; emoji-avatar остаётся запасным, если имени нет
+                    ZStack {
+                        Circle()
+                            .fill(Color.secondaryGold.opacity(0.28))
+                            .frame(width: 28, height: 28)
+                        Text(PayPainsMemberInitials.from(name: name, fallbackEmoji: avatar))
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .accessibilityHidden(true)
+
                     Text(FamilyMemberDisplayNameFormatter.displayName(
                         storedName: name,
                         role: role,
@@ -202,11 +210,19 @@ struct FamilyMemberCard: View {
                     // Теперь используется только внешняя кнопка (ниже) — более стабильное поведение
                 }
                 
-                // Роль
+                // S9: роль — стеклянный chip (не «вера», не сказка)
                 Text(localizedRoleLabel)
-                    .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.9))
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.92))
                     .lineLimit(1)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.white.opacity(0.12))
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.secondaryGold.opacity(0.28), lineWidth: 1)
+                    )
 
                 if let softPresenceLine, !softPresenceLine.isEmpty {
                     Text(softPresenceLine)

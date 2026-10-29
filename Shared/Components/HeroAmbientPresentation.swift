@@ -9,7 +9,7 @@ import Lottie
 // MARK: - Asset / behavior contract (для дизайна и каталога)
 //
 // Lottie JSON в бандле: `OnboardingHero_00` … `OnboardingHero_07`, `MainHero_ambient`
-// Растровый fallback (Asset Catalog `Images.xcassets`): те же имена как image set.
+// Растр: `OnboardingHero_00`…`08` (+ `08` = «Где семья»). Asset Catalog: те же имена.
 // Полноразмерные мастера (не в бандле как отдельные файлы): `Resources/HeroAssets/README.txt`
 // Растровые image set для рантайма кладите в корень `Assets.xcassets/` (не во вложенный `*.xcassets`).
 // Опционально iOS 17+: `MainHero_ambient.usdz` в каталоге / бандле — только если есть ресурс.
@@ -29,7 +29,11 @@ enum HeroSlot: Equatable {
         case .onboardingLanguage:
             return 0
         case .onboardingContent(let i):
-            return min(max(i + 1, 1), 7)
+            // O4: idx 5 «Где семья» → OnboardingHero_08 (свой ассет).
+            if i <= 4 { return i + 1 }
+            if i == 5 { return 8 }
+            if i == 6 { return 6 }
+            return 7
         case .mainDashboard:
             return nil
         }
@@ -52,7 +56,18 @@ enum HeroPresentation: Equatable {
         case .onboardingLanguage:
             return .lottieOrRaster(baseName: "OnboardingHero_00", allowsParallax: false)
         case .onboardingContent(let idx):
-            let storyIndex = min(max(idx + 1, 1), 7)
+            // Pay-pains O3+O4: 8 контент-страниц.
+            // «Где семья» (idx 5) → OnboardingHero_08. Antifake → 06, финал → 07.
+            let storyIndex: Int
+            if idx <= 4 {
+                storyIndex = idx + 1
+            } else if idx == 5 {
+                storyIndex = 8
+            } else if idx == 6 {
+                storyIndex = 6
+            } else {
+                storyIndex = 7
+            }
             let name = String(format: "OnboardingHero_%02d", storyIndex)
             // Parallax только на «ИИ-спутник» (слайд контента index 1 → story 2)
             let parallax = (storyIndex == 2)
@@ -120,6 +135,9 @@ enum HeroPresentation: Equatable {
             colors = [Color.gray.opacity(0.12), Color.purple.opacity(0.1)]
         case "OnboardingHero_07":
             colors = [Color(red: 0.95, green: 0.75, blue: 0.2).opacity(0.15), Color.indigo.opacity(0.08)]
+        case "OnboardingHero_08":
+            // «Где семья» — золото пути + космический синий
+            colors = [Color(red: 0.95, green: 0.75, blue: 0.2).opacity(0.12), Color.cyan.opacity(0.08)]
         default:
             colors = [Color.clear]
         }
@@ -326,7 +344,8 @@ struct HeroAmbientLayerView: View {
     /// OB_02/03/04–07: full-bleed PNG + top zoom (OB_03/07 widened 2026-05-25, L/R≈12 как OB_02).
     private func heroOnboardingTopZoom(for baseName: String) -> CGFloat {
         switch baseName {
-        case "OnboardingHero_02", "OnboardingHero_03", "OnboardingHero_04", "OnboardingHero_05", "OnboardingHero_06", "OnboardingHero_07":
+        case "OnboardingHero_02", "OnboardingHero_03", "OnboardingHero_04", "OnboardingHero_05",
+             "OnboardingHero_06", "OnboardingHero_07", "OnboardingHero_08":
             return 1.09
         default:
             return 1.0

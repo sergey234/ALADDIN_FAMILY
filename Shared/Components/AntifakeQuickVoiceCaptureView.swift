@@ -58,7 +58,10 @@ struct AntifakeQuickVoiceCaptureView: View {
             }
 
             if let verdict = viewModel.verdict {
-                AntifakeVerdictCard(verdict: verdict)
+                AntifakeVerdictCard(
+                    verdict: verdict,
+                    checkTypeKey: "pay_pains_check_type_voice"
+                )
                     .environmentObject(localizationManager)
             }
         }

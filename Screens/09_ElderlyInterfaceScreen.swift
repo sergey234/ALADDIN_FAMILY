@@ -3904,13 +3904,14 @@ struct ElderlyScamCallScreen: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
+            ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 18) {
                 Text(localizationManager.localized("elderly_scam_call_title"))
                     .font(.system(size: 34, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.85)
-                    .lineLimit(1)
+                    .lineLimit(2)
 
                 // fvp-p1-6: банк-playbook (без deep-link банков)
                 VStack(alignment: .leading, spacing: 10) {
@@ -3948,8 +3949,7 @@ struct ElderlyScamCallScreen: View {
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.8)
-                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Button(action: sendAlert) {
                     Text(localizationManager.localized("elderly_scam_call_money"))
@@ -4003,16 +4003,18 @@ struct ElderlyScamCallScreen: View {
                 }
                 .accessibilityIdentifier("elderly_scam_call_directory_cta")
 
-                Spacer()
                 Button(action: openRecording) {
                     Text(localizationManager.localized("elderly_scam_call_recording"))
                         .font(.system(size: 16))
                         .foregroundColor(.white.opacity(0.75))
                 }
                 .accessibilityIdentifier("elderly_scam_call_recording")
+                .padding(.top, 8)
+                .padding(.bottom, 12)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 24)
+            }
         }
         .onAppear {
             FamilyScamCallFunnel.log(.open, source: "scam_screen")
@@ -4043,8 +4045,8 @@ struct ElderlyScamCallScreen: View {
         Text(text)
             .font(.system(size: 18, weight: .semibold))
             .foregroundColor(.white)
-            .lineLimit(1)
-            .minimumScaleFactor(0.72)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 

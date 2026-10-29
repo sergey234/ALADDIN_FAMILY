@@ -96,6 +96,12 @@ struct FamilyScreen: View {
     @State private var showMonitoringModalNew: Bool = false
     @State private var showLocationModal: Bool = false
     @State private var showWherePhone: Bool = false
+    /// Pay-pains S3: вар.1 — три окна ПК, полная сетка по «Показать все».
+    @State private var payPainsShowAllParentalCards: Bool = false
+    /// Pay-pains S5: блок «Вместе» свёрнут по умолчанию.
+    @State private var payPainsTogetherExpanded: Bool = false
+    /// Pay-pains S1: мастер пустой семьи можно закрыть вручную.
+    @State private var payPainsMasterDismissed: Bool = false
     @State private var showReportsModal: Bool = false
     @State private var showAdditionalModal: Bool = false
     @State private var showBypassProtectionModal: Bool = false
@@ -2536,65 +2542,86 @@ struct FamilyScreen: View {
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
                         )
                         
-                        // fws-01: семейное кодовое слово — видят все участники; настраивают parent/elderly
-                        if !familyMembers.isEmpty {
-                            FamilyDayStripView(onOpenTimeRules: { showTimeControlModalNew = true })
-                                .environmentObject(localizationManager)
-                            FamilyShieldWeekDigestCard()
-                                .environmentObject(localizationManager)
-                            FamilySafeWordCard(members: familyMembers)
-                                .environmentObject(localizationManager)
-                                .environmentObject(navigationManager)
-                            // UX-36 W10: «Семейная вторая рука» — пакет для parent / tip для teen
-                            FamilySecondHandPackCard(members: familyMembers)
-                                .environmentObject(localizationManager)
-                                .environmentObject(navigationManager)
-                            // fvp-p1-1: тонкая лента рядом со «второй рукой»
-                            FamilyIncidentFeedView(members: familyMembers)
-                                .environmentObject(localizationManager)
-                            FamilyHabitRemindersSection(members: familyMembers)
-                                .environmentObject(localizationManager)
-                            FamilyChallengesSection(members: familyMembers)
-                                .environmentObject(localizationManager)
-                            Button {
-                                navigationManager.navigateTo(.familyList)
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checklist")
-                                    Text(localizationManager.localized("family_list_title"))
-                                        .font(.subheadline.weight(.semibold))
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                }
-                                .padding()
-                                .stormGlassCard(cornerRadius: 12)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("family_open_list")
-
-                            Button {
-                                HapticFeedback.impact(.light)
-                                showWherePhone = true
-                            } label: {
-                                HStack {
-                                    Image(systemName: "location.circle.fill")
-                                    Text(localizationManager.localized("where_phone_open"))
-                                        .font(.subheadline.weight(.semibold))
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                }
-                                .padding()
-                                .stormGlassCard(cornerRadius: 12)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("family_where_phone")
+                        // Pay-pains S1: мастер пустой семьи (не стена карточек).
+                        if PayPainsUIFlags.usesNewPayPainsFamily,
+                           familyMembers.isEmpty,
+                           !payPainsMasterDismissed,
+                           !isFamilyRosterHydrating,
+                           !isFamilyLoadInProgress {
+                            payPainsEmptyFamilyMaster
                         }
 
-                        // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
-                        if canManageFamilyRoster {
-                            parentalControlsSection
+                        if PayPainsUIFlags.usesNewPayPainsFamily {
+                            // S2: ПК под участниками. Пустая семья + мастер — без стены карточек (S1).
+                            let showPayPainsShelves = !familyMembers.isEmpty || payPainsMasterDismissed
+                            if showPayPainsShelves {
+                                if canManageFamilyRoster {
+                                    parentalControlsSection
+                                }
+                                if !familyMembers.isEmpty {
+                                    payPainsCalmSection
+                                    payPainsWhereSection
+                                    payPainsTogetherSection
+                                }
+                            }
+                        } else {
+                            // Legacy порядок (до pay-pains)
+                            if !familyMembers.isEmpty {
+                                FamilyDayStripView(onOpenTimeRules: { showTimeControlModalNew = true })
+                                    .environmentObject(localizationManager)
+                                FamilyShieldWeekDigestCard()
+                                    .environmentObject(localizationManager)
+                                FamilySafeWordCard(members: familyMembers)
+                                    .environmentObject(localizationManager)
+                                    .environmentObject(navigationManager)
+                                FamilySecondHandPackCard(members: familyMembers)
+                                    .environmentObject(localizationManager)
+                                    .environmentObject(navigationManager)
+                                FamilyIncidentFeedView(members: familyMembers)
+                                    .environmentObject(localizationManager)
+                                FamilyHabitRemindersSection(members: familyMembers)
+                                    .environmentObject(localizationManager)
+                                FamilyChallengesSection(members: familyMembers)
+                                    .environmentObject(localizationManager)
+                                Button {
+                                    navigationManager.navigateTo(.familyList)
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checklist")
+                                        Text(localizationManager.localized("family_list_title"))
+                                            .font(.subheadline.weight(.semibold))
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                    }
+                                    .padding()
+                                    .stormGlassCard(cornerRadius: 12)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("family_open_list")
+
+                                Button {
+                                    HapticFeedback.impact(.light)
+                                    showWherePhone = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "location.circle.fill")
+                                        Text(localizationManager.localized("where_phone_open"))
+                                            .font(.subheadline.weight(.semibold))
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                    }
+                                    .padding()
+                                    .stormGlassCard(cornerRadius: 12)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("family_where_phone")
+                            }
+
+                            if canManageFamilyRoster {
+                                parentalControlsSection
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -3111,44 +3138,311 @@ extension FamilyScreen {
         locationLastUpdate = localizationManager.localized("family_location_last_update_placeholder")
     }
     
+    // MARK: - Pay-pains Family shelves (S1 / S2 / S5)
+
+    private var payPainsEmptyFamilyMaster: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("pay_pains_family_master_title"))
+                .font(.h3)
+                .foregroundColor(Color.secondaryGold)
+                .accessibilityAddTraits(.isHeader)
+
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text(localizationManager.localized("pay_pains_family_master_step1"))
+                Text(localizationManager.localized("pay_pains_family_master_step2"))
+                Text(localizationManager.localized("pay_pains_family_master_step3"))
+                Text(localizationManager.localized("pay_pains_family_master_step4"))
+            }
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.85))
+
+            HStack(spacing: Spacing.m) {
+                Button {
+                    HapticFeedback.impact(.medium)
+                    navigateToAddOrCreateFamily()
+                } label: {
+                    Text(localizationManager.localized("pay_pains_family_master_cta"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.s)
+                        .background(Color.secondaryGold.opacity(0.35))
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    payPainsMasterDismissed = true
+                } label: {
+                    Text(localizationManager.localized("onboarding_skip"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.65))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("pay_pains_family_master")
+    }
+
+    private var payPainsCalmSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("pay_pains_family_calm_title"))
+                .font(.h3)
+                .foregroundColor(Color.secondaryGold)
+                .accessibilityAddTraits(.isHeader)
+
+            FamilySafeWordCard(members: familyMembers)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+            FamilySecondHandPackCard(members: familyMembers)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private var payPainsWhereSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("pay_pains_family_where_title"))
+                .font(.h3)
+                .foregroundColor(Color.secondaryGold)
+                .accessibilityAddTraits(.isHeader)
+
+            Button {
+                HapticFeedback.impact(.light)
+                showWherePhone = true
+            } label: {
+                HStack {
+                    Image(systemName: "location.circle.fill")
+                        .foregroundColor(Color.secondaryGold)
+                    Text(localizationManager.localized("where_phone_open"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.55))
+                }
+                .padding()
+                .background(Color.white.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("family_where_phone")
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private var payPainsTogetherSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    payPainsTogetherExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Text(localizationManager.localized("pay_pains_family_together_title"))
+                        .font(.h3)
+                        .foregroundColor(Color.secondaryGold)
+                    Spacer()
+                    Text(localizationManager.localized("pay_pains_family_together_expand"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.65))
+                    Image(systemName: payPainsTogetherExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(Color.secondaryGold)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityIdentifier("pay_pains_family_together")
+
+            if payPainsTogetherExpanded {
+                FamilyDayStripView(onOpenTimeRules: { showTimeControlModalNew = true })
+                    .environmentObject(localizationManager)
+                FamilyShieldWeekDigestCard()
+                    .environmentObject(localizationManager)
+                FamilyIncidentFeedView(members: familyMembers)
+                    .environmentObject(localizationManager)
+                FamilyHabitRemindersSection(members: familyMembers)
+                    .environmentObject(localizationManager)
+                FamilyChallengesSection(members: familyMembers)
+                    .environmentObject(localizationManager)
+                Button {
+                    navigationManager.navigateTo(.familyList)
+                } label: {
+                    HStack {
+                        Image(systemName: "checklist")
+                        Text(localizationManager.localized("family_list_title"))
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_open_list")
+            }
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private func payPainsPrimaryPCWindow(
+        icon: String,
+        title: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: {
+            HapticFeedback.impact(.light)
+            action()
+        }) {
+            VStack(spacing: Spacing.s) {
+                Text(icon)
+                    .font(.system(size: 28))
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+            }
+            .frame(maxWidth: .infinity, minHeight: 96)
+            .padding(Spacing.s)
+            .background(Color.white.opacity(0.10))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     private var parentalControlsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-                            HStack {
-                Text(localizationManager.localized("family_parental_control"))
-                    .font(.h3)
+            HStack {
+                Text(
+                    PayPainsUIFlags.usesNewPayPainsFamily
+                        ? localizationManager.localized("pay_pains_family_pc_title")
+                        : localizationManager.localized("family_parental_control")
+                )
+                    // D1.5: serif на ключевом заголовке Семьи при новом UI; иначе прежний .h3.
+                    .font(
+                        PayPainsUIFlags.usesNewPayPainsFamily
+                            ? Font.system(.title3, design: .serif).weight(.bold)
+                            : .h3
+                    )
                     .foregroundColor(Color.secondaryGold)
                     .accessibilityAddTraits(.isHeader)
-                                
-                                Spacer()
-                                
+
+                Spacer()
+
                 Button(action: {
                     HapticFeedback.impact(.light)
                     showParentalSettingsModal = true
                 }) {
-                    HStack(spacing: Spacing.xs) {
+                    if PayPainsUIFlags.usesNewPayPainsFamily {
+                        // S10: одна шестерёнка, hit ≥44
                         Image(systemName: "gearshape.fill")
-                            .font(.system(size: 16))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(Color.secondaryGold)
-                        Text(localizationManager.localized("family_settings"))
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Color.secondaryGold)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    } else {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color.secondaryGold)
+                            Text(localizationManager.localized("family_settings"))
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color.secondaryGold)
+                        }
+                        .padding(.horizontal, Spacing.s)
+                        .padding(.vertical, Spacing.xs)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.small)
+                                .fill(Color.secondaryGold.opacity(0.15))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: CornerRadius.small)
+                                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
+                                )
+                        )
                     }
-                    .padding(.horizontal, Spacing.s)
-                    .padding(.vertical, Spacing.xs)
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.small)
-                            .fill(Color.secondaryGold.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.small)
-                                    .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                            )
-                    )
                 }
                 .accessibilityLabel(localizationManager.localized("family_parental_settings_accessibility"))
             }
-            
-            // Сетка 2x3 - НОВЫЕ КАРТОЧКИ
+
+            if PayPainsUIFlags.usesNewPayPainsFamily && !payPainsShowAllParentalCards {
+                // S3 вар.1: три окна + «Показать все»
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 3),
+                    spacing: Spacing.s
+                ) {
+                    payPainsPrimaryPCWindow(
+                        icon: "🔒",
+                        title: localizationManager.localized("pay_pains_family_pc_sites"),
+                        action: { showContentBlockModal = true }
+                    )
+                    payPainsPrimaryPCWindow(
+                        icon: "⏱️",
+                        title: localizationManager.localized("pay_pains_family_pc_time"),
+                        action: { showTimeControlModalNew = true }
+                    )
+                    payPainsPrimaryPCWindow(
+                        icon: "📍",
+                        title: localizationManager.localized("pay_pains_family_pc_where_phone"),
+                        action: {
+                            showWherePhone = true
+                        }
+                    )
+                }
+
+                Button {
+                    AnalyticsManager.shared.trackEvent("pay_pains_pc_show_all")
+                    if UIAccessibility.isReduceMotionEnabled {
+                        payPainsShowAllParentalCards = true
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            payPainsShowAllParentalCards = true
+                        }
+                    }
+                } label: {
+                    Text(localizationManager.localized("pay_pains_family_pc_show_all"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("pay_pains_family_pc_show_all")
+            } else {
+                if PayPainsUIFlags.usesNewPayPainsFamily {
+                    Button {
+                        if UIAccessibility.isReduceMotionEnabled {
+                            payPainsShowAllParentalCards = false
+                        } else {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                payPainsShowAllParentalCards = false
+                            }
+                        }
+                    } label: {
+                        Text(localizationManager.localized("pay_pains_family_pc_show_less"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.white.opacity(0.7))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+            // Сетка 2x3 - НОВЫЕ КАРТОЧКИ (S4: все 7 на месте)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 2), spacing: Spacing.s) {
                 // 1. Блокировка контента
                 FamilyParentalControlCard(
@@ -3311,6 +3605,7 @@ extension FamilyScreen {
                     .environmentObject(localizationManager)
                 }
             }
+            } // end else: full 7-card grid (S4)
             
             // Разделитель и заголовок для геймификации
             VStack(spacing: Spacing.s) {
@@ -7481,6 +7776,36 @@ struct GeofencesSettingsModal: View {
         )
         return localizationManager.localized(key)
     }
+
+    /// F8 quick chip: open add form prefilled with home/school if missing.
+    private func frequentPlaceChip(titleKey: String, name: String) -> some View {
+        let exists = geofences.contains {
+            $0.name.caseInsensitiveCompare(name) == .orderedSame
+        }
+        return Button {
+            if exists {
+                HapticFeedback.selection()
+                return
+            }
+            newGeofenceName = name
+            newGeofenceAddress = ""
+            newGeofenceRadius = 100
+            pendingSetupCoordinate = nil
+            showAddForm = true
+            HapticFeedback.impact(.light)
+        } label: {
+            Text(localizationManager.localized(titleKey))
+                .font(.caption.weight(.bold))
+                .foregroundColor(exists ? .textSecondary : .secondaryGold)
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, Spacing.s)
+                .background(Color.white.opacity(exists ? 0.06 : 0.12))
+                .cornerRadius(CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
+        .disabled(exists)
+        .accessibilityIdentifier("pay_pains_frequent_\(titleKey)")
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -7727,6 +8052,34 @@ struct GeofencesSettingsModal: View {
                     .padding(Spacing.m)
                     .background(Color.secondaryGold.opacity(0.12))
                     .cornerRadius(CornerRadius.medium)
+                }
+
+                // F8: частые точки после «Всегда» — быстрый дом/школа, без второго экрана
+                if placesConsentAccepted,
+                   locationManager.authorizationStatus == .authorizedAlways {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        Text(localizationManager.localized("pay_pains_frequent_places_title"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("pay_pains_frequent_places_body"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        HStack(spacing: Spacing.s) {
+                            frequentPlaceChip(
+                                titleKey: "geofences_home",
+                                name: localizationManager.localized("geofences_home")
+                            )
+                            frequentPlaceChip(
+                                titleKey: "geofences_school",
+                                name: localizationManager.localized("geofences_school")
+                            )
+                        }
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.white.opacity(0.10))
+                    .cornerRadius(CornerRadius.medium)
+                    .accessibilityIdentifier("pay_pains_frequent_places")
                 }
 
                 // ProdQA S02: keep Enable Notifications CTA only (no tech FAQ sheet).
@@ -8450,7 +8803,22 @@ struct LocationHistoryDetailModal: View {
                 icon: event.isArrival ? "✅" : "🚶"
             )
         }
-        frequentPlaces = []
+        // F8: частые места только из настоящих приходов, не фейковые «32 визита»
+        let alwaysOK = LocationManager.shared.authorizationStatus == .authorizedAlways
+        if alwaysOK {
+            var counts: [String: Int] = [:]
+            for event in live where event.isArrival {
+                let name = event.regionName.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !name.isEmpty else { continue }
+                counts[name, default: 0] += 1
+            }
+            frequentPlaces = counts
+                .sorted { $0.value > $1.value }
+                .prefix(5)
+                .map { FrequentPlace(name: $0.key, visits: $0.value, color: .secondaryGold) }
+        } else {
+            frequentPlaces = []
+        }
     }
 }
 

@@ -460,6 +460,7 @@ enum PrivacyMainSection: String, CaseIterable {
     case crashDiagnostics = "Диагностика сбоев и поддержка в Telegram"
     case notCollected = "Данные, НЕ собираемые"
     case collected = "Данные, собираемые (обезличенные)"
+    case familyLocation = "Место семьи"
     case purposes = "Цели обработки"
     case protection = "Меры защиты"
     case rights = "Права пользователей"
@@ -480,6 +481,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .crashDiagnostics: return "💬"
         case .notCollected: return "❌"
         case .collected: return "✅"
+        case .familyLocation: return "📍"
         case .purposes: return "🎯"
         case .protection: return "🛡️"
         case .rights: return "⚖️"
@@ -502,6 +504,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .crashDiagnostics: return localizationManager.localized("privacy_policy_section_crash_diagnostics")
         case .notCollected: return localizationManager.localized("privacy_policy_section_not_collected")
         case .collected: return localizationManager.localized("privacy_policy_section_collected")
+        case .familyLocation: return localizationManager.localized("privacy_policy_section_family_location")
         case .purposes: return localizationManager.localized("privacy_policy_section_purposes")
         case .protection: return localizationManager.localized("privacy_policy_section_protection")
         case .rights: return localizationManager.localized("privacy_policy_section_rights")
@@ -524,6 +527,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .crashDiagnostics: return localizationManager.localized("privacy_policy_section_crash_diagnostics_subtitle")
         case .notCollected: return localizationManager.localized("privacy_policy_section_not_collected_subtitle")
         case .collected: return localizationManager.localized("privacy_policy_section_collected_subtitle")
+        case .familyLocation: return localizationManager.localized("privacy_policy_section_family_location_subtitle")
         case .purposes: return localizationManager.localized("privacy_policy_section_purposes_subtitle")
         case .protection: return localizationManager.localized("privacy_policy_section_protection_subtitle")
         case .rights: return localizationManager.localized("privacy_policy_section_rights_subtitle")
@@ -551,6 +555,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .crashDiagnostics: return "Бот @AladdinchatAI_bot, только по вашей команде"
         case .notCollected: return "Список данных, которые мы НЕ собираем"
         case .collected: return "Обезличенные данные для безопасности"
+        case .familyLocation: return "Дом, школа и точка телефона"
         case .purposes: return "Для чего используются данные"
         case .protection: return "Технические и организационные меры"
         case .rights: return "Ваши права на данные"
@@ -613,6 +618,13 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_collected_content_3"),
                 localizationManager.localized("privacy_policy_section_collected_content_4"),
                 localizationManager.localized("privacy_policy_section_collected_content_5")
+            ]
+        case .familyLocation:
+            return [
+                localizationManager.localized("privacy_policy_section_family_location_content_1"),
+                localizationManager.localized("privacy_policy_section_family_location_content_2"),
+                localizationManager.localized("privacy_policy_section_family_location_content_3"),
+                localizationManager.localized("privacy_policy_section_family_location_content_4")
             ]
         case .purposes:
             return [
@@ -744,7 +756,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .notCollected:
             return [
                 "Имена, фамилии, даты рождения",
-                "Адреса, телефоны, email",
+                "Телефоны и email для рекламы не берём. Дом и школу — только если родитель сам сохранил в «Где семья»",
                 "Паспортные данные, СНИЛС, ИНН",
                 "Финансовые и медицинские данные",
                 "Политические и религиозные взгляды"
@@ -756,6 +768,13 @@ enum PrivacyMainSection: String, CaseIterable {
                 "Тип устройства и ОС",
                 "Статистика угроз (обезличенная)",
                 "Агрегированная аналитика"
+            ]
+        case .familyLocation:
+            return [
+                "Дом, школу и другие места вводит родитель",
+                "Точка телефона ребёнка — только после разрешения на его телефоне",
+                "Родитель не включает это тайно",
+                "Храним последнюю точку и след за сегодня; данные не продаём"
             ]
         case .purposes:
             return [

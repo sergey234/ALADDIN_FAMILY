@@ -273,12 +273,13 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         // ManagedSettings stage
         setAppRemovalDenied(true)
 
-        // DeviceActivity stage
+        // DeviceActivity stage (день — минуты; ночь — отдельный bedtime, F4)
         do {
             try startDefaultDeviceActivityMonitoring()
         } catch {
             print("⚠️ DeviceActivity monitoring start failed: \(error.localizedDescription)")
         }
+        BedtimeNightLock.rescheduleFromSavedIfNeeded()
         _ = await ScreenTimeUsageSync.postIfChild()
 
         let finalReadiness = assessFamilyControlsReadiness()
@@ -417,9 +418,12 @@ enum FamilyControlsAvailabilityError: LocalizedError {
             setAppRemovalDenied(false)
         }
 
+        // F5: пауза — отдельный именованный щит, живёт после закрытия ALADDIN
+        ParentalInternetPause.applyLocalState(paused: response.internetPaused)
+
         await ContentBlockerManager.shared.applyParentalBlockedWebsites(
             response.blockedWebsites,
-            contentFilterEnabled: response.isContentFilterEnabled || youtubeBlocked
+            contentFilterEnabled: response.isContentFilterEnabled || youtubeBlocked || response.internetPaused
         )
     }
     
@@ -1241,13 +1245,14 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         apiService.getParentalControlSettings(familyId: family, childId: childId, completion: completion)
     }
     
-    func saveSettingsToServer(familyId: String? = nil, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
+    func saveSettingsToServer(familyId: String? = nil, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, internetPaused: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
         let family = familyId ?? self.familyId
         apiService.updateParentalControlSettings(
             familyId: family,
             childId: childId,
             isContentFilterEnabled: isContentFilterEnabled,
             isAppBlockingEnabled: isAppBlockingEnabled,
+            internetPaused: internetPaused,
             screenTimeLimitHours: screenTimeLimitHours,
             allowedApps: allowedApps,
             blockedWebsites: blockedWebsites,
@@ -1256,6 +1261,16 @@ enum FamilyControlsAvailabilityError: LocalizedError {
             version: nil,
             completion: completion
         )
+    }
+
+    /// F5: родитель включает/выключает паузу → сервер; ребёнок тянет sync и ставит щит.
+    func setInternetPaused(_ paused: Bool, childId: String? = nil, completion: ((Result<ParentalControlSettingsResponse, Error>) -> Void)? = nil) {
+        saveSettingsToServer(childId: childId, internetPaused: paused) { result in
+            if case .success = result {
+                UserDefaults.standard.set(paused, forKey: "parental_internet_paused")
+            }
+            completion?(result)
+        }
     }
     
     func syncSettingsFromServer(familyId: String? = nil, completion: @escaping (Result<SyncParentalControlSettingsResponse, Error>) -> Void) {

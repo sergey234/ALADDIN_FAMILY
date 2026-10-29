@@ -484,6 +484,7 @@ struct AntifakeTextCheckView: View {
                         showPremiumPaywall = true
                     } else if ok {
                         HapticFeedback.notification(.success)
+                        PayPainsSoftReviewPrompt.noteBenefitCompleted()
                     } else if viewModel.errorMessage != nil {
                         HapticFeedback.notification(.error)
                     }
@@ -494,7 +495,10 @@ struct AntifakeTextCheckView: View {
             if let verdict = viewModel.verdict {
                 AntifakeVerdictCard(
                     verdict: verdict,
-                    variant: viewModel.inputMode == .url ? .urlDisinformation : .standard
+                    variant: viewModel.inputMode == .url ? .urlDisinformation : .standard,
+                    checkTypeKey: viewModel.inputMode == .url
+                        ? "pay_pains_check_type_link"
+                        : "pay_pains_check_type_message"
                 )
                     .environmentObject(localizationManager)
             }

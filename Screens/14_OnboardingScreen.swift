@@ -137,6 +137,7 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 5:
+            // «Где семья» (O3) — крупный title над desc, как соседние слайды
             return OnboardingFigmaAnchor(
                 wordmark: nil,
                 title: CGRect(x: 16, y: 496, width: 361, height: 60),
@@ -148,7 +149,20 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 6:
-            // OB_07: title UL + wordmark UR на одном Y (симметрия по краям; лицо джина свободно)
+            // Antifake (page7) — обычный слайд. НЕ ob07Final: иначе title уезжает в угол,
+            // а финал (page8) остаётся без якоря → EmptyView и «Продолжить» мёртвый.
+            return OnboardingFigmaAnchor(
+                wordmark: nil,
+                title: CGRect(x: 16, y: 472, width: 361, height: 72),
+                desc: CGRect(x: 16, y: 554, width: 361, height: 120),
+                scrim: CGRect(x: 0, y: 520, width: 393, height: 320),
+                scrimMaxOpacity: 0.40,
+                maxTitleLines: 2,
+                maxBodyLines: 5,
+                layoutMode: .standard
+            )
+        case 7:
+            // Финал page8: title UL + wordmark UR + согласия в chrome (бывший case 6 / OB_07)
             return OnboardingFigmaAnchor(
                 wordmark: CGRect(
                     x: OnboardingFigmaScreenLayout.canvasWidth - 96 - OnboardingFigmaScreenLayout.ob07WordmarkTrailing,
@@ -344,7 +358,7 @@ private struct OnboardingFigmaAnchoredContent: View {
     let description: String
     let anchor: OnboardingFigmaAnchor
 
-    private var isOB07: Bool { anchor.layoutMode == .ob07Final } // только case 6
+    private var isOB07: Bool { anchor.layoutMode == .ob07Final } // финал page8 (contentIndex 7)
 
     private var scrimDesignHeight: CGFloat {
         switch anchor.layoutMode {
@@ -549,7 +563,8 @@ private struct OnboardingTextZoneConfig {
     let maxBodyLines: Int
 
     static func forContentIndex(_ index: Int) -> OnboardingTextZoneConfig? {
-        guard (0...5).contains(index) else { return nil }
+        // Fallback, если Figma-якорь отсутствует (0…7 = 8 контент-страниц).
+        guard (0...7).contains(index) else { return nil }
         switch index {
         case 0:
             return OnboardingTextZoneConfig(minZoneHeight: 288, scrimMaxOpacity: 0.45, showsLogo: true, maxBodyLines: 4)
@@ -561,8 +576,10 @@ private struct OnboardingTextZoneConfig {
             return OnboardingTextZoneConfig(minZoneHeight: 228, scrimMaxOpacity: 0.35, showsLogo: false, maxBodyLines: 5)
         case 4:
             return OnboardingTextZoneConfig(minZoneHeight: 252, scrimMaxOpacity: 0.38, showsLogo: false, maxBodyLines: 6)
-        case 5:
+        case 5, 6:
             return OnboardingTextZoneConfig(minZoneHeight: 220, scrimMaxOpacity: 0.40, showsLogo: false, maxBodyLines: 5)
+        case 7:
+            return OnboardingTextZoneConfig(minZoneHeight: 200, scrimMaxOpacity: 0.42, showsLogo: true, maxBodyLines: 4)
         default:
             return nil
         }
@@ -766,8 +783,8 @@ struct OnboardingScreen: View {
         let color: Color
     }
     
-    // ⚠️ Контент онбординга (без шага 0 «Язык»): 7 полных или 2 минимальных.
-    private static let EXPECTED_CONTENT_PAGES_COUNT = 7
+    // ⚠️ Контент онбординга (без шага 0 «Язык»): 8 полных (pay-pains O3) или 2 минимальных.
+    private static let EXPECTED_CONTENT_PAGES_COUNT = 8
     private static let MINIMAL_CONTENT_PAGES_COUNT = 2
 
     /// Вкладки TabView: 0 = язык, 1…N = контент (`N == pages.count`).
@@ -785,17 +802,19 @@ struct OnboardingScreen: View {
         "onboarding_page1_title": "Защита всей семьи в кармане",
         "onboarding_page1_desc": "Комплексная система защиты от основных киберугроз",
         "onboarding_page2_title": "Ваш персональный агент безопасности",
-        "onboarding_page2_desc": "ИИ охраняет вашу семью 24/7 + Многоуровневая система защита ⭐⭐⭐⭐⭐",
+        "onboarding_page2_desc": "Охраняем вашу семью круглосуточно. Несколько уровней защиты ⭐⭐⭐⭐⭐",
         "onboarding_page3_title": "Родительский контроль",
-        "onboarding_page3_desc": "Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI",
+        "onboarding_page3_desc": "Вы видите, чем дети заняты в интернете. Контроль телефона ребёнка.",
         "onboarding_page4_title": "Аналитика рисков",
-        "onboarding_page4_desc": "Система ALADDIN AI анализирует, обнаруживает и предупреждает о киберугрозах. Постоянно обучается и улучшается.",
+        "onboarding_page4_desc": "ALADDIN замечает угрозы и предупреждает заранее. Учится и становится точнее.",
         "onboarding_page5_title": "Защита для детей!",
         "onboarding_page5_desc": "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах",
-        "onboarding_page6_title": "Antifake для людей 18+",
-        "onboarding_page6_desc": "AI помогает проверить подозрительный звонок, новости, сообщения и видео.",
-        "onboarding_page7_title": "Присоединяйтесь к ALADDIN!",
-        "onboarding_page7_desc": "Спокойствие близких - бесценно. Защита начинается сегодня!",
+        "onboarding_page6_title": "Где семья",
+        "onboarding_page6_desc": "Сообщим, когда ребёнок пришёл домой, в школу или секцию.",
+        "onboarding_page7_title": "Antifake для людей 18+",
+        "onboarding_page7_desc": "Можно проверить звонок, новости, сообщения, видео, голос, смс, текст и ссылку.",
+        "onboarding_page8_title": "Присоединяйтесь к ALADDIN!",
+        "onboarding_page8_desc": "Спокойствие близких - бесценно. Защита начинается сегодня!",
         "onboarding_skip": "Пропустить",
         "onboarding_continue": "ПРОДОЛЖИТЬ",
         "onboarding_start": "НАЧАТЬ",
@@ -815,17 +834,19 @@ struct OnboardingScreen: View {
         "onboarding_page1_title": "Family protection in your pocket",
         "onboarding_page1_desc": "Comprehensive protection against major cyber threats",
         "onboarding_page2_title": "Your personal security assistant",
-        "onboarding_page2_desc": "AI guards your family 24/7 + Multi-layer protection system ⭐⭐⭐⭐⭐",
+        "onboarding_page2_desc": "We protect your family around the clock. Several layers of protection ⭐⭐⭐⭐⭐",
         "onboarding_page3_title": "Parental control",
-        "onboarding_page3_desc": "See and protect your children's digital activity",
+        "onboarding_page3_desc": "See what kids do on the internet. Control of the child’s phone.",
         "onboarding_page4_title": "Risk analytics",
-        "onboarding_page4_desc": "ALADDIN AI analyzes, detects and warns about cyber threats. It constantly learns and improves.",
+        "onboarding_page4_desc": "ALADDIN spots threats and warns you early. It learns and gets better.",
         "onboarding_page5_title": "Protection for kids",
         "onboarding_page5_desc": "Block unsafe websites and risky content",
-        "onboarding_page6_title": "Antifake for people 18+",
-        "onboarding_page6_desc": "AI helps check a suspicious call, news, messages and video.",
-        "onboarding_page7_title": "Join ALADDIN",
-        "onboarding_page7_desc": "Protect your loved ones starting today",
+        "onboarding_page6_title": "Where they are",
+        "onboarding_page6_desc": "We’ll tell you when your child gets home, to school, or to a club.",
+        "onboarding_page7_title": "Antifake for people 18+",
+        "onboarding_page7_desc": "Check a call, news, messages, video, voice, SMS, text, or a link.",
+        "onboarding_page8_title": "Join ALADDIN",
+        "onboarding_page8_desc": "Protect your loved ones starting today",
         "onboarding_skip": "Skip",
         "onboarding_continue": "CONTINUE",
         "onboarding_start": "GET STARTED",
@@ -1083,18 +1104,25 @@ struct OnboardingScreen: View {
                 description: onboardingPage5Description(),
                 color: Color.purple
             ),
-            // Страница 6: Интерфейс для людей 23+
+            // Страница 6 (O3): Где семья — между детьми и Antifake
             OnboardingPage(
-                icon: "🧑",
+                icon: "📍",
                 title: safeLocalized("onboarding_page6_title"),
                 description: safeLocalized("onboarding_page6_desc"),
-                color: Color.blue
+                color: Color.cyan
             ),
-            // Страница 7: Присоединяйтесь к ALADDIN AI
+            // Страница 7 (O2): Antifake — расширенный список проверок
             OnboardingPage(
-                icon: "🦄",
+                icon: "🧑",
                 title: safeLocalized("onboarding_page7_title"),
                 description: safeLocalized("onboarding_page7_desc"),
+                color: Color.blue
+            ),
+            // Страница 8: Присоединяйтесь к ALADDIN AI
+            OnboardingPage(
+                icon: "🦄",
+                title: safeLocalized("onboarding_page8_title"),
+                description: safeLocalized("onboarding_page8_desc"),
                 color: Color.green
             ),
         ]
@@ -1190,7 +1218,8 @@ struct OnboardingScreen: View {
                 .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
                 .accessibilityHidden(true)
 
-            HeroBottomReadableGradient(strong: currentPage <= 6)
+            // Все контент-вкладки (язык=0 … финал=8 при 8 страницах)
+            HeroBottomReadableGradient(strong: currentPage <= lastTabIndex)
                 .ignoresSafeArea()
 
             // ✅ ВАРИАНТ 1: Показываем онбординг сразу, без проверки готовности локализации
@@ -1254,6 +1283,9 @@ struct OnboardingScreen: View {
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
                     navigationManager.navigateToRoot(.main)
+                    if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
+                        navigationManager.navigateToSimpleHome()
+                    }
                 }
             )
             .aladdinSheetPresentation()
@@ -1421,7 +1453,10 @@ struct OnboardingScreen: View {
                             }
 
                             navigationManager.navigateToRoot(.main)
-                            print("✅ OnboardingScreen: Онбординг завершён, переход на главный экран")
+                            if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
+                                navigationManager.navigateToSimpleHome()
+                            }
+                            print("✅ OnboardingScreen: Онбординг завершён, переход на вход (SimpleHome при pay-pains)")
                         }
                     }) {
                         Group {
