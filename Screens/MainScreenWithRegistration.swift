@@ -17,6 +17,9 @@ struct MainScreenWithRegistration: View {
 
     /// В DEBUG: можно поставить `true`, чтобы вернуть блок Apple/Magic для внутренних тестов. В Release блок **не компилируется** в разметку (согласие / добавление участника без лишнего входа).
     private static let isAlternativeRegistrationAuthVisible = false
+
+    /// Pay-pains SIWA: скрыт, пока нет capability `applesignin` + entitlement в профиле (ошибка 1000/-7026). Вернуть: `true`.
+    private static let isPayPainsAppleSignInVisible = false
     
     @StateObject var registrationVM: FamilyRegistrationViewModel
     @State private var showTip: Bool = false
@@ -97,9 +100,9 @@ struct MainScreenWithRegistration: View {
             .task {
                 print("🚨 MainScreenWithRegistration загружен!")
                 try? await Task.sleep(nanoseconds: 500_000_000)
-                // D2: при новом входе ждём Apple или «+ Добавить семью», не авто-модалки.
+                // D2: при новом входе ждём «+ Добавить семью» (SIWA скрыт до capability), не авто-модалки.
                 if PayPainsUIFlags.usesNewPayPainsHome {
-                    print("ℹ️ Pay-pains auth glass: ждём выбор пользователя (без auto startRegistration)")
+                    print("ℹ️ Pay-pains auth glass: ждём «+ Добавить семью» (без auto startRegistration)")
                     return
                 }
                 print("🚨 Вызываю startRegistration()...")
@@ -164,29 +167,31 @@ struct MainScreenWithRegistration: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    SignInWithAppleButton(.signIn, onRequest: { request in
-                        request.requestedScopes = [.fullName, .email]
-                    }, onCompletion: handleAppleSignInResult)
-                    .signInWithAppleButtonStyle(.white)
-                    .frame(height: 48)
-                    .clipShape(Capsule())
-                    .disabled(isAppleAuthInProgress)
+                    if Self.isPayPainsAppleSignInVisible {
+                        SignInWithAppleButton(.signIn, onRequest: { request in
+                            request.requestedScopes = [.fullName, .email]
+                        }, onCompletion: handleAppleSignInResult)
+                        .signInWithAppleButtonStyle(.white)
+                        .frame(height: 48)
+                        .clipShape(Capsule())
+                        .disabled(isAppleAuthInProgress)
 
-                    if isAppleAuthInProgress {
-                        ProgressView()
-                            .tint(.white)
-                    }
+                        if isAppleAuthInProgress {
+                            ProgressView()
+                                .tint(.white)
+                        }
 
-                    HStack {
-                        Rectangle()
-                            .fill(Color.white.opacity(0.25))
-                            .frame(height: 1)
-                        Text(localizationManager.localized("pay_pains_auth_or"))
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
-                        Rectangle()
-                            .fill(Color.white.opacity(0.25))
-                            .frame(height: 1)
+                        HStack {
+                            Rectangle()
+                                .fill(Color.white.opacity(0.25))
+                                .frame(height: 1)
+                            Text(localizationManager.localized("pay_pains_auth_or"))
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                            Rectangle()
+                                .fill(Color.white.opacity(0.25))
+                                .frame(height: 1)
+                        }
                     }
 
                     Button {

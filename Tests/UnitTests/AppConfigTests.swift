@@ -43,7 +43,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testAppVersion() throws {
-        XCTAssertEqual(AppConfig.appVersion, "1.0.1")
+        XCTAssertEqual(AppConfig.appVersion, "1.0.2")
     }
     
     func testBuildNumber() throws {
