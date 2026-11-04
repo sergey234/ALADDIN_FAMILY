@@ -15,15 +15,19 @@ enum PayPainsUIFlags {
 
     /// Новый вход (три двери) и связанный shell. Default **вкл**.
     static var usesNewPayPainsHome: Bool {
-        get {
-            if UserDefaults.standard.object(forKey: newUIEnabledKey) == nil {
-                return true
-            }
-            return UserDefaults.standard.bool(forKey: newUIEnabledKey)
+        get { isNewUIEnabled(defaults: .standard) }
+        set { setNewUIEnabled(newValue, defaults: .standard) }
+    }
+
+    static func isNewUIEnabled(defaults: UserDefaults) -> Bool {
+        if defaults.object(forKey: newUIEnabledKey) == nil {
+            return true
         }
-        set {
-            UserDefaults.standard.set(newValue, forKey: newUIEnabledKey)
-        }
+        return defaults.bool(forKey: newUIEnabledKey)
+    }
+
+    static func setNewUIEnabled(_ enabled: Bool, defaults: UserDefaults) {
+        defaults.set(enabled, forKey: newUIEnabledKey)
     }
 
     /// Новый порядок экрана Семья. Пока один kill switch с входом.
@@ -56,7 +60,7 @@ enum PayPainsUIFlags {
         if blocked.contains(role) {
             return false
         }
-        if usesNewPayPainsHome {
+        if isNewUIEnabled(defaults: defaults) {
             return true
         }
         return defaults.bool(forKey: "aladdin.simpleHomePreferred")

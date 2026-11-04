@@ -24,7 +24,9 @@ struct SimpleHomeScreen: View {
     @State private var showChildMinutes = false
     @State private var childMinutesEnabled = true
     @State private var showWherePhone = false
+    @State private var showCheckDoor = false
     @State private var showChildPauseSheet = false
+    @AppStorage("family_access_mode") private var familyAccessMode = "full"
     @AppStorage("parental_internet_paused") private var internetPaused = false
     @State private var pauseBusy = false
     @State private var pauseError: String?
@@ -98,6 +100,12 @@ struct SimpleHomeScreen: View {
         .sheet(isPresented: $showWherePhone) {
             WhereIsPhoneScreen(isPresented: $showWherePhone)
                 .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        .sheet(isPresented: $showCheckDoor) {
+            PayPainsCheckDoorSheet(isPresented: $showCheckDoor)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
         }
         .sheet(isPresented: $showPayPainsMenu, onDismiss: {
             if let pending = pendingMoreNavigation {
@@ -156,8 +164,7 @@ struct SimpleHomeScreen: View {
                 identifier: "pay_pains_door_check",
                 prominent: true
             ) {
-                // Сразу в Antifake Hub — выбор звонок/текст внутри экрана, без лишнего popup.
-                navigationManager.navigateToAntifakeHub(tab: .text)
+                showCheckDoor = true
             }
             payPainsDoor(
                 titleKey: "pay_pains_door_child_title",
@@ -272,10 +279,25 @@ struct SimpleHomeScreen: View {
                 Text(localizationManager.localized("pay_pains_family_strip_add"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(Color.secondaryGold)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.secondaryGold.opacity(0.18))
+                            .overlay(Capsule().stroke(Color.secondaryGold.opacity(0.75), lineWidth: 1))
+                    )
             }
             .padding(Spacing.m)
             .frame(maxWidth: .infinity)
             .stormGlassCard(cornerRadius: CornerRadius.large)
+            // QA16 B1: пустая полоса = главный CTA «добавить семью» — золотой ободок.
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .stroke(
+                        count == 0 ? Color.secondaryGold.opacity(0.85) : Color.clear,
+                        lineWidth: 1.5
+                    )
+            )
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("pay_pains_family_strip")
@@ -414,6 +436,47 @@ struct SimpleHomeScreen: View {
                 StormMeshBackground(variant: .premium)
                 ScrollView {
                     VStack(spacing: Spacing.m) {
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            Text(localizationManager.localized("child_overview_title"))
+                                .font(.system(.title3, design: .serif).weight(.bold))
+                                .foregroundColor(.white)
+                            Text(localizationManager.localized("child_overview_body"))
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                            Text(localizationManager.localized("family_access_hint"))
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                            HStack(spacing: Spacing.s) {
+                                Button {
+                                    familyAccessMode = "full"
+                                } label: {
+                                    Text(localizationManager.localized("family_access_full"))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(familyAccessMode == "full" ? .backgroundDark : .white)
+                                        .padding(.horizontal, Spacing.m)
+                                        .padding(.vertical, Spacing.s)
+                                        .background(familyAccessMode == "full" ? Color.secondaryGold : Color.white.opacity(0.12))
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                Button {
+                                    familyAccessMode = "limited"
+                                } label: {
+                                    Text(localizationManager.localized("family_access_limited"))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(familyAccessMode == "limited" ? .backgroundDark : .white)
+                                        .padding(.horizontal, Spacing.m)
+                                        .padding(.vertical, Spacing.s)
+                                        .background(familyAccessMode == "limited" ? Color.secondaryGold : Color.white.opacity(0.12))
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(Spacing.m)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .stormGlassCard(cornerRadius: CornerRadius.large)
+
                         payPainsDoor(
                             titleKey: "pay_pains_child_pause_title",
                             subtitleKey: "pay_pains_child_pause_subtitle",
@@ -839,14 +902,8 @@ struct SimpleHomeScreen: View {
             ) {
                 showVoiceNotes = true
             }
-            tile(
-                titleKey: "simple_home_tile_advanced_title",
-                subtitleKey: "simple_home_tile_advanced_subtitle",
-                systemImage: "slider.horizontal.3",
-                identifier: "simple_home_tile_advanced"
-            ) {
-                navigationManager.navigateTo(.advancedProtection)
-            }
+            // QA16 B3: одна «Защита» → networkProtection (расширенные блоки внутри экрана).
+            // Отдельную плитку advancedProtection не показываем.
         }
     }
 

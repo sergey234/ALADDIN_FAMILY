@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>16</string>
+	<string>17</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -54,6 +54,7 @@
 		<string>vk</string>
 		<string>tel</string>
 		<string>telprompt</string>
+		<string>yandexmaps</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
@@ -147,9 +148,9 @@
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
-		<string>AccentColor</string>
+		<string>LaunchBackground</string>
 		<key>UIImageName</key>
-		<string>LaunchImage</string>
+		<string>OnboardingLogo_V2_Cinematic</string>
 	</dict>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>

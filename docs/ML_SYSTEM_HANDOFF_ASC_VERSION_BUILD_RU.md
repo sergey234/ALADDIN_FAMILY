@@ -8,7 +8,7 @@
 → §**0** факт · §**0a** secrets через `gh` · §**0b** push+CI · §**0c** план–факт · §**4** уроки 409/подпись
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`
-**CI:** `check-secrets.yml` · candidate **1.0.1 / 15** (после **GO на push** · Archive+Upload)
+**CI:** `check-secrets.yml` · candidate **1.0.2 / 17** (после **GO на push** · Archive+Upload)
 
 ---
 
@@ -16,10 +16,10 @@
 
 | Имя | Что это | Ключи в коде | Сейчас (канон) | В App Store Connect |
 |-----|---------|--------------|----------------|---------------------|
-| **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.1** | iOS version **1.0.1** |
-| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **16** | Review был **14**/TF **15**; candidate upload **16** |
+| **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.2** | iOS version **1.0.2** |
+| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **17** | train **1.0.2**; candidate upload **17** |
 
-В Xcode должно читаться: **Version 1.0.1 · Build 15**.
+В Xcode должно читаться: **Version 1.0.2 · Build 17**.
 
 - Следующее поднятие **Build** (15→16): только после нового **GO на bump** build.
 - Поднимать **Version** (1.0.1→1.0.2): только если ASC закрыл train / после approve, и только после **GO** + создания новой version в ASC.
@@ -32,9 +32,9 @@
 Файл: `docs/RELEASE_BUILD_PROMPT.md`
 
 ```text
-PREV_BUILD = 15
-NEXT_BUILD = 16
-CURRENT_MARKETING_VERSION = 1.0.1
+PREV_BUILD = 17
+NEXT_BUILD = 18
+CURRENT_MARKETING_VERSION = 1.0.2
 ```
 
 После успешного bump **build**: `PREV_BUILD` = выпущенный, `NEXT_BUILD` = +1.

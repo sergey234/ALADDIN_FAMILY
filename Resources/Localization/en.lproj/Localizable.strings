@@ -1863,7 +1863,7 @@
 "family_content_block_card_status_off" = "Policy off";
 "main_family_tariff_label" = "Plan:";
 "main_family_header_member_slots" = "%d of %d";
-"family_member_capacity_with_plan_fmt" = "%d of %d members (Plan)";
+"family_member_capacity_with_plan_fmt" = "%d of %d members";
 "family_members_label" = "Members";
 "family_members_accessibility_fmt" = "Family: %@";
 "tariffs_trial_cooldown_minutes" = "Trial is temporarily unavailable. Try again in %d min.";
@@ -3233,13 +3233,13 @@
 "parental_filter_system_gated" = "System-wide filter for all apps is being prepared.";
 "parental_filter_system_available" = "System-wide filter for all apps: parent rules apply beyond Safari when the extension is active.";
 "system_filter_toggle_title" = "System filter";
-"system_filter_toggle_footer" = "A separate iOS permission (not the Safari extension). Works on a real iPhone only.";
+"system_filter_toggle_footer" = "An iPhone permission, not Safari. Does not work in Simulator.";
 "system_filter_toggle_on_hint" = "On. If iPhone asked for permission, tap Allow.";
 "system_filter_toggle_off_hint" = "Off. Safari extension blocking is unchanged.";
 "system_filter_toggle_error_fmt" = "Could not turn on. Allow the filter in the iPhone prompt and try again.";
 "system_filter_toggle_error_simulator" = "Apple’s system filter does not run in Simulator. Test on a real iPhone (turn off other VPNs).";
 "system_filter_toggle_error_disabled" = "System filtering is not enabled in this build.";
-"system_filter_toggle_error_permission" = "iPhone did not allow the system filter. This is not the Safari extension — wait for Allow, turn off other VPNs, and try again.";
+"system_filter_toggle_error_permission" = "1) Turn off any other VPN\n2) Turn the filter on again\n3) Tap Allow in the iPhone prompt";
 "system_filter_toggle_error_extension" = "System filter is not available in this build. Check the Network Extension entitlement/profile.";
 "family_critical_alerts_toggle" = "Critical alerts";
 "family_critical_alerts_footer" = "Urgent family signals and important events may sound even in Do Not Disturb. You can turn this off in iPhone Settings.";
@@ -3413,12 +3413,12 @@
 "child_did_it_reading" = "Reading";
 "child_did_it_grade" = "Grade";
 "child_did_it_help" = "Helped";
-"child_did_it_sent" = "Sent to parents";
+"child_did_it_sent" = "Posted to family chat";
 
 "child_did_it_card_subtitle" = "Pick a task or write your own — parents will see it";
 "child_did_it_open_full" = "Custom task / more";
 "child_did_it_send_short" = "Send";
-"child_did_it_sent_banner" = "Sent to parents ✓";
+"child_did_it_sent_banner" = "✓ In family chat ✓";
 "system_filter_open_settings" = "Open Settings";
 "system_filter_safari_separate" = "The Safari extension is separate: Settings → Safari → Extensions → ALADDIN.";
 "pay_pains_child_minutes_real_fmt" = "Today · %d min";
@@ -3434,6 +3434,11 @@
 "where_phone_map_card_title" = "Last point";
 "where_phone_map_empty" = "No point yet. Send place once — it appears on the map.";
 "where_phone_map_point_time" = "%@ · %@";
+"where_phone_open_in_maps" = "Open in Maps";
+"where_phone_open_in_maps_title" = "Open this place";
+"where_phone_open_apple_maps" = "Apple Maps";
+"where_phone_open_yandex_maps" = "Yandex Maps";
+
 "where_phone_trail_title" = "Today’s trail";
 "where_phone_trail_empty" = "Empty for now. Trail is only arrivals and leaves from saved places today.";
 "where_phone_share_hint_map" = "One real point on the map. Not a live all-day track.";
@@ -3458,3 +3463,230 @@
 "family_habit_medicine_custom_empty" = "No times yet — add one below.";
 "family_habit_medicine_custom_add" = "Add time";
 "family_habit_medicine_custom_remove" = "Remove time";
+
+"app_loading_preparing" = "Preparing the app…";
+"child_did_it_chat_fmt" = "I did it (%@): %@";
+
+/* ===== Family Safety Wave B/C (Kaspersky+Life360 master §7.2) — 2026-11-04 ===== */
+
+/* 4-tab hub */
+"map_tab_location" = "Location";
+"map_tab_driving" = "Driving";
+"map_tab_safety" = "Safety";
+"map_tab_subscription" = "Membership";
+/* Hub pane stubs until §17 step 3 wires real interiors */
+"map_hub_subscription_title" = "Family membership";
+"map_hub_subscription_body" = "ALADDIN Family plan — calm for everyone. Open plans without a third-party brand.";
+"map_hub_safety_title" = "Family safety";
+"map_hub_safety_body" = "SOS and crash confirm will live here. No roadside dispatch until a partner is live.";
+"map_hub_events_next_body" = "Full month calendar + EventKit come in the next step. This section stays in place.";
+"map_hub_subscription_cta" = "Open ALADDIN plans";
+"map_hub_safety_open_settings" = "Crash detection settings";
+"map_hub_safety_contacts_fmt" = "Emergency contacts: %d";
+"map_hub_safety_sos_note" = "Family SOS hold comes next. No “help is on the way” without a partner.";
+"map_soft_paywall_title" = "One plan for the whole family";
+"map_soft_paywall_body" = "Family map is already with you. ALADDIN Family — calm across devices. You can skip for now.";
+"map_soft_paywall_try" = "See plans";
+"map_soft_paywall_later" = "Maybe later";
+"map_share_dur_1h" = "1 hour";
+"map_share_dur_8h" = "8 hours";
+"map_share_dur_24h" = "24 hours";
+"map_pin_preview_title" = "How does the map pin look?";
+"map_pin_preview_body" = "Family pin with ring and battery. ALADDIN colors — no third-party brand.";
+"map_pin_preview_ok" = "Got it";
+"map_places_suggest_home" = "Home";
+"map_places_suggest_school" = "School";
+"map_places_suggest_work" = "Work";
+"pet_name_ph" = "Name";
+"pet_breed_ph" = "Breed / type";
+"pet_notes_ph" = "Notes";
+"pet_routine_walk" = "Remind about walks";
+"pet_routine_feed" = "Remind about feeding";
+"pet_routine_medicine" = "Remind about medicine";
+"pet_save_cta" = "Save pet";
+"pet_saved_local" = "Saved on this iPhone. Live pet map comes later — no fake pins.";
+"calldir_guide_title" = "Caller ID & blocking";
+"calldir_guide_body" = "Enable the Call Directory extension in iPhone Settings so spam numbers can be filtered.";
+"adblock_title" = "Ad filter";
+"adblock_body" = "Less clutter in Safari via ALADDIN’s system content blocker.";
+"adblock_toggle" = "Enable Safari filter";
+"adblock_safari_tip" = "If it does not apply: Settings → Safari → Extensions.";
+"home_net_title" = "Home & network";
+"home_net_body" = "Device scan comes later. No fake “everything found” screen.";
+"vk_connect_title" = "VK";
+"vk_connect_body" = "VK connect comes later via real OAuth. Empty for now — no fake API.";
+"child_overview_title" = "Child overview";
+"child_overview_body" = "Pause, limits and bedtime live in this door. Full reports are in Parental.";
+"map_live_speed_label" = "Speed";
+"family_access_full" = "Full access";
+"family_access_limited" = "Limited access";
+"family_access_hint" = "Choose how much family can see. Fine-tune in Family.";
+
+/* map_live_* */
+"map_live_sheet_circle" = "Family";
+"map_live_sheet_places" = "Places";
+"map_live_sheet_help" = "Help";
+"map_live_sheet_tags" = "Tags";
+"map_live_last_seen" = "Last seen · %@";
+"map_live_near_place" = "Near “%@”";
+"map_live_battery" = "Battery %d%%";
+"map_live_updating" = "Map updating";
+"map_live_no_signal" = "No signal yet";
+"map_live_speed_badge" = "≈ %d km/h";
+"map_type_title" = "Map type";
+"map_type_auto" = "Auto";
+"map_type_street" = "Street";
+"map_type_satellite" = "Satellite";
+
+/* map_perm_* */
+"map_perm_always_title" = "Allow “Always”";
+"map_perm_always_body" = "So the family map can update when the app is closed. We ask for location to show where family phones are — not to spy.";
+"map_perm_always_cta" = "Continue";
+"map_perm_open_settings" = "Open Settings";
+"map_perm_precise_hint" = "Also turn on Precise Location";
+
+/* map_member_* */
+"map_member_save_place" = "Save place";
+"map_member_directions" = "Directions";
+"map_member_share" = "Share location";
+"map_member_quiet_zone" = "Quiet zone";
+
+/* journal / share / privacy */
+"map_journal_title" = "Today’s history";
+"map_journal_empty" = "No moves today yet";
+"map_share_link_title" = "Location link";
+"map_share_duration" = "Expires";
+"map_privacy_zone_title" = "Quiet zone";
+"map_privacy_zone_hint" = "Location is hidden from family in this zone";
+
+/* family_cal_* */
+"family_cal_title" = "Family calendar";
+"family_cal_empty" = "Nothing planned yet";
+"family_cal_add" = "Add event";
+"family_cal_place" = "Place";
+"family_cal_to_ios" = "Add to iPhone Calendar";
+"family_cal_local_only" = "Visible on this iPhone for now. Shared online later.";
+
+/* map_soon_* */
+"map_soon_pet_title" = "Pets nearby";
+"map_soon_pet_body" = "Coming soon. No pet map until a partner is live.";
+"map_soon_tile_title" = "Tags";
+"map_soon_tile_body" = "Coming soon. Tags will connect for real — no fake pins.";
+"map_soon_evac_title" = "Roadside help";
+"map_soon_evac_body" = "Coming soon. For now: emergency services and your contacts.";
+"map_soon_ok" = "Got it";
+"map_soon_driving_title" = "Trip reports";
+"map_soon_driving_body" = "Coming soon. For now you can see speed on the map when GPS provides it.";
+
+/* sos / crash */
+"sos_hold_hint" = "Hold for SOS";
+"sos_countdown" = "Cancel · %d";
+"sos_sent_family" = "Family got the alert";
+"crash_confirm_title" = "Was this a crash?";
+"crash_confirm_yes" = "Yes, need help";
+"crash_confirm_no" = "No, I’m fine";
+"crash_confirm_preview_cta" = "Preview crash confirmation";
+"crash_limits_body" = "We alert your family. Roadside dispatch comes when a partner is live.";
+"lists_empty_title" = "My lists";
+"lists_empty_body" = "Your own and spam numbers appear after sync. Empty for now — no fake rows.";
+"map_routes_title" = "Directions";
+"map_routes_body" = "Opens Apple Maps with the mode you pick. Uses the last known point.";
+"map_routes_drive" = "Drive";
+"map_routes_walk" = "Walk";
+"map_routes_transit" = "Transit";
+"map_anti_spy_note" = "Last known point with family consent only. No hidden tracking.";
+"map_quiet_active_badge" = "Quiet zone";
+"map_quiet_share_blocked" = "You’re in a quiet zone — we won’t share this point with family.";
+"map_share_expires_fmt" = "Link left ≈ %d min";
+"map_share_expired" = "Share link expired — share again";
+
+/* ===== Family hub interiors Life360 L98+ (2026-11-04) ===== */
+"map_chip_people" = "Family";
+"map_chip_pets" = "Pets";
+"map_chip_items" = "Items";
+"map_chip_places" = "Places";
+"map_chip_events" = "Events";
+"map_invite_banner_title" = "Invite others — safer together";
+"map_invite_banner_cta" = "Add loved ones";
+"map_add_person" = "Add a person";
+"map_create_circle_teaser" = "Invite relatives into your family";
+"map_role_title" = "Which role fits best?";
+"map_role_mom" = "Mom";
+"map_role_dad" = "Dad";
+"map_role_child" = "Son / daughter / child";
+"map_role_skip" = "Skip this step";
+"map_places_title" = "Places";
+"map_places_add_new" = "Add a new place";
+"map_places_add_home" = "Add your home";
+"map_places_add_school" = "Add your school";
+"map_places_add_work" = "Add work";
+"map_places_add_gym" = "Add gym";
+"map_places_add_shop" = "Add grocery store";
+"map_places_manage" = "Manage places";
+"family_cal_create_title" = "Create new event";
+"family_cal_details" = "Event details";
+"family_cal_name" = "Name";
+"family_cal_name_ph" = "Event title";
+"family_cal_location" = "Location";
+"family_cal_location_ph" = "Place name or address";
+"family_cal_today" = "Today";
+"family_cal_tomorrow" = "Tomorrow";
+"family_cal_pick_date" = "Pick a date";
+"family_cal_start" = "Starts";
+"family_cal_end" = "Ends";
+"family_cal_pick" = "Select";
+"pet_add_title" = "Add a pet";
+"pet_add_photo_title" = "Add a photo of your pet";
+"pet_add_photo_cta" = "Add photo";
+"pet_skip" = "Skip";
+"pet_breed" = "Breed";
+"pet_breed_ph" = "Husky? Chihuahua?";
+"pet_color" = "Color";
+"pet_color_ph" = "Black? Golden?";
+"pet_weight" = "Weight";
+"pet_gender" = "Gender";
+"pet_birthday" = "Birthday";
+"pet_routines_title" = "Routines";
+"pet_routines_hero" = "Caring for a pet is a family job";
+"pet_routines_body" = "Set reminders for walks, feeding, and medicine. The family can check them off.";
+"pet_routines_cta" = "Create a reminder";
+"pet_routine_walk" = "Walk";
+"pet_routine_feed" = "Feeding";
+"pet_routine_meds" = "Medication";
+"pet_routine_other" = "Other";
+"pet_routine_when" = "When?";
+"pet_routine_every_day" = "Every day";
+"pet_routine_notes" = "Reminder notes";
+"pet_routine_notes_ph" = "Any note about this routine";
+"pet_routine_who" = "Who to remind?";
+"pet_routine_everyone" = "Everyone in the family";
+"pet_routine_me" = "Me";
+"pet_routine_save" = "Save reminder";
+"pet_protected_title" = "%@ is in your family";
+"pet_protected_body" = "Pet profile saved. A live map tag comes when a partner is live — no fake pins.";
+"pet_beacon_title" = "Pet tracker";
+"pet_beacon_soon" = "Coming soon. You can keep a profile and routines for now.";
+"items_promo_title" = "So things get lost less often";
+"items_promo_body" = "Trackers for keys and bags will connect for real. For now — an honest “soon” stub, no fake hardware shop.";
+"items_promo_cta" = "Got it";
+"drive_weekly_title" = "Weekly trip report";
+"drive_this_week" = "This week";
+"drive_last_week" = "Last week";
+"drive_max_speed" = "Max speed";
+"drive_trips" = "Trips";
+"drive_total_km" = "Total km";
+"drive_no_trips" = "No trips yet";
+"drive_risk_events" = "%d risky events";
+"safety_driving_section" = "Driving safety";
+"safety_crash_title" = "Crash detection";
+"safety_crash_free" = "Free";
+"safety_crash_body" = "Alert the family if a crash looks likely. Roadside help when a partner is live.";
+"safety_family_section" = "Family protection";
+"safety_emergency_contacts" = "Emergency contacts";
+"safety_emergency_count" = "Contacts added: %d";
+"paywall_family_eyebrow" = "Family plan";
+"paywall_family_title" = "Best for the whole family";
+"paywall_family_choose" = "Choose a plan:";
+"paywall_monthly" = "Monthly";
+"paywall_yearly" = "Yearly";
+"paywall_start_trial" = "Start free trial";

@@ -1,0 +1,8 @@
+baseline_sha=03665a457bcb54d25cbba5e37409e9162630798f
+baseline_branch=master
+baseline_tag=family-safety-baseline-20261104_172102
+safe_dir=/Users/sergejhlystov/ALADDIN_VPN_SAFE/family_safety_pre_20261104_172102
+zip=/Users/sergejhlystov/ALADDIN_VPN_SAFE/family_safety_pre_20261104_172102/BACKUP_ALADDIN_CLEAN_20261104_1721.zip
+hot=/Users/sergejhlystov/ALADDIN_VPN_SAFE/family_safety_pre_20261104_172102/hot
+docs=/Users/sergejhlystov/ALADDIN_VPN_SAFE/family_safety_pre_20261104_172102/docs
+note=Old BACKUPS/ not copied. Bot not included. No .env. Oct12 single copy kept in repo root.

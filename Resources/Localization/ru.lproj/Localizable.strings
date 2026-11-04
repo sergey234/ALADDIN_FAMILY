@@ -1748,7 +1748,7 @@
 "family_content_block_card_status_off" = "Политика выключена";
 "main_family_tariff_label" = "Тариф:";
 "main_family_header_member_slots" = "%d из %d";
-"family_member_capacity_with_plan_fmt" = "%d из %d участников (Тариф)";
+"family_member_capacity_with_plan_fmt" = "%d из %d участников";
 "family_members_label" = "Участники";
 "family_members_accessibility_fmt" = "Семья: %@";
 "common_retry" = "Повторить";
@@ -3144,13 +3144,13 @@
 "parental_filter_system_gated" = "Системный фильтр для всех приложений готовится.";
 "parental_filter_system_available" = "Системный фильтр для всех приложений: правила родителя применяются шире Safari, когда расширение активно.";
 "system_filter_toggle_title" = "Системный фильтр";
-"system_filter_toggle_footer" = "Отдельное разрешение iOS (не расширение Safari). Работает только на реальном iPhone.";
+"system_filter_toggle_footer" = "Это разрешение iPhone, не Safari. На симуляторе не работает.";
 "system_filter_toggle_on_hint" = "Включено. Если iPhone спросил разрешение — нажмите «Разрешить».";
 "system_filter_toggle_off_hint" = "Выключено. Блокировка в Safari (расширение) не меняется.";
 "system_filter_toggle_error_fmt" = "Не включилось. Разрешите фильтр в окне iPhone и попробуйте снова.";
 "system_filter_toggle_error_simulator" = "На симуляторе системный фильтр Apple не работает. Проверьте на реальном iPhone (без другого VPN).";
 "system_filter_toggle_error_disabled" = "Системный фильтр не включён в этой сборке.";
-"system_filter_toggle_error_permission" = "iPhone не разрешил системный фильтр. Это не Safari-расширение: дождитесь окна «Разрешить», выключите другой VPN и попробуйте снова.";
+"system_filter_toggle_error_permission" = "1) Выключите другой VPN\n2) Снова включите фильтр\n3) В окне iPhone нажмите «Разрешить»";
 "system_filter_toggle_error_extension" = "Системный фильтр недоступен в этой сборке. Нужно проверить Network Extension entitlement/profile.";
 "family_critical_alerts_toggle" = "Критические оповещения";
 "family_critical_alerts_footer" = "Срочный сигнал и важные семейные события могут звучать даже в «Не беспокоить». Можно выключить в Настройках iPhone.";
@@ -3324,12 +3324,12 @@
 "child_did_it_reading" = "Чтение";
 "child_did_it_grade" = "Оценка";
 "child_did_it_help" = "Помощь";
-"child_did_it_sent" = "Родителям отправлено";
+"child_did_it_sent" = "В чат семьи";
 
 "child_did_it_card_subtitle" = "Выбери дело или напиши своё — родители увидят";
 "child_did_it_open_full" = "Своя задача / подробнее";
 "child_did_it_send_short" = "Отправить";
-"child_did_it_sent_banner" = "Отправлено родителям ✓";
+"child_did_it_sent_banner" = "✓ В чат семьи ✓";
 "system_filter_open_settings" = "Открыть настройки";
 "system_filter_safari_separate" = "Расширение Safari настраивается отдельно: Настройки → Safari → Расширения → ALADDIN.";
 "pay_pains_child_minutes_real_fmt" = "Сегодня · %d мин";
@@ -3345,6 +3345,11 @@
 "where_phone_map_card_title" = "Последняя точка";
 "where_phone_map_empty" = "Точки ещё нет. Отправьте место один раз — появится на карте.";
 "where_phone_map_point_time" = "%@ · %@";
+"where_phone_open_in_maps" = "Открыть в Картах";
+"where_phone_open_in_maps_title" = "Открыть точку";
+"where_phone_open_apple_maps" = "Apple Карты";
+"where_phone_open_yandex_maps" = "Яндекс Карты";
+
 "where_phone_trail_title" = "След за сегодня";
 "where_phone_trail_empty" = "Пока пусто. След — только приходы и уходы из сохранённых мест за сегодня.";
 "where_phone_share_hint_map" = "Одна настоящая точка на карте. Не живой след весь день.";
@@ -3369,3 +3374,230 @@
 "family_habit_medicine_custom_empty" = "Пока нет времени — добавьте ниже.";
 "family_habit_medicine_custom_add" = "Добавить время";
 "family_habit_medicine_custom_remove" = "Удалить время";
+
+"app_loading_preparing" = "Готовим приложение…";
+"child_did_it_chat_fmt" = "Я сделал (%@): %@";
+
+/* ===== Family Safety Wave B/C (Kaspersky+Life360 master §7.2) — 2026-11-04 ===== */
+
+/* 4-tab hub «Где семья» */
+"map_tab_location" = "Местоположение";
+"map_tab_driving" = "Вождение";
+"map_tab_safety" = "Безопасность";
+"map_tab_subscription" = "Подписка";
+/* Hub pane stubs until §17 step 3 wires real interiors */
+"map_hub_subscription_title" = "Подписка семьи";
+"map_hub_subscription_body" = "Семейный тариф ALADDIN — спокойствие для всех. Откройте планы без чужого бренда.";
+"map_hub_safety_title" = "Безопасность семьи";
+"map_hub_safety_body" = "SOS и подтверждение аварии появятся здесь. Без вызова эвакуатора, пока нет партнёра.";
+"map_hub_events_next_body" = "Полный месяц-календарь и EventKit подключим на следующем шаге. Секция уже на месте.";
+"map_hub_subscription_cta" = "Открыть тарифы ALADDIN";
+"map_hub_safety_open_settings" = "Настройки обнаружения аварии";
+"map_hub_safety_contacts_fmt" = "Экстренные контакты: %d";
+"map_hub_safety_sos_note" = "Удержание SOS для семьи — на следующем шаге. Без «помощь уже едет».";
+"map_soft_paywall_title" = "Одна подписка на всю семью";
+"map_soft_paywall_body" = "Карта семьи уже с вами. Family ALADDIN — спокойствие для всех устройств. Можно позже.";
+"map_soft_paywall_try" = "Посмотреть тарифы";
+"map_soft_paywall_later" = "Может, позже";
+"map_share_dur_1h" = "1 час";
+"map_share_dur_8h" = "8 часов";
+"map_share_dur_24h" = "24 часа";
+"map_pin_preview_title" = "Как вам вид на карте?";
+"map_pin_preview_body" = "Метка семьи с кольцом и зарядом. Цвета ALADDIN — без чужого бренда.";
+"map_pin_preview_ok" = "Понятно";
+"map_places_suggest_home" = "Дом";
+"map_places_suggest_school" = "Школа";
+"map_places_suggest_work" = "Работа";
+"pet_name_ph" = "Кличка";
+"pet_breed_ph" = "Порода / вид";
+"pet_notes_ph" = "Заметки";
+"pet_routine_walk" = "Напоминать про прогулку";
+"pet_routine_feed" = "Напоминать про корм";
+"pet_routine_medicine" = "Напоминать про лекарства";
+"pet_save_cta" = "Сохранить питомца";
+"pet_saved_local" = "Сохранено на этом iPhone. Живая карта питомца — позже, без фейковых точек.";
+"calldir_guide_title" = "Определитель и блокировка";
+"calldir_guide_body" = "Включите расширение Call Directory в Настройках iPhone, чтобы спам-номера фильтровались.";
+"adblock_title" = "Анти-Баннер";
+"adblock_body" = "Меньше лишнего в Safari. Работает через системный контент-блокер ALADDIN.";
+"adblock_toggle" = "Включить фильтр Safari";
+"adblock_safari_tip" = "Если не сработало: Настройки → Safari → Расширения.";
+"home_net_title" = "Дом и сеть";
+"home_net_body" = "Сканер устройств появится позже. Сейчас без фейкового «всё найдено».";
+"vk_connect_title" = "ВКонтакте";
+"vk_connect_body" = "Подключение VK — позже, честно по OAuth. Пока пусто без заглушки API.";
+"child_overview_title" = "Обзор ребёнка";
+"child_overview_body" = "Пауза, лимиты и сон — в этой двери. Полные отчёты — в родительском разделе.";
+"map_live_speed_label" = "Скорость";
+"family_access_full" = "Полный доступ";
+"family_access_limited" = "Ограниченный доступ";
+"family_access_hint" = "Выберите, сколько видит семья. Настройка — в разделе Семья.";
+
+/* map_live_* */
+"map_live_sheet_circle" = "Семья";
+"map_live_sheet_places" = "Места";
+"map_live_sheet_help" = "Помощь";
+"map_live_sheet_tags" = "Метки";
+"map_live_last_seen" = "Был(а) здесь · %@";
+"map_live_near_place" = "Рядом с «%@»";
+"map_live_battery" = "Заряд %d%%";
+"map_live_updating" = "Карта обновляется";
+"map_live_no_signal" = "Пока нет сигнала";
+"map_live_speed_badge" = "≈ %d км/ч";
+"map_type_title" = "Тип карты";
+"map_type_auto" = "Авто";
+"map_type_street" = "Улицы";
+"map_type_satellite" = "Спутник";
+
+/* map_perm_* */
+"map_perm_always_title" = "Разрешите «Всегда»";
+"map_perm_always_body" = "Так карта семьи обновляется, когда приложение закрыто. Мы просим доступ, чтобы вы видели, где телефоны семьи — не чтобы следить.";
+"map_perm_always_cta" = "Продолжить";
+"map_perm_open_settings" = "Открыть Настройки";
+"map_perm_precise_hint" = "Включите также «Точные» места";
+
+/* map_member_* */
+"map_member_save_place" = "Сохранить место";
+"map_member_directions" = "Маршрут";
+"map_member_share" = "Поделиться местом";
+"map_member_quiet_zone" = "Тихая зона";
+
+/* journal / share / privacy */
+"map_journal_title" = "История за сегодня";
+"map_journal_empty" = "Пока нет перемещений за сегодня";
+"map_share_link_title" = "Ссылка на место";
+"map_share_duration" = "Действует";
+"map_privacy_zone_title" = "Тихая зона";
+"map_privacy_zone_hint" = "В этой зоне место семье не показывается";
+
+/* family_cal_* */
+"family_cal_title" = "Семейный календарь";
+"family_cal_empty" = "Пока ничего не запланировано";
+"family_cal_add" = "Добавить событие";
+"family_cal_place" = "Место";
+"family_cal_to_ios" = "В Календарь iPhone";
+"family_cal_local_only" = "Пока видно на этом iPhone. Общий онлайн — позже.";
+
+/* map_soon_* */
+"map_soon_pet_title" = "Питомцы рядом";
+"map_soon_pet_body" = "В скором времени. Без карты питомцев, пока нет партнёра.";
+"map_soon_tile_title" = "Метки";
+"map_soon_tile_body" = "В скором времени. Подключим метки честно — без фейковых точек.";
+"map_soon_evac_title" = "Помощь на дороге";
+"map_soon_evac_body" = "В скором времени. Сейчас: 112 и ваши контакты.";
+"map_soon_ok" = "Понятно";
+"map_soon_driving_title" = "Отчёты о поездках";
+"map_soon_driving_body" = "В скором времени. Сейчас можно видеть скорость на карте, когда GPS её даёт.";
+
+/* sos / crash */
+"sos_hold_hint" = "Удерживайте для SOS";
+"sos_countdown" = "Отмена · %d";
+"sos_sent_family" = "Семья получила сигнал";
+"crash_confirm_title" = "Это авария?";
+"crash_confirm_yes" = "Да, нужна помощь";
+"crash_confirm_no" = "Нет, всё в порядке";
+"crash_confirm_preview_cta" = "Показать подтверждение аварии";
+"crash_limits_body" = "Мы зовём семью. Вызов эвакуатора появится, когда подключим партнёра.";
+"lists_empty_title" = "Мои списки";
+"lists_empty_body" = "Свои и спам-номера появятся после синхронизации. Сейчас список пуст — без заглушек.";
+"map_routes_title" = "Маршрут";
+"map_routes_body" = "Откроем Apple Карты с выбранным способом. Точка — последняя известная.";
+"map_routes_drive" = "На машине";
+"map_routes_walk" = "Пешком";
+"map_routes_transit" = "Транспорт";
+"map_anti_spy_note" = "Только последняя точка по согласию семьи. Без скрытого слежения.";
+"map_quiet_active_badge" = "Тихая зона";
+"map_quiet_share_blocked" = "Вы в тихой зоне — точку семье не отправляем.";
+"map_share_expires_fmt" = "Ссылка ещё ≈ %d мин";
+"map_share_expired" = "Срок ссылки истёк — поделитесь снова";
+
+/* ===== Family hub interiors Life360 L98+ (2026-11-04) ===== */
+"map_chip_people" = "Семья";
+"map_chip_pets" = "Питомцы";
+"map_chip_items" = "Вещи";
+"map_chip_places" = "Места";
+"map_chip_events" = "События";
+"map_invite_banner_title" = "Пригласите других — вместе спокойнее";
+"map_invite_banner_cta" = "Добавить близких";
+"map_add_person" = "Добавить человека";
+"map_create_circle_teaser" = "Пригласите родственников в семью";
+"map_role_title" = "Какая роль лучше подходит?";
+"map_role_mom" = "Мама";
+"map_role_dad" = "Папа";
+"map_role_child" = "Сын / дочь / ребёнок";
+"map_role_skip" = "Пропустить этот шаг";
+"map_places_title" = "Места";
+"map_places_add_new" = "Добавить новое место";
+"map_places_add_home" = "Добавьте свой дом";
+"map_places_add_school" = "Добавьте свою школу";
+"map_places_add_work" = "Добавьте место работы";
+"map_places_add_gym" = "Добавьте спортзал";
+"map_places_add_shop" = "Добавьте магазин";
+"map_places_manage" = "Управление местами";
+"family_cal_create_title" = "Создать новое событие";
+"family_cal_details" = "Сведения о событии";
+"family_cal_name" = "Имя";
+"family_cal_name_ph" = "Название события";
+"family_cal_location" = "Местоположение";
+"family_cal_location_ph" = "Название места или адрес";
+"family_cal_today" = "Сегодня";
+"family_cal_tomorrow" = "Завтра";
+"family_cal_pick_date" = "Выбрать дату";
+"family_cal_start" = "Начало";
+"family_cal_end" = "Окончание";
+"family_cal_pick" = "Выбрать";
+"pet_add_title" = "Добавить питомца";
+"pet_add_photo_title" = "Добавьте фото питомца";
+"pet_add_photo_cta" = "Добавить фото";
+"pet_skip" = "Пропустить";
+"pet_breed" = "Порода";
+"pet_breed_ph" = "Хаски? Чихуахуа?";
+"pet_color" = "Цвет";
+"pet_color_ph" = "Чёрный? Золотистый?";
+"pet_weight" = "Вес";
+"pet_gender" = "Пол";
+"pet_birthday" = "Дата рождения";
+"pet_routines_title" = "Рутины";
+"pet_routines_hero" = "Забота о питомце — дело всей семьи";
+"pet_routines_body" = "Настройте напоминания: прогулка, кормление, лекарства. Семья сможет отмечать выполнение.";
+"pet_routines_cta" = "Создать напоминание";
+"pet_routine_walk" = "На прогулке";
+"pet_routine_feed" = "Кормление";
+"pet_routine_meds" = "Приём лекарств";
+"pet_routine_other" = "Другое";
+"pet_routine_when" = "Когда?";
+"pet_routine_every_day" = "Каждый день";
+"pet_routine_notes" = "Заметки к напоминанию";
+"pet_routine_notes_ph" = "Любая заметка об этой рутине";
+"pet_routine_who" = "Кому напомнить?";
+"pet_routine_everyone" = "Всей семье";
+"pet_routine_me" = "Мне";
+"pet_routine_save" = "Сохранить напоминание";
+"pet_protected_title" = "%@ в вашей семье";
+"pet_protected_body" = "Профиль питомца сохранён. Живая метка на карте появится, когда подключим партнёра — без фейковых точек.";
+"pet_beacon_title" = "Маячок для питомца";
+"pet_beacon_soon" = "В скором времени. Пока можно вести профиль и рутины.";
+"items_promo_title" = "Чтобы вещи меньше терялись";
+"items_promo_body" = "Маячки для ключей и сумки подключим честно. Сейчас — заготовка «скоро», без покупки чужого железа.";
+"items_promo_cta" = "Понятно";
+"drive_weekly_title" = "Еженедельный отчёт о поездках";
+"drive_this_week" = "Эта неделя";
+"drive_last_week" = "Прошлая неделя";
+"drive_max_speed" = "Макс. скорость";
+"drive_trips" = "Поездки";
+"drive_total_km" = "Всего км";
+"drive_no_trips" = "Поездок пока нет";
+"drive_risk_events" = "%d рискованных событий";
+"safety_driving_section" = "Безопасность вождения";
+"safety_crash_title" = "Обнаружение аварий";
+"safety_crash_free" = "Бесплатно";
+"safety_crash_body" = "Оповещение семье, если похоже на ДТП. Эвакуатор — когда будет партнёр.";
+"safety_family_section" = "Защита всей семьи";
+"safety_emergency_contacts" = "Контакты для экстренных случаев";
+"safety_emergency_count" = "Добавлено контактов: %d";
+"paywall_family_eyebrow" = "Семейный тариф";
+"paywall_family_title" = "Лучшее для всей семьи";
+"paywall_family_choose" = "Выберите план:";
+"paywall_monthly" = "Ежемесячно";
+"paywall_yearly" = "Ежегодно";
+"paywall_start_trial" = "Начать пробный период";
