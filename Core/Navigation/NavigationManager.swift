@@ -64,11 +64,28 @@ class NavigationManager: ObservableObject {
     // ✅ Стартовый экран: читаем только флаг онбординга (без записи), чтобы первый кадр SwiftUI
     // не строил OnboardingScreen до `WindowGroup.onAppear` → `initializeNavigation`.
     // BUILD 95: рекурсию вызывали сложные цепочки с @AppStorage; простой `bool(forKey:)` безопасен.
+    // QA16 A1: при пройденном онбординге сразу homeEntry (SimpleHome), не .main — иначе вспышка старой сетки.
     init() {
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-        self.currentScreen = onboardingDone ? .main : .onboarding
+        self.currentScreen = onboardingDone ? Self.homeEntryScreen() : .onboarding
         LaunchDiagnostics.appendStartupTrace("NavigationManager.init: currentScreen=\(self.currentScreen.rawValue) (UserDefaults hasCompletedOnboarding=\(onboardingDone))")
         print("🟢 NavigationManager.init: стартовый экран = \(self.currentScreen.rawValue) (онбординг завершён в UD: \(onboardingDone))")
+    }
+
+    /// Канон входа (A2): Удобный режим при pay-pains; иначе Main. Child/teen/elderly — Main (или их shell).
+    static func homeEntryScreen(
+        defaults: UserDefaults = .standard
+    ) -> ALADDINScreen {
+        PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch(defaults: defaults) ? .simpleHome : .main
+    }
+
+    /// Корень входа без вспышки Main.
+    func navigateToHomeEntry(reason: String? = nil) {
+        let screen = Self.homeEntryScreen()
+        if let reason {
+            appendLog("🏠 navigateToHomeEntry(\(screen)) | \(reason)")
+        }
+        navigateToRoot(screen)
     }
     
     // MARK: - Основные экраны (25)
@@ -256,7 +273,7 @@ class NavigationManager: ObservableObject {
             case .settingsFallback: return "arrow.triangle.2.circlepath"
             case .aiAssistant: return "brain.head.profile"
             case .parentalControl: return "person.crop.circle.badge.checkmark"
-            case .childInterface: return "figure.child"
+            case .childInterface: return "person.fill"
             case .childContent: return "book.fill"
             case .elderlyInterface: return "person.crop.circle"
             case .tariffs: return "creditcard.fill"
@@ -658,9 +675,7 @@ class NavigationManager: ObservableObject {
                 appendLog("⚠️ Стек пуст при PaymentQR — fallback на Tariffs")
             } else {
                 // Pay-pains: вход = SimpleHome; не выбрасывать на старую сетку Main.
-                let fallback: ALADDINScreen = PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch()
-                    ? .simpleHome
-                    : .main
+                let fallback = Self.homeEntryScreen()
                 print("⬅️ DEBUG NavigationManager.goBack: Возврат на \(fallback) (стек пуст)")
                 currentScreen = fallback
                 appendLog("⬅️ Стек пуст — возврат на \(fallback)")
@@ -688,10 +703,9 @@ class NavigationManager: ObservableObject {
         endManualPaymentQRClose()
     }
     
-    /// Возврат к корневому экрану
+    /// Возврат к корневому экрану входа (SimpleHome / Main по канону A2).
     func goToRoot() {
-        navigationStack.removeAll()
-        currentScreen = .main
+        navigateToHomeEntry(reason: "goToRoot")
     }
     
     /// Переход к экрану с очисткой стека
@@ -731,12 +745,8 @@ class NavigationManager: ObservableObject {
     func goBackToPreviousScreen(reason: String? = nil) {
         if canGoBack {
             goBack(reason: reason ?? "goBackToPreviousScreen")
-        } else if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-            appendLog("⬅️ goBackToPreviousScreen: стек пуст → SimpleHome")
-            navigateToRoot(.simpleHome)
         } else {
-            appendLog("⬅️ goBackToPreviousScreen: стек пуст → Main")
-            switchToMainScreen()
+            navigateToHomeEntry(reason: reason ?? "goBackToPreviousScreen.emptyStack")
         }
     }
     
@@ -814,13 +824,13 @@ class NavigationManager: ObservableObject {
     
     // MARK: - Сброс состояния
     
-    /// Полный сброс навигации
+    /// Полный сброс навигации → корень входа (не форсить Main при pay-pains).
     func reset() {
-        currentScreen = .main
         navigationStack.removeAll()
         isPresentingModal = false
         currentModal = nil
-        appendLog("♻️ reset(): current = .main, стек очищен")
+        currentScreen = Self.homeEntryScreen()
+        appendLog("♻️ reset(): current = \(currentScreen), стек очищен")
     }
     
     /// Сброс только модальных окон

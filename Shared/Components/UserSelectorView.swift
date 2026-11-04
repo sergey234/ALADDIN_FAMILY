@@ -34,7 +34,7 @@ struct UserSelectorView: View {
         private var defaultIcon: String {
             switch role.lowercased() {
             case "parent": return "person.2.fill"
-            case "child": return "figure.child"
+            case "child": return "person.fill"
             case "teenager": return "person.3.fill"
             case "elderly": return "heart.circle.fill"
             default: return "person.fill"

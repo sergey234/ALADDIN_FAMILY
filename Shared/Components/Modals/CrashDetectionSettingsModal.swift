@@ -211,7 +211,8 @@ struct CrashDetectionSettingsModal: View {
                     )
                 }
 
-                _ = try await apiService.startCrashDetectionMonitoring()
+                // Cloud /start may be gated on prod; on-device monitoring is the product.
+                await acknowledgeCloudCrashStartIfAvailable()
                 try await crashDetectionManager.startMonitoring()
 
                 let configuration = ComponentConfiguration(
@@ -237,8 +238,7 @@ struct CrashDetectionSettingsModal: View {
                 }
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
             } catch {
-                // SFM «Unknown function: create_crash-detection_settings_update» = облако не умеет;
-                // на телефоне чувствительность уже сохранена — честный pending, не «сломано всё».
+                // Settings/SFM cloud fail: sensitivity already local — pending sync, not hard fail.
                 try? await crashDetectionManager.startMonitoring()
                 await MainActor.run {
                     if shouldKeepPendingSync(for: error) {
@@ -264,6 +264,34 @@ struct CrashDetectionSettingsModal: View {
         }
     }
 
+    /// Best-effort cloud ack. 404 / gateway-disabled must not fail the modal.
+    private func acknowledgeCloudCrashStartIfAvailable() async {
+        do {
+            _ = try await apiService.startCrashDetectionMonitoring()
+        } catch {
+            if isCloudStartOptionalFailure(error) {
+                print("ℹ️ CrashDetectionSettingsModal: cloud /start skipped (\(error.localizedDescription)) — local monitoring continues")
+                return
+            }
+            print("⚠️ CrashDetectionSettingsModal: cloud /start non-fatal: \(error.localizedDescription)")
+        }
+    }
+
+    private func isCloudStartOptionalFailure(_ error: Error) -> Bool {
+        if let networkError = error as? NetworkError, networkError == .endpointFeatureUnavailable {
+            return true
+        }
+        let raw = error.localizedDescription.lowercased()
+        return raw.contains("endpoint unavailable")
+            || raw.contains("explicit real backend")
+            || raw.contains("недоступна")
+            || raw.contains("feature unavailable")
+            || raw.contains("gateway")
+            || raw.contains("404")
+            || raw.contains("crash-detection")
+            || raw.contains("not found")
+    }
+
     private func saveErrorMessage(for error: Error) -> String {
         let raw = error.localizedDescription.lowercased()
         if raw.contains("location") || raw.contains("motion") || raw.contains("permission") || raw.contains("denied") {
@@ -276,6 +304,9 @@ struct CrashDetectionSettingsModal: View {
     }
 
     private func shouldKeepPendingSync(for error: Error) -> Bool {
+        if let networkError = error as? NetworkError, networkError == .endpointFeatureUnavailable {
+            return true
+        }
         let raw = error.localizedDescription.lowercased()
         return raw.contains("network")
             || raw.contains("internet")
@@ -289,6 +320,9 @@ struct CrashDetectionSettingsModal: View {
             || raw.contains("unknown function")
             || raw.contains("crash-detection")
             || raw.contains("operation not confirmed")
+            || raw.contains("недоступна")
+            || raw.contains("endpoint unavailable")
+            || raw.contains("feature unavailable")
     }
 }
 

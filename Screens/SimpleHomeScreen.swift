@@ -179,7 +179,7 @@ struct SimpleHomeScreen: View {
             payPainsDoor(
                 titleKey: "pay_pains_door_child_title",
                 subtitleKey: "pay_pains_door_child_subtitle",
-                systemImage: "figure.2.and.child.holdinghands",
+                systemImage: "person.2.fill",
                 identifier: "pay_pains_door_child",
                 prominent: false
             ) {

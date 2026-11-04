@@ -62,3 +62,28 @@ async def crash_detection_settings_update_post(
         "sensitivity": body.sensitivity,
         "geofenceRadius": body.geofence_radius,
     }
+
+
+@router.post("/start", response_model=Dict[str, Any])
+async def crash_detection_start(
+    current_user: dict = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """iOS calls this after settings; monitoring runs on-device. Ack only — no SFM."""
+    _ = current_user.get("id")
+    return {"success": True, "data": True, "started": True}
+
+
+@router.post("/stop", response_model=Dict[str, Any])
+async def crash_detection_stop(
+    current_user: dict = Depends(get_current_user),
+) -> Dict[str, Any]:
+    _ = current_user.get("id")
+    return {"success": True, "data": True, "stopped": True}
+
+
+@router.get("/status", response_model=Dict[str, Any])
+async def crash_detection_status(
+    current_user: dict = Depends(get_current_user),
+) -> Dict[str, Any]:
+    _ = current_user.get("id")
+    return {"success": True, "data": True, "monitoring": False}
