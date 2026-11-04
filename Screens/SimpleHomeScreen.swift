@@ -24,7 +24,8 @@ struct SimpleHomeScreen: View {
     @State private var showChildMinutes = false
     @State private var childMinutesEnabled = true
     @State private var showWherePhone = false
-    @State private var showCheckDoor = false
+    /// After closing «Где семья» sheet — navigate (tariffs etc.) so push is not buried under modal.
+    @State private var pendingWherePhoneNavigation: (() -> Void)?
     @State private var showChildPauseSheet = false
     @AppStorage("family_access_mode") private var familyAccessMode = "full"
     @AppStorage("parental_internet_paused") private var internetPaused = false
@@ -97,15 +98,23 @@ struct SimpleHomeScreen: View {
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
         }
-        .sheet(isPresented: $showWherePhone) {
-            WhereIsPhoneScreen(isPresented: $showWherePhone)
-                .environmentObject(localizationManager)
-                .environmentObject(navigationManager)
-        }
-        .sheet(isPresented: $showCheckDoor) {
-            PayPainsCheckDoorSheet(isPresented: $showCheckDoor)
-                .environmentObject(localizationManager)
-                .environmentObject(navigationManager)
+        .sheet(isPresented: $showWherePhone, onDismiss: {
+            if let pending = pendingWherePhoneNavigation {
+                pendingWherePhoneNavigation = nil
+                DispatchQueue.main.async { pending() }
+            }
+        }) {
+            WhereIsPhoneScreen(
+                isPresented: $showWherePhone,
+                onLeaveToNavigate: { screen in
+                    pendingWherePhoneNavigation = {
+                        navigationManager.navigateTo(screen)
+                    }
+                    showWherePhone = false
+                }
+            )
+            .environmentObject(localizationManager)
+            .environmentObject(navigationManager)
         }
         .sheet(isPresented: $showPayPainsMenu, onDismiss: {
             if let pending = pendingMoreNavigation {
@@ -164,7 +173,8 @@ struct SimpleHomeScreen: View {
                 identifier: "pay_pains_door_check",
                 prominent: true
             ) {
-                showCheckDoor = true
+                // Product: Проверить → сразу Antifake Hub (Wave A extras живут внутри хаба).
+                navigationManager.navigateToAntifakeHub(tab: .text)
             }
             payPainsDoor(
                 titleKey: "pay_pains_door_child_title",

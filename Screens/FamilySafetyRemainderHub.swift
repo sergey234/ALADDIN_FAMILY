@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoreLocation
 import MapKit
 import EventKit
@@ -32,16 +33,27 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         authStatus = manager.authorizationStatus
     }
 
+    /// Continuous live GPS: Always Allow **and** Family+ / trial / premium (not Free/Personal).
+    var isLiveEntitled: Bool { FamilyMapLiveAccess.isEntitled }
+
     func startIfNeeded() {
         active = true
         authStatus = manager.authorizationStatus
+        guard FamilyMapLiveAccess.isEntitled else {
+            manager.stopUpdatingLocation()
+            return
+        }
         switch authStatus {
-        case .authorizedAlways, .authorizedWhenInUse:
+        case .authorizedAlways:
+            // Live track only with Always Allow (Life360-lite).
             manager.startUpdatingLocation()
+        case .authorizedWhenInUse:
+            // When-In-Use: keep last-point / one-shot share; no continuous live.
+            manager.stopUpdatingLocation()
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
         default:
-            break
+            manager.stopUpdatingLocation()
         }
     }
 
@@ -53,10 +65,14 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor in
             self.authStatus = manager.authorizationStatus
-            if self.active,
-               manager.authorizationStatus == .authorizedAlways
-                || manager.authorizationStatus == .authorizedWhenInUse {
+            guard self.active, FamilyMapLiveAccess.isEntitled else {
+                manager.stopUpdatingLocation()
+                return
+            }
+            if manager.authorizationStatus == .authorizedAlways {
                 manager.startUpdatingLocation()
+            } else {
+                manager.stopUpdatingLocation()
             }
         }
     }
@@ -64,6 +80,7 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
         Task { @MainActor in
+            guard FamilyMapLiveAccess.isEntitled else { return }
             self.coordinate = loc.coordinate
             self.updatedAt = loc.timestamp
             if loc.speed >= 0 {
@@ -76,6 +93,20 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("FamilyMapLiveLocation: \(error.localizedDescription)")
+    }
+}
+
+/// Live map entitlement: trial · family · premium. Free/Personal = last-point + share only.
+enum FamilyMapLiveAccess {
+    @MainActor
+    static var isEntitled: Bool {
+        if SubscriptionManager.shared.trialStatus?.isActive == true { return true }
+        switch SubscriptionManager.shared.getCurrentLevel() {
+        case .trial, .family, .premium:
+            return true
+        case .free, .personal:
+            return false
+        }
     }
 }
 
@@ -487,12 +518,64 @@ struct FamilyPetWizardSheet: View {
     }
 }
 
+// MARK: - Preferred external maps (locale)
+
+/// RU / русский → Яндекс; EN / англоязычные регионы → Apple. User can always switch.
+enum FamilyMapsPreference {
+    static let storageKey = "where_phone_preferred_maps"
+    private static let seededKey = "where_phone_preferred_maps_seeded_v2"
+    private static let userChoseKey = "where_phone_preferred_maps_user_set"
+
+    static func markUserChose(_ value: String) {
+        UserDefaults.standard.set(value, forKey: storageKey)
+        UserDefaults.standard.set(true, forKey: userChoseKey)
+    }
+
+    static func ensureSeeded(language: LocalizationManager.Language) {
+        if UserDefaults.standard.bool(forKey: userChoseKey) {
+            UserDefaults.standard.set(true, forKey: seededKey)
+            return
+        }
+        // One-shot locale seed (v2). Overwrites previous hard-coded «yandex» if user never picked.
+        if !UserDefaults.standard.bool(forKey: seededKey) {
+            UserDefaults.standard.set(systemDefault(language: language), forKey: storageKey)
+            UserDefaults.standard.set(true, forKey: seededKey)
+        }
+    }
+
+    static func systemDefault(language: LocalizationManager.Language) -> String {
+        let region: String = {
+            if #available(iOS 16.0, *) {
+                return Locale.current.region?.identifier ?? ""
+            }
+            return Locale.current.regionCode ?? ""
+        }().uppercased()
+
+        // Russia (and app RU) → Yandex.
+        if region == "RU" || language == .russian {
+            return "yandex"
+        }
+        // English-speaking countries / app EN → Apple Maps.
+        let englishRegions: Set<String> = ["US", "GB", "AU", "CA", "NZ", "IE", "ZA"]
+        if englishRegions.contains(region) || language == .english {
+            return "apple"
+        }
+        return "apple"
+    }
+
+    static func resolved(language: LocalizationManager.Language) -> String {
+        ensureSeeded(language: language)
+        return UserDefaults.standard.string(forKey: storageKey) ?? systemDefault(language: language)
+    }
+}
+
 // MARK: - Routes sheet (B-depth L-P3-09)
 
 struct FamilyMapRoutesSheet: View {
     @Binding var isPresented: Bool
     var coordinate: CLLocationCoordinate2D?
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @AppStorage("where_phone_preferred_maps") private var preferredMaps = "yandex"
 
     var body: some View {
         NavigationView {
@@ -503,6 +586,16 @@ struct FamilyMapRoutesSheet: View {
                 Text(localizationManager.localized("map_routes_body"))
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
+
+                // Preferred app first (RU→Yandex, EN→Apple); user always sees both.
+                if preferredMaps == "apple" {
+                    appleExternalRow
+                    yandexExternalRow
+                } else {
+                    yandexExternalRow
+                    appleExternalRow
+                }
+
                 routeRow(titleKey: "map_routes_drive", systemImage: "car.fill", modeKey: MKLaunchOptionsDirectionsModeDriving)
                 routeRow(titleKey: "map_routes_walk", systemImage: "figure.walk", modeKey: MKLaunchOptionsDirectionsModeWalking)
                 routeRow(titleKey: "map_routes_transit", systemImage: "bus.fill", modeKey: MKLaunchOptionsDirectionsModeTransit)
@@ -513,7 +606,65 @@ struct FamilyMapRoutesSheet: View {
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 isPresented = false
             })
+            .onAppear {
+                preferredMaps = FamilyMapsPreference.resolved(language: localizationManager.currentLanguage)
+            }
         }
+    }
+
+    private var yandexExternalRow: some View {
+        openExternalRow(
+            titleKey: "where_phone_open_yandex_maps",
+            systemImage: "map.fill",
+            isPreferred: preferredMaps == "yandex"
+        ) {
+            openInYandex()
+        }
+    }
+
+    private var appleExternalRow: some View {
+        openExternalRow(
+            titleKey: "where_phone_open_apple_maps",
+            systemImage: "map",
+            isPreferred: preferredMaps == "apple"
+        ) {
+            openInAppleDriving()
+        }
+    }
+
+    private func openExternalRow(
+        titleKey: String,
+        systemImage: String,
+        isPreferred: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: systemImage)
+                    .foregroundColor(.secondaryGold)
+                    .frame(width: 28)
+                Text(localizationManager.localized(titleKey))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.textPrimary)
+                if isPreferred {
+                    Text(localizationManager.localized("where_phone_maps_preferred_badge"))
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.backgroundDark)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.secondaryGold)
+                        .clipShape(Capsule())
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
+        .disabled(coordinate == nil)
     }
 
     private func routeRow(titleKey: String, systemImage: String, modeKey: String) -> some View {
@@ -541,10 +692,34 @@ struct FamilyMapRoutesSheet: View {
 
     private func openDirections(modeKey: String) {
         guard let coordinate else { return }
+        FamilyMapsPreference.markUserChose("apple")
+        preferredMaps = "apple"
         let placemark = MKPlacemark(coordinate: coordinate)
         let item = MKMapItem(placemark: placemark)
         item.name = localizationManager.localized("where_phone_map_card_title")
         item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: modeKey])
+        isPresented = false
+    }
+
+    private func openInAppleDriving() {
+        FamilyMapsPreference.markUserChose("apple")
+        preferredMaps = "apple"
+        openDirections(modeKey: MKLaunchOptionsDirectionsModeDriving)
+    }
+
+    private func openInYandex() {
+        guard let coordinate else { return }
+        FamilyMapsPreference.markUserChose("yandex")
+        preferredMaps = "yandex"
+        let lat = coordinate.latitude
+        let lon = coordinate.longitude
+        let appURL = URL(string: String(format: "yandexmaps://maps.yandex.ru/?rtext=~%.6f,%.6f&rtt=auto", lat, lon))
+        let webURL = URL(string: String(format: "https://yandex.ru/maps/?rtext=~%.6f,%.6f&rtt=auto", lat, lon))
+        if let appURL, UIApplication.shared.canOpenURL(appURL) {
+            UIApplication.shared.open(appURL)
+        } else if let webURL {
+            UIApplication.shared.open(webURL)
+        }
         isPresented = false
     }
 }
@@ -712,91 +887,59 @@ struct FamilySOSHoldButton: View {
     }
 }
 
-// MARK: - Wave A check door extras
+// MARK: - Wave A extras (inside Antifake Hub — not a separate «Проверить» sheet)
 
-struct PayPainsCheckDoorSheet: View {
-    @Binding var isPresented: Bool
+/// Call Directory · Анти-Баннер · honest empties. Embedded under Antifake checks.
+struct AntifakeWaveAExtrasSection: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @EnvironmentObject private var navigationManager: NavigationManager
     @ObservedObject private var contentBlocker = ContentBlockerManager.shared
     @State private var adblockOn = false
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(localizationManager.localized("pay_pains_door_check_title"))
-                        .font(.system(.title2, design: .serif).weight(.bold))
-                        .foregroundColor(.textPrimary)
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("pay_pains_door_check_title"))
+                .font(.system(.title3, design: .serif).weight(.bold))
+                .foregroundColor(.white)
 
-                    sectionCard(
-                        title: localizationManager.localized("calldir_guide_title"),
-                        body: localizationManager.localized("calldir_guide_body")
-                    ) {
-                        AntifakeCallDirectorySettingsCard()
-                    }
+            sectionCard(
+                title: localizationManager.localized("calldir_guide_title"),
+                body: localizationManager.localized("calldir_guide_body")
+            ) {
+                AntifakeCallDirectorySettingsCard()
+            }
 
-                    sectionCard(
-                        title: localizationManager.localized("adblock_title"),
-                        body: localizationManager.localized("adblock_body")
-                    ) {
-                        Toggle(isOn: $adblockOn) {
-                            Text(localizationManager.localized("adblock_toggle"))
-                                .foregroundColor(.textPrimary)
-                        }
-                        .tint(.secondaryGold)
-                        .onChange(of: adblockOn) { on in
-                            Task {
-                                // Honest: reuse existing Safari content categories (no fake “ads-only” enum).
-                                if on {
-                                    try? await contentBlocker.enableContentBlocker(categories: [.shopping, .news])
-                                } else {
-                                    await contentBlocker.disableContentBlocker()
-                                }
-                            }
-                        }
-                        Text(localizationManager.localized("adblock_safari_tip"))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-
-                    emptySoonCard(
-                        titleKey: "lists_empty_title",
-                        bodyKey: "lists_empty_body"
-                    )
-                    emptySoonCard(
-                        titleKey: "home_net_title",
-                        bodyKey: "home_net_body"
-                    )
-                    emptySoonCard(
-                        titleKey: "vk_connect_title",
-                        bodyKey: "vk_connect_body"
-                    )
-
-                    Button {
-                        isPresented = false
-                        navigationManager.navigateToAntifakeHub(tab: .text)
-                    } label: {
-                        Text(localizationManager.localized("pay_pains_door_check_subtitle"))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.backgroundDark)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.secondaryGold)
-                            .cornerRadius(CornerRadius.medium)
-                    }
-                    .buttonStyle(.plain)
+            sectionCard(
+                title: localizationManager.localized("adblock_title"),
+                body: localizationManager.localized("adblock_body")
+            ) {
+                Toggle(isOn: $adblockOn) {
+                    Text(localizationManager.localized("adblock_toggle"))
+                        .foregroundColor(.white)
                 }
-                .padding(Spacing.l)
+                .tint(.secondaryGold)
+                .onChange(of: adblockOn) { on in
+                    Task {
+                        // Honest: reuse existing Safari content categories (no fake “ads-only” enum).
+                        if on {
+                            try? await contentBlocker.enableContentBlocker(categories: [.shopping, .news])
+                        } else {
+                            await contentBlocker.disableContentBlocker()
+                        }
+                    }
+                }
+                Text(localizationManager.localized("adblock_safari_tip"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
-            .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
-                isPresented = false
-            })
-            .onAppear {
-                adblockOn = contentBlocker.isEnabled
-            }
+
+            emptySoonCard(titleKey: "lists_empty_title", bodyKey: "lists_empty_body")
+            emptySoonCard(titleKey: "home_net_title", bodyKey: "home_net_body")
+            emptySoonCard(titleKey: "vk_connect_title", bodyKey: "vk_connect_body")
         }
+        .onAppear {
+            adblockOn = contentBlocker.isEnabled
+        }
+        .accessibilityIdentifier("antifake_wave_a_extras")
     }
 
     private func sectionCard<Content: View>(
@@ -807,10 +950,10 @@ struct PayPainsCheckDoorSheet: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(title)
                 .font(.system(.title3, design: .serif).weight(.bold))
-                .foregroundColor(.textPrimary)
+                .foregroundColor(.white)
             Text(body)
                 .font(.subheadline)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.8))
             content()
         }
         .padding(Spacing.m)
@@ -822,13 +965,33 @@ struct PayPainsCheckDoorSheet: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized(titleKey))
                 .font(.system(.title3, design: .serif).weight(.bold))
-                .foregroundColor(.textPrimary)
+                .foregroundColor(.white)
             Text(localizationManager.localized(bodyKey))
                 .font(.subheadline)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.8))
         }
         .padding(Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
         .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+}
+
+/// Legacy wrapper — prefer embedding `AntifakeWaveAExtrasSection` in Antifake Hub.
+struct PayPainsCheckDoorSheet: View {
+    @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                AntifakeWaveAExtrasSection()
+                    .environmentObject(localizationManager)
+                    .padding(Spacing.l)
+            }
+            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
+                isPresented = false
+            })
+        }
     }
 }

@@ -106,13 +106,55 @@ class TariffsViewModel: ObservableObject {
         }
     }
     
-    private func storeProductID(for tariff: TariffsScreen.TariffType) -> StoreManager.ProductID? {
+    private func storeProductID(
+        for tariff: TariffsScreen.TariffType,
+        period: StoreManager.BillingPeriod = .monthly
+    ) -> StoreManager.ProductID? {
         switch tariff {
-        case .personal: return .individual
-        case .family: return .family
-        case .premium: return .premium
+        case .personal: return StoreManager.ProductID.productID(tier: "personal", period: period)
+        case .family: return StoreManager.ProductID.productID(tier: "family", period: period)
+        case .premium: return StoreManager.ProductID.productID(tier: "premium", period: period)
         case .trial, .free: return nil
         }
+    }
+
+    /// Live StoreKit price for month/year chooser; RUB fallback until ASC yearly SKUs ship.
+    func displayedPrice(
+        for tariff: TariffsScreen.TariffType,
+        period: StoreManager.BillingPeriod,
+        localizationManager: LocalizationManager
+    ) -> String {
+        if let productID = storeProductID(for: tariff, period: period),
+           let product = storeManager.product(for: productID) {
+            return product.displayPrice
+        }
+        guard let monthlyRub = Self.rubAmount(for: tariff) else {
+            return localizationManager.localized("tariffs_price_unavailable")
+        }
+        switch period {
+        case .monthly:
+            return "\(monthlyRub) ₽"
+        case .yearly:
+            // Family −20%; Personal/Premium ≈ 10× month (−17%).
+            let yearlyRub: Int = {
+                switch tariff {
+                case .family: return Int((Double(monthlyRub) * 12.0 * 0.80).rounded())
+                case .personal, .premium: return monthlyRub * 10
+                default: return monthlyRub * 12
+                }
+            }()
+            return "\(yearlyRub) ₽"
+        }
+    }
+
+    func discountBadge(
+        for tariff: TariffsScreen.TariffType,
+        period: StoreManager.BillingPeriod
+    ) -> String? {
+        guard period == .yearly,
+              let productID = storeProductID(for: tariff, period: .yearly),
+              let pct = productID.yearlyDiscountPercent else { return nil }
+        return "−\(pct)%"
     }
     
     // MARK: - Load Products
@@ -140,8 +182,8 @@ class TariffsViewModel: ObservableObject {
      * Обновить список тарифов из StoreKit продуктов
      */
     private func updateTariffs(from products: [Product]) {
-        // ✅ Загружаем только платные подписки (без .basic, которого нет в App Store Connect)
-        tariffs = StoreManager.ProductID.paidSubscriptions.compactMap { productID in
+        // UI cards = monthly tiers; yearly SKUs stay loaded for billing chooser.
+        tariffs = StoreManager.ProductID.paidSubscriptionsMonthly.compactMap { productID in
             guard let product = products.first(where: { $0.id == productID.rawValue }) else {
                 return nil
             }
@@ -524,13 +566,21 @@ class TariffsViewModel: ObservableObject {
      * Найти ProductID для тарифа
      */
     private func findProductID(for tariffId: String) -> StoreManager.ProductID? {
-        // Маппинг тарифов на Product IDs
+        // Маппинг тарифов на Product IDs (month + year)
         let mapping: [String: StoreManager.ProductID] = [
             "free": .basic,
             "personal": .individual,
             "family": .family,
             "premium": .premium,
-            // Также проверяем прямые значения из enum
+            "personal_yearly": .individualYearly,
+            "family_yearly": .familyYearly,
+            "premium_yearly": .premiumYearly,
+            StoreManager.ProductID.individual.rawValue: .individual,
+            StoreManager.ProductID.family.rawValue: .family,
+            StoreManager.ProductID.premium.rawValue: .premium,
+            StoreManager.ProductID.individualYearly.rawValue: .individualYearly,
+            StoreManager.ProductID.familyYearly.rawValue: .familyYearly,
+            StoreManager.ProductID.premiumYearly.rawValue: .premiumYearly,
             "TariffsScreen.TariffType.free": .basic,
             "TariffsScreen.TariffType.personal": .individual,
             "TariffsScreen.TariffType.family": .family,
@@ -605,9 +655,9 @@ class TariffsViewModel: ObservableObject {
         if let productID = findProductID(for: tariff.id) {
             switch productID {
             case .basic: return .free
-            case .individual: return .personal
-            case .family: return .family
-            case .premium: return .premium
+            case .individual, .individualYearly: return .personal
+            case .family, .familyYearly: return .family
+            case .premium, .premiumYearly: return .premium
             }
         }
         

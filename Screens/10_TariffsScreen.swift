@@ -14,6 +14,8 @@ struct TariffsScreen: View {
     // Состояние для показа Privacy Policy и Terms
     @State private var showPrivacyPolicy = false
     @State private var showTermsOfService = false
+    /// Paid subscribe → choose month or year (with prices) before StoreKit / website.
+    @State private var billingChooserTariff: TariffType? = nil
     
     // Сохраняем выбранный тариф в AppStorage
     @AppStorage("selected_tariff_type") private var selectedTariffRaw: String = "family"
@@ -60,18 +62,7 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_trial_features_4"),
                 localizationManager.localized("tariffs_trial_features_5")
             ]
-            case .free: return [
-                localizationManager.localized("tariffs_free_features_1"),
-                localizationManager.localized("tariffs_free_features_2"),
-                localizationManager.localized("tariffs_free_features_3"),
-                localizationManager.localized("tariffs_free_features_4"),
-                localizationManager.localized("tariffs_free_features_5"),
-                localizationManager.localized("tariffs_free_features_6"),
-                localizationManager.localized("tariffs_free_features_7"),
-                localizationManager.localized("tariffs_free_features_8"),
-                localizationManager.localized("tariffs_free_features_9"),
-                localizationManager.localized("tariffs_free_features_10")
-            ]
+            case .free: return freeIncludedFeatures(localizationManager: localizationManager)
             case .personal: return [
                 localizationManager.localized("tariffs_personal_features_1"),
                 familyMemberLimitFeatureText(for: .personal, localizationManager: localizationManager),
@@ -116,6 +107,20 @@ struct TariffsScreen: View {
         
         var recommended: Bool {
             return self == .family
+        }
+
+        /// Что реально открыто на Free (п.1–7). П.8 — явное «нет Antifake».
+        static func freeIncludedFeatures(localizationManager: LocalizationManager) -> [String] {
+            (1...7).map { localizationManager.localized("tariffs_free_features_\($0)") }
+        }
+
+        /// Явно не входит — Antifake Check, Live, большая семья.
+        static func freeExcludedFeatures(localizationManager: LocalizationManager) -> [String] {
+            (8...10).map { localizationManager.localized("tariffs_free_features_\($0)") }
+        }
+
+        private func freeIncludedFeatures(localizationManager: LocalizationManager) -> [String] {
+            Self.freeIncludedFeatures(localizationManager: localizationManager)
         }
 
         private func familyMemberLimitFeatureText(for level: SubscriptionLevel, localizationManager: LocalizationManager) -> String {
@@ -164,6 +169,9 @@ struct TariffsScreen: View {
                         .cornerRadius(CornerRadius.medium)
                         .padding(.horizontal, Spacing.screenPadding)
                         .accessibilityIdentifier("pay_tiers_plain_blurb")
+
+                        honestGatesComparisonTable
+                            .padding(.horizontal, Spacing.screenPadding)
 
                         // External activation is unavailable in the App Store binary.
                         if AppStoreBuildPolicy.allowsAlternativePayments && AppConfig.isRussianRegion {
@@ -269,6 +277,201 @@ struct TariffsScreen: View {
         } message: {
             Text(localizationManager.localized("tariffs_subscription_activated"))
         }
+        .sheet(isPresented: Binding(
+            get: { billingChooserTariff != nil },
+            set: { if !$0 { billingChooserTariff = nil } }
+        )) {
+            if let tariff = billingChooserTariff {
+                billingPeriodChooserSheet(for: tariff)
+                    .environmentObject(localizationManager)
+            }
+        }
+    }
+
+    /// Free / Family / Premium — что реально открыто (как гейты продукта).
+    private var honestGatesComparisonTable: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("tariffs_gates_table_title"))
+                .font(.subheadline.weight(.bold))
+                .foregroundColor(.textPrimary)
+            HStack(spacing: Spacing.s) {
+                Text("")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Free").font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 36)
+                Text("Fam").font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 36)
+                Text("Pro").font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 36)
+            }
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_check"),
+                free: false, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_child_basic"),
+                free: true, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_map_last"),
+                free: true, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_map_live"),
+                free: false, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_places_more"),
+                free: false, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_members"),
+                free: false, family: true, premium: true
+            )
+            Text(localizationManager.localized("tariffs_gates_free_note"))
+                .font(.caption2)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .accessibilityIdentifier("tariffs_gates_table")
+    }
+
+    private func gatesRow(feature: String, free: Bool, family: Bool, premium: Bool) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Text(feature)
+                .font(.caption)
+                .foregroundColor(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(free ? "✓" : "—")
+                .font(.caption.weight(.bold))
+                .foregroundColor(free ? .secondaryGold : .textSecondary)
+                .frame(width: 36)
+            Text(family ? "✓" : "—")
+                .font(.caption.weight(.bold))
+                .foregroundColor(family ? .secondaryGold : .textSecondary)
+                .frame(width: 36)
+            Text(premium ? "✓" : "—")
+                .font(.caption.weight(.bold))
+                .foregroundColor(premium ? .secondaryGold : .textSecondary)
+                .frame(width: 36)
+        }
+    }
+
+    private func billingPeriodChooserSheet(for tariff: TariffType) -> some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                Text(localizationManager.localized("tariffs_billing_chooser_title"))
+                    .font(.system(.title3, design: .serif).weight(.bold))
+                    .foregroundColor(.textPrimary)
+                Text(String(
+                    format: localizationManager.localized("tariffs_billing_chooser_body"),
+                    tariff.title(localizationManager: localizationManager)
+                ))
+                .font(.subheadline)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+                billingPeriodRow(for: tariff, period: .monthly)
+                billingPeriodRow(for: tariff, period: .yearly)
+
+                Text(localizationManager.localized("tariffs_billing_autorenew_note"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Spacer()
+            }
+            .padding(Spacing.l)
+            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
+                billingChooserTariff = nil
+            })
+        }
+    }
+
+    private func billingPeriodRow(for tariff: TariffType, period: StoreManager.BillingPeriod) -> some View {
+        let price = viewModel.displayedPrice(
+            for: tariff,
+            period: period,
+            localizationManager: localizationManager
+        )
+        let badge = viewModel.discountBadge(for: tariff, period: period)
+        let titleKey = period == .yearly ? "tariffs_period_year" : "tariffs_period_month"
+        return Button {
+            HapticFeedback.impact(.medium)
+            billingChooserTariff = nil
+            startPaidPurchase(tariff: tariff, period: period)
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: Spacing.s) {
+                        Text(localizationManager.localized(titleKey))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                        if let badge {
+                            Text(badge)
+                                .font(.caption2.weight(.bold))
+                                .foregroundColor(.backgroundDark)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.secondaryGold)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    Text(price)
+                        .font(.title3.weight(.bold))
+                        .foregroundColor(.secondaryGold)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("tariffs_billing_\(period.rawValue)")
+    }
+
+    private func startPaidPurchase(tariff: TariffType, period: StoreManager.BillingPeriod) {
+        guard let productID = StoreManager.ProductID.productID(tier: tariff.rawValue, period: period) else {
+            viewModel.errorMessage = localizationManager.localized("tariffs_error_purchase_tariff")
+            return
+        }
+        let price = viewModel.displayedPrice(
+            for: tariff,
+            period: period,
+            localizationManager: localizationManager
+        )
+        let periodLabel = localizationManager.localized(
+            period == .yearly ? "tariffs_period_year" : "tariffs_period_month"
+        )
+        let websiteTariffId = period == .yearly ? "\(tariff.rawValue)_yearly" : tariff.rawValue
+        let tariffObj = Tariff(
+            id: productID.rawValue,
+            title: tariff.title(localizationManager: localizationManager),
+            price: price,
+            period: periodLabel,
+            features: tariff.features(localizationManager: localizationManager),
+            product: nil,
+            isPurchased: false
+        )
+
+        #if !APP_STORE_BUILD
+        if AppConfig.useAlternativePayments {
+            let referralCode = UserDefaults.standard.string(forKey: "referral_code")
+            URLHelper.openWebsite(
+                urlString: AppConfig.subscriptionWebsiteURL,
+                tariffId: websiteTariffId,
+                referralCode: referralCode
+            )
+            return
+        }
+        #endif
+
+        Task { @MainActor in
+            await viewModel.purchaseSelectedTariff(tariff: tariffObj)
+        }
     }
     
     // MARK: - Helpers
@@ -287,6 +490,50 @@ struct TariffsScreen: View {
         }
     }
     
+    // MARK: - Free plan bullets (on-screen)
+
+    private var freePlanFeaturesBlock: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("tariffs_free_no_charge_note"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textSecondary)
+
+            Text(localizationManager.localized("tariffs_free_included_title"))
+                .font(.subheadline.weight(.bold))
+                .foregroundColor(.textPrimary)
+
+            ForEach(TariffType.freeIncludedFeatures(localizationManager: localizationManager), id: \.self) { feature in
+                HStack(alignment: .top, spacing: Spacing.s) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(TariffType.free.color)
+                    Text(feature)
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Text(localizationManager.localized("tariffs_free_excluded_title"))
+                .font(.subheadline.weight(.bold))
+                .foregroundColor(.textPrimary)
+                .padding(.top, Spacing.xs)
+
+            ForEach(TariffType.freeExcludedFeatures(localizationManager: localizationManager), id: \.self) { feature in
+                HStack(alignment: .top, spacing: Spacing.s) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.textSecondary)
+                    Text(feature)
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .accessibilityIdentifier("tariffs_free_features_block")
+    }
+
     // MARK: - Tariff Card
     
     private func tariffCard(_ tariff: TariffType) -> some View {
@@ -333,18 +580,21 @@ struct TariffsScreen: View {
             Rectangle()
                 .fill(tariff.color.opacity(0.3))
                 .frame(height: 1)
-            
-            // Список функций
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                ForEach(tariff.features(localizationManager: localizationManager), id: \.self) { feature in
-                    HStack(spacing: Spacing.s) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(tariff.color)
-                        
-                        Text(feature)
-                            .font(.body)
-                            .foregroundColor(.textPrimary)
+
+            if tariff == .free {
+                freePlanFeaturesBlock
+            } else {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    ForEach(tariff.features(localizationManager: localizationManager), id: \.self) { feature in
+                        HStack(spacing: Spacing.s) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(tariff.color)
+
+                            Text(feature)
+                                .font(.body)
+                                .foregroundColor(.textPrimary)
+                        }
                     }
                 }
             }
@@ -358,6 +608,12 @@ struct TariffsScreen: View {
                     Task { @MainActor in
                         await SubscriptionManager.shared.downgradeToFree()
                     }
+                    return
+                }
+
+                // Paid: сначала месяц или год с ценами — потом StoreKit / сайт.
+                if tariff == .personal || tariff == .family || tariff == .premium {
+                    billingChooserTariff = tariff
                     return
                 }
                 

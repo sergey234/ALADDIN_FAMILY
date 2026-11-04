@@ -8,6 +8,8 @@ import EventKit
 /// No fake pins / no continuous spy track / Pet·Items = soon sheets.
 struct WhereIsPhoneScreen: View {
     @Binding var isPresented: Bool
+    /// Close hub sheet first, then parent runs navigate (e.g. tariffs) — otherwise push dies under sheet.
+    var onLeaveToNavigate: ((NavigationManager.ALADDINScreen) -> Void)? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var analyticsViewModel = AnalyticsViewModel(service: RemoteAnalyticsService())
@@ -108,15 +110,22 @@ struct WhereIsPhoneScreen: View {
     @AppStorage("where_phone_always_prompt_done") private var alwaysPromptDone = false
     @AppStorage("where_phone_first_open_ts") private var firstOpenTs: Double = 0
     @AppStorage("where_phone_soft_paywall_done") private var softPaywallDone = false
+    /// Seeded by locale: RU→Yandex, EN→Apple. User can always switch.
+    @AppStorage("where_phone_preferred_maps") private var preferredMaps = "yandex"
     @State private var mapCoordinate: CLLocationCoordinate2D?
     @State private var mapPointName: String?
     @State private var mapPointAt: Date?
+    @State private var mapPinSource: MapPinSource = .none
     @State private var travelMinutesToday: Int?
     @State private var mapRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 55.75, longitude: 37.62),
         span: MKCoordinateSpan(latitudeDelta: 0.04, longitudeDelta: 0.04)
     )
     @State private var showOpenInMapsSheet = false
+
+    private enum MapPinSource: String {
+        case none, live, local, remote
+    }
 
     @StateObject private var locator = WherePhoneOneShot()
 
@@ -258,6 +267,7 @@ struct WhereIsPhoneScreen: View {
             memberDetailSheet(member)
         }
         .onAppear {
+            preferredMaps = FamilyMapsPreference.resolved(language: localizationManager.currentLanguage)
             reload()
             liveLocation.startIfNeeded()
             savedPets = FamilyPetProfileStore.load()
@@ -274,20 +284,31 @@ struct WhereIsPhoneScreen: View {
             reload()
         }
         .onReceive(liveLocation.$coordinate) { coord in
-            guard let coord else { return }
+            // Continuous live pin: Always Allow + Family+/trial/premium.
+            guard FamilyMapLiveAccess.isEntitled,
+                  liveLocation.authStatus == .authorizedAlways,
+                  let coord else {
+                applyBestMapPin()
+                return
+            }
             let loc = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
             let quiet = FamilyMapQuietZoneStore.contains(loc)
             inQuietZone = quiet
-            // Quiet zone: keep local preview, do not refresh family last-point.
-            mapCoordinate = coord
-            mapPointAt = liveLocation.updatedAt ?? Date()
-            mapRegion.center = coord
+            applyMapPin(
+                coord,
+                name: mapPointName ?? localizationManager.localized("where_phone_map_card_title"),
+                at: liveLocation.updatedAt ?? Date(),
+                source: .live
+            )
             guard !quiet else { return }
             WherePhoneLastPointStore.save(
                 name: mapPointName ?? localizationManager.localized("where_phone_map_card_title"),
                 latitude: coord.latitude,
                 longitude: coord.longitude
             )
+        }
+        .onReceive(liveLocation.$authStatus) { _ in
+            applyBestMapPin()
         }
         .onChange(of: crashConsentAccepted) { enabled in
             Task { @MainActor in
@@ -307,7 +328,8 @@ struct WhereIsPhoneScreen: View {
     /// X закрывает хаб → Удобный (`isPresented = false`), не «стек Назад».
     private var hubHeader: some View {
         HStack {
-            Text(localizationManager.localized("where_phone_map_title"))
+            // Title follows active tab (not always «Карта» on Subscription/Safety).
+            Text(localizationManager.localized(hubTab.titleKey))
                 .font(.system(.title2, design: .serif).weight(.bold))
                 .foregroundColor(.textPrimary)
 
@@ -764,8 +786,7 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 actionButton("map_hub_subscription_cta", id: "where_phone_open_tariffs") {
-                    isPresented = false
-                    navigationManager.navigateTo(.tariffs)
+                    leaveHubThenNavigate(to: NavigationManager.ALADDINScreen.tariffs)
                 }
             }
             .padding(Spacing.l)
@@ -774,6 +795,18 @@ struct WhereIsPhoneScreen: View {
             .padding(Spacing.m)
         }
         .accessibilityIdentifier("where_phone_tab_subscription")
+    }
+
+    private func leaveHubThenNavigate(to screen: NavigationManager.ALADDINScreen) {
+        if let onLeaveToNavigate {
+            onLeaveToNavigate(screen)
+            return
+        }
+        // Fallback if presented without parent callback.
+        isPresented = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            navigationManager.navigateTo(screen)
+        }
     }
 
     private func emergencyContactsCount() -> Int {
@@ -1037,8 +1070,7 @@ struct WhereIsPhoneScreen: View {
             actionButton("map_soft_paywall_try", id: "where_phone_soft_paywall_try") {
                 softPaywallDone = true
                 showSoftPaywall = false
-                isPresented = false
-                navigationManager.navigateTo(.tariffs)
+                leaveHubThenNavigate(to: NavigationManager.ALADDINScreen.tariffs)
             }
             Button {
                 softPaywallDone = true
@@ -1203,61 +1235,72 @@ struct WhereIsPhoneScreen: View {
 
     private var mapCard: some View {
         card(symbol: "map.fill", titleKey: "where_phone_map_card_title") {
-            if let coordinate = mapCoordinate {
-                // MKMapView — street/satellite/auto; pin preview only (not a live track).
-                FamilyHubMapKitView(
-                    region: $mapRegion,
-                    coordinate: coordinate,
-                    title: friendlyPointName(mapPointName),
-                    mapTypeRaw: mapTypeRaw
-                )
-                .frame(height: 168)
-                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-                .accessibilityIdentifier("where_phone_map")
-                .overlay(alignment: .topTrailing) {
-                    VStack(alignment: .trailing, spacing: 6) {
-                        if inQuietZone {
-                            Text(localizationManager.localized("map_quiet_active_badge"))
-                                .font(.caption.weight(.bold))
-                                .foregroundColor(.backgroundDark)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color.secondaryGold.opacity(0.9))
-                                .clipShape(Capsule())
-                        }
-                        if let speed = liveLocation.speedKmh, speed > 0, !inQuietZone {
-                            Text(String(format: localizationManager.localized("map_live_speed_badge"), speed))
-                                .font(.caption.weight(.bold))
-                                .foregroundColor(.backgroundDark)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color.secondaryGold)
-                                .clipShape(Capsule())
-                                .accessibilityIdentifier("where_phone_speed_badge")
-                        }
+            // Always MapKit preview (Life360-lite). Pin optional; empty = no signal / last-point hole.
+            FamilyHubMapKitView(
+                region: $mapRegion,
+                coordinate: mapCoordinate,
+                title: friendlyPointName(mapPointName),
+                mapTypeRaw: mapTypeRaw
+            )
+            .frame(height: 168)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .accessibilityIdentifier("where_phone_map")
+            .overlay(alignment: .topTrailing) {
+                VStack(alignment: .trailing, spacing: 6) {
+                    if mapCoordinate == nil || mapPinSource == .none {
+                        Text(localizationManager.localized("map_live_no_signal"))
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.backgroundDark)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.secondaryGold.opacity(0.9))
+                            .clipShape(Capsule())
+                            .accessibilityIdentifier("where_phone_no_signal_badge")
                     }
-                    .padding(8)
+                    if inQuietZone {
+                        Text(localizationManager.localized("map_quiet_active_badge"))
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.backgroundDark)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.secondaryGold.opacity(0.9))
+                            .clipShape(Capsule())
+                    }
+                    if mapPinSource == .live,
+                       let speed = liveLocation.speedKmh,
+                       speed > 0,
+                       !inQuietZone {
+                        Text(String(format: localizationManager.localized("map_live_speed_badge"), speed))
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.backgroundDark)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.secondaryGold)
+                            .clipShape(Capsule())
+                            .accessibilityIdentifier("where_phone_speed_badge")
+                    }
                 }
+                .padding(8)
+            }
 
-                if let at = mapPointAt {
-                    Text(
-                        String(
-                            format: localizationManager.localized("where_phone_map_point_time"),
-                            friendlyPointName(mapPointName),
-                            WherePhoneTime.ago(since: at, localization: localizationManager)
-                        )
+            if let coordinate = mapCoordinate, let at = mapPointAt {
+                Text(
+                    String(
+                        format: localizationManager.localized("where_phone_map_point_time"),
+                        friendlyPointName(mapPointName),
+                        WherePhoneTime.ago(since: at, localization: localizationManager)
                     )
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
+                )
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
 
                 Text(localizationManager.localized("map_anti_spy_note"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // QA16 F1: open full map in Apple or Yandex — preview stays read-only.
+                // Yandex default first, then Apple — user always chooses.
                 Button {
                     showOpenInMapsSheet = true
                 } label: {
@@ -1274,11 +1317,29 @@ struct WhereIsPhoneScreen: View {
                     isPresented: $showOpenInMapsSheet,
                     titleVisibility: .visible
                 ) {
-                    Button(localizationManager.localized("where_phone_open_apple_maps")) {
-                        openInAppleMaps(coordinate)
-                    }
-                    Button(localizationManager.localized("where_phone_open_yandex_maps")) {
-                        openInYandexMaps(coordinate)
+                    // Preferred first: RU→Yandex, EN→Apple; both always available.
+                    if preferredMaps == "apple" {
+                        Button(localizationManager.localized("where_phone_open_apple_maps")) {
+                            FamilyMapsPreference.markUserChose("apple")
+                            preferredMaps = "apple"
+                            openInAppleMaps(coordinate)
+                        }
+                        Button(localizationManager.localized("where_phone_open_yandex_maps")) {
+                            FamilyMapsPreference.markUserChose("yandex")
+                            preferredMaps = "yandex"
+                            openInYandexMaps(coordinate)
+                        }
+                    } else {
+                        Button(localizationManager.localized("where_phone_open_yandex_maps")) {
+                            FamilyMapsPreference.markUserChose("yandex")
+                            preferredMaps = "yandex"
+                            openInYandexMaps(coordinate)
+                        }
+                        Button(localizationManager.localized("where_phone_open_apple_maps")) {
+                            FamilyMapsPreference.markUserChose("apple")
+                            preferredMaps = "apple"
+                            openInAppleMaps(coordinate)
+                        }
                     }
                     Button(localizationManager.localized("common_cancel"), role: .cancel) {}
                 }
@@ -1505,28 +1566,7 @@ struct WhereIsPhoneScreen: View {
         todayTrail = GeofenceEventStore.todayEvents().sorted { $0.createdAt < $1.createdAt }
         travelMinutesToday = WherePhoneTravel.minutesInTransitToday()
         shares = WherePhoneShareStore.load()
-        if let last = WherePhoneLastPointStore.load() {
-            mapCoordinate = last.coordinate
-            mapPointName = friendlyPointName(last.name)
-            mapPointAt = last.at
-            mapRegion = MKCoordinateRegion(
-                center: last.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-            )
-        } else if let share = shares.first, let lat = share.latitude, let lon = share.longitude {
-            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            mapCoordinate = coord
-            mapPointName = friendlyPointName(share.name)
-            mapPointAt = share.createdAt
-            mapRegion = MKCoordinateRegion(
-                center: coord,
-                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-            )
-        } else {
-            mapCoordinate = nil
-            mapPointName = nil
-            mapPointAt = nil
-        }
+        applyBestMapPin()
         APIService.shared.getFamilyWherePhone { result in
             DispatchQueue.main.async {
                 switch result {
@@ -1534,11 +1574,64 @@ struct WhereIsPhoneScreen: View {
                     self.remoteSignals = snapshot.signals
                     self.remotePoints = snapshot.points
                     print("WHERE_PHONE family signals=\(snapshot.signals.count) points=\(snapshot.points.count)")
+                    self.applyBestMapPin()
                 case .failure:
                     print("WHERE_PHONE family sync fail")
                 }
             }
         }
+    }
+
+    /// Hybrid pin: live (Always + Family+) → local last-point / share → remote family map_url.
+    private func applyBestMapPin() {
+        if FamilyMapLiveAccess.isEntitled,
+           liveLocation.authStatus == .authorizedAlways,
+           let coord = liveLocation.coordinate {
+            applyMapPin(
+                coord,
+                name: mapPointName ?? localizationManager.localized("where_phone_map_card_title"),
+                at: liveLocation.updatedAt ?? Date(),
+                source: .live
+            )
+            return
+        }
+        if let last = WherePhoneLastPointStore.load() {
+            applyMapPin(last.coordinate, name: friendlyPointName(last.name), at: last.at, source: .local)
+            return
+        }
+        if let share = shares.first, let lat = share.latitude, let lon = share.longitude {
+            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            applyMapPin(coord, name: friendlyPointName(share.name), at: share.createdAt, source: .local)
+            return
+        }
+        let mine = myMemberId.isEmpty ? "self" : myMemberId
+        let remoteCandidates = remotePoints.filter { $0.coordinate != nil }
+        let preferredRemote = remoteCandidates.first(where: { $0.memberId != mine })
+            ?? remoteCandidates.first
+        if let remote = preferredRemote, let coord = remote.coordinate {
+            applyMapPin(coord, name: friendlyPointName(remote.name), at: remote.at, source: .remote)
+            return
+        }
+        mapCoordinate = nil
+        mapPointName = nil
+        mapPointAt = nil
+        mapPinSource = .none
+    }
+
+    private func applyMapPin(
+        _ coordinate: CLLocationCoordinate2D,
+        name: String,
+        at: Date,
+        source: MapPinSource
+    ) {
+        mapCoordinate = coordinate
+        mapPointName = name
+        mapPointAt = at
+        mapPinSource = source
+        mapRegion = MKCoordinateRegion(
+            center: coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+        )
     }
 
     private func signalText(_ line: WherePhoneFamilySignal) -> String {
@@ -1666,13 +1759,7 @@ struct WhereIsPhoneScreen: View {
         WherePhoneShareStore.add(name: name, isMine: true, latitude: lat, longitude: lon)
         WherePhoneLastPointStore.save(name: name, latitude: lat, longitude: lon)
         shares = WherePhoneShareStore.load()
-        mapCoordinate = location.coordinate
-        mapPointName = name
-        mapPointAt = Date()
-        mapRegion = MKCoordinateRegion(
-            center: location.coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-        )
+        applyMapPin(location.coordinate, name: name, at: Date(), source: .local)
         statusText = localizationManager.localized("where_phone_share_sent")
         let mapURL = String(
             format: "https://maps.apple.com/?ll=%f,%f",
@@ -1956,7 +2043,57 @@ struct WherePhoneFamilyPoint: Identifiable, Equatable {
     let memberId: String
     let name: String
     let at: Date
+    let latitude: Double?
+    let longitude: Double?
+    let mapURL: String?
+
     var id: String { memberId }
+
+    var coordinate: CLLocationCoordinate2D? {
+        if let latitude, let longitude {
+            return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        }
+        return WherePhoneMapURL.coordinate(from: mapURL)
+    }
+
+    init(
+        memberId: String,
+        name: String,
+        at: Date,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        mapURL: String? = nil
+    ) {
+        self.memberId = memberId
+        self.name = name
+        self.at = at
+        self.latitude = latitude
+        self.longitude = longitude
+        self.mapURL = mapURL
+    }
+}
+
+/// Parse family share links → pin (Apple `ll=` / Yandex `pt=`).
+enum WherePhoneMapURL {
+    static func coordinate(from raw: String?) -> CLLocationCoordinate2D? {
+        guard let raw, !raw.isEmpty, let url = URL(string: raw) else { return nil }
+        if let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems {
+            if let ll = items.first(where: { $0.name == "ll" })?.value {
+                let parts = ll.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                if parts.count >= 2 {
+                    return CLLocationCoordinate2D(latitude: parts[0], longitude: parts[1])
+                }
+            }
+            if let pt = items.first(where: { $0.name == "pt" })?.value {
+                // Yandex pt=lon,lat
+                let parts = pt.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                if parts.count >= 2 {
+                    return CLLocationCoordinate2D(latitude: parts[1], longitude: parts[0])
+                }
+            }
+        }
+        return nil
+    }
 }
 
 struct WherePhoneFamilySnapshot {
@@ -2008,16 +2145,26 @@ struct FamilyWherePhonePointDTO: Codable {
     let memberId: String
     let displayName: String
     let happenedAt: String?
+    let mapURL: String?
 
     enum CodingKeys: String, CodingKey {
         case memberId = "member_id"
         case displayName = "display_name"
         case happenedAt = "happened_at"
+        case mapURL = "map_url"
     }
 
     func point() -> WherePhoneFamilyPoint? {
         guard let at = WherePhoneISO.date(from: happenedAt) else { return nil }
-        return WherePhoneFamilyPoint(memberId: memberId, name: displayName, at: at)
+        let parsed = WherePhoneMapURL.coordinate(from: mapURL)
+        return WherePhoneFamilyPoint(
+            memberId: memberId,
+            name: displayName,
+            at: at,
+            latitude: parsed?.latitude,
+            longitude: parsed?.longitude,
+            mapURL: mapURL
+        )
     }
 }
 
@@ -2072,7 +2219,13 @@ enum WherePhoneFamilyBoard {
             byId[row.memberId] = newer(byId[row.memberId], row)
         }
         if let localMine = local.first {
-            let row = WherePhoneFamilyPoint(memberId: mine, name: localMine.name, at: localMine.createdAt)
+            let row = WherePhoneFamilyPoint(
+                memberId: mine,
+                name: localMine.name,
+                at: localMine.createdAt,
+                latitude: localMine.latitude,
+                longitude: localMine.longitude
+            )
             byId[mine] = newer(byId[mine], row)
         }
         return byId.values.sorted { $0.at > $1.at }

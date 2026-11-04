@@ -51,6 +51,9 @@ struct AntifakeHubScreen: View {
                             AntifakeCheckHistorySection()
                                 .environmentObject(localizationManager)
                         }
+                        // Wave A: Call Directory / Анти-Баннер / empties — inside Hub, not a separate door sheet.
+                        AntifakeWaveAExtrasSection()
+                            .environmentObject(localizationManager)
                     }
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)

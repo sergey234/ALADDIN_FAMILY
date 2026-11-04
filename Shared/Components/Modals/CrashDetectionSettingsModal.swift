@@ -193,10 +193,11 @@ struct CrashDetectionSettingsModal: View {
         SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_start", state: .syncing)
 
         Task {
-            do {
-                crashDetectionManager.setSensitivity(sensitivity)
-                UserDefaults.standard.set(sensitivity.rawValue, forKey: "crash_detection_pending_sensitivity")
+            // Local always first: toggle/sensitivity work on-device even if cloud SFM is mock.
+            crashDetectionManager.setSensitivity(sensitivity)
+            UserDefaults.standard.set(sensitivity.rawValue, forKey: "crash_detection_pending_sensitivity")
 
+            do {
                 let apiResponse = try await apiService.updateCrashDetectionSettings(
                     userId: userId,
                     sensitivity: sensitivity.gForceThreshold,
@@ -236,11 +237,15 @@ struct CrashDetectionSettingsModal: View {
                 }
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
             } catch {
+                // SFM «Unknown function: create_crash-detection_settings_update» = облако не умеет;
+                // на телефоне чувствительность уже сохранена — честный pending, не «сломано всё».
+                try? await crashDetectionManager.startMonitoring()
                 await MainActor.run {
                     if shouldKeepPendingSync(for: error) {
                         UserDefaults.standard.set(true, forKey: pendingSyncKey)
                         pendingSync = true
                         toastManager.showInfo(localizationManager.localized("crash_settings_saved_pending_sync"))
+                        isPresented = false
                     } else {
                         toastManager.showError(saveErrorMessage(for: error))
                     }
@@ -279,6 +284,11 @@ struct CrashDetectionSettingsModal: View {
             || raw.contains("server")
             || raw.contains("503")
             || raw.contains("502")
+            || raw.contains("sfm_mock")
+            || raw.contains("mock")
+            || raw.contains("unknown function")
+            || raw.contains("crash-detection")
+            || raw.contains("operation not confirmed")
     }
 }
 

@@ -14,9 +14,14 @@ router = APIRouter(prefix="/api/crash-detection", tags=["crash-detection-compat"
 
 
 class CrashDetectionSettingsUpdateRequest(BaseModel):
+    """iOS sends g-force threshold (2.0 / 3.0 / 4.0), not a 0…1 ratio."""
+
     user_id: Optional[str] = Field(default=None, alias="userId")
-    sensitivity: float = Field(default=0.75, ge=0.0, le=1.0)
-    geofence_radius: float = Field(default=100.0, ge=0.0, alias="geofenceRadius")
+    sensitivity: float = Field(default=3.0, ge=0.5, le=10.0)
+    geofence_radius: float = Field(default=1000.0, ge=0.0, alias="geofenceRadius")
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 @router.get("/setup", response_model=Dict[str, Any])

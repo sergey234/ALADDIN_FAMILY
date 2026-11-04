@@ -42,32 +42,78 @@ class StoreManager: ObservableObject {
     
     // MARK: - Product IDs
     
+    enum BillingPeriod: String, CaseIterable, Identifiable {
+        case monthly
+        case yearly
+        var id: String { rawValue }
+    }
+
     enum ProductID: String, CaseIterable {
         case basic = "ai.aladdin.subscription.basic.v2"
         case individual = "ai.aladdin.subscription.individual.v2"
         case family = "ai.aladdin.subscription.family"
         case premium = "ai.aladdin.subscription.premium"
+        /// Yearly SKUs (create matching products in App Store Connect).
+        case individualYearly = "ai.aladdin.subscription.individual.v2.yearly"
+        case familyYearly = "ai.aladdin.subscription.family.yearly"
+        case premiumYearly = "ai.aladdin.subscription.premium.yearly"
         
-        /// Только платные подписки (без бесплатного .basic)
+        /// Month + year paid SKUs for StoreKit load.
         static var paidSubscriptions: [ProductID] {
-            return [.individual, .family, .premium]
+            paidSubscriptionsMonthly + paidSubscriptionsYearly
+        }
+
+        static var paidSubscriptionsMonthly: [ProductID] {
+            [.individual, .family, .premium]
+        }
+
+        static var paidSubscriptionsYearly: [ProductID] {
+            [.individualYearly, .familyYearly, .premiumYearly]
+        }
+
+        var billingPeriod: BillingPeriod {
+            switch self {
+            case .individualYearly, .familyYearly, .premiumYearly: return .yearly
+            default: return .monthly
+            }
+        }
+
+        /// Family year −20%; Personal/Premium year ≈ 10× month (−17%).
+        var yearlyDiscountPercent: Int? {
+            switch self {
+            case .familyYearly: return 20
+            case .individualYearly, .premiumYearly: return 17
+            default: return nil
+            }
+        }
+
+        static func productID(tier: String, period: BillingPeriod) -> ProductID? {
+            switch (tier.lowercased(), period) {
+            case ("personal", .monthly), ("individual", .monthly): return .individual
+            case ("personal", .yearly), ("individual", .yearly): return .individualYearly
+            case ("family", .monthly): return .family
+            case ("family", .yearly): return .familyYearly
+            case ("premium", .monthly): return .premium
+            case ("premium", .yearly): return .premiumYearly
+            default: return nil
+            }
         }
         
         var displayName: String {
             switch self {
             case .basic: return "Базовый"
-            case .individual: return "Индивидуальный"
-            case .family: return LocalizationManager.shared.localized("tariff_plan_family_title")
-            case .premium: return "Премиум"
+            case .individual, .individualYearly: return "Индивидуальный"
+            case .family, .familyYearly: return LocalizationManager.shared.localized("tariff_plan_family_title")
+            case .premium, .premiumYearly: return "Премиум"
             }
         }
         
         var description: String {
             switch self {
             case .basic: return "1 устройство, базовая защита"
-            case .individual: return "1 устройство, полная защита, AI помощник"
-            case .family: return "До 5 устройств, родительский контроль"
-            case .premium: return "До 10 устройств, все функции, приоритетная поддержка"
+            case .individual, .individualYearly: return "1 устройство, полная защита, AI помощник"
+            case .family, .familyYearly: return "До 6 участников, родительский контроль, live-карта"
+            case .premium, .premiumYearly: return "До 10 участников, все функции, приоритетная поддержка"
             }
         }
         
@@ -75,12 +121,12 @@ class StoreManager: ObservableObject {
             switch self {
             case .basic:
                 return ["1 устройство", "Базовая защита", "Ограниченная аналитика"]
-            case .individual:
-                return ["1 устройство", "Полная защита", "Расширенная аналитика", "AI помощник"]
-            case .family:
-                return ["До 5 устройств", "Полная защита", "Расширенная аналитика", "AI помощник", "Родительский контроль"]
-            case .premium:
-                return ["До 10 устройств", "Все функции", "Приоритетная поддержка", "Эксклюзивные возможности"]
+            case .individual, .individualYearly:
+                return ["До 2 участников", "Полная защита", "Расширенная аналитика", "AI помощник"]
+            case .family, .familyYearly:
+                return ["До 6 участников", "Live-карта семьи", "Родительский контроль", "AI помощник"]
+            case .premium, .premiumYearly:
+                return ["До 10 участников", "Все функции Family", "Приоритетная поддержка", "Companion Premium"]
             }
         }
     }
@@ -574,11 +620,11 @@ class StoreManager: ObservableObject {
      */
     private func mapProductIdToLevel(_ productId: String) -> SubscriptionLevel {
         switch productId {
-        case ProductID.individual.rawValue:
+        case ProductID.individual.rawValue, ProductID.individualYearly.rawValue:
             return .personal
-        case ProductID.family.rawValue:
+        case ProductID.family.rawValue, ProductID.familyYearly.rawValue:
             return .family
-        case ProductID.premium.rawValue:
+        case ProductID.premium.rawValue, ProductID.premiumYearly.rawValue:
             return .premium
         default:
             return .free
