@@ -36,6 +36,31 @@ def process_job(job_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     raise ValueError(f"unsupported antifake job type: {job_type}")
 
 
+def preflight() -> Dict[str, Any]:
+    """Fail fast at unit start: every queued job needs DB + task module + redis."""
+    from sqlalchemy import text
+
+    from app.database.database import engine
+    import app.services.antifake_worker_tasks  # noqa: F401 — import errors must stop the unit
+
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+
+    import redis
+
+    redis.from_url(REDIS_URL).ping()
+    return {"db": "ok", "tasks_module": "ok", "redis": "ok"}
+
+
+def _preflight_or_exit() -> Dict[str, Any] | None:
+    try:
+        return preflight()
+    except Exception as exc:
+        logger.error("ANTIFAKE_WORKER_PREFLIGHT_FAIL %s: %s", type(exc).__name__, exc)
+        print(json.dumps({"preflight": "fail", "error": type(exc).__name__}))
+        return None
+
+
 def run_rq_worker() -> int:
     import redis
     from rq import Worker, Queue
@@ -60,11 +85,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.warm:
         status = warm_worker_deps()
-        print(json.dumps({"warm": status}))
-        return 0
+        checks = _preflight_or_exit()
+        print(json.dumps({"warm": status, "preflight": checks}))
+        return 0 if checks is not None else 1
 
     if args.listen:
         warm_worker_deps()
+        if _preflight_or_exit() is None:
+            return 1
         return run_rq_worker()
 
     if not args.job_type:

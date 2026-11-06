@@ -5,8 +5,32 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from typing import Generator, AsyncGenerator
 import os
 
+def _load_backend_dotenv_fallback() -> None:
+    # Workers / cron scripts may start without systemd EnvironmentFile (incident 2026-11-06).
+    # override=False: values injected by systemd always win.
+    from pathlib import Path
+
+    candidates = [
+        os.getenv("ALADDIN_BACKEND_ENV_FILE", ""),
+        str(Path(__file__).resolve().parents[2] / ".env"),
+        "/opt/aladdin-backend/.env",
+    ]
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            load_dotenv(candidate, override=False)
+            if os.getenv("DATABASE_URL"):
+                return
+
+
 # --- Синхронная часть (PostgreSQL) ---
 DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    _load_backend_dotenv_fallback()
+    DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL environment variable is required")
 engine = create_engine(

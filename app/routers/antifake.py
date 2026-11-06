@@ -42,11 +42,17 @@ from app.services.antifake_family_digest import weekly_summary_for_user
 from app.services.antifake_queue import enqueue_media_job
 from app.services.antifake_rate_limit import check_rate_limit
 from app.services.antifake_service import check_media, check_text, check_url
+from app.services.antifake_malware_atomscan import (
+    malware_feature_enabled,
+    scan_file_bytes,
+    scan_url as scan_malware_url,
+)
 from app.services.antifake_security import (
     AntifakeSecurityError,
     redact_phone_for_log,
     redact_text_for_log,
     redact_url_for_log,
+    validate_check_url,
     validate_media_upload,
 )
 from app.services.antifake_upload_store import save_upload
@@ -75,6 +81,13 @@ class CheckTextRequest(BaseModel):
 
 
 class CheckUrlRequest(BaseModel):
+    url: str = Field(..., min_length=4, max_length=2048)
+    case_id: Optional[str] = Field(default=None, min_length=8, max_length=64)
+
+
+class CheckMalwareUrlRequest(BaseModel):
+    """PC/site — Atomdrift malware scan of a download URL (not scam ensemble)."""
+
     url: str = Field(..., min_length=4, max_length=2048)
     case_id: Optional[str] = Field(default=None, min_length=8, max_length=64)
 
@@ -477,6 +490,100 @@ async def antifake_check_url(
     return _client_verdict(result, request)
 
 
+def _require_malware_enabled() -> None:
+    if not malware_feature_enabled():
+        raise HTTPException(status_code=503, detail="malware_feature_disabled")
+
+
+@router.post("/check/malware/url")
+async def antifake_check_malware_url(
+    request: Request,
+    body: CheckMalwareUrlRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """PC/site: scan URL payload with Atomdrift (auth + trial/Premium)."""
+    _require_malware_enabled()
+    _require_premium(current_user, request, db)
+    _apply_access_tier_limits(current_user, request, db, "malware")
+    check_rate_limit(
+        user_id=int(current_user["id"]),
+        bucket="malware",
+        limit=MEDIA_LIMIT_PER_HOUR,
+        window_sec=3600,
+    )
+    try:
+        validate_check_url(body.url)
+    except AntifakeSecurityError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    result = _sync_check_with_job(
+        user_id=int(current_user["id"]),
+        job_type="malware_url",
+        payload=scan_malware_url(body.url),
+    )
+    _attach_to_case(body.case_id, int(current_user["id"]), "malware_url", result["job_id"])
+    logger.info(
+        "antifake_check_malware_url user=%s verdict=%s job=%s url=%s",
+        current_user.get("id"),
+        result.get("verdict"),
+        result.get("job_id"),
+        redact_url_for_log(body.url),
+    )
+    return _client_verdict(result, request)
+
+
+@router.post(
+    "/check/malware",
+    summary="Upload file for malware scan (Atomdrift, PC/site)",
+    description="Multipart file (max 25MB). Requires antifake access. Flag ATOMSCAN_MALWARE_ENABLED.",
+)
+async def antifake_check_malware_file(
+    request: Request,
+    file: Annotated[UploadFile, File(...)],
+    case_id: Optional[str] = Form(default=None),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """PC/site: scan uploaded file/archive with Atomdrift."""
+    _require_malware_enabled()
+    _require_premium(current_user, request, db)
+    _apply_access_tier_limits(current_user, request, db, "malware")
+    check_rate_limit(
+        user_id=int(current_user["id"]),
+        bucket="malware",
+        limit=MEDIA_LIMIT_PER_HOUR,
+        window_sec=3600,
+    )
+    raw = await file.read()
+    try:
+        validate_media_upload(
+            job_type="malware",
+            file_name=file.filename or "upload.bin",
+            file_bytes=raw,
+            content_type=file.content_type,
+        )
+    except AntifakeSecurityError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if len(raw) > MAX_MEDIA_BYTES:
+        raise HTTPException(status_code=413, detail="file_too_large")
+
+    result = _sync_check_with_job(
+        user_id=int(current_user["id"]),
+        job_type="malware",
+        payload=scan_file_bytes(file_bytes=raw, file_name=file.filename or "upload.bin"),
+    )
+    _attach_to_case(case_id, int(current_user["id"]), "malware", result["job_id"])
+    logger.info(
+        "antifake_check_malware user=%s verdict=%s job=%s name=%s size=%s",
+        current_user.get("id"),
+        result.get("verdict"),
+        result.get("job_id"),
+        redact_text_for_log(file.filename or "upload"),
+        len(raw),
+    )
+    return _client_verdict(result, request)
+
+
 async def _enqueue_media_job(
     *,
     user: Dict[str, Any],
@@ -688,6 +795,17 @@ async def antifake_get_case(
     if not payload:
         raise HTTPException(status_code=404, detail="case_not_found")
     return payload
+
+
+@router.get("/pipeline-health")
+async def antifake_pipeline_health():
+    """External watchdog probe: do media checks complete (not just "process is up")."""
+    from fastapi.concurrency import run_in_threadpool
+
+    from app.services.antifake_pipeline_health import collect
+
+    result = await run_in_threadpool(collect)
+    return {"status": result["status"], "problems": result["problems"]}
 
 
 @router.get("/jobs/{job_id}")

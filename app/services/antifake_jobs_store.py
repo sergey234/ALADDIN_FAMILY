@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 from sqlalchemy import text
 
 from app.database.database import engine
+from app.services.antifake_job_staleness import stale_failure_reason
 
 _CREATE = """
 CREATE TABLE IF NOT EXISTS antifake_jobs (
@@ -114,6 +115,23 @@ def mark_job_processing(job_id: str) -> None:
         )
 
 
+def _fail_if_stale(job: Dict[str, Any], row: Any) -> Dict[str, Any]:
+    status = str(row["status"] or "")
+    stamp = row["updated_at"] if status == "processing" else row["created_at"]
+    if not stamp:
+        return job
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=timezone.utc)
+    age = (datetime.now(timezone.utc) - stamp).total_seconds()
+    reason = stale_failure_reason(status, str(row["job_type"] or ""), age)
+    if not reason:
+        return job
+    fail_job(job["job_id"], reason)
+    job["status"] = "failed"
+    job["verdict"] = {"error": reason}
+    return job
+
+
 def get_job(job_id: str, user_id: int) -> Optional[Dict[str, Any]]:
     ensure_table()
     with engine.connect() as conn:
@@ -135,7 +153,7 @@ def get_job(job_id: str, user_id: int) -> Optional[Dict[str, Any]]:
     if isinstance(verdict, str):
         verdict = json.loads(verdict)
 
-    return {
+    job = {
         "job_id": str(row["id"]),
         "type": row["job_type"],
         "status": row["status"],
@@ -144,6 +162,24 @@ def get_job(job_id: str, user_id: int) -> Optional[Dict[str, Any]]:
         "created_at": row["created_at"].isoformat() if row["created_at"] else None,
         "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
     }
+    return _fail_if_stale(job, row)
+
+
+def get_job_user_id(job_id: str) -> Optional[int]:
+    ensure_table()
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(
+                """
+                SELECT user_id FROM antifake_jobs
+                WHERE id = CAST(:id AS UUID)
+                """
+            ),
+            {"id": job_id},
+        ).mappings().first()
+    if not row:
+        return None
+    return int(row["user_id"])
 
 
 def _funnel_metrics_for_user(user_id: int) -> Dict[str, Any]:
@@ -238,13 +274,107 @@ def metrics_for_user(user_id: int) -> Dict[str, Any]:
 
     from app.services.antifake_service import MODEL_VERSION, SLA_MS
 
+    stub_rate = _stub_rate_for_user(user_id)
+    verdict_dist = _verdict_distribution_for_user(user_id)
+    latency_by_type = _latency_by_type_for_user(user_id)
+
     return {
         "checks_total": int(row["checks_total"] or 0),
         "fake_detected": int(row["fake_detected"] or 0),
         "by_type": by_type,
         "latency_p95_ms": int(row["p95_latency_ms"] or row["avg_latency_ms"] or 0),
         "avg_latency_ms": int(row["avg_latency_ms"] or 0),
+        "latency_by_type_ms": latency_by_type,
+        "verdict_distribution": verdict_dist,
+        "stub_rate": stub_rate,
         "model_version": MODEL_VERSION,
         "funnel": _funnel_metrics_for_user(user_id),
         "sla_ms": dict(SLA_MS),
     }
+
+
+def _stub_rate_for_user(user_id: int) -> float:
+    """RH-H04: share of completed jobs that look like SFM stub masquerade."""
+    try:
+        with engine.connect() as conn:
+            row = conn.execute(
+                text(
+                    """
+                    SELECT
+                        COUNT(*) AS total,
+                        COUNT(*) FILTER (
+                            WHERE verdict->>'source' IN ('sfm_mock', 'mock', 'sfm_stub')
+                               OR lower(coalesce(verdict->>'agent', '')) LIKE '%stub%'
+                               OR (
+                                    jsonb_typeof(verdict->'reasons') = 'array'
+                                    AND jsonb_array_length(verdict->'reasons') = 1
+                                    AND verdict->'reasons'->>0 = 'sfm_agent'
+                               )
+                        ) AS stubs
+                    FROM antifake_jobs
+                    WHERE user_id = :user_id AND status = 'completed'
+                    """
+                ),
+                {"user_id": int(user_id)},
+            ).mappings().first()
+        total = int((row or {}).get("total") or 0)
+        stubs = int((row or {}).get("stubs") or 0)
+        if total <= 0:
+            return 0.0
+        return round(stubs / total, 4)
+    except Exception:
+        return 0.0
+
+
+def _verdict_distribution_for_user(user_id: int) -> Dict[str, int]:
+    dist = {
+        "likely_fake": 0,
+        "uncertain": 0,
+        "likely_real": 0,
+        "insufficient_data": 0,
+    }
+    try:
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(
+                    """
+                    SELECT verdict->>'verdict' AS v, COUNT(*) AS cnt
+                    FROM antifake_jobs
+                    WHERE user_id = :user_id AND status = 'completed'
+                    GROUP BY verdict->>'verdict'
+                    """
+                ),
+                {"user_id": int(user_id)},
+            ).mappings().all()
+        for item in rows:
+            key = str(item.get("v") or "")
+            if key in dist:
+                dist[key] = int(item.get("cnt") or 0)
+    except Exception:
+        pass
+    return dist
+
+
+def _latency_by_type_for_user(user_id: int) -> Dict[str, int]:
+    out = {"text": 0, "audio": 0, "video": 0, "call": 0, "document": 0}
+    try:
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(
+                    """
+                    SELECT job_type,
+                           COALESCE(AVG(latency_ms), 0) AS avg_ms
+                    FROM antifake_jobs
+                    WHERE user_id = :user_id AND status = 'completed'
+                    GROUP BY job_type
+                    """
+                ),
+                {"user_id": int(user_id)},
+            ).mappings().all()
+        for item in rows:
+            key = str(item.get("job_type") or "")
+            if key in out:
+                out[key] = int(item.get("avg_ms") or 0)
+    except Exception:
+        pass
+    return out

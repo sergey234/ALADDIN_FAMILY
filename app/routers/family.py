@@ -78,7 +78,8 @@ logger = structlog.get_logger()
 
 _family_indexes_initialized = False
 _family_invites_initialized = False
-_FAMILY_INVITE_TTL_HOURS = int(os.environ.get("ALADDIN_FAMILY_INVITE_TTL_HOURS", "24"))
+# W4 Q01: invite codes valid 3 days (owner lock). Override via env if needed.
+_FAMILY_INVITE_TTL_HOURS = int(os.environ.get("ALADDIN_FAMILY_INVITE_TTL_HOURS", "72"))
 _FAMILY_INVITE_MAX_USES = int(os.environ.get("ALADDIN_FAMILY_INVITE_MAX_USES", "10"))
 
 _FAMILY_CHAT_UPLOAD_ROOT = Path(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_DIR", "/tmp/aladdin_family_chat_media"))
