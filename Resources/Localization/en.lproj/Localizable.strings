@@ -3530,7 +3530,13 @@
 "pet_routine_feed" = "Remind about feeding";
 "pet_routine_medicine" = "Remind about medicine";
 "pet_save_cta" = "Save pet";
-"pet_saved_local" = "Saved on this iPhone. Live pet map comes later — no fake pins.";
+"pet_saved_local" = "Saved on this iPhone. Live pet map comes later.";
+"pet_custom_reminder_ph" = "Custom reminder";
+"pet_custom_reminder_toggle" = "Custom reminder";
+"crash_confirm_sending" = "Notifying your family…";
+"crash_confirm_sent" = "Family notified";
+"crash_confirm_fail" = "Couldn’t send. Try again or message family chat.";
+"crash_confirm_offline" = "You’re offline — we’ll save and send later.";
 "calldir_guide_title" = "Caller ID & blocking";
 "calldir_guide_body" = "Enable the Call Directory extension in iPhone Settings so spam numbers can be filtered.";
 "adblock_title" = "Ad filter";
@@ -3542,11 +3548,17 @@
 "vk_connect_title" = "VK";
 "vk_connect_body" = "VK connect comes later via real OAuth. Empty for now — no fake API.";
 "child_overview_title" = "Child overview";
-"child_overview_body" = "Pause, limits and bedtime live in this door. Full reports are in Parental.";
+"child_overview_body" = "Pause, sites, limits and bedtime are below. Full reports are in Parental.";
 "map_live_speed_label" = "Speed";
-"family_access_full" = "Full access";
-"family_access_limited" = "Limited access";
-"family_access_hint" = "Choose how much family can see. Fine-tune in Family.";
+"family_access_section_title" = "Who appears on the map";
+"family_access_section_body" = "Only for the Where’s Family door. Pause and limits stay the same.";
+"family_access_full" = "Whole family";
+"family_access_limited" = "Just me";
+"family_access_hint" = "Choose whose pins to show on the map.";
+"family_access_effect_full" = "Now: everyone who shared location.";
+"family_access_effect_limited" = "Now: only your pin on the map.";
+"family_access_toast_full" = "Map: showing the whole family";
+"family_access_toast_limited" = "Map: only you; others hidden";
 
 /* map_live_* */
 "map_live_sheet_circle" = "Family";
@@ -3566,10 +3578,10 @@
 
 /* map_perm_* */
 "map_perm_always_title" = "Allow “Always”";
-"map_perm_always_body" = "So the family map can update when the app is closed. We ask for location to show where family phones are — not to spy.";
+"map_perm_always_body" = "So the map can update when the app is closed — you see where family phones are.";
 "map_perm_always_cta" = "Continue";
 "map_perm_open_settings" = "Open Settings";
-"map_perm_precise_hint" = "Also turn on Precise Location";
+"map_perm_precise_hint" = "In iPhone Settings turn on Precise Location for ALADDIN for a sharper pin.";
 
 /* map_member_* */
 "map_member_save_place" = "Save place";
@@ -3689,7 +3701,7 @@
 "pet_routine_me" = "Me";
 "pet_routine_save" = "Save reminder";
 "pet_protected_title" = "%@ is in your family";
-"pet_protected_body" = "Pet profile saved. A live map tag comes when a partner is live — no fake pins.";
+"pet_protected_body" = "Pet profile saved. A live map tag comes when a partner is live.";
 "pet_beacon_title" = "Pet tracker";
 "pet_beacon_soon" = "Coming soon. You can keep a profile and routines for now.";
 "items_promo_title" = "Items on the map will appear later";
@@ -3717,3 +3729,61 @@
 "paywall_monthly" = "Monthly";
 "paywall_yearly" = "Yearly";
 "paywall_start_trial" = "Start free trial";
+
+/* W1 Antifake media UX 2026-11-05 */
+"antifake_upload_cancel" = "Cancel";
+"antifake_retry" = "Retry";
+"antifake_timeout_friendly" = "The check took too long. Check your network and try again.";
+"antifake_doc_prefer_photo" = "Prefer a photo or PDF of the fine/contract. A text file may not work.";
+"antifake_video_size_hint" = "Large videos take longer. Try a short clip under 25 MB.";
+"antifake_call_soon" = "Call checks can take longer. If it hangs — Cancel and retry, or try voice/text.";
+"antifake_sync_fail" = "Couldn’t reach the check server. Try again in a minute.";
+"antifake_upload_cancelled" = "Check cancelled";
+
+/* W2–W9 Family Safety Device QA 2026-11-05 */
+"family_invite_soft_title" = "Time to invite family";
+"family_invite_soft_body" = "Add one more person — see protection and their place on the map.";
+"family_invite_soft_cta" = "Invite";
+"family_invite_soft_later" = "Later";
+"family_invite_ttl_hint" = "Invite codes work for 3 days. If it expired, send a new one.";
+"map_pin_size_title" = "Pin size";
+"map_pin_size_s" = "S";
+"map_pin_size_m" = "M";
+"map_pin_size_l" = "L";
+"map_motion_row_title" = "Motion & Fitness";
+"map_motion_row_body" = "Needed for trip reports and crash alerts. Turn it on in iPhone Settings.";
+"map_motion_open_settings" = "Open Settings";
+"map_bt_soon_title" = "Bluetooth";
+"map_bt_soon_body" = "Nearby / tags — coming soon.";
+"main_simple_badge" = "Main entry";
+"connect_device_title" = "Connect a family device";
+"connect_device_body_a" = "Add a family phone — see protection and their place on the map.";
+"connect_device_cta" = "Invite";
+"tariffs_levels_title" = "What’s in each plan";
+"tariffs_levels_devices_fmt" = "Devices: Free %d · Family %d · Premium %d";
+"tariffs_free_simple" = "1 device · basic checks · last place on map · child & SOS";
+"tariffs_family_simple" = "Several devices · live map · Antifake · places & day history";
+"tariffs_premium_simple" = "Everything in Family · more checks · priority support";
+"tariffs_col_free" = "Free";
+"tariffs_col_family" = "Family";
+"tariffs_col_premium" = "Premium";
+"premium_nudge_map_title" = "More peace of mind on the map";
+"premium_nudge_map_body" = "Family unlocks live map and more places.";
+"premium_nudge_antifake_title" = "Need more checks?";
+"premium_nudge_antifake_body" = "Family and Premium include more Antifake for your family.";
+"premium_nudge_cta" = "See plans";
+"calldir_unknown_build" = "Call extension isn’t in this build. Update the app from TestFlight.";
+"adblock_safari_steps_title" = "Turn on in Safari";
+"adblock_safari_steps_body" = "Settings → Safari → Extensions → ALADDIN → turn on.";
+"adblock_safari_open_settings" = "Open Settings";
+"drive_inc_phone_title" = "Phone";
+"drive_inc_speed_title" = "Speed";
+"drive_inc_accel_title" = "Accel";
+"drive_inc_brake_title" = "Brake";
+"drive_inc_phone_explain" = "Phone use while driving raises risk. Counts appear when trips are recorded on device.";
+"drive_inc_speed_explain" = "High-speed risk. Until detailed trips exist we show an honest zero — no invented numbers.";
+"drive_inc_accel_explain" = "Harsh acceleration. When sensor trips exist, you’ll see a weekly count here.";
+"drive_inc_brake_explain" = "Harsh braking. Family-friendly explain; real events show when trips are recorded.";
+"drive_inc_explain_data_note" = "No sensor trips yet — counters stay 0. Enable Motion & Fitness in Settings.";
+"drive_export_pdf" = "Share PDF";
+"drive_pdf_disclaimer" = "Family estimate only — not an insurance report.";

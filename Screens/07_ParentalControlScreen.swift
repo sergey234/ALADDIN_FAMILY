@@ -1410,15 +1410,8 @@ struct ParentalControlScreen: View {
                     )
                 }
 
-                SecurityFeatureRow(
-                    componentId: "parental_control_bot",
-                    title: localizationManager.localized("component.parental_control_bot.title"),
-                    description: localizationManager.localized("component.parental_control_bot.desc"),
-                    isEnabled: $viewModel.parentalControlBotEnabled,
-                    hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleParentalControlBot(newValue) },
-                    onSettingsTap: { /* TODO: Открыть расширенные настройки родительского контроля */ }
-                )
+                // W9 Q30: hide legacy «бот родительского контроля» card — confusing vs Child door / Screen Time.
+                // Server component id kept for API compat; UI removed.
             }
         }
         .padding(.vertical, Spacing.m)

@@ -170,9 +170,6 @@ struct TariffsScreen: View {
                         .padding(.horizontal, Spacing.screenPadding)
                         .accessibilityIdentifier("pay_tiers_plain_blurb")
 
-                        honestGatesComparisonTable
-                            .padding(.horizontal, Spacing.screenPadding)
-
                         // External activation is unavailable in the App Store binary.
                         if AppStoreBuildPolicy.allowsAlternativePayments && AppConfig.isRussianRegion {
                             activationCodeButton
@@ -184,6 +181,10 @@ struct TariffsScreen: View {
                         tariffCard(.personal)
                         tariffCard(.family)
                         tariffCard(.premium)
+
+                        // W8 Q12: comparison under Premium (not above cards); simple RU labels + live device counts.
+                        honestGatesComparisonTable
+                            .padding(.horizontal, Spacing.screenPadding)
 
                         Button {
                             Task { @MainActor in
@@ -288,18 +289,42 @@ struct TariffsScreen: View {
         }
     }
 
-    /// Free / Family / Premium — что реально открыто (как гейты продукта).
+    /// Free / Family / Premium — что реально открыто (как гейты продукта). Под Premium.
     private var honestGatesComparisonTable: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(localizationManager.localized("tariffs_gates_table_title"))
-                .font(.subheadline.weight(.bold))
+        let freeN = SubscriptionManager.familyMemberLimitStatic(for: .free)
+        let familyN = SubscriptionManager.familyMemberLimitStatic(for: .family)
+        let premiumN = SubscriptionManager.familyMemberLimitStatic(for: .premium)
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("tariffs_levels_title"))
+                .font(.system(.title3, design: .serif).weight(.bold))
+                .foregroundColor(.textPrimary)
+            Text(
+                String(
+                    format: localizationManager.localized("tariffs_levels_devices_fmt"),
+                    freeN, familyN, premiumN
+                )
+            )
+            .font(.caption)
+            .foregroundColor(.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            Text(localizationManager.localized("tariffs_free_simple"))
+                .font(.caption)
+                .foregroundColor(.textPrimary)
+            Text(localizationManager.localized("tariffs_family_simple"))
+                .font(.caption)
+                .foregroundColor(.textPrimary)
+            Text(localizationManager.localized("tariffs_premium_simple"))
+                .font(.caption)
                 .foregroundColor(.textPrimary)
             HStack(spacing: Spacing.s) {
                 Text("")
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("Free").font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 36)
-                Text("Fam").font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 36)
-                Text("Pro").font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 36)
+                Text(localizationManager.localized("tariffs_col_free"))
+                    .font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 44)
+                Text(localizationManager.localized("tariffs_col_family"))
+                    .font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 44)
+                Text(localizationManager.localized("tariffs_col_premium"))
+                    .font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 44)
             }
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_check"),
@@ -325,10 +350,6 @@ struct TariffsScreen: View {
                 feature: localizationManager.localized("tariffs_gates_members"),
                 free: false, family: true, premium: true
             )
-            Text(localizationManager.localized("tariffs_gates_free_note"))
-                .font(.caption2)
-                .foregroundColor(.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -345,15 +366,15 @@ struct TariffsScreen: View {
             Text(free ? "✓" : "—")
                 .font(.caption.weight(.bold))
                 .foregroundColor(free ? .secondaryGold : .textSecondary)
-                .frame(width: 36)
+                .frame(width: 44)
             Text(family ? "✓" : "—")
                 .font(.caption.weight(.bold))
                 .foregroundColor(family ? .secondaryGold : .textSecondary)
-                .frame(width: 36)
+                .frame(width: 44)
             Text(premium ? "✓" : "—")
                 .font(.caption.weight(.bold))
                 .foregroundColor(premium ? .secondaryGold : .textSecondary)
-                .frame(width: 36)
+                .frame(width: 44)
         }
     }
 

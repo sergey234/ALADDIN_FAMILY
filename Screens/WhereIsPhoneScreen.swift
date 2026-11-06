@@ -70,6 +70,10 @@ struct WhereIsPhoneScreen: View {
     @State private var activeChip: SheetChip = .people
     @State private var isChipProgrammaticScroll = false
     @State private var chipScrollRequest = 0
+    /// W2 Q34–Q36: 0 = map large · 1 = sheet dominates (Life360-style drag).
+    @State private var sheetExpansion: CGFloat = 0.35
+    @State private var sheetDragStart: CGFloat = 0.35
+    @State private var sheetDragActive = false
     @State private var placeCount = 0
     @State private var latestEvent: GeofenceDayEvent?
     @State private var todayTrail: [GeofenceDayEvent] = []
@@ -88,6 +92,7 @@ struct WhereIsPhoneScreen: View {
     @State private var showMapTypeSheet = false
     @State private var showAlwaysAllowSheet = false
     @State private var showSoftPaywall = false
+    @State private var showSoftInvite = false
     @State private var showPinPreview = false
     @State private var showInviteRole = false
     @State private var showRoutes = false
@@ -100,6 +105,7 @@ struct WhereIsPhoneScreen: View {
     @State private var savedPets: [FamilyPetProfile] = FamilyPetProfileStore.load()
     @StateObject private var liveLocation = FamilyMapLiveLocationController.shared
     @AppStorage("where_phone_pin_preview_done") private var pinPreviewDone = false
+    @AppStorage("where_phone_pin_size") private var pinSizeRaw: String = "M"
     @State private var localEvents: [FamilyMapLocalEvent] = FamilyMapLocalEventStore.load()
     @State private var draftEventTitle = ""
     @State private var draftEventPlace = ""
@@ -250,6 +256,9 @@ struct WhereIsPhoneScreen: View {
         .sheet(isPresented: $showSoftPaywall) {
             softPaywallSheet
         }
+        .sheet(isPresented: $showSoftInvite) {
+            softInviteSheet
+        }
         .sheet(isPresented: $showCrashSettings) {
             CrashDetectionSettingsModal(
                 componentId: "crash_detection_agent",
@@ -350,6 +359,13 @@ struct WhereIsPhoneScreen: View {
         .background(Color.backgroundMedium.opacity(0.5))
     }
 
+    /// Map height shrinks as sheet expands (Life360 drag parity).
+    private var locationMapMaxHeight: CGFloat {
+        let collapsed: CGFloat = 320
+        let expanded: CGFloat = 112
+        return collapsed - (collapsed - expanded) * sheetExpansion
+    }
+
     private var locationPane: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .trailing) {
@@ -358,12 +374,50 @@ struct WhereIsPhoneScreen: View {
                         .padding(.horizontal, Spacing.m)
                         .padding(.top, Spacing.s)
                 }
-                .frame(maxHeight: 220)
+                .frame(maxHeight: locationMapMaxHeight)
+                .animation(.easeInOut(duration: 0.2), value: sheetExpansion)
+                .accessibilityIdentifier("where_phone_map_pane")
 
                 mapFabStack
                     .padding(.trailing, Spacing.m)
                     .padding(.bottom, Spacing.s)
             }
+
+            // Drag handle: pull up → more list / less map; pull down → map fullscreen-ish.
+            Capsule()
+                .fill(Color.secondaryGold.opacity(0.55))
+                .frame(width: 40, height: 5)
+                .padding(.top, 6)
+                .padding(.bottom, 4)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 8)
+                        .onChanged { value in
+                            if !sheetDragActive {
+                                sheetDragActive = true
+                                sheetDragStart = sheetExpansion
+                            }
+                            let delta = -value.translation.height / 280
+                            sheetExpansion = min(1, max(0, sheetDragStart + delta))
+                        }
+                        .onEnded { value in
+                            sheetDragActive = false
+                            let delta = -value.translation.height / 280
+                            let raw = min(1, max(0, sheetDragStart + delta))
+                            // Snap to 3 detents (Q34/Q35/Q36).
+                            let snapped: CGFloat
+                            if raw < 0.22 { snapped = 0.08 }
+                            else if raw < 0.55 { snapped = 0.35 }
+                            else { snapped = 0.85 }
+                            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                                sheetExpansion = snapped
+                            }
+                            sheetDragStart = snapped
+                        }
+                )
+                .accessibilityIdentifier("where_phone_sheet_drag_handle")
+                .accessibilityLabel(localizationManager.localized("map_sheet_drag_a11y"))
 
             sheetChipStrip
                 .padding(.vertical, Spacing.s)
@@ -930,6 +984,32 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized("map_perm_precise_hint"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
+                // W9 Q15: Motion honest row (no fake toggle) → Settings.
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("map_motion_row_title"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("map_motion_row_body"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Text(localizationManager.localized("map_motion_open_settings"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("where_phone_motion_settings")
+                }
+                .padding(Spacing.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
+                Text(localizationManager.localized("map_bt_soon_title") + " — " + localizationManager.localized("map_bt_soon_body"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
                 Spacer()
                 actionButton("map_perm_always_cta", id: "where_phone_always_continue") {
                     LocationManager.shared.requestAlwaysUpgradeIfEligible()
@@ -1048,26 +1128,78 @@ struct WhereIsPhoneScreen: View {
             firstOpenTs = now
             return
         }
+        // W4 Q01: soft invite D+1 when family still alone (before premium soft wall).
+        maybeOfferSoftInvite(now: now)
         guard !softPaywallDone else { return }
         let days = (now - firstOpenTs) / 86_400
-        // N=3 calendar days of hub use (master L-P3-01e).
+        // N=3 calendar days of hub use (master L-P3-01e) — W5 premium value nudge.
         if days >= 3 {
             showSoftPaywall = true
         }
     }
 
-    private var softPaywallSheet: some View {
+    /// Soft invite ~24h after first map open if roster still tiny (once).
+    private func maybeOfferSoftInvite(now: Double) {
+        let dismissed = UserDefaults.standard.bool(forKey: "family_invite_soft_dismissed_v1")
+        guard !dismissed else { return }
+        let hours = (now - firstOpenTs) / 3600
+        guard hours >= 24 else { return }
+        let members = FamilyLocalStore.loadPersistedMembers()
+        guard members.count < 2 else { return }
+        UserDefaults.standard.set(true, forKey: "family_invite_soft_dismissed_v1")
+        showSoftInvite = true
+    }
+
+    private var softInviteSheet: some View {
         VStack(spacing: Spacing.m) {
-            Text(localizationManager.localized("map_soft_paywall_title"))
+            Text(localizationManager.localized("family_invite_soft_title"))
                 .font(.system(.title2, design: .serif).weight(.bold))
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
-            Text(localizationManager.localized("map_soft_paywall_body"))
+            Text(localizationManager.localized("family_invite_soft_body"))
                 .font(.subheadline)
                 .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-            actionButton("map_soft_paywall_try", id: "where_phone_soft_paywall_try") {
+            Text(localizationManager.localized("family_invite_ttl_hint"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+            actionButton("family_invite_soft_cta", id: "where_phone_soft_invite_cta") {
+                showSoftInvite = false
+                showInviteRole = true
+            }
+            Button {
+                showSoftInvite = false
+            } label: {
+                Text(localizationManager.localized("family_invite_soft_later"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_soft_invite_later")
+        }
+        .padding(Spacing.l)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black.opacity(0.55).ignoresSafeArea())
+    }
+
+    private var softPaywallSheet: some View {
+        VStack(spacing: Spacing.m) {
+            Text(localizationManager.localized("premium_nudge_map_title"))
+                .font(.system(.title2, design: .serif).weight(.bold))
+                .foregroundColor(.textPrimary)
+                .multilineTextAlignment(.center)
+            Text(localizationManager.localized("premium_nudge_map_body"))
+                .font(.subheadline)
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            actionButton("premium_nudge_cta", id: "where_phone_soft_paywall_try") {
                 softPaywallDone = true
                 showSoftPaywall = false
                 leaveHubThenNavigate(to: NavigationManager.ALADDINScreen.tariffs)
@@ -1099,6 +1231,7 @@ struct WhereIsPhoneScreen: View {
                     Text(localizationManager.localized("family_cal_title"))
                         .font(.system(.title2, design: .serif).weight(.bold))
                         .foregroundColor(.textPrimary)
+                    // Q24: graphical DatePicker draws black digits — force light inset for contrast on storm bg.
                     DatePicker(
                         "",
                         selection: $draftEventStart,
@@ -1107,6 +1240,14 @@ struct WhereIsPhoneScreen: View {
                     .datePickerStyle(.graphical)
                     .labelsHidden()
                     .tint(Color.secondaryGold)
+                    .colorScheme(.light)
+                    .padding(Spacing.s)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(Color.white.opacity(0.92))
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                    .accessibilityIdentifier("where_phone_family_calendar_picker")
 
                     Text(localizationManager.localized("family_cal_create_title"))
                         .font(.system(.title3, design: .serif).weight(.bold))
@@ -1240,9 +1381,10 @@ struct WhereIsPhoneScreen: View {
                 region: $mapRegion,
                 coordinate: mapCoordinate,
                 title: friendlyPointName(mapPointName),
-                mapTypeRaw: mapTypeRaw
+                mapTypeRaw: mapTypeRaw,
+                pinDiameter: pinDiameterForSize(pinSizeRaw)
             )
-            .frame(height: 168)
+            .frame(height: max(140, locationMapMaxHeight - 36))
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
             .accessibilityIdentifier("where_phone_map")
             .overlay(alignment: .topTrailing) {
@@ -1664,6 +1806,14 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// QA16 F2: never show raw `User` / MEM_* on the map caption.
+    private func pinDiameterForSize(_ raw: String) -> CGFloat {
+        switch raw {
+        case "S": return 28
+        case "L": return 48
+        default: return 36
+        }
+    }
+
     private func friendlyPointName(_ raw: String?) -> String {
         let trimmed = (raw ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)

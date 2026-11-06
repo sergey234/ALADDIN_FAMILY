@@ -13,6 +13,8 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     @Published var callerId = ""
     @Published var displayName = ""
     @Published var previewURL: URL?
+    /// Soft tip after pick (txt / large video) — not a hard block.
+    @Published var fileTipMessage: String?
 
     let mediaKind: AntifakeMediaKind
 
@@ -20,8 +22,10 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     private var previewTempURL: URL?
     private let apiService: APIService
     private let localizationManager: LocalizationManager
+    private var activeCheckTask: Task<Bool, Never>?
 
     private static let pollIntervalNanoseconds: UInt64 = 1_000_000_000
+    private static let softVideoWarnBytes = 12 * 1024 * 1024
 
     private static let slaSeconds: [AntifakeMediaKind: Int] = [
         .audio: 120,
@@ -56,10 +60,12 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
         verdict = nil
         errorMessage = nil
         statusMessage = nil
+        fileTipMessage = tipForSelectedFile(data: data, filename: filename)
         previewURL = writePreviewFile(data: data, filename: filename)
     }
 
     func clearSelection() {
+        cancelCheck()
         removePreviewFile()
         fileData = nil
         selectedFilename = nil
@@ -67,14 +73,45 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
         verdict = nil
         errorMessage = nil
         statusMessage = nil
+        fileTipMessage = nil
     }
 
+    /// W1: stop spinner / poll when user taps Cancel.
+    func cancelCheck() {
+        activeCheckTask?.cancel()
+        activeCheckTask = nil
+        if isChecking {
+            isChecking = false
+            statusMessage = nil
+            errorMessage = localizationManager.localized("antifake_upload_cancelled")
+        }
+    }
+
+    @discardableResult
     func submitCheck() async -> Bool {
+        activeCheckTask?.cancel()
+        let task = Task { @MainActor in
+            await self.runCheck()
+        }
+        activeCheckTask = task
+        let ok = await task.value
+        if activeCheckTask == task {
+            activeCheckTask = nil
+        }
+        return ok
+    }
+
+    private func runCheck() async -> Bool {
         guard AppConfig.authToken != nil else {
             errorMessage = localizationManager.localized("antifake_error_unauthorized")
             return false
         }
         guard let fileData, let selectedFilename else { return false }
+
+        if fileData.count > AntifakeShareConstants.maxDocumentBytes {
+            errorMessage = localizationManager.localized("antifake_error_file_too_large")
+            return false
+        }
 
         isChecking = true
         errorMessage = nil
@@ -82,12 +119,16 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
         requiresPremiumUpgrade = false
         statusMessage = localizationManager.localized("antifake_job_uploading")
         defer {
-            isChecking = false
-            statusMessage = nil
+            if !Task.isCancelled {
+                isChecking = false
+                statusMessage = nil
+            }
         }
 
         do {
+            try Task.checkCancellation()
             let enqueue = try await uploadMedia(fileData: fileData, filename: selectedFilename)
+            try Task.checkCancellation()
             let finalVerdict: SecurityVerdict
             switch enqueue {
             case .completed(let verdict):
@@ -96,6 +137,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
                 statusMessage = slaStatusMessage()
                 finalVerdict = try await pollUntilComplete(jobId: job.jobId)
             }
+            try Task.checkCancellation()
             verdict = finalVerdict
             AntifakeAnalytics.trackCheckComplete(
                 kind: mediaKind.rawValue,
@@ -105,16 +147,38 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
             AntifakeHistoryRecorder.record(
                 verdict: finalVerdict,
                 kind: mediaKind.rawValue,
-                summary: selectedFilename ?? mediaKind.rawValue
+                summary: selectedFilename
             )
             if mediaKind == .call {
                 AntifakeLastCallContext.save(callerId: callerId, displayName: displayName)
             }
             return true
+        } catch is CancellationError {
+            errorMessage = localizationManager.localized("antifake_upload_cancelled")
+            isChecking = false
+            statusMessage = nil
+            return false
         } catch {
+            if Task.isCancelled {
+                errorMessage = localizationManager.localized("antifake_upload_cancelled")
+                isChecking = false
+                statusMessage = nil
+                return false
+            }
             handleCheckError(error)
             return false
         }
+    }
+
+    private func tipForSelectedFile(data: Data, filename: String) -> String? {
+        let ext = (filename as NSString).pathExtension.lowercased()
+        if mediaKind == .document, ["txt", "rtf", "text"].contains(ext) {
+            return localizationManager.localized("antifake_doc_prefer_photo")
+        }
+        if mediaKind == .video, data.count >= Self.softVideoWarnBytes {
+            return localizationManager.localized("antifake_video_size_hint")
+        }
+        return nil
     }
 
     private func slaStatusMessage() -> String {
@@ -125,6 +189,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
 
     private func uploadMedia(fileData: Data, filename: String) async throws -> AntifakeJobEnqueueResult {
         try await withCheckedThrowingContinuation { continuation in
+            var resumed = false
             apiService.antifakeUploadMedia(
                 kind: mediaKind,
                 fileData: fileData,
@@ -132,6 +197,8 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
                 mimeType: Self.mimeType(for: filename, kind: mediaKind),
                 extraFormFields: callFormFields()
             ) { result in
+                guard !resumed else { return }
+                resumed = true
                 continuation.resume(with: result)
             }
         }
@@ -139,6 +206,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
 
     private func pollUntilComplete(jobId: String) async throws -> SecurityVerdict {
         for _ in 0..<maxPollAttempts {
+            try Task.checkCancellation()
             let outcome = try await pollJob(jobId: jobId)
             switch outcome {
             case .completed(let verdict):
@@ -156,7 +224,10 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
 
     private func pollJob(jobId: String) async throws -> AntifakeJobPollOutcome {
         try await withCheckedThrowingContinuation { continuation in
+            var resumed = false
             apiService.antifakePollJob(jobId: jobId) { result in
+                guard !resumed else { return }
+                resumed = true
                 continuation.resume(with: result)
             }
         }
@@ -188,6 +259,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
         case .video:
             return [.movie, .mpeg4Movie, .quickTimeMovie, .video]
         case .document:
+            // Prefer photo/PDF in picker order; keep plainText but tip warns (W1 Q28).
             return [.pdf, .image, .jpeg, .png, .heic, .plainText, .rtf]
         }
     }

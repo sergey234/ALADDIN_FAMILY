@@ -184,16 +184,17 @@ enum AntifakeCheckFailureHandler {
         switch networkError {
         case .unauthorized:
             message = localizationManager.localized("antifake_error_unauthorized")
-        case .badRequest(let detail) where detail?.contains("file_too_large") == true:
+        case .badRequest(let detail) where Self.isFileTooLarge(detail):
             message = localizationManager.localized("antifake_error_file_too_large")
         case .notFound:
             message = localizationManager.localized("antifake_error_job_not_found")
         case .timeout:
-            message = localizationManager.localized("antifake_error_job_timeout")
+            // W1 Q29: friendlier copy than raw timeout jargon
+            message = localizationManager.localized("antifake_timeout_friendly")
         case .tooManyRequests:
             message = localizationManager.localized("antifake_error_rate_limit")
         case .serviceUnavailable, .badGateway, .internalServerError:
-            message = localizationManager.localized("antifake_error_service_unavailable")
+            message = localizationManager.localized("antifake_sync_fail")
         case .forbidden(let detail) where networkError.isPremiumRequired:
             // Defense in depth if outcome(from:) missed nested detail
             return AntifakeCheckFailurePresentation(
@@ -202,9 +203,24 @@ enum AntifakeCheckFailureHandler {
                     ?? localizationManager.localized("antifake_premium_required_body")
             )
         default:
-            message = localizationManager.localized("antifake_error_try_later")
+            // URLError timedOut / network lost often lands here
+            let ns = error as NSError
+            if ns.domain == NSURLErrorDomain,
+               ns.code == NSURLErrorTimedOut || ns.code == NSURLErrorNetworkConnectionLost {
+                message = localizationManager.localized("antifake_timeout_friendly")
+            } else if ns.domain == NSURLErrorDomain {
+                message = localizationManager.localized("antifake_sync_fail")
+            } else {
+                message = localizationManager.localized("antifake_error_try_later")
+            }
         }
         return AntifakeCheckFailurePresentation(requiresPremiumUpgrade: false, errorMessage: message)
+    }
+
+    /// APIService maps HTTP 413 to `badRequest("File too large")` when the server sends no detail.
+    private static func isFileTooLarge(_ detail: String?) -> Bool {
+        guard let lowered = detail?.lowercased() else { return false }
+        return lowered.contains("file_too_large") || lowered.contains("file too large")
     }
 }
 

@@ -3441,7 +3441,13 @@
 "pet_routine_feed" = "Напоминать про корм";
 "pet_routine_medicine" = "Напоминать про лекарства";
 "pet_save_cta" = "Сохранить питомца";
-"pet_saved_local" = "Сохранено на этом iPhone. Живая карта питомца — позже, без фейковых точек.";
+"pet_saved_local" = "Сохранено на этом iPhone. Живая карта питомца появится позже.";
+"pet_custom_reminder_ph" = "Своё напоминание";
+"pet_custom_reminder_toggle" = "Своё напоминание";
+"crash_confirm_sending" = "Отправляем сигнал семье…";
+"crash_confirm_sent" = "Семья получила сигнал";
+"crash_confirm_fail" = "Не удалось отправить. Попробуйте ещё раз или напишите в чат семьи.";
+"crash_confirm_offline" = "Нет сети — сохраним и отправим позже.";
 "calldir_guide_title" = "Определитель и блокировка";
 "calldir_guide_body" = "Включите расширение Call Directory в Настройках iPhone, чтобы спам-номера фильтровались.";
 "adblock_title" = "Анти-Баннер";
@@ -3453,11 +3459,17 @@
 "vk_connect_title" = "ВКонтакте";
 "vk_connect_body" = "Подключение VK — позже, честно по OAuth. Пока пусто без заглушки API.";
 "child_overview_title" = "Обзор ребёнка";
-"child_overview_body" = "Пауза, лимиты и сон — в этой двери. Полные отчёты — в родительском разделе.";
+"child_overview_body" = "Пауза, сайты, лимит и сон — ниже. Полные отчёты — в родительском разделе.";
 "map_live_speed_label" = "Скорость";
-"family_access_full" = "Полный доступ";
-"family_access_limited" = "Ограниченный доступ";
-"family_access_hint" = "Выберите, сколько видит семья. Настройка — в разделе Семья.";
+"family_access_section_title" = "Кто виден на карте";
+"family_access_section_body" = "Только для двери «Где семья». Пауза и лимиты от этого не меняются.";
+"family_access_full" = "Вся семья";
+"family_access_limited" = "Только я";
+"family_access_hint" = "Выберите, чьи точки показывать на карте.";
+"family_access_effect_full" = "Сейчас: на карте все, кто поделился местом.";
+"family_access_effect_limited" = "Сейчас: на карте только ваша точка.";
+"family_access_toast_full" = "Карта: показываем всю семью";
+"family_access_toast_limited" = "Карта: только вы, остальные скрыты";
 
 /* map_live_* */
 "map_live_sheet_circle" = "Семья";
@@ -3477,10 +3489,10 @@
 
 /* map_perm_* */
 "map_perm_always_title" = "Разрешите «Всегда»";
-"map_perm_always_body" = "Так карта семьи обновляется, когда приложение закрыто. Мы просим доступ, чтобы вы видели, где телефоны семьи — не чтобы следить.";
+"map_perm_always_body" = "Так карта обновляется, когда приложение закрыто — вы видите, где телефоны семьи.";
 "map_perm_always_cta" = "Продолжить";
 "map_perm_open_settings" = "Открыть Настройки";
-"map_perm_precise_hint" = "Включите также «Точные» места";
+"map_perm_precise_hint" = "В Настройках iPhone включите «Точные» для ALADDIN — точка будет точнее.";
 
 /* map_member_* */
 "map_member_save_place" = "Сохранить место";
@@ -3600,7 +3612,7 @@
 "pet_routine_me" = "Мне";
 "pet_routine_save" = "Сохранить напоминание";
 "pet_protected_title" = "%@ в вашей семье";
-"pet_protected_body" = "Профиль питомца сохранён. Живая метка на карте появится, когда подключим партнёра — без фейковых точек.";
+"pet_protected_body" = "Профиль питомца сохранён. Живая метка на карте появится, когда подключим партнёра.";
 "pet_beacon_title" = "Маячок для питомца";
 "pet_beacon_soon" = "В скором времени. Пока можно вести профиль и рутины.";
 "items_promo_title" = "Вещи на карте появятся позже";
@@ -3628,3 +3640,61 @@
 "paywall_monthly" = "Ежемесячно";
 "paywall_yearly" = "Ежегодно";
 "paywall_start_trial" = "Начать пробный период";
+
+/* W1 Antifake media UX 2026-11-05 */
+"antifake_upload_cancel" = "Отменить";
+"antifake_retry" = "Повторить";
+"antifake_timeout_friendly" = "Проверка заняла слишком много времени. Проверьте сеть и попробуйте ещё раз.";
+"antifake_doc_prefer_photo" = "Лучше фото или PDF штрафа/договора. Текстовый файл может не подойти.";
+"antifake_video_size_hint" = "Большое видео грузится дольше. Попробуйте короткий ролик до 25 МБ.";
+"antifake_call_soon" = "Проверка звонка может занять больше времени. Если зависает — Отменить и повторить, или проверьте голос/текст.";
+"antifake_sync_fail" = "Не удалось связаться с сервером проверки. Повторите через минуту.";
+"antifake_upload_cancelled" = "Проверка отменена";
+
+/* W2–W9 Family Safety Device QA 2026-11-05 */
+"family_invite_soft_title" = "Пора пригласить близких";
+"family_invite_soft_body" = "Добавьте ещё одного человека в семью — увидите защиту и точку на карте.";
+"family_invite_soft_cta" = "Пригласить";
+"family_invite_soft_later" = "Позже";
+"family_invite_ttl_hint" = "Коды приглашения действуют 3 дня. Если не успели — отправьте новый.";
+"map_pin_size_title" = "Размер метки";
+"map_pin_size_s" = "S";
+"map_pin_size_m" = "M";
+"map_pin_size_l" = "L";
+"map_motion_row_title" = "Движение и фитнес";
+"map_motion_row_body" = "Нужно для отчётов о поездках и сигналов о ДТП. Включите в Настройках iPhone.";
+"map_motion_open_settings" = "Открыть Настройки";
+"map_bt_soon_title" = "Bluetooth";
+"map_bt_soon_body" = "Рядом / метки — в скором времени.";
+"main_simple_badge" = "Главный вход";
+"connect_device_title" = "Подключите устройство близкого";
+"connect_device_body_a" = "Добавьте телефон близкого — увидите защиту и точку на карте.";
+"connect_device_cta" = "Пригласить";
+"tariffs_levels_title" = "Что входит в тарифы";
+"tariffs_levels_devices_fmt" = "Устройства: бесплатно %d · семья %d · премиум %d";
+"tariffs_free_simple" = "1 устройство · базовая проверка · карта последней точки · ребёнок и SOS";
+"tariffs_family_simple" = "Несколько устройств · живая карта · Antifake · места и история дня";
+"tariffs_premium_simple" = "Всё из Family · расширенные проверки · приоритетная поддержка";
+"tariffs_col_free" = "Бесплат.";
+"tariffs_col_family" = "Семья";
+"tariffs_col_premium" = "Премиум";
+"premium_nudge_map_title" = "Больше спокойствия на карте";
+"premium_nudge_map_body" = "В Family — живая карта и больше мест для семьи.";
+"premium_nudge_antifake_title" = "Нужно больше проверок?";
+"premium_nudge_antifake_body" = "В Family и Premium — расширенный Antifake для семьи.";
+"premium_nudge_cta" = "Смотреть тарифы";
+"calldir_unknown_build" = "Расширение звонков не найдено в этой сборке. Обновите приложение из TestFlight.";
+"adblock_safari_steps_title" = "Включите в Safari";
+"adblock_safari_steps_body" = "Настройки → Safari → Расширения → ALADDIN → включите.";
+"adblock_safari_open_settings" = "Открыть Настройки";
+"drive_inc_phone_title" = "Телефон";
+"drive_inc_speed_title" = "Скорость";
+"drive_inc_accel_title" = "Разгон";
+"drive_inc_brake_title" = "Торможение";
+"drive_inc_phone_explain" = "Использование телефона за рулём повышает риск. Счётчик появится, когда поездки начнут фиксироваться на устройстве.";
+"drive_inc_speed_explain" = "Риск высокой скорости. Пока нет детальных поездок — показываем честный ноль, без выдуманных цифр.";
+"drive_inc_accel_explain" = "Резкий разгон — резкое ускорение. Когда появятся данные с датчиков, здесь будет число за неделю.";
+"drive_inc_brake_explain" = "Резкое торможение. Пояснение для семьи: что случилось и когда появятся реальные события.";
+"drive_inc_explain_data_note" = "Пока нет поездок с датчиками — счётчики 0. Включите «Движение и фитнес» в Настройках.";
+"drive_export_pdf" = "Поделиться PDF";
+"drive_pdf_disclaimer" = "Оценка для семьи, не страховой отчёт.";

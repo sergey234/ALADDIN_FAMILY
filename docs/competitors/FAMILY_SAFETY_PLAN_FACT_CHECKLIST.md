@@ -87,6 +87,8 @@
 | 2026-11-04 | 7a PNG | SF Symbol only | FIG_L01 pin + FIG_L03 FAB in app; L25 PNG in assets/docs | interim; 7b [D] |
 | 2026-11-04 | remainder | plan only | B-depth+Pet01i+Wave A+C code (no Figma/P4) | static grep; wait GO на сборку |
 | 2026-11-04 | 6 gaps | chrome-only | SOS→sendNeedHelp · pet→habit-reminders · share TTL · quiet filter · MK mapType · Full/Limited gate | code; AnalyticsViewModel(service:) compile fix |
+| 2026-11-05 | Device QA screens | §8 open | Новый план `FAMILY_SAFETY_DEVICE_QA_MASTER_PLAN_2026-11-05.md` · Q01–Q36 · волны W0–W9 | screenshots `qa_device_2026-11-05/` |
+| 2026-11-05 | **GO код W0** | open | Q13 back→Main · Q21 spy/precise · Q22 custom pet · Q23 fake-pins copy · Q24 calendar light inset · Q25 crash timeout+toast · plan §10.5 lock | code+strings; device evidence ⏳ `GO на сборку` |
 
 ---
 

@@ -9,17 +9,17 @@ struct AntifakeInlinePremiumGateCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Label(
-                localizationManager.localized("antifake_premium_required_title"),
+                localizationManager.localized("premium_nudge_antifake_title"),
                 systemImage: "lock.shield.fill"
             )
             .font(.headline)
             .foregroundColor(.white)
 
-            Text(message ?? localizationManager.localized("antifake_premium_required_body"))
+            Text(message ?? localizationManager.localized("premium_nudge_antifake_body"))
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
 
-            PrimaryButton(localizationManager.localized("protection_upgrade_tariff")) {
+            PrimaryButton(localizationManager.localized("premium_nudge_cta")) {
                 onUpgrade()
             }
         }

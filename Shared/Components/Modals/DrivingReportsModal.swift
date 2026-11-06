@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoreLocation
 
 /**
@@ -31,6 +32,9 @@ struct DrivingReportsModal: View {
     @AppStorage("driving_reports_period") private var selectedPeriod: String = "week"
     @State private var selectedFilter: FilterType = .all
     @State private var showPositioningSystemPicker: Bool = false
+    @State private var explainKind: DriveIncidentKind?
+    @State private var sharePDFItems: [Any] = []
+    @State private var showSharePDF = false
     
     enum FilterType: String, CaseIterable {
         case all = "all"
@@ -100,6 +104,12 @@ struct DrivingReportsModal: View {
             )
             .environmentObject(localizationManager)
         }
+        .sheet(item: $explainKind) { kind in
+            driveIncidentExplainSheet(kind)
+        }
+        .sheet(isPresented: $showSharePDF) {
+            ShareSheet(activityItems: sharePDFItems)
+        }
     }
 
     private var selectedUserBinding: Binding<String?> {
@@ -135,6 +145,13 @@ struct DrivingReportsModal: View {
 
                     if let stats = viewModel.stats {
                         statsSection(stats: stats)
+                            .padding(.horizontal, Spacing.screenPadding)
+                        weeklyIncidentStrip(stats: stats)
+                            .padding(.horizontal, Spacing.screenPadding)
+                        exportPDFButton(stats: stats)
+                            .padding(.horizontal, Spacing.screenPadding)
+                    } else if !viewModel.isLoading {
+                        weeklyIncidentStrip(stats: nil)
                             .padding(.horizontal, Spacing.screenPadding)
                     }
 
@@ -623,7 +640,188 @@ struct DrivingReportsModal: View {
         // Сетевая загрузка больше не требуется: используем данные из AnalyticsViewModel.componentsAnalytics
         viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: selectedPeriod)
     }
+
+    // MARK: - W3 Q02–Q06 weekly strip + PDF
+
+    private func weeklyIncidentStrip(stats: DrivingStats?) -> some View {
+        let counts = incidentCounts(from: stats)
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("drive_weekly_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+            if stats == nil || (stats?.totalTrips ?? 0) == 0 {
+                Text(localizationManager.localized("drive_no_trips"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+            HStack(spacing: Spacing.s) {
+                ForEach(DriveIncidentKind.allCases) { kind in
+                    Button {
+                        explainKind = kind
+                    } label: {
+                        VStack(spacing: 4) {
+                            Text(kind.emoji)
+                                .font(.title2)
+                            Text("\(counts[kind] ?? 0)")
+                                .font(.headline.weight(.bold))
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized(kind.titleKey))
+                                .font(.caption2)
+                                .foregroundColor(.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.8)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.s)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("drive_inc_\(kind.rawValue)")
+                }
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+        .accessibilityIdentifier("drive_weekly_incident_strip")
+    }
+
+    private func incidentCounts(from stats: DrivingStats?) -> [DriveIncidentKind: Int] {
+        _ = stats?.violationsCount
+        return Dictionary(uniqueKeysWithValues: DriveIncidentKind.allCases.map { ($0, 0) })
+    }
+
+    private func exportPDFButton(stats: DrivingStats) -> some View {
+        Button {
+            if let url = FamilyDrivingWeeklyReportPDF.write(
+                stats: stats,
+                periodLabel: localizationManager.localized(
+                    selectedPeriod == "month" ? "driving_reports_filter_month" : "drive_this_week"
+                ),
+                localization: localizationManager
+            ) {
+                sharePDFItems = [url]
+                showSharePDF = true
+            }
+        } label: {
+            HStack {
+                Image(systemName: "square.and.arrow.up")
+                Text(localizationManager.localized("drive_export_pdf"))
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(.backgroundDark)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.secondaryGold)
+            .cornerRadius(CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("drive_export_pdf")
+    }
+
+    private func driveIncidentExplainSheet(_ kind: DriveIncidentKind) -> some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                Text(kind.emoji + " " + localizationManager.localized(kind.titleKey))
+                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized(kind.explainKey))
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(localizationManager.localized("drive_inc_explain_data_note"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                Spacer()
+            }
+            .padding(Spacing.l)
+            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .navigationBarItems(trailing: Button(localizationManager.localized("common_done")) {
+                explainKind = nil
+            })
+        }
+    }
 }
+
+enum DriveIncidentKind: String, CaseIterable, Identifiable {
+    case phone
+    case speed
+    case accel
+    case brake
+
+    var id: String { rawValue }
+
+    var emoji: String {
+        switch self {
+        case .phone: return "📱"
+        case .speed: return "🔴"
+        case .accel: return "⚡️"
+        case .brake: return "🟡"
+        }
+    }
+
+    var titleKey: String {
+        switch self {
+        case .phone: return "drive_inc_phone_title"
+        case .speed: return "drive_inc_speed_title"
+        case .accel: return "drive_inc_accel_title"
+        case .brake: return "drive_inc_brake_title"
+        }
+    }
+
+    var explainKey: String {
+        switch self {
+        case .phone: return "drive_inc_phone_explain"
+        case .speed: return "drive_inc_speed_explain"
+        case .accel: return "drive_inc_accel_explain"
+        case .brake: return "drive_inc_brake_explain"
+        }
+    }
+}
+
+enum FamilyDrivingWeeklyReportPDF {
+    static func write(
+        stats: DrivingStats,
+        periodLabel: String,
+        localization: LocalizationManager
+    ) -> URL? {
+        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("aladdin_drive_\(Int(Date().timeIntervalSince1970)).pdf")
+        do {
+            try renderer.writePDF(to: url) { ctx in
+                ctx.beginPage()
+                let title = localization.localized("drive_weekly_title")
+                let body = """
+                \(periodLabel)
+
+                \(localization.localized("drive_trips")): \(stats.totalTrips)
+                \(localization.localized("drive_total_km")): \(String(format: "%.1f", stats.totalDistance))
+                \(localization.localized("driving_reports_safety_score")): \(stats.formattedAverageSafetyScore)
+                \(localization.localized("driving_reports_violations")): \(stats.violationsCount)
+
+                \(localization.localized("drive_pdf_disclaimer"))
+                """
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 18, weight: .bold)
+                ]
+                (title as NSString).draw(at: CGPoint(x: 48, y: 48), withAttributes: attrs)
+                let bodyAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 14)
+                ]
+                (body as NSString).draw(
+                    in: CGRect(x: 48, y: 90, width: 516, height: 600),
+                    withAttributes: bodyAttrs
+                )
+            }
+            return url
+        } catch {
+            return nil
+        }
+    }
+}
+
 
 // MARK: - Preview
 

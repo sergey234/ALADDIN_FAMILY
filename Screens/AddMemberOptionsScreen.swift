@@ -67,7 +67,7 @@ struct AddMemberOptionsScreen: View {
             ZStack {
                 StormMeshBackground(variant: .family)
 
-                VStack(spacing: 16) {
+                VStack(spacing: 0) {
                     // Кнопка назад — отступ с учётом safe area (Dynamic Island / чёлка)
                     HStack {
                         Button(action: {
@@ -84,20 +84,32 @@ struct AddMemberOptionsScreen: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, max(20, proxy.safeAreaInsets.top + 12))
+                    .padding(.bottom, 8)
 
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 16) {
                             // Заголовок + Limit Banner (consistent with FamilyScreen)
                             VStack(spacing: 8) {
-                                Text(localizationManager.localized("add_member_title"))
+                                Text(localizationManager.localized("connect_device_title"))
                                     .font(.system(size: 24, weight: .bold))
                                     .foregroundColor(.white)
 
-                                Text(localizationManager.localized("add_member_subtitle"))
+                                Text(localizationManager.localized("connect_device_body_a"))
                                     .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(.white.opacity(0.9))
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             .padding(.top, 8)
+                            .padding(.horizontal, 8)
+                            .padding(.bottom, 4)
+                            .frame(maxWidth: .infinity)
+                            .padding(14)
+                            .stormGlassCard(cornerRadius: 14)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.secondaryGold.opacity(0.85), lineWidth: 1.5)
+                            )
 
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(localizationManager.localized("invite_center_choose_flow_title"))
@@ -154,7 +166,8 @@ struct AddMemberOptionsScreen: View {
                                         description: localizationManager.localized(
                                             hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
                                         ),
-                                        color: Color(red: 1.0, green: 0.84, blue: 0.35), // gold
+                                        color: .secondaryGold,
+                                        goldAccent: true, // QA16 B1
                                         enabled: (!hasExistingFamilyOnDevice || canManageFamilyRosterFromCache) && canAddHere
                                     ) {
                                         // ✅ FIXED: Pure navigation - no internal modals
@@ -273,8 +286,23 @@ struct AddMemberOptionsScreen: View {
                             .padding(.bottom, 10)
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 90)
+                        .padding(.bottom, 16)
                     }
+
+                    // QA16 I2: Отмена зафиксирована внизу VStack — не safeAreaInset (плавала по скроллу).
+                    Button(localizationManager.localized("add_member_cancel")) {
+                        navigationManager.goBack()
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(0.9))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(Color.white.opacity(0.12))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, max(10, proxy.safeAreaInsets.bottom))
+                    .accessibilityIdentifier("add_member_cancel_fixed")
                 }
                 .id("add_member_screen_lang_\(localizationManager.currentLanguage.rawValue)")
             }
@@ -306,20 +334,6 @@ struct AddMemberOptionsScreen: View {
             )
             .environmentObject(localizationManager)
         }
-        .safeAreaInset(edge: .bottom) {
-            Button(localizationManager.localized("add_member_cancel")) {
-                navigationManager.goBack()
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(.white.opacity(0.9))
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(Color.white.opacity(0.12))
-            .cornerRadius(12)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .background(.ultraThinMaterial)
-        }
     }
     
     // MARK: - Navigation Helpers
@@ -331,7 +345,7 @@ struct AddMemberOptionsScreen: View {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             if navigationManager.navigationStack.isEmpty {
-                navigationManager.navigationStack = [.main]
+                navigationManager.navigationStack = [NavigationManager.homeEntryScreen()]
             }
             navigationManager.navigateTo(.family)
         }
@@ -344,6 +358,7 @@ struct AddMemberOptionsScreen: View {
         title: String,
         description: String,
         color: Color,
+        goldAccent: Bool = false,
         enabled: Bool = true,
         action: @escaping () -> Void
     ) -> some View {
@@ -385,10 +400,17 @@ struct AddMemberOptionsScreen: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.10))
+                    .fill(
+                        goldAccent
+                            ? Color.secondaryGold.opacity(0.14)
+                            : Color.white.opacity(0.10)
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(color.opacity(0.65), lineWidth: 1.5)
+                            .stroke(
+                                color.opacity(goldAccent ? 0.95 : 0.65),
+                                lineWidth: goldAccent ? 2 : 1.5
+                            )
                     )
             )
             .opacity(enabled ? 1 : 0.48)

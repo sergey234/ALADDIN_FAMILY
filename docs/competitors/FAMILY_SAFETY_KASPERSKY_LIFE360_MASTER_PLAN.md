@@ -1013,10 +1013,10 @@ Driving weekly · multi-circle · Flight · ID theft · live Pet/dispatch.
 - [x] Копии `L01.jpg`…`L90.jpg` / `S01.jpg`…`S60.jpg`
 
 **Ещё ждёт GO владельца (исполнение):**
-- [ ] Swift §17 шаг 1…8 (см. checklist plan/fact)  
-- [ ] Figma приоритет FIG-L34+L15+L25+L01+L03 → до Device QA; 3D Pet later  
+- [x] Swift §17 шаг 1…7a (см. checklist) · 7b Figma [D] · 8 Device QA → **открыт**  
+- [ ] Device QA батчи W0–W9: [`FAMILY_SAFETY_DEVICE_QA_MASTER_PLAN_2026-11-05.md`](FAMILY_SAFETY_DEVICE_QA_MASTER_PLAN_2026-11-05.md)  
+- [ ] Figma приоритет FIG-L34+L15+L25+L01+L03 (7b долг)  
 - [ ] Партнёры или empty (Tile/evac/live Pet)  
-- [ ] Device QA после «GO на сборку»  
 - [ ] Commit/push по просьбе  
 
 **Как передать Figma-ML:** файл `FIGMA_FAMILY_SAFETY_ML_PROMPTS.md` §1 + §6 (один FIG-id за раз).  

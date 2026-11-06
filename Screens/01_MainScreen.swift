@@ -611,24 +611,40 @@ struct MainScreen: View {
                             .accessibilityIdentifier("main_nav_settings")
 
                             // Удобный режим — прямой вход (не «Ещё»; «Защитить родителей» — внутри Удобного → Ещё).
+                            // QA16 B2: лёгкий золотой акцент, чтобы карточка выделялась в сетке.
                             Button(action: {
                                 navigationManager.navigateToSimpleHome()
                             }) {
-                                VStack(spacing: 8) {
+                                VStack(spacing: 6) {
+                                    Text(localizationManager.localized("main_simple_badge"))
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(.backgroundDark)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Color.secondaryGold)
+                                        .clipShape(Capsule())
                                     Text("🏠")
                                         .font(.system(size: 20))
                                     Text(localizationManager.localized("main_simple_version_title"))
                                         .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.secondaryGold)
                                         .multilineTextAlignment(.center)
                                     Text(localizationManager.localized("main_simple_version_subtitle"))
                                         .font(.system(size: 10))
-                                        .foregroundColor(.white.opacity(0.8))
+                                        .foregroundColor(.white.opacity(0.9))
                                         .multilineTextAlignment(.center)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 80)
+                                .frame(height: 92)
                                 .stormGlassCard(cornerRadius: 10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.secondaryGold, lineWidth: 2)
+                                )
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.secondaryGold.opacity(0.18))
+                                )
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_simple_home")

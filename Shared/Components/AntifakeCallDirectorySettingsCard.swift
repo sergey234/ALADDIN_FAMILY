@@ -4,6 +4,7 @@ import CallKit
 /// Call Directory enable + sync row (af-m2).
 struct AntifakeCallDirectorySettingsCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var enabledStatus: CXCallDirectoryManager.EnabledStatus = .unknown
     @State private var isSyncing = false
@@ -45,7 +46,7 @@ struct AntifakeCallDirectorySettingsCard: View {
                 HStack(alignment: .top, spacing: Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.warningOrange)
-                    Text(localizationManager.localized("antifake_call_directory_not_installed_banner"))
+                    Text(localizationManager.localized("calldir_unknown_build"))
                         .font(.caption2)
                         .foregroundColor(.warningOrange)
                 }
@@ -85,6 +86,12 @@ struct AntifakeCallDirectorySettingsCard: View {
         .accessibilityLabel(localizationManager.localized("antifake_call_directory_title"))
         .accessibilityHint(localizationManager.localized("antifake_call_directory_body"))
         .task { await refreshStatus() }
+        .onChange(of: scenePhase) { phase in
+            // W6 Q16/Q31: refresh ON/OFF after return from Settings.
+            if phase == .active {
+                Task { await refreshStatus() }
+            }
+        }
         .sheet(isPresented: $showSetupGuide) {
             AntifakeCallDirectorySetupSheet(onDismiss: { showSetupGuide = false })
                 .environmentObject(localizationManager)

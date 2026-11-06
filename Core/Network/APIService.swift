@@ -4438,6 +4438,8 @@ class APIService: ObservableObject {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.cachePolicy = .reloadIgnoringLocalCacheData
+            // W1: avoid endless «Uploading…» — hard timeout on antifake media upload.
+            request.timeoutInterval = 90
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             // afl10n-p0-02: in-app language (same as NetworkManager), not device preferredLanguages
@@ -5013,6 +5015,7 @@ class APIService: ObservableObject {
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
             request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.timeoutInterval = 30
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             // afl10n-p0-02: in-app language (same as NetworkManager), not device preferredLanguages
             let lang = Self.aladdinUILangCode()

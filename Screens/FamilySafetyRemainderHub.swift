@@ -197,6 +197,8 @@ struct FamilyHubMapKitView: UIViewRepresentable {
     var coordinate: CLLocationCoordinate2D?
     var title: String
     var mapTypeRaw: String
+    /// W2 Q18: S/M/L from pin editor (points).
+    var pinDiameter: CGFloat = 36
 
     func makeUIView(context: Context) -> MKMapView {
         let map = MKMapView(frame: .zero)
@@ -209,6 +211,7 @@ struct FamilyHubMapKitView: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
+        context.coordinator.pinDiameter = pinDiameter
         switch mapTypeRaw {
         case "satellite":
             mapView.mapType = .satellite
@@ -230,17 +233,52 @@ struct FamilyHubMapKitView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     final class Coordinator: NSObject, MKMapViewDelegate {
+        var pinDiameter: CGFloat = 36
+
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation { return nil }
-            let id = "family_hub_pin"
-            let view = mapView.dequeueReusableAnnotationView(withIdentifier: id)
-                ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: id)
+            let id = "family_hub_avatar_pin"
+            let view = (mapView.dequeueReusableAnnotationView(withIdentifier: id) as? FamilyHubAvatarPinView)
+                ?? FamilyHubAvatarPinView(annotation: annotation, reuseIdentifier: id)
             view.annotation = annotation
-            if let marker = view as? MKMarkerAnnotationView {
-                marker.markerTintColor = UIColor(Color.secondaryGold)
-            }
+            view.apply(size: pinDiameter, title: annotation.title ?? nil)
             return view
         }
+    }
+}
+
+/// Circular avatar-style pin (initial letter + gold ring). Size from Q18 editor.
+private final class FamilyHubAvatarPinView: MKAnnotationView {
+    private let bubble = UILabel()
+    private let ring = UIView()
+
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        clusteringIdentifier = nil
+        canShowCallout = false
+        ring.backgroundColor = UIColor(Color.backgroundMedium)
+        ring.layer.borderColor = UIColor(Color.secondaryGold).cgColor
+        ring.layer.borderWidth = 2
+        ring.clipsToBounds = true
+        addSubview(ring)
+        bubble.textAlignment = .center
+        bubble.textColor = UIColor(Color.secondaryGold)
+        bubble.font = .systemFont(ofSize: 14, weight: .bold)
+        ring.addSubview(bubble)
+    }
+
+    required init?(coder aDecoder: NSCoder) { nil }
+
+    func apply(size: CGFloat, title: String?) {
+        let d = max(24, min(56, size))
+        frame = CGRect(x: 0, y: 0, width: d, height: d)
+        centerOffset = CGPoint(x: 0, y: -d / 4)
+        ring.frame = bounds
+        ring.layer.cornerRadius = d / 2
+        bubble.frame = bounds
+        bubble.font = .systemFont(ofSize: d * 0.38, weight: .bold)
+        let letter = (title?.trimmingCharacters(in: .whitespacesAndNewlines).first).map(String.init) ?? "·"
+        bubble.text = letter.uppercased()
     }
 }
 
@@ -286,14 +324,30 @@ struct FamilyMapPinPreviewSheet: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     @AppStorage("where_phone_pin_preview_done") private var previewDone = false
+    /// W2 Q18: S=28 · M=36 · L=48
+    @AppStorage("where_phone_pin_size") private var pinSizeRaw: String = "M"
+
+    private var previewDiameter: CGFloat {
+        switch pinSizeRaw {
+        case "S": return 28
+        case "L": return 48
+        default: return 36
+        }
+    }
 
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.m) {
-                Image("FIG_L01_MapPinBattery")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 96, height: 96)
+                ZStack {
+                    Circle()
+                        .fill(Color.backgroundMedium)
+                        .frame(width: previewDiameter, height: previewDiameter)
+                        .overlay(Circle().stroke(Color.secondaryGold, lineWidth: 2))
+                    Text("A")
+                        .font(.system(size: previewDiameter * 0.38, weight: .bold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .padding(.top, Spacing.m)
                 Text(localizationManager.localized("map_pin_preview_title"))
                     .font(.system(.title2, design: .serif).weight(.bold))
                     .foregroundColor(.textPrimary)
@@ -302,6 +356,26 @@ struct FamilyMapPinPreviewSheet: View {
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
+                Text(localizationManager.localized("map_pin_size_title"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.textSecondary)
+                HStack(spacing: Spacing.s) {
+                    ForEach(["S", "M", "L"], id: \.self) { size in
+                        Button {
+                            pinSizeRaw = size
+                        } label: {
+                            Text(localizationManager.localized("map_pin_size_\(size.lowercased())"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(pinSizeRaw == size ? .backgroundDark : .textPrimary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(pinSizeRaw == size ? Color.secondaryGold : Color.backgroundMedium.opacity(0.5))
+                                .cornerRadius(CornerRadius.medium)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("map_pin_size_\(size)")
+                    }
+                }
                 Button {
                     previewDone = true
                     isPresented = false
@@ -398,7 +472,8 @@ struct FamilyPetWizardSheet: View {
     @State private var notes = ""
     @State private var walk = true
     @State private var feed = true
-    @State private var medicine = false
+    /// Q22: free-text reminder instead of fixed «medicine» toggle.
+    @State private var customReminder = ""
     @State private var saved = false
 
     var body: some View {
@@ -427,11 +502,12 @@ struct FamilyPetWizardSheet: View {
                             .foregroundColor(.textPrimary)
                     }
                     .tint(.secondaryGold)
-                    Toggle(isOn: $medicine) {
-                        Text(localizationManager.localized("pet_routine_medicine"))
-                            .foregroundColor(.textPrimary)
-                    }
-                    .tint(.secondaryGold)
+                    Text(localizationManager.localized("pet_custom_reminder_toggle"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    TextField(localizationManager.localized("pet_custom_reminder_ph"), text: $customReminder)
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("pet_custom_reminder_field")
 
                     if saved {
                         Text(localizationManager.localized("pet_saved_local"))
@@ -465,37 +541,46 @@ struct FamilyPetWizardSheet: View {
     private func savePet() {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        let custom = customReminder.trimmingCharacters(in: .whitespacesAndNewlines)
+        var mergedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !custom.isEmpty {
+            if mergedNotes.isEmpty {
+                mergedNotes = custom
+            } else if !mergedNotes.contains(custom) {
+                mergedNotes = "\(mergedNotes)\n\(custom)"
+            }
+        }
         let pet = FamilyPetProfile(
             id: UUID(),
             name: trimmed,
             breed: breed.trimmingCharacters(in: .whitespacesAndNewlines),
-            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+            notes: mergedNotes,
             walkReminder: walk,
             feedReminder: feed,
-            medicineReminder: medicine
+            medicineReminder: false
         )
         FamilyPetProfileStore.append(pet)
         var habits = UserDefaults.standard.stringArray(forKey: "family_pet_habit_flags_v1") ?? []
         if walk { habits.append("walk:\(pet.id.uuidString)") }
         if feed { habits.append("feed:\(pet.id.uuidString)") }
-        if medicine { habits.append("med:\(pet.id.uuidString)") }
+        if !custom.isEmpty { habits.append("custom:\(pet.id.uuidString)") }
         UserDefaults.standard.set(Array(Set(habits)), forKey: "family_pet_habit_flags_v1")
-        syncPetRoutinesToFamilyHabits(pet)
+        syncPetRoutinesToFamilyHabits(pet, customReminder: custom)
         saved = true
         HapticFeedback.notification(.success)
     }
 
-    private func syncPetRoutinesToFamilyHabits(_ pet: FamilyPetProfile) {
+    private func syncPetRoutinesToFamilyHabits(_ pet: FamilyPetProfile, customReminder: String) {
         Task { @MainActor in
             var config = FamilyHabitRemindersService.shared.config
             var customs = config.custom
-            func appendRoutine(titleKey: String, hour: Int) {
+            func appendRoutine(title: String, hour: Int) {
                 guard customs.count < FamilyHabitCustomReminder.maxPerFamily else { return }
-                let title = "\(pet.name) · \(localizationManager.localized(titleKey))"
-                if customs.contains(where: { $0.title == title }) { return }
+                let full = "\(pet.name) · \(title)"
+                if customs.contains(where: { $0.title == full }) { return }
                 customs.append(
                     FamilyHabitCustomReminder(
-                        title: String(title.prefix(FamilyHabitCustomReminder.titleMaxLength)),
+                        title: String(full.prefix(FamilyHabitCustomReminder.titleMaxLength)),
                         emoji: "🐾",
                         enabled: true,
                         mode: .onceDaily,
@@ -504,9 +589,15 @@ struct FamilyPetWizardSheet: View {
                     )
                 )
             }
-            if pet.walkReminder { appendRoutine(titleKey: "pet_routine_walk", hour: 9) }
-            if pet.feedReminder { appendRoutine(titleKey: "pet_routine_feed", hour: 19) }
-            if pet.medicineReminder { appendRoutine(titleKey: "pet_routine_medicine", hour: 10) }
+            if pet.walkReminder {
+                appendRoutine(title: localizationManager.localized("pet_routine_walk"), hour: 9)
+            }
+            if pet.feedReminder {
+                appendRoutine(title: localizationManager.localized("pet_routine_feed"), hour: 19)
+            }
+            if !customReminder.isEmpty {
+                appendRoutine(title: customReminder, hour: 10)
+            }
             config.custom = customs
             config.normalizeCustom()
             let members = FamilyLocalStore.loadPersistedMembers()
@@ -730,6 +821,7 @@ struct FamilyCrashConfirmSheet: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var isSending = false
+    @State private var statusText: String?
 
     var body: some View {
         NavigationView {
@@ -745,27 +837,31 @@ struct FamilyCrashConfirmSheet: View {
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
+                if isSending {
+                    ProgressView()
+                        .tint(Color.secondaryGold)
+                        .accessibilityIdentifier("crash_confirm_progress")
+                    Text(statusText ?? localizationManager.localized("crash_confirm_sending"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
                 Button {
-                    guard !isSending else { return }
-                    isSending = true
-                    Task { @MainActor in
-                        await FamilyMapFamilyAlert.sendNeedHelp(localization: localizationManager)
-                        isSending = false
-                        isPresented = false
-                    }
+                    sendNeedHelpTapped()
                 } label: {
                     Text(localizationManager.localized("crash_confirm_yes"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.backgroundDark)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.secondaryGold)
+                        .background(Color.secondaryGold.opacity(isSending ? 0.55 : 1))
                         .cornerRadius(CornerRadius.medium)
                 }
                 .buttonStyle(.plain)
                 .disabled(isSending)
                 .accessibilityIdentifier("crash_confirm_yes")
                 Button {
+                    guard !isSending else { return }
                     isPresented = false
                 } label: {
                     Text(localizationManager.localized("crash_confirm_no"))
@@ -776,14 +872,61 @@ struct FamilyCrashConfirmSheet: View {
                         .stormGlassCard(cornerRadius: CornerRadius.medium)
                 }
                 .buttonStyle(.plain)
+                .disabled(isSending)
                 .accessibilityIdentifier("crash_confirm_no")
                 Spacer()
             }
             .padding(Spacing.l)
             .background(LinearGradient.backgroundGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
+                guard !isSending else { return }
                 isPresented = false
             })
+        }
+    }
+
+    /// Q25: never leave the button stuck — 8s timeout + toast + always clear `isSending`.
+    private func sendNeedHelpTapped() {
+        guard !isSending else { return }
+        isSending = true
+        statusText = localizationManager.localized("crash_confirm_sending")
+        let offline = !OfflineManager.shared.isOnline
+        if offline {
+            statusText = localizationManager.localized("crash_confirm_offline")
+        }
+        Task { @MainActor in
+            defer { isSending = false }
+            let timedOut = await withTimeout(seconds: 8) {
+                await FamilyMapFamilyAlert.sendNeedHelp(localization: localizationManager)
+            }
+            if timedOut {
+                ToastManager.shared.showError(localizationManager.localized("crash_confirm_fail"))
+                statusText = localizationManager.localized("crash_confirm_fail")
+                return
+            }
+            if offline {
+                ToastManager.shared.showInfo(localizationManager.localized("crash_confirm_offline"))
+            } else {
+                ToastManager.shared.showSuccess(localizationManager.localized("crash_confirm_sent"))
+            }
+            isPresented = false
+        }
+    }
+
+    /// Returns `true` if the work did not finish before `seconds`.
+    private func withTimeout(seconds: Double, operation: @escaping () async -> Void) async -> Bool {
+        await withTaskGroup(of: Bool.self) { group in
+            group.addTask {
+                await operation()
+                return false
+            }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                return true
+            }
+            let first = await group.next() ?? true
+            group.cancelAll()
+            return first
         }
     }
 }
@@ -927,9 +1070,23 @@ struct AntifakeWaveAExtrasSection: View {
                         }
                     }
                 }
-                Text(localizationManager.localized("adblock_safari_tip"))
+                Text(localizationManager.localized("adblock_safari_steps_title"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                Text(localizationManager.localized("adblock_safari_steps_body"))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.7))
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Text(localizationManager.localized("adblock_safari_open_settings"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("adblock_safari_open_settings")
             }
 
             emptySoonCard(titleKey: "lists_empty_title", bodyKey: "lists_empty_body")

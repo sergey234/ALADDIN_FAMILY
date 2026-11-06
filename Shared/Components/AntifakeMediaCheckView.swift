@@ -161,6 +161,14 @@ struct AntifakeMediaCheckView: View {
                 }
             }
 
+            if let tip = viewModel.fileTipMessage {
+                Text(tip)
+                    .font(.caption)
+                    .foregroundColor(.secondaryGold.opacity(0.95))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("\(panelId)_file_tip")
+            }
+
             if let statusMessage = viewModel.statusMessage {
                 HStack(spacing: Spacing.s) {
                     ProgressView()
@@ -168,6 +176,18 @@ struct AntifakeMediaCheckView: View {
                     Text(statusMessage)
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.85))
+                    Spacer(minLength: 0)
+                    if viewModel.isChecking {
+                        Button {
+                            viewModel.cancelCheck()
+                        } label: {
+                            Text(localizationManager.localized("antifake_upload_cancel"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.secondaryGold)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("\(panelId)_cancel")
+                    }
                 }
             }
 
@@ -177,10 +197,28 @@ struct AntifakeMediaCheckView: View {
                 }
                 .environmentObject(localizationManager)
             } else if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .font(.subheadline)
-                    .foregroundColor(.dangerRed)
-                    .accessibilityIdentifier("\(panelId)_error")
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.dangerRed)
+                        .accessibilityIdentifier("\(panelId)_error")
+                    if viewModel.selectedFilename != nil, !viewModel.isChecking {
+                        SecondaryButton(
+                            localizationManager.localized("antifake_retry"),
+                            icon: "arrow.clockwise"
+                        ) {
+                            Task { await performSubmitCheck() }
+                        }
+                        .accessibilityIdentifier("\(panelId)_retry")
+                    }
+                }
+            }
+
+            if viewModel.mediaKind == .call {
+                Text(localizationManager.localized("antifake_call_soon"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             PrimaryButton(

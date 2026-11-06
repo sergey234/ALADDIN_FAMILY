@@ -440,6 +440,95 @@ struct SimpleHomeScreen: View {
         )
     }
 
+    /// Map visibility only (hide others). Not parental pause/limits.
+    private func setFamilyAccessMode(_ mode: String) {
+        guard mode == "full" || mode == "limited" else { return }
+        guard familyAccessMode != mode else {
+            print("ℹ️ family_access_mode already=\(mode)")
+            return
+        }
+        familyAccessMode = mode
+        print("✅ family_access_mode → \(mode) (map: \(mode == "limited" ? "hide others" : "show all"))")
+        HapticFeedback.impact(.light)
+        ToastManager.shared.showInfo(
+            localizationManager.localized(
+                mode == "limited" ? "family_access_toast_limited" : "family_access_toast_full"
+            )
+        )
+    }
+
+    private var familyMapVisibilityCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(spacing: Spacing.s) {
+                Image(systemName: "map.fill")
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .accessibilityHidden(true)
+                Text(localizationManager.localized("family_access_section_title"))
+                    .font(.system(.title3, design: .serif).weight(.bold))
+                    .foregroundColor(.white)
+            }
+            Text(localizationManager.localized("family_access_section_body"))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+                .fixedSize(horizontal: false, vertical: true)
+            Text(localizationManager.localized("family_access_hint"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.7))
+            HStack(spacing: Spacing.s) {
+                Button {
+                    setFamilyAccessMode("full")
+                } label: {
+                    Label(
+                        localizationManager.localized("family_access_full"),
+                        systemImage: "person.3.fill"
+                    )
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(familyAccessMode == "full" ? .backgroundDark : .white)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.vertical, Spacing.s)
+                    .frame(maxWidth: .infinity)
+                    .background(familyAccessMode == "full" ? Color.secondaryGold : Color.white.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_access_full")
+                Button {
+                    setFamilyAccessMode("limited")
+                } label: {
+                    Label(
+                        localizationManager.localized("family_access_limited"),
+                        systemImage: "person.fill"
+                    )
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(familyAccessMode == "limited" ? .backgroundDark : .white)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.vertical, Spacing.s)
+                    .frame(maxWidth: .infinity)
+                    .background(familyAccessMode == "limited" ? Color.secondaryGold : Color.white.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_access_limited")
+            }
+            Text(
+                localizationManager.localized(
+                    familyAccessMode == "limited"
+                        ? "family_access_effect_limited"
+                        : "family_access_effect_full"
+                )
+            )
+            .font(.caption.weight(.medium))
+            .foregroundColor(.secondaryGold)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("family_access_effect")
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .accessibilityElement(children: .contain)
+    }
+
     private var payPainsChildDoorSheet: some View {
         WellnessNavigationStack {
             ZStack {
@@ -453,39 +542,12 @@ struct SimpleHomeScreen: View {
                             Text(localizationManager.localized("child_overview_body"))
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
-                            Text(localizationManager.localized("family_access_hint"))
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
-                            HStack(spacing: Spacing.s) {
-                                Button {
-                                    familyAccessMode = "full"
-                                } label: {
-                                    Text(localizationManager.localized("family_access_full"))
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundColor(familyAccessMode == "full" ? .backgroundDark : .white)
-                                        .padding(.horizontal, Spacing.m)
-                                        .padding(.vertical, Spacing.s)
-                                        .background(familyAccessMode == "full" ? Color.secondaryGold : Color.white.opacity(0.12))
-                                        .clipShape(Capsule())
-                                }
-                                .buttonStyle(.plain)
-                                Button {
-                                    familyAccessMode = "limited"
-                                } label: {
-                                    Text(localizationManager.localized("family_access_limited"))
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundColor(familyAccessMode == "limited" ? .backgroundDark : .white)
-                                        .padding(.horizontal, Spacing.m)
-                                        .padding(.vertical, Spacing.s)
-                                        .background(familyAccessMode == "limited" ? Color.secondaryGold : Color.white.opacity(0.12))
-                                        .clipShape(Capsule())
-                                }
-                                .buttonStyle(.plain)
-                            }
                         }
                         .padding(Spacing.m)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .stormGlassCard(cornerRadius: CornerRadius.large)
+
+                        familyMapVisibilityCard
 
                         payPainsDoor(
                             titleKey: "pay_pains_child_pause_title",
@@ -826,7 +888,8 @@ struct SimpleHomeScreen: View {
     private var headerBar: some View {
         HStack {
             Button {
-                navigationManager.goBackToPreviousScreen(reason: "SimpleHome.onBack")
+                // Q13: SimpleHome is often the launch root — goBack is a no-op. Always land on Main (full grid).
+                navigationManager.navigateToRoot(.main)
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .semibold))

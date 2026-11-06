@@ -91,7 +91,9 @@ struct FamilyHabitRemindersSection: View {
             }
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .successGreen)
+        // W9 Q26: no green diagnostic strip bleed over Family background.
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
         .accessibilityIdentifier("family_habit_reminders_section")
         .sheet(isPresented: $showMomentsSheet) {
             FamilyMomentsListSheet()
@@ -197,18 +199,20 @@ struct FamilyHabitRemindersSection: View {
                 localizationManager.localized("family_habit_medals_master"),
                 isOn: $medalsMaster
             )
-            .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+            .aladdinDarkGlassToggle()
             .onChange(of: medalsMaster) { HabitMedalSourcesSettings.masterEnabled = $0 }
             if medalsMaster {
                 Toggle(
                     localizationManager.localized("family_habit_medals_water"),
                     isOn: $medalWater
                 )
+                .aladdinDarkGlassToggle()
                 .onChange(of: medalWater) { HabitMedalSourcesSettings.setSourceEnabled("water", $0) }
                 Toggle(
                     localizationManager.localized("family_habit_medals_medicine"),
                     isOn: $medalMedicine
                 )
+                .aladdinDarkGlassToggle()
                 .onChange(of: medalMedicine) { HabitMedalSourcesSettings.setSourceEnabled("medicine", $0) }
             }
         }
@@ -217,7 +221,7 @@ struct FamilyHabitRemindersSection: View {
             localizationManager.localized("family_habit_remind_this_device"),
             isOn: $remindOnThisDevice
         )
-        .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+        .aladdinDarkGlassToggle()
         .onChange(of: remindOnThisDevice) { enabled in
             FamilyHabitRemindersPolicy.setRemindOnThisDevice(enabled)
         }
@@ -228,7 +232,7 @@ struct FamilyHabitRemindersSection: View {
                 localizationManager.localized("family_habit_eventkit_toggle"),
                 isOn: $syncAppleCalendar
             )
-            .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+            .aladdinDarkGlassToggle()
             .onChange(of: syncAppleCalendar) { enabled in
                 FamilyHabitEventKitSync.shared.isEnabled = enabled
                 if enabled {
@@ -247,7 +251,7 @@ struct FamilyHabitRemindersSection: View {
             localizationManager.localized("family_habit_all_minors_toggle"),
             isOn: $allMinorsSelected
         )
-        .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+        .aladdinDarkGlassToggle()
         .onChange(of: allMinorsSelected) { enabled in
             if enabled {
                 draft.memberIds = []
@@ -1064,5 +1068,17 @@ private struct FamilyHabitGlassSwitch: View {
         .buttonStyle(.plain)
         .accessibilityAddTraits(.isButton)
         .accessibilityValue(isOn ? "on" : "off")
+    }
+}
+
+// MARK: - Dark glass toggle label (QA16 J2)
+
+private extension View {
+    /// System Toggle labels default to `.primary` (often black on dark glass). Force readable white + gold tint.
+    func aladdinDarkGlassToggle() -> some View {
+        self
+            .foregroundColor(.white)
+            .tint(.secondaryGold)
+            .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
     }
 }
