@@ -74,6 +74,7 @@ private let logger = MasterLogger.shared
             if let message = json["message"] as? String { return message }
             if let detail = json["detail"] as? [String: Any] {
                 return (detail["error_code"] as? String)
+                    ?? (detail["error"] as? String)
                     ?? (detail["message"] as? String)
                     ?? (detail["detail"] as? String)
             }

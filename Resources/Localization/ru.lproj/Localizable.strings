@@ -2271,7 +2271,7 @@
 
 "network_error_recovery_sign_in" = "Войдите в аккаунт заново";
 
-"network_error_recovery_rate_limit" = "Подождите 5–10 минут";
+"network_error_recovery_rate_limit" = "Слишком много попыток входа. Подождите пару минут и попробуйте снова.";
 
 "network_error_recovery_content_sync" = "Работа продолжается с сохранёнными данными.";
 
@@ -3408,6 +3408,8 @@
 
 /* 4-tab hub «Где семья» */
 "map_tab_location" = "Местоположение";
+"map_sheet_drag_a11y" = "Размер карты и списка";
+"map_sheet_drag_hint" = "Тяните полоску вверх — список больше, карту меньше. Вниз — карта на весь экран.";
 "map_tab_driving" = "Вождение";
 "map_tab_safety" = "Безопасность";
 "map_tab_subscription" = "Подписка";

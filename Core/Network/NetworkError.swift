@@ -333,6 +333,8 @@ enum NetworkError: Error, LocalizedError {
             key = "device_pairing_error_rate_limited"
         case "token_or_pin_required":
             key = "device_pairing_error_token_or_pin_required"
+        case "rate_limit", "too_many_requests", "recovery_login_rate_limit":
+            key = "network_error_recovery_rate_limit"
         default:
             key = nil
         }

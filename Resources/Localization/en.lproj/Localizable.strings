@@ -2360,7 +2360,7 @@
 
 "network_error_recovery_sign_in" = "Sign in again";
 
-"network_error_recovery_rate_limit" = "Please wait 5–10 minutes";
+"network_error_recovery_rate_limit" = "Too many sign-in attempts. Please wait a couple of minutes and try again.";
 
 "network_error_recovery_content_sync" = "Continuing with saved content.";
 
@@ -3497,6 +3497,8 @@
 
 /* 4-tab hub */
 "map_tab_location" = "Location";
+"map_sheet_drag_a11y" = "Map and list size";
+"map_sheet_drag_hint" = "Drag the bar up for more list, less map. Drag down for a full-screen map.";
 "map_tab_driving" = "Driving";
 "map_tab_safety" = "Safety";
 "map_tab_subscription" = "Membership";
