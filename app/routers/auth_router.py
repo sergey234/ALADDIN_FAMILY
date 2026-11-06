@@ -1,7 +1,7 @@
 """
 Роутер для авторизации: логин, регистрация, обновление токенов
 """
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 try:
@@ -16,8 +16,12 @@ from datetime import datetime, timedelta
 import jwt
 import os
 import hashlib
+import logging
 import secrets
+import re
 from urllib.parse import quote_plus
+
+_auth_log = logging.getLogger("aladdin.auth")
 
 # ✅ ИСПРАВЛЕНИЕ: Импорты с учетом структуры проекта
 # На сервере должна быть директория app/database/ с файлом database.py
@@ -52,6 +56,17 @@ security = HTTPBearer()
 
 # PostgreSQL INTEGER max — device pseudo-ids from SHA256 can exceed this.
 _PG_INT_MAX = 2_147_483_647
+
+
+def _normalize_family_id(raw: str) -> str:
+    compact = re.sub(r"[^A-Z0-9]", "", (raw or "").strip().upper())
+    if compact.startswith("FAM") and len(compact) >= 15:
+        return "FAM_" + compact[3:15]
+    return (raw or "").strip().upper()
+
+
+def _compact_invite_value(raw: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", (raw or "").strip().upper())
 
 
 def _ensure_db_user_for_device(db: Session, device_id: str, device_type: Optional[str] = None) -> int:
@@ -419,36 +434,50 @@ async def register(login_data: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/auth/register-device", response_model=LoginResponse)
-async def register_device(request: DeviceRegisterRequest, db: Session = Depends(get_db)):
+async def register_device(
+    request: Request,
+    body: DeviceRegisterRequest,
+    db: Session = Depends(get_db),
+):
     """
     Anonymous device registration endpoint expected by mobile app and release gates.
     Returns access/refresh tokens without mock/fallback envelopes.
     """
     try:
-        if not request.device_id:
+        if not body.device_id:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="device_id is required",
             )
 
+        device_type = (body.device_type or "").lower()
+        if device_type == "web":
+            from app.services.web_auth_rate_limit import check_web_register_ip_limit
+
+            check_web_register_ip_limit(request)
+
         # Persist device → users.id (INTEGER-safe). Hash pseudo-ids overflow PG INTEGER.
-        db_user_id = _ensure_db_user_for_device(db, request.device_id, request.device_type)
+        db_user_id = _ensure_db_user_for_device(db, body.device_id, body.device_type)
         token_data = {
             "user_id": db_user_id,
             "id": db_user_id,
             "sub": str(db_user_id),
-            "device_id": request.device_id,
-            "device_type": request.device_type,
+            "device_id": body.device_id,
+            "device_type": body.device_type,
             "type": "device_auth",
         }
 
-        access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
+        ttl = timedelta(hours=2) if device_type == "web" else timedelta(hours=24)
+        expires_sec = int(ttl.total_seconds())
+        access_token = create_access_token(
+            _prepare_token_data(token_data), expires_delta=ttl
+        )
         refresh_token = create_refresh_token(token_data)
 
         return LoginResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_in=86400,
+            expires_in=expires_sec,
             token_type="Bearer",
         )
     except HTTPException:
@@ -562,85 +591,124 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
 
 @router.post("/auth/login-by-recovery-code", response_model=LoginResponse)
 async def login_by_recovery_code(
-    request: RecoveryCodeLoginRequest,
-    db: Session = Depends(get_db)
+    http_request: Request,
+    body: RecoveryCodeLoginRequest,
+    db: Session = Depends(get_db),
 ):
     """
     Авторизация по Recovery Code БЕЗ персональных данных.
-    
-    ⚠️ ВАЖНО: МЫ НЕ СОБИРАЕМ ПЕРСОНАЛЬНЫЕ ДАННЫЕ!
-    - ❌ НЕ требует email, password, телефон
-    - ✅ Использует только family_id и recovery_code (анонимные данные)
-    - ✅ Авторизация БЕЗ персональных данных
-    
-    Принимает только:
-    - family_id: анонимный ID семьи
-    - recovery_code: recovery code (может быть family_id или специальный код)
-    
-    Возвращает:
-    - access_token: JWT токен доступа
-    - refresh_token: JWT токен обновления
-    - expires_in: время жизни токена (86400 секунд = 24 часа)
-    - token_type: "Bearer"
+
+    Product contract (Step A — UX unchanged for iOS 17/18):
+    - recovery_code is the family_id (FAM_… or FAM-… forms both ok).
+    - Does NOT accept invite_token as owner login (invite = join member, Step B).
+
+    Step A shield: IP rate limit + family must exist + structured journal log.
     """
+    from app.services.web_auth_rate_limit import check_recovery_login_ip_limit, client_ip
+
+    ip = client_ip(http_request)
     try:
-        # ✅ Проверка входных данных
-        if not request.family_id or not request.recovery_code:
+        attempt_n = check_recovery_login_ip_limit(http_request)
+    except HTTPException as exc:
+        if exc.status_code == 429:
+            _auth_log.warning(
+                "SECURITY recovery_login rate_limited ip=%s",
+                ip,
+            )
+        raise
+
+    try:
+        if not body.family_id or not body.recovery_code:
+            _auth_log.info(
+                "SECURITY recovery_login outcome=fail reason=missing_fields ip=%s attempt=%s",
+                ip,
+                attempt_n,
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid family_id or recovery_code"
+                detail="Invalid family_id or recovery_code",
             )
-        
-        # TODO: Реализовать проверку recovery code в БД
-        # Проверить, что family_id существует
-        # Проверить, что recovery_code совпадает с сохраненным recovery_code
-        # В текущей реализации: recovery_code может быть равен family_id
-        
-        # ✅ Временная реализация: проверяем, что family_id не пустой
-        # В будущем нужно проверить recovery_code в БД или в системе регистрации
-        if request.recovery_code != request.family_id:
-            # Пока что принимаем recovery_code = family_id
-            # В будущем нужно проверить в БД
-            pass
-        
-        # ✅ BUILD 139: Для family-контракта нужен валидный integer user_id.
-        # Пытаемся взять owner_user_id семьи; fallback — как раньше (family_id), чтобы не ломать старые сценарии.
+
+        canonical_family_id = _normalize_family_id(body.family_id)
+        compact_recovery = _compact_invite_value(body.recovery_code)
+        compact_family = _compact_invite_value(canonical_family_id)
+        family_tag = (canonical_family_id[:8] + "…") if canonical_family_id else "?"
+
+        family_row = db.execute(
+            text("SELECT owner_user_id FROM families WHERE id = :family_id LIMIT 1"),
+            {"family_id": canonical_family_id},
+        ).fetchone()
+        if not family_row:
+            _auth_log.info(
+                "SECURITY recovery_login outcome=fail reason=unknown_family family=%s ip=%s attempt=%s",
+                family_tag,
+                ip,
+                attempt_n,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid family_id or recovery_code",
+            )
+
+        # Same product rule as before: code matches family_id (any punctuation).
+        # Invite QR token is intentionally NOT accepted here (would widen owner takeover).
+        # Plain == : compare_digest raises on unequal length (typos must stay 401, not 500).
+        recovery_ok = compact_recovery == compact_family
+        if not recovery_ok:
+            _auth_log.info(
+                "SECURITY recovery_login outcome=fail reason=bad_code family=%s ip=%s attempt=%s",
+                family_tag,
+                ip,
+                attempt_n,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid family_id or recovery_code",
+            )
+
         owner_user_id = None
         try:
-            owner_row = db.execute(
-                text("SELECT owner_user_id FROM families WHERE id = :family_id LIMIT 1"),
-                {"family_id": request.family_id},
-            ).fetchone()
-            if owner_row and owner_row[0] is not None:
-                owner_user_id = int(owner_row[0])
+            if family_row[0] is not None:
+                owner_user_id = int(family_row[0])
         except Exception:
             owner_user_id = None
 
-        resolved_subject = str(owner_user_id) if owner_user_id is not None else request.family_id
+        resolved_subject = str(owner_user_id) if owner_user_id is not None else canonical_family_id
 
-        # ✅ Создать токены в унифицированном формате claim'ов
         token_data = {
-            "family_id": request.family_id,
+            "family_id": canonical_family_id,
             "id": resolved_subject,
             "user_id": resolved_subject,
             "sub": resolved_subject,
         }
         access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
         refresh_token = create_refresh_token(token_data)
-        
+
+        _auth_log.info(
+            "SECURITY recovery_login outcome=ok family=%s ip=%s attempt=%s",
+            family_tag,
+            ip,
+            attempt_n,
+        )
+
         return LoginResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_in=86400,  # 24 часа
-            token_type="Bearer"
+            expires_in=86400,
+            token_type="Bearer",
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
+        _auth_log.exception(
+            "SECURITY recovery_login outcome=error ip=%s err=%s",
+            ip,
+            type(e).__name__,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ошибка авторизации: {str(e)}"
+            detail=f"Ошибка авторизации: {str(e)}",
         )
 
 
