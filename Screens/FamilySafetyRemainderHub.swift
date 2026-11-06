@@ -190,64 +190,263 @@ enum FamilyMapShareSessionStore {
     }
 }
 
-// MARK: - MapKit preview with street/satellite (iOS 15)
+// MARK: - Life360-style live map (one MKMapView for screen lifetime)
 
-struct FamilyHubMapKitView: UIViewRepresentable {
+/// UIKit host: single `MKMapView` pinned to edges. Sheet overlay in SwiftUI must NEVER
+/// change this view’s frame — only slide over it. Interaction toggles with sheet detent.
+final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate {
+    let mapView = MKMapView(frame: .zero)
+    var onRegionChangedByUser: ((MKCoordinateRegion) -> Void)?
+
+    private var pinDiameter: CGFloat = 36
+    private var lastRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 0, longitude: 0),
+        span: MKCoordinateSpan(latitudeDelta: 0, longitudeDelta: 0)
+    )
+    private var lastPinLat: Double?
+    private var lastPinLon: Double?
+    private var lastPinTitle = ""
+    private var lastAppliedPinDiameter: CGFloat = -1
+    private var lastMapTypeRaw = ""
+    private var isProgrammaticRegionChange = false
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(mapView)
+        NSLayoutConstraint.activate([
+            mapView.topAnchor.constraint(equalTo: view.topAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        mapView.delegate = self
+        mapView.isRotateEnabled = false
+        mapView.isPitchEnabled = false
+        mapView.showsCompass = false
+        mapView.pointOfInterestFilter = .includingAll
+    }
+
+    /// Cheap apply — skip MapKit work unless inputs actually changed.
+    func apply(
+        region: MKCoordinateRegion,
+        coordinate: CLLocationCoordinate2D?,
+        title: String,
+        mapTypeRaw: String,
+        pinDiameter: CGFloat,
+        interactionEnabled: Bool,
+        forceCamera: Bool
+    ) {
+        self.pinDiameter = pinDiameter
+        mapView.isScrollEnabled = interactionEnabled
+        mapView.isZoomEnabled = interactionEnabled
+
+        if mapTypeRaw != lastMapTypeRaw {
+            lastMapTypeRaw = mapTypeRaw
+            switch mapTypeRaw {
+            case "satellite": mapView.mapType = .satellite
+            case "street": mapView.mapType = .standard
+            default: mapView.mapType = .mutedStandard
+            }
+        }
+
+        let regionChanged =
+            forceCamera
+            || abs(lastRegion.center.latitude - region.center.latitude) > 0.00005
+            || abs(lastRegion.center.longitude - region.center.longitude) > 0.00005
+            || abs(lastRegion.span.latitudeDelta - region.span.latitudeDelta) > 0.0002
+            || abs(lastRegion.span.longitudeDelta - region.span.longitudeDelta) > 0.0002
+        if regionChanged {
+            isProgrammaticRegionChange = true
+            mapView.setRegion(region, animated: forceCamera)
+            lastRegion = region
+            DispatchQueue.main.async { [weak self] in
+                self?.isProgrammaticRegionChange = false
+            }
+        }
+
+        let lat = coordinate?.latitude
+        let lon = coordinate?.longitude
+        let pinChanged =
+            lat != lastPinLat
+            || lon != lastPinLon
+            || title != lastPinTitle
+            || abs(pinDiameter - lastAppliedPinDiameter) > 0.5
+        if pinChanged || forceCamera {
+            lastPinLat = lat
+            lastPinLon = lon
+            lastPinTitle = title
+            lastAppliedPinDiameter = pinDiameter
+            mapView.removeAnnotations(mapView.annotations.filter { !($0 is MKUserLocation) })
+            if let coordinate {
+                let pin = MKPointAnnotation()
+                pin.coordinate = coordinate
+                pin.title = title
+                mapView.addAnnotation(pin)
+            }
+        }
+    }
+
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if annotation is MKUserLocation { return nil }
+        let id = "family_hub_avatar_pin"
+        let view = (mapView.dequeueReusableAnnotationView(withIdentifier: id) as? FamilyHubAvatarPinView)
+            ?? FamilyHubAvatarPinView(annotation: annotation, reuseIdentifier: id)
+        view.annotation = annotation
+        view.apply(size: pinDiameter, title: annotation.title ?? nil)
+        return view
+    }
+
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        guard !isProgrammaticRegionChange else { return }
+        lastRegion = mapView.region
+        onRegionChangedByUser?(mapView.region)
+    }
+}
+
+/// SwiftUI bridge — one VC / one MKMapView for the life of the representable.
+struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
     @Binding var region: MKCoordinateRegion
     var coordinate: CLLocationCoordinate2D?
     var title: String
     var mapTypeRaw: String
-    /// W2 Q18: S/M/L from pin editor (points).
     var pinDiameter: CGFloat = 36
+    /// Peek/half sheet → map pan/zoom on. Large sheet or drag → map gestures off.
+    var interactionEnabled: Bool
+    /// Bump (e.g. locate FAB) to force camera without waiting for epsilon.
+    var cameraToken: Int = 0
 
-    func makeUIView(context: Context) -> MKMapView {
-        let map = MKMapView(frame: .zero)
-        map.isZoomEnabled = false
-        map.isScrollEnabled = false
-        map.isRotateEnabled = false
-        map.isPitchEnabled = false
-        map.delegate = context.coordinator
-        return map
+    func makeUIViewController(context: Context) -> FamilyHubLiveMapViewController {
+        let vc = FamilyHubLiveMapViewController()
+        let coordinator = context.coordinator
+        vc.onRegionChangedByUser = { newRegion in
+            coordinator.parent.region = newRegion
+        }
+        return vc
     }
 
-    func updateUIView(_ mapView: MKMapView, context: Context) {
-        context.coordinator.pinDiameter = pinDiameter
+    func updateUIViewController(_ vc: FamilyHubLiveMapViewController, context: Context) {
+        context.coordinator.parent = self
+        let force = context.coordinator.lastCameraToken != cameraToken
+        context.coordinator.lastCameraToken = cameraToken
+        let coordinator = context.coordinator
+        vc.onRegionChangedByUser = { newRegion in
+            coordinator.parent.region = newRegion
+        }
+        vc.apply(
+            region: region,
+            coordinate: coordinate,
+            title: title,
+            mapTypeRaw: mapTypeRaw,
+            pinDiameter: pinDiameter,
+            interactionEnabled: interactionEnabled,
+            forceCamera: force
+        )
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator {
+        var parent: FamilyHubLiveMapRepresentable
+        var lastCameraToken: Int = -1
+        init(_ parent: FamilyHubLiveMapRepresentable) { self.parent = parent }
+    }
+}
+
+/// Snapshot fallback (Reduce Motion / offline tile fail) — not primary Life360 path.
+struct FamilyHubMapSnapshotView: View {
+    var center: CLLocationCoordinate2D
+    var span: MKCoordinateSpan
+    var mapTypeRaw: String
+    var pinTitle: String?
+    var pinDiameter: CGFloat = 36
+    var showPin: Bool
+
+    @State private var image: UIImage?
+    @State private var renderToken = UUID()
+
+    private var renderKey: String {
+        String(
+            format: "%.5f,%.5f,%.4f,%.4f,%@,%.0f,%d",
+            center.latitude, center.longitude,
+            span.latitudeDelta, span.longitudeDelta,
+            mapTypeRaw, pinDiameter, showPin ? 1 : 0
+        )
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
+                } else {
+                    Color.backgroundMedium.opacity(0.55)
+                    ProgressView().tint(Color.secondaryGold)
+                }
+                if showPin {
+                    FamilyHubSwiftUIPin(title: pinTitle, diameter: pinDiameter)
+                        .offset(y: -pinDiameter * 0.15)
+                }
+            }
+            .onAppear { scheduleRender(size: geo.size) }
+            .onChange(of: renderKey) { _ in scheduleRender(size: geo.size) }
+            .onChange(of: geo.size.width) { _ in scheduleRender(size: geo.size) }
+            .onChange(of: geo.size.height) { _ in scheduleRender(size: geo.size) }
+        }
+    }
+
+    private func scheduleRender(size: CGSize) {
+        guard size.width > 8, size.height > 8 else { return }
+        let token = UUID()
+        renderToken = token
+        let options = MKMapSnapshotter.Options()
+        options.region = MKCoordinateRegion(center: center, span: span)
+        options.size = size
+        options.scale = UIScreen.main.scale
         switch mapTypeRaw {
-        case "satellite":
-            mapView.mapType = .satellite
-        case "street":
-            mapView.mapType = .standard
-        default:
-            mapView.mapType = .mutedStandard
+        case "satellite": options.mapType = .satellite
+        case "street": options.mapType = .standard
+        default: options.mapType = .mutedStandard
         }
-        mapView.setRegion(region, animated: false)
-        mapView.removeAnnotations(mapView.annotations)
-        if let coordinate {
-            let pin = MKPointAnnotation()
-            pin.coordinate = coordinate
-            pin.title = title
-            mapView.addAnnotation(pin)
-        }
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    final class Coordinator: NSObject, MKMapViewDelegate {
-        var pinDiameter: CGFloat = 36
-
-        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            if annotation is MKUserLocation { return nil }
-            let id = "family_hub_avatar_pin"
-            let view = (mapView.dequeueReusableAnnotationView(withIdentifier: id) as? FamilyHubAvatarPinView)
-                ?? FamilyHubAvatarPinView(annotation: annotation, reuseIdentifier: id)
-            view.annotation = annotation
-            view.apply(size: pinDiameter, title: annotation.title ?? nil)
-            return view
+        MKMapSnapshotter(options: options).start { snapshot, _ in
+            guard let snapshot else { return }
+            DispatchQueue.main.async {
+                guard token == renderToken else { return }
+                image = snapshot.image
+            }
         }
     }
 }
 
-/// Circular avatar-style pin (initial letter + gold ring). Size from Q18 editor.
+struct FamilyHubSwiftUIPin: View {
+    var title: String?
+    var diameter: CGFloat
+
+    var body: some View {
+        let d = max(24, min(56, diameter))
+        let letter: String = {
+            if let c = title?.trimmingCharacters(in: .whitespacesAndNewlines).first {
+                return String(c).uppercased()
+            }
+            return "·"
+        }()
+        Text(letter)
+            .font(.system(size: d * 0.38, weight: .bold))
+            .foregroundColor(.secondaryGold)
+            .frame(width: d, height: d)
+            .background(Color.backgroundMedium)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Color.secondaryGold, lineWidth: 2))
+            .accessibilityHidden(true)
+    }
+}
+
+/// Circular avatar-style pin on live MKMapView.
 private final class FamilyHubAvatarPinView: MKAnnotationView {
     private let bubble = UILabel()
     private let ring = UIView()
@@ -279,6 +478,29 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
         bubble.font = .systemFont(ofSize: d * 0.38, weight: .bold)
         let letter = (title?.trimmingCharacters(in: .whitespacesAndNewlines).first).map(String.init) ?? "·"
         bubble.text = letter.uppercased()
+    }
+}
+
+/// Compatibility wrapper around the Life360 live host.
+struct FamilyHubMapKitView: View {
+    @Binding var region: MKCoordinateRegion
+    var coordinate: CLLocationCoordinate2D?
+    var title: String
+    var mapTypeRaw: String
+    var pinDiameter: CGFloat = 36
+    var interactionEnabled: Bool = true
+    var cameraToken: Int = 0
+
+    var body: some View {
+        FamilyHubLiveMapRepresentable(
+            region: $region,
+            coordinate: coordinate,
+            title: title,
+            mapTypeRaw: mapTypeRaw,
+            pinDiameter: pinDiameter,
+            interactionEnabled: interactionEnabled,
+            cameraToken: cameraToken
+        )
     }
 }
 

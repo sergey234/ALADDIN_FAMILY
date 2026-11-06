@@ -70,10 +70,15 @@ struct WhereIsPhoneScreen: View {
     @State private var activeChip: SheetChip = .people
     @State private var isChipProgrammaticScroll = false
     @State private var chipScrollRequest = 0
-    /// W2 Q34–Q36: 0 = map large · 1 = sheet dominates (Life360-style drag).
-    @State private var sheetExpansion: CGFloat = 0.35
-    @State private var sheetDragStart: CGFloat = 0.35
+    /// W2 Q34–Q36 Life360: 0 = map ~full · 1 = sheet covers ~90%.
+    /// Start at peek so map is the hero (not a 50/50 split).
+    @State private var sheetExpansion: CGFloat = 0.08
+    @State private var sheetDragStart: CGFloat = 0.08
     @State private var sheetDragActive = false
+    /// Pane height for converting drag px → expansion (set by GeometryReader).
+    @State private var locationPaneHeight: CGFloat = 560
+    /// Bump to force live map camera (locate FAB) without epsilon wait.
+    @State private var mapCameraToken: Int = 0
     @State private var placeCount = 0
     @State private var latestEvent: GeofenceDayEvent?
     @State private var todayTrail: [GeofenceDayEvent] = []
@@ -186,27 +191,31 @@ struct WhereIsPhoneScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Location = Life360 canvas (map under chrome). Other tabs keep classic stack.
+            if hubTab == .location {
+                locationLife360Canvas
+            } else {
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                hubHeader
-
-                Group {
-                    switch hubTab {
-                    case .location:
-                        locationPane
-                    case .driving:
-                        drivingTabPane
-                    case .safety:
-                        safetyTabPane
-                    case .subscription:
-                        subscriptionTabPane
+                VStack(spacing: 0) {
+                    hubHeader
+                        .background(Color.backgroundMedium.opacity(0.5))
+                    Group {
+                        switch hubTab {
+                        case .location:
+                            EmptyView()
+                        case .driving:
+                            drivingTabPane
+                        case .safety:
+                            safetyTabPane
+                        case .subscription:
+                            subscriptionTabPane
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    hubTabBar
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                hubTabBar
             }
         }
         .sheet(isPresented: $showPlaces) {
@@ -356,102 +365,223 @@ struct WhereIsPhoneScreen: View {
             .accessibilityLabel(localizationManager.localized("common_close"))
         }
         .padding(Spacing.m)
-        .background(Color.backgroundMedium.opacity(0.5))
     }
 
-    /// Map height shrinks as sheet expands (Life360 drag parity).
-    private var locationMapMaxHeight: CGFloat {
-        let collapsed: CGFloat = 320
-        let expanded: CGFloat = 112
-        return collapsed - (collapsed - expanded) * sheetExpansion
+    /// Visible sheet height. Map MKMapView frame never changes — sheet covers it (Life360).
+    /// expansion 0.08 → peek (chips+invite) · 0.42 → half · 0.92 → almost full.
+    private func locationSheetHeight(mapHeight: CGFloat, tabBarHeight: CGFloat) -> CGFloat {
+        let usable = max(160, mapHeight - tabBarHeight)
+        let fraction = 0.22 + 0.72 * sheetExpansion
+        return min(usable * 0.92, max(120, usable * fraction))
     }
 
-    private var locationPane: some View {
-        VStack(spacing: 0) {
-            ZStack(alignment: .trailing) {
-                ScrollView(.vertical, showsIndicators: false) {
-                    mapCard
-                        .padding(.horizontal, Spacing.m)
-                        .padding(.top, Spacing.s)
+    private var sheetDragGesture: some Gesture {
+        DragGesture(minimumDistance: 8, coordinateSpace: .local)
+            .onChanged { value in
+                if !sheetDragActive {
+                    sheetDragActive = true
+                    sheetDragStart = sheetExpansion
                 }
-                .frame(maxHeight: locationMapMaxHeight)
-                .animation(.easeInOut(duration: 0.2), value: sheetExpansion)
+                let span = max(locationPaneHeight, 400)
+                let delta = -value.translation.height / span
+                let next = min(1, max(0, sheetDragStart + delta))
+                guard abs(next - sheetExpansion) >= 0.025 || next == 0 || next == 1 else { return }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    sheetExpansion = next
+                }
+            }
+            .onEnded { value in
+                sheetDragActive = false
+                let span = max(locationPaneHeight, 400)
+                let delta = -value.translation.height / span
+                let raw = min(1, max(0, sheetDragStart + delta))
+                let snapped: CGFloat
+                if raw < 0.22 { snapped = 0.08 }
+                else if raw < 0.62 { snapped = 0.42 }
+                else { snapped = 0.92 }
+                withAnimation(.spring(response: 0.34, dampingFraction: 0.88)) {
+                    sheetExpansion = snapped
+                }
+                sheetDragStart = snapped
+                HapticFeedback.selection()
+            }
+    }
+
+    /// Grabber + chips = one drag surface (Life360: pull the sheet, not only a 5pt capsule).
+    private var sheetDragHeader: some View {
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(Color.secondaryGold.opacity(0.75))
+                .frame(width: 48, height: 5)
+                .padding(.top, 10)
+                .padding(.bottom, 8)
+            sheetChipStrip
+                .padding(.bottom, Spacing.s)
+        }
+        .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+        .background(Color.backgroundDark.opacity(0.97))
+        .accessibilityIdentifier("where_phone_sheet_drag_handle")
+        .accessibilityLabel(localizationManager.localized("map_sheet_drag_a11y"))
+        .accessibilityHint(localizationManager.localized("map_sheet_drag_hint"))
+        // simultaneous — chips stay tappable; vertical drag still resizes sheet.
+        .simultaneousGesture(sheetDragGesture)
+    }
+
+    /// Map pan/zoom when sheet is peek/half and not mid-drag.
+    private var mapInteractionEnabled: Bool {
+        !sheetDragActive && sheetExpansion < 0.55
+    }
+
+    /// Full-screen Life360 canvas: map under floating header + sheet + tab bar.
+    private var locationLife360Canvas: some View {
+        GeometryReader { geo in
+            let tabBarH: CGFloat = 64
+            let sheetH = locationSheetHeight(mapHeight: geo.size.height, tabBarHeight: tabBarH)
+            ZStack(alignment: .top) {
+                FamilyHubLiveMapRepresentable(
+                    region: $mapRegion,
+                    coordinate: mapCoordinate,
+                    title: friendlyPointName(mapPointName),
+                    mapTypeRaw: mapTypeRaw,
+                    pinDiameter: pinDiameterForSize(pinSizeRaw),
+                    interactionEnabled: mapInteractionEnabled,
+                    cameraToken: mapCameraToken
+                )
+                .ignoresSafeArea()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityIdentifier("where_phone_map_pane")
 
-                mapFabStack
+                // Soft dim as sheet rises — ties map + sheet into one motion.
+                Color.black.opacity(0.08 + 0.35 * sheetExpansion)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+
+                VStack(spacing: 0) {
+                    hubHeader
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    Color.backgroundDark.opacity(0.78),
+                                    Color.backgroundDark.opacity(0.0)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+
+                    HStack {
+                        Spacer()
+                        mapStatusBadges
+                    }
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.top, 4)
+
+                    Spacer(minLength: 0)
+
+                    HStack {
+                        Spacer()
+                        mapFabStack
+                    }
                     .padding(.trailing, Spacing.m)
                     .padding(.bottom, Spacing.s)
-            }
+                    .opacity(sheetExpansion > 0.85 ? 0.25 : 1)
+                    .allowsHitTesting(sheetExpansion < 0.85)
 
-            // Drag handle: pull up → more list / less map; pull down → map fullscreen-ish.
-            Capsule()
-                .fill(Color.secondaryGold.opacity(0.55))
-                .frame(width: 40, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 4)
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 8)
-                        .onChanged { value in
-                            if !sheetDragActive {
-                                sheetDragActive = true
-                                sheetDragStart = sheetExpansion
+                    VStack(spacing: 0) {
+                        sheetDragHeader
+
+                        if sheetDragActive {
+                            Color.backgroundMedium.opacity(0.4)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else {
+                            ScrollViewReader { proxy in
+                                ScrollView(.vertical, showsIndicators: true) {
+                                    VStack(spacing: Spacing.m) {
+                                        mapMetaSheetBlock
+                                        peopleSheetSection.id(SheetChip.people)
+                                        petsSheetSection.id(SheetChip.pets)
+                                        itemsSheetSection.id(SheetChip.items)
+                                        placesSheetSection.id(SheetChip.places)
+                                        eventsSheetSection.id(SheetChip.events)
+                                        lostCard
+                                    }
+                                    .padding(.horizontal, Spacing.m)
+                                    .padding(.bottom, Spacing.xl)
+                                }
+                                .coordinateSpace(name: "wherePhoneSheetScroll")
+                                .onPreferenceChange(WherePhoneSectionFramesKey.self) { frames in
+                                    updateActiveChipFromScroll(frames)
+                                }
+                                .onChange(of: chipScrollRequest) { _ in
+                                    guard chipScrollRequest > 0 else { return }
+                                    withAnimation(.easeInOut(duration: 0.28)) {
+                                        proxy.scrollTo(activeChip, anchor: .top)
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                        isChipProgrammaticScroll = false
+                                    }
+                                }
                             }
-                            let delta = -value.translation.height / 280
-                            sheetExpansion = min(1, max(0, sheetDragStart + delta))
+                            .frame(maxHeight: .infinity)
                         }
-                        .onEnded { value in
-                            sheetDragActive = false
-                            let delta = -value.translation.height / 280
-                            let raw = min(1, max(0, sheetDragStart + delta))
-                            // Snap to 3 detents (Q34/Q35/Q36).
-                            let snapped: CGFloat
-                            if raw < 0.22 { snapped = 0.08 }
-                            else if raw < 0.55 { snapped = 0.35 }
-                            else { snapped = 0.85 }
-                            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                                sheetExpansion = snapped
-                            }
-                            sheetDragStart = snapped
-                        }
-                )
-                .accessibilityIdentifier("where_phone_sheet_drag_handle")
-                .accessibilityLabel(localizationManager.localized("map_sheet_drag_a11y"))
+                    }
+                    .frame(height: sheetH, alignment: .top)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(Color.backgroundDark.opacity(0.98))
+                            .shadow(color: .black.opacity(0.4), radius: 16, y: -4)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-            sheetChipStrip
-                .padding(.vertical, Spacing.s)
-                .background(Color.backgroundMedium.opacity(0.55))
-
-            ScrollViewReader { proxy in
-                ScrollView(.vertical, showsIndicators: true) {
-                    VStack(spacing: Spacing.m) {
-                        peopleSheetSection.id(SheetChip.people)
-                        petsSheetSection.id(SheetChip.pets)
-                        itemsSheetSection.id(SheetChip.items)
-                        placesSheetSection.id(SheetChip.places)
-                        eventsSheetSection.id(SheetChip.events)
-                        lostCard
-                    }
-                    .padding(Spacing.m)
-                    .padding(.bottom, Spacing.xl)
-                }
-                .coordinateSpace(name: "wherePhoneSheetScroll")
-                .onPreferenceChange(WherePhoneSectionFramesKey.self) { frames in
-                    updateActiveChipFromScroll(frames)
-                }
-                .onChange(of: chipScrollRequest) { _ in
-                    guard chipScrollRequest > 0 else { return }
-                    withAnimation(.easeInOut(duration: 0.28)) {
-                        proxy.scrollTo(activeChip, anchor: .top)
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                        isChipProgrammaticScroll = false
-                    }
+                    hubTabBar
+                        .background(Color.backgroundDark.opacity(0.98))
                 }
             }
+            .onAppear { locationPaneHeight = geo.size.height }
+            .onChange(of: geo.size.height) { h in locationPaneHeight = h }
         }
         .accessibilityIdentifier("where_phone_tab_location")
+    }
+
+    private var mapStatusBadges: some View {
+        VStack(alignment: .trailing, spacing: 6) {
+            if mapCoordinate == nil || mapPinSource == .none {
+                Text(localizationManager.localized("map_live_no_signal"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.backgroundDark)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.secondaryGold.opacity(0.9))
+                    .clipShape(Capsule())
+                    .accessibilityIdentifier("where_phone_no_signal_badge")
+            }
+            if inQuietZone {
+                Text(localizationManager.localized("map_quiet_active_badge"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.backgroundDark)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.secondaryGold.opacity(0.9))
+                    .clipShape(Capsule())
+            }
+            if mapPinSource == .live,
+               let speed = liveLocation.speedKmh,
+               speed > 0,
+               !inQuietZone {
+                Text(String(format: localizationManager.localized("map_live_speed_badge"), speed))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.backgroundDark)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.secondaryGold)
+                    .clipShape(Capsule())
+                    .accessibilityIdentifier("where_phone_speed_badge")
+            }
+        }
     }
 
     private var sheetChipStrip: some View {
@@ -888,9 +1018,8 @@ struct WhereIsPhoneScreen: View {
 
             fabButton(systemImage: "location.fill", id: "where_phone_fab_locate") {
                 if let coordinate = mapCoordinate {
-                    withAnimation {
-                        mapRegion.center = coordinate
-                    }
+                    mapRegion.center = coordinate
+                    mapCameraToken += 1
                 } else {
                     locatorHint = localizationManager.localized("map_live_no_signal")
                 }
@@ -1374,57 +1503,9 @@ struct WhereIsPhoneScreen: View {
         .accessibilityIdentifier("where_phone_hub_tab_bar")
     }
 
-    private var mapCard: some View {
+    /// Last-point copy + Open in Maps — lives in the sheet (map itself is full-bleed live).
+    private var mapMetaSheetBlock: some View {
         card(symbol: "map.fill", titleKey: "where_phone_map_card_title") {
-            // Always MapKit preview (Life360-lite). Pin optional; empty = no signal / last-point hole.
-            FamilyHubMapKitView(
-                region: $mapRegion,
-                coordinate: mapCoordinate,
-                title: friendlyPointName(mapPointName),
-                mapTypeRaw: mapTypeRaw,
-                pinDiameter: pinDiameterForSize(pinSizeRaw)
-            )
-            .frame(height: max(140, locationMapMaxHeight - 36))
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-            .accessibilityIdentifier("where_phone_map")
-            .overlay(alignment: .topTrailing) {
-                VStack(alignment: .trailing, spacing: 6) {
-                    if mapCoordinate == nil || mapPinSource == .none {
-                        Text(localizationManager.localized("map_live_no_signal"))
-                            .font(.caption.weight(.bold))
-                            .foregroundColor(.backgroundDark)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color.secondaryGold.opacity(0.9))
-                            .clipShape(Capsule())
-                            .accessibilityIdentifier("where_phone_no_signal_badge")
-                    }
-                    if inQuietZone {
-                        Text(localizationManager.localized("map_quiet_active_badge"))
-                            .font(.caption.weight(.bold))
-                            .foregroundColor(.backgroundDark)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color.secondaryGold.opacity(0.9))
-                            .clipShape(Capsule())
-                    }
-                    if mapPinSource == .live,
-                       let speed = liveLocation.speedKmh,
-                       speed > 0,
-                       !inQuietZone {
-                        Text(String(format: localizationManager.localized("map_live_speed_badge"), speed))
-                            .font(.caption.weight(.bold))
-                            .foregroundColor(.backgroundDark)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color.secondaryGold)
-                            .clipShape(Capsule())
-                            .accessibilityIdentifier("where_phone_speed_badge")
-                    }
-                }
-                .padding(8)
-            }
-
             if let coordinate = mapCoordinate, let at = mapPointAt {
                 Text(
                     String(
@@ -1442,7 +1523,6 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // Yandex default first, then Apple — user always chooses.
                 Button {
                     showOpenInMapsSheet = true
                 } label: {
@@ -1459,7 +1539,6 @@ struct WhereIsPhoneScreen: View {
                     isPresented: $showOpenInMapsSheet,
                     titleVisibility: .visible
                 ) {
-                    // Preferred first: RU→Yandex, EN→Apple; both always available.
                     if preferredMaps == "apple" {
                         Button(localizationManager.localized("where_phone_open_apple_maps")) {
                             FamilyMapsPreference.markUserChose("apple")
@@ -1504,6 +1583,7 @@ struct WhereIsPhoneScreen: View {
                 .accessibilityIdentifier("where_phone_travel_minutes")
             }
         }
+        .accessibilityIdentifier("where_phone_map")
     }
 
     private var trailCard: some View {
