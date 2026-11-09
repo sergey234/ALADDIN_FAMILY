@@ -297,7 +297,9 @@ struct NetworkProtectionScreen: View {
     
     private var componentsSections: some View {
         VStack(spacing: Spacing.l) {
-            // Раздел 1: Экстренная помощь
+            // Round2 S74: roadside / emergency-help accordion hidden — lives in «Где семья».
+            // Keys kept; PayPainsHiddenComponents still gates child rows if section re-enabled.
+            if !PayPainsHiddenComponents.hideNetworkEmergencyHelpSection {
             SettingsAccordion(
                 icon: "🚨",
                 title: localizationManager.localized("component.emergency_help.title"),
@@ -436,6 +438,7 @@ struct NetworkProtectionScreen: View {
                     )
                 }
             }
+            } // hideNetworkEmergencyHelpSection
             
             // Раздел 2: Защита от угроз
             SettingsAccordion(

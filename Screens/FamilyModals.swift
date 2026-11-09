@@ -1385,7 +1385,8 @@ struct FamilyModalBaseView<Content: View>: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
+            // S18 Snowball — family modal chrome (groups / sheets via this base)
+            AladdinSnowballPalette.canvasGradient
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -3070,7 +3071,7 @@ struct LocationHistoryDetailModal: View {
     
     var body: some View {
         FamilyModalBaseView(
-            title: localizationManager.localized("location_history_title"),
+            title: localizationManager.localized("location_history_30d_title"),
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.l) {

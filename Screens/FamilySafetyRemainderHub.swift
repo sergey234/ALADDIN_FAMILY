@@ -45,10 +45,12 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         }
         switch authStatus {
         case .authorizedAlways:
-            // Live track only with Always Allow (Life360-lite).
+            // Свежая точка при открытой карте; в фоне — significant-change через LocationManager.
             manager.startUpdatingLocation()
+            LocationManager.shared.startSignificantLocationChanges()
+            Task { await GeofenceMonitoringBootstrap.reloadIfNeeded() }
         case .authorizedWhenInUse:
-            // When-In-Use: keep last-point / one-shot share; no continuous live.
+            // Пока нет доступа при закрытом приложении: last-point / one-shot share.
             manager.stopUpdatingLocation()
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
@@ -71,6 +73,7 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             }
             if manager.authorizationStatus == .authorizedAlways {
                 manager.startUpdatingLocation()
+                LocationManager.shared.startSignificantLocationChanges()
             } else {
                 manager.stopUpdatingLocation()
             }
@@ -83,10 +86,18 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             guard FamilyMapLiveAccess.isEntitled else { return }
             self.coordinate = loc.coordinate
             self.updatedAt = loc.timestamp
-            if loc.speed >= 0 {
-                self.speedKmh = Int((loc.speed * 3.6).rounded())
+            // Round2 S10/S77: real CL only; drop invalid / GPS spikes (>250 km/h).
+            let kmh = loc.speed * 3.6
+            if loc.speed >= 0, loc.horizontalAccuracy >= 0, loc.horizontalAccuracy < 65, kmh <= 250 {
+                self.speedKmh = Int(kmh.rounded())
             } else {
                 self.speedKmh = nil
+            }
+            // Тихая зона + авто-поездка + серверный last-point (единый путь).
+            if FamilyMapQuietZoneStore.allowsFamilyShare(loc) {
+                LocationManager.shared.reportCurrentLocation(loc)
+            } else {
+                // Не шлём; локальный pin на карте всё равно может показать «тихая зона».
             }
         }
     }
@@ -110,32 +121,7 @@ enum FamilyMapLiveAccess {
     }
 }
 
-// MARK: - Quiet zone store (B-depth)
-
-enum FamilyMapQuietZoneStore {
-    private static let key = "where_phone_quiet_zone_meters_v1"
-    static var meters: Double {
-        get {
-            let v = UserDefaults.standard.double(forKey: key)
-            return v > 0 ? v : 150
-        }
-        set { UserDefaults.standard.set(newValue, forKey: key) }
-    }
-
-    /// True when GPS is within quiet radius of any saved place center.
-    @MainActor
-    static func contains(_ location: CLLocation) -> Bool {
-        let radius = meters
-        let centers = GeofenceGeocodingService.shared.loadStoredCoordinates().values
-        for center in centers {
-            let place = CLLocation(latitude: center.latitude, longitude: center.longitude)
-            if location.distance(from: place) <= radius {
-                return true
-            }
-        }
-        return false
-    }
-}
+// Quiet zone store: Core/Family/FamilyMapQuietZoneStore.swift
 
 // MARK: - Share link duration (B-depth)
 
@@ -188,6 +174,10 @@ enum FamilyMapShareSessionStore {
         selectedHours = hours
         expiresAt = now.addingTimeInterval(TimeInterval(hours) * 3600)
     }
+
+    static func endSession() {
+        expiresAt = nil
+    }
 }
 
 // MARK: - Life360-style live map (one MKMapView for screen lifetime)
@@ -197,6 +187,8 @@ enum FamilyMapShareSessionStore {
 final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate {
     let mapView = MKMapView(frame: .zero)
     var onRegionChangedByUser: ((MKCoordinateRegion) -> Void)?
+    /// P0-3: tap avatar pin → open member sheet (Life360).
+    var onPinSelected: (() -> Void)?
 
     private var pinDiameter: CGFloat = 36
     private var lastRegion = MKCoordinateRegion(
@@ -303,6 +295,14 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         lastRegion = mapView.region
         onRegionChangedByUser?(mapView.region)
     }
+
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard !(view.annotation is MKUserLocation) else { return }
+        onPinSelected?()
+        if let annotation = view.annotation {
+            mapView.deselectAnnotation(annotation, animated: false)
+        }
+    }
 }
 
 /// SwiftUI bridge — one VC / one MKMapView for the life of the representable.
@@ -316,12 +316,16 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
     var interactionEnabled: Bool
     /// Bump (e.g. locate FAB) to force camera without waiting for epsilon.
     var cameraToken: Int = 0
+    var onPinSelected: (() -> Void)? = nil
 
     func makeUIViewController(context: Context) -> FamilyHubLiveMapViewController {
         let vc = FamilyHubLiveMapViewController()
         let coordinator = context.coordinator
         vc.onRegionChangedByUser = { newRegion in
             coordinator.parent.region = newRegion
+        }
+        vc.onPinSelected = {
+            coordinator.parent.onPinSelected?()
         }
         return vc
     }
@@ -333,6 +337,9 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
         let coordinator = context.coordinator
         vc.onRegionChangedByUser = { newRegion in
             coordinator.parent.region = newRegion
+        }
+        vc.onPinSelected = {
+            coordinator.parent.onPinSelected?()
         }
         vc.apply(
             region: region,
@@ -446,20 +453,26 @@ struct FamilyHubSwiftUIPin: View {
     }
 }
 
-/// Circular avatar-style pin on live MKMapView.
+/// Circular avatar-style pin on live MKMapView. S29: photo when present, else letter.
 private final class FamilyHubAvatarPinView: MKAnnotationView {
     private let bubble = UILabel()
     private let ring = UIView()
+    private let photoView = UIImageView()
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         clusteringIdentifier = nil
         canShowCallout = false
+        isEnabled = true
         ring.backgroundColor = UIColor(Color.backgroundMedium)
         ring.layer.borderColor = UIColor(Color.secondaryGold).cgColor
         ring.layer.borderWidth = 2
         ring.clipsToBounds = true
         addSubview(ring)
+        photoView.contentMode = .scaleAspectFill
+        photoView.clipsToBounds = true
+        photoView.isHidden = true
+        ring.addSubview(photoView)
         bubble.textAlignment = .center
         bubble.textColor = UIColor(Color.secondaryGold)
         bubble.font = .systemFont(ofSize: 14, weight: .bold)
@@ -474,10 +487,22 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
         centerOffset = CGPoint(x: 0, y: -d / 4)
         ring.frame = bounds
         ring.layer.cornerRadius = d / 2
+        photoView.frame = bounds
+        photoView.layer.cornerRadius = d / 2
         bubble.frame = bounds
         bubble.font = .systemFont(ofSize: d * 0.38, weight: .bold)
-        let letter = (title?.trimmingCharacters(in: .whitespacesAndNewlines).first).map(String.init) ?? "·"
-        bubble.text = letter.uppercased()
+        // Prefer cropped profile photo (same store as AvatarCropEditor).
+        if let image = ProfileImageManager.shared.loadProfileImage(for: .main) {
+            photoView.image = image
+            photoView.isHidden = false
+            bubble.isHidden = true
+        } else {
+            photoView.image = nil
+            photoView.isHidden = true
+            bubble.isHidden = false
+            let letter = (title?.trimmingCharacters(in: .whitespacesAndNewlines).first).map(String.init) ?? "·"
+            bubble.text = letter.uppercased()
+        }
     }
 }
 
@@ -614,7 +639,7 @@ struct FamilyMapPinPreviewSheet: View {
                 Spacer()
             }
             .padding(Spacing.l)
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 previewDone = true
                 isPresented = false
@@ -675,7 +700,7 @@ struct FamilyMapInviteRoleSheet: View {
                 Spacer()
             }
             .padding(Spacing.l)
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 isPresented = false
             })
@@ -753,7 +778,7 @@ struct FamilyPetWizardSheet: View {
                 }
                 .padding(Spacing.l)
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 isPresented = false
             })
@@ -915,7 +940,7 @@ struct FamilyMapRoutesSheet: View {
                 Spacer()
             }
             .padding(Spacing.l)
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 isPresented = false
             })
@@ -1099,7 +1124,7 @@ struct FamilyCrashConfirmSheet: View {
                 Spacer()
             }
             .padding(Spacing.l)
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 guard !isSending else { return }
                 isPresented = false
@@ -1367,7 +1392,7 @@ struct PayPainsCheckDoorSheet: View {
                     .environmentObject(localizationManager)
                     .padding(Spacing.l)
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 isPresented = false
             })

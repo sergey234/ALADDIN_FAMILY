@@ -15,7 +15,7 @@ struct ReferralScreen: View {
     @State private var showShareSheet: Bool = false
     
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: Spacing.l) {
                 ALADDINNavigationBar(
                     title: "РЕФЕРАЛЬНАЯ ПРОГРАММА",

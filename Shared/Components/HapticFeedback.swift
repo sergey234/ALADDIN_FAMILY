@@ -1,7 +1,9 @@
 import UIKit
 
-/// 📳 Haptic Feedback Helper
-/// Управление тактильной обратной связью
+/// Haptic Feedback Helper
+/// Round2 S10: reuse everywhere for chips / scroll-spy / toggles — no mass rewrite.
+typealias SelectionHaptic = HapticFeedback
+
 struct HapticFeedback {
     private static let lock = NSLock()
     private static var lastSelection: TimeInterval = 0

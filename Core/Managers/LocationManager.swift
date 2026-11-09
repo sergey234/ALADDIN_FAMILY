@@ -464,6 +464,12 @@ class LocationManager: NSObject, ObservableObject {
     
     /// Отправить текущую локацию на сервер с поддержкой офлайн-буфера
     func reportCurrentLocation(_ location: CLLocation) {
+        // Канон B: в тихой зоне точку семье / на сервер не шлём.
+        if FamilyMapQuietZoneStore.contains(location) {
+            print("ℹ️ LocationManager: тихая зона — report пропущен")
+            return
+        }
+
         let report = LocationReport(
             lat: location.coordinate.latitude,
             lon: location.coordinate.longitude,
@@ -476,6 +482,9 @@ class LocationManager: NSObject, ObservableObject {
         
         // Пытаемся отправить весь буфер
         sendBuffer()
+
+        // Авто-сегмент поездки по движению (кнопка Start не обязательна).
+        FamilyMapAutoTripTracker.note(location: location)
     }
     
     private func saveToBuffer(_ report: LocationReport) {

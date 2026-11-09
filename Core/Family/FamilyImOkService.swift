@@ -492,7 +492,7 @@ enum FamilyImOkService {
                 "type": "need_help",
                 "member_id": resolvedId,
                 "display_name": displayName,
-                "deepLink": "aladdin://family"
+                "deepLink": FamilyPushDeepLink.mapURL(memberId: resolvedId, focus: .sos)
             ],
             delay: 0.15,
             sound: .default

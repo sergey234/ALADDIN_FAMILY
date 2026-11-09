@@ -105,6 +105,28 @@ final class FamilyRegistrationViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertNil(viewModel.familyID)
     }
+
+    func testFamilyInviteParserNormalizesDashedCode() throws {
+        let payload = try XCTUnwrap(FamilyInviteCodeParser.parse("FAM-A1B2-C3D4-E5F6"))
+
+        XCTAssertEqual(payload.familyId, "FAM_A1B2C3D4E5F6")
+        XCTAssertEqual(payload.displayCode, "FAM-A1B2-C3D4-E5F6")
+        XCTAssertNil(payload.inviteToken)
+    }
+
+    func testFamilyInviteParserReadsQRJSONWithInviteToken() throws {
+        let raw = #"{"type":"family_registration","family_id":"FAM_A1B2C3D4E5F6","invite_token":"secret-token"}"#
+        let payload = try XCTUnwrap(FamilyInviteCodeParser.parse(raw))
+
+        XCTAssertEqual(payload.familyId, "FAM_A1B2C3D4E5F6")
+        XCTAssertEqual(payload.displayCode, "FAM-A1B2-C3D4-E5F6")
+        XCTAssertEqual(payload.inviteToken, "secret-token")
+    }
+
+    func testDeviceBindLinkIsNotFamilyInvite() {
+        XCTAssertNil(FamilyInviteCodeParser.parse("aladdin://bind?token=abcdef123456"))
+        XCTAssertEqual(DevicePairingLinkParser.extractToken(fromScannedString: "aladdin://bind?token=abcdef123456"), "abcdef123456")
+    }
     
     private func resetUserDefaults() {
         defaults.removeObject(forKey: "current_user_role")

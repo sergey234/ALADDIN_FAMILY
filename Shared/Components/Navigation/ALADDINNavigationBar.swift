@@ -107,8 +107,8 @@ struct ALADDINNavigationBar: View {
                             navigationManager.appendLog("⚠️ ALADDINNavigationBar: tap по логотипу заблокирован (manual close)")
                             return
                         }
-                        navigationManager.appendLog("🧭 ALADDINNavigationBar: navigateToRoot(.main)")
-                        navigationManager.navigateToRoot(.main)
+                        navigationManager.appendLog("🧭 ALADDINNavigationBar: navigateToHomeEntry (logo tap)")
+                        navigationManager.navigateToHomeEntry(reason: "navBar.logo")
                     }
                 }
                 

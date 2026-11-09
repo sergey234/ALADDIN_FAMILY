@@ -201,6 +201,7 @@ struct ChildInterfaceScreen: View {
         HStack(spacing: 12) {
             // Кнопка назад
             Button(action: {
+                SelectionHaptic.selection()
                 // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
                 navigationManager.goBack(reason: "ChildInterfaceScreen back button")
             }) {
@@ -452,6 +453,7 @@ struct ChildInterfaceScreen: View {
             HStack(spacing: 8) {
                 ForEach([AgeGroup.kids, .school, .teen, .youngAdult], id: \.self) { age in
                     Button(action: {
+                        SelectionHaptic.selection()
                         selectedAge = age
                         FamilyScreenTimeEligibility.persistAgeGroupFromChildInterface(
                             FamilyScreenTimeEligibility.childInterfaceAgeToken(String(describing: age))
@@ -1599,8 +1601,19 @@ enum ChildDidItStore {
             UserDefaults.standard.set(encoded, forKey: "child_achievement_requests")
         }
 
+        // QA16 H1: сообщение в семейный чат (родители видят там; push чата — если APNs настроен).
+        // Текст баннера честный: «в чат семьи», не «пуш на телефон».
         let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
-        let chatLine = "\(trimmed). \(localization.localized("child_did_it_sent"))"
+        let childFallback = localization.localized("family_role_child_label")
+        let childLabel = (UserDefaults.standard.string(forKey: "user_name")
+            ?? UserDefaults.standard.string(forKey: "user_display_name")
+            ?? childFallback)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let chatLine = String(
+            format: localization.localized("child_did_it_chat_fmt"),
+            childLabel.isEmpty ? childFallback : childLabel,
+            trimmed
+        )
         Task { @MainActor in
             APIService.shared.sendFamilyChatMessage(
                 message: chatLine,

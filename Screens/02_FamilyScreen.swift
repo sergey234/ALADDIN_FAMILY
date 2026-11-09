@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import CoreLocation
+import MapKit
 import UserNotifications
 
 // Master Logger for UI logging
@@ -96,6 +97,9 @@ struct FamilyScreen: View {
     @State private var showMonitoringModalNew: Bool = false
     @State private var showLocationModal: Bool = false
     @State private var showWherePhone: Bool = false
+    @State private var showFamilyGroups: Bool = false
+    @State private var showLeaveFamilyConfirm: Bool = false
+    @State private var leaveFamilyBanner: String? = nil
     /// Pay-pains S3: вар.1 — три окна ПК, полная сетка по «Показать все».
     @State private var payPainsShowAllParentalCards: Bool = false
     /// Pay-pains S5: блок «Вместе» свёрнут по умолчанию.
@@ -2240,7 +2244,8 @@ struct FamilyScreen: View {
                                             navigationManager.navigateTo(.tariffs)
                                         }
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(.black)
+                                        // S80: dark ink on gold — not pure black wash on family list.
+                                        .foregroundColor(Color(red: 0.04, green: 0.07, blue: 0.16))
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 8)
                                         .background(Color.secondaryGold)
@@ -2584,15 +2589,19 @@ struct FamilyScreen: View {
                                 FamilyChallengesSection(members: familyMembers)
                                     .environmentObject(localizationManager)
                                 Button {
+                                    HapticFeedback.selection()
                                     navigationManager.navigateTo(.familyList)
                                 } label: {
                                     HStack {
                                         Image(systemName: "checklist")
+                                            .foregroundColor(.secondaryGold)
                                         Text(localizationManager.localized("family_list_title"))
                                             .font(.subheadline.weight(.semibold))
+                                            .foregroundColor(.white)
                                         Spacer()
                                         Image(systemName: "chevron.right")
                                             .font(.caption)
+                                            .foregroundColor(.white.opacity(0.55))
                                     }
                                     .padding()
                                     .stormGlassCard(cornerRadius: 12)
@@ -2660,6 +2669,14 @@ struct FamilyScreen: View {
         .sheet(isPresented: $showWherePhone) {
             WhereIsPhoneScreen(isPresented: $showWherePhone)
                 .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        .sheet(isPresented: $showFamilyGroups) {
+            FamilyGroupsModal(isPresented: $showFamilyGroups)
+                .environmentObject(localizationManager)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: FamilyPushDeepLink.navigateToFamilyMapName)) { _ in
+            showWherePhone = true
         }
         .sheet(isPresented: $showReportsModal) {
             FamilyReportsModal(isPresented: $showReportsModal, isEnabled: $isReportsEnabled)
@@ -3289,10 +3306,72 @@ extension FamilyScreen {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("family_open_list")
+
+                Button {
+                    HapticFeedback.impact(.light)
+                    showFamilyGroups = true
+                } label: {
+                    HStack {
+                        Image(systemName: "person.3.fill")
+                        Text(localizationManager.localized("family_groups_title"))
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.textPrimary)
+                    .padding()
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_open_groups")
+
+                // S46 — leave family on this device (not group labels; not self-remove API).
+                Button {
+                    HapticFeedback.notification(.warning)
+                    showLeaveFamilyConfirm = true
+                } label: {
+                    HStack {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                        Text(localizationManager.localized("family_leave_title"))
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                    }
+                    .foregroundColor(.dangerRed)
+                    .padding()
+                    .background(Color.dangerRed.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_leave_button")
+
+                if let leaveFamilyBanner, !leaveFamilyBanner.isEmpty {
+                    Text(leaveFamilyBanner)
+                        .font(.caption)
+                        .foregroundColor(.secondaryGold)
+                        .accessibilityIdentifier("family_leave_banner")
+                }
             }
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large)
+        .confirmationDialog(
+            localizationManager.localized("family_leave_title"),
+            isPresented: $showLeaveFamilyConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(localizationManager.localized("family_leave_confirm"), role: .destructive) {
+                FamilyLocalStore.leaveFamilyOnThisDevice()
+                FamilyMapShareSessionStore.endSession()
+                familyMembers = []
+                leaveFamilyBanner = localizationManager.localized("family_leave_done")
+                HapticFeedback.notification(.success)
+            }
+            Button(localizationManager.localized("family_leave_cancel"), role: .cancel) {}
+        } message: {
+            Text(localizationManager.localized("family_leave_body"))
+        }
     }
 
     private func payPainsPrimaryPCWindow(
@@ -5734,7 +5813,11 @@ struct FamilyModalBaseView<Content: View>: View {
     
     var body: some View {
         ZStack {
+            // S18 Snowball — family modal chrome
+            AladdinSnowballPalette.canvasGradient
+                .ignoresSafeArea()
             StormMeshBackground(variant: .family)
+                .opacity(0.18)
             
             VStack(spacing: 0) {
                 // Header
@@ -7660,6 +7743,8 @@ struct AppLimitsSettingsModal: View {
 
 struct GeofencesSettingsModal: View {
     @Binding var isPresented: Bool
+    /// S30 — optional prefill from map chips (home/school/work/other).
+    var preferredNameKey: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Сохранение геозон в UserDefaults
@@ -7680,6 +7765,9 @@ struct GeofencesSettingsModal: View {
     @State private var validationAlertMessage = ""
     @State private var placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
     @State private var placesNotificationStatusMessage: String?
+    @StateObject private var addressSearch = PlaceAddressSearchCompleter()
+    /// Avoid re-query after picking a suggestion (onChange would re-fire completer).
+    @State private var suppressAddressSearchSync = false
     @ObservedObject private var locationManager = LocationManager.shared
     @State private var noShowSchedules: [GeofenceNoShowSchedule] = []
     @State private var showNoShowEditor = false
@@ -7815,9 +7903,13 @@ struct GeofencesSettingsModal: View {
             VStack(spacing: Spacing.m) {
                 if placesConsentAccepted && geofences.isEmpty && !showAddForm {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(localizationManager.localized("geofences_empty_title"))
+                        Text(localizationManager.localized("map_places_frequent_title"))
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("map_places_frequent_empty"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
                         Text(localizationManager.localized("geofences_empty_body"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
@@ -8054,11 +8146,12 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
-                // F8: частые точки после «Всегда» — быстрый дом/школа, без второго экрана
+                // F8 / S30: частые точки — дом/школа/работа/другое + адресный поиск в форме
                 if placesConsentAccepted,
-                   locationManager.authorizationStatus == .authorizedAlways {
+                   locationManager.authorizationStatus == .authorizedAlways
+                    || locationManager.authorizationStatus == .authorizedWhenInUse {
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text(localizationManager.localized("pay_pains_frequent_places_title"))
+                        Text(localizationManager.localized("map_places_frequent_title"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.textPrimary)
                         Text(localizationManager.localized("pay_pains_frequent_places_body"))
@@ -8067,12 +8160,20 @@ struct GeofencesSettingsModal: View {
                             .fixedSize(horizontal: false, vertical: true)
                         HStack(spacing: Spacing.s) {
                             frequentPlaceChip(
-                                titleKey: "geofences_home",
-                                name: localizationManager.localized("geofences_home")
+                                titleKey: "map_places_suggest_home",
+                                name: localizationManager.localized("map_places_suggest_home")
                             )
                             frequentPlaceChip(
-                                titleKey: "geofences_school",
-                                name: localizationManager.localized("geofences_school")
+                                titleKey: "map_places_suggest_school",
+                                name: localizationManager.localized("map_places_suggest_school")
+                            )
+                            frequentPlaceChip(
+                                titleKey: "map_places_suggest_work",
+                                name: localizationManager.localized("map_places_suggest_work")
+                            )
+                            frequentPlaceChip(
+                                titleKey: "map_places_suggest_other",
+                                name: localizationManager.localized("map_places_suggest_other")
                             )
                         }
                     }
@@ -8138,7 +8239,7 @@ struct GeofencesSettingsModal: View {
                         // Кастомный placeholder: SwiftUI `prompt` на dark часто остаётся tertiary/нечитаемым.
                         ZStack(alignment: .leading) {
                             if newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text(localizationManager.localized("geofences_name_placeholder"))
+                                Text(localizationManager.localized("map_places_name_placeholder"))
                                     .font(.body)
                                     .foregroundColor(Color.textTertiary)
                             }
@@ -8156,38 +8257,99 @@ struct GeofencesSettingsModal: View {
                         )
                         .cornerRadius(CornerRadius.medium)
                         
-                        // Адрес — 2 строки (TextEditor), ink on paper (UIKit default fill is white).
-                        ZStack(alignment: .topLeading) {
-                            if newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text(localizationManager.localized("geofences_address_placeholder"))
+                        // S30 — адрес + MKLocalSearchCompleter подсказки
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            ZStack(alignment: .topLeading) {
+                                if newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    Text(localizationManager.localized("map_places_search_placeholder"))
+                                        .font(.body)
+                                        .foregroundColor(Color.textTertiary)
+                                        .padding(.top, 8)
+                                        .padding(.leading, 5)
+                                }
+                                TextEditor(text: $newGeofenceAddress)
                                     .font(.body)
-                                    .foregroundColor(Color.textTertiary)
-                                    .padding(.top, 8)
-                                    .padding(.leading, 5)
+                                    .foregroundColor(Color.shyamInk)
+                                    .accentColor(.secondaryGold)
+                                    .frame(minHeight: 64)
+                                    .wellnessScrollContentBackgroundHidden()
+                                    .background(Color.clear)
+                                    .onChange(of: newGeofenceAddress) { newValue in
+                                        guard !suppressAddressSearchSync else { return }
+                                        addressSearch.query = newValue
+                                    }
                             }
-                            TextEditor(text: $newGeofenceAddress)
-                                .font(.body)
-                                .foregroundColor(Color.shyamInk)
-                                .accentColor(.secondaryGold)
-                                .frame(minHeight: 64)
-                                .wellnessScrollContentBackgroundHidden()
-                                .background(Color.clear)
+                            .padding(.horizontal, Spacing.m - 4)
+                            .padding(.vertical, Spacing.s)
+                            .background(Color.shyamMoon)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                    .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
+                            )
+                            .cornerRadius(CornerRadius.medium)
+
+                            let trimmedQuery = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if trimmedQuery.count < 2 {
+                                Text(localizationManager.localized("map_places_search_hint"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                            } else if addressSearch.appearsOffline {
+                                Text(localizationManager.localized("map_places_search_offline"))
+                                    .font(.caption)
+                                    .foregroundColor(.dangerRed)
+                            } else if !addressSearch.isSearching && addressSearch.results.isEmpty {
+                                Text(localizationManager.localized("map_places_search_empty"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            if !addressSearch.results.isEmpty {
+                                let suggestions = Array(addressSearch.results.prefix(6))
+                                VStack(spacing: 0) {
+                                    ForEach(Array(suggestions.enumerated()), id: \.offset) { index, completion in
+                                        Button {
+                                            Task { await selectAddressSuggestion(completion) }
+                                        } label: {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(completion.title)
+                                                    .font(.subheadline.weight(.semibold))
+                                                    .foregroundColor(Color.shyamInk)
+                                                    .multilineTextAlignment(.leading)
+                                                if !completion.subtitle.isEmpty {
+                                                    Text(completion.subtitle)
+                                                        .font(.caption)
+                                                        .foregroundColor(Color.textTertiary)
+                                                        .multilineTextAlignment(.leading)
+                                                }
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.horizontal, Spacing.m)
+                                            .padding(.vertical, Spacing.s)
+                                        }
+                                        .buttonStyle(.plain)
+                                        .disabled(isResolvingPlace)
+                                        if index < suggestions.count - 1 {
+                                            Divider().background(Color.secondaryGold.opacity(0.25))
+                                        }
+                                    }
+                                }
+                                .background(Color.shyamMoon.opacity(0.95))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                        .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                                )
+                                .cornerRadius(CornerRadius.medium)
+                                .accessibilityIdentifier("map_places_search_suggestions")
+                            }
                         }
-                        .padding(.horizontal, Spacing.m - 4)
-                        .padding(.vertical, Spacing.s)
-                        .background(Color.shyamMoon)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
-                        )
-                        .cornerRadius(CornerRadius.medium)
 
                         Button {
                             Task { await fillAddressFromCurrentLocation() }
                         } label: {
                             HStack(spacing: Spacing.xs) {
                                 Image(systemName: "location.fill")
-                                Text(localizationManager.localized("geofences_use_current_location"))
+                                Text(localizationManager.localized("map_places_use_map_pin"))
                                     .font(.caption.weight(.bold))
                             }
                             .foregroundColor(.secondaryGold)
@@ -8229,6 +8391,8 @@ struct GeofencesSettingsModal: View {
                             Button(action: {
                                 HapticFeedback.impact(.medium)
                                 showAddForm = false
+                                addressSearch.reset()
+                                pendingSetupCoordinate = nil
                             }) {
                                 Text(localizationManager.localized("edit_profile_cancel"))
                                     .font(.body.weight(.semibold))
@@ -8249,7 +8413,7 @@ struct GeofencesSettingsModal: View {
                             }) {
                                 Text(
                                     localizationManager.localized(
-                                        isResolvingPlace ? "geofences_resolving_coords" : "geofences_add"
+                                        isResolvingPlace ? "geofences_resolving_coords" : "map_places_save_cta"
                                     )
                                 )
                                     .font(.bodyBold)
@@ -8302,6 +8466,7 @@ struct GeofencesSettingsModal: View {
             adultSelfShareEnabled = GeofenceAdultSelfShareStore.isEnabled
             GeofenceNoShowMonitor.checkDue(localization: localizationManager)
             GeofenceNoShowMonitor.resyncCalendarTriggers()
+            applyPreferredNameIfNeeded()
             Task {
                 await GeofenceMonitoringBootstrap.reloadIfNeeded(
                     locationManager: locationManager,
@@ -8315,6 +8480,52 @@ struct GeofencesSettingsModal: View {
             Text(validationAlertMessage)
         }
         .withVisualLogger()
+    }
+
+    private func applyPreferredNameIfNeeded() {
+        guard placesConsentAccepted,
+              let key = preferredNameKey,
+              !key.isEmpty else { return }
+        if key == "map_places_suggest_other" {
+            newGeofenceName = ""
+        } else {
+            newGeofenceName = localizationManager.localized(key)
+        }
+        newGeofenceAddress = ""
+        newGeofenceRadius = 100
+        pendingSetupCoordinate = nil
+        addressSearch.reset()
+        showAddForm = true
+    }
+
+    /// S30 — pick Apple Maps suggestion → real address + pin for save.
+    @MainActor
+    private func selectAddressSuggestion(_ completion: MKLocalSearchCompletion) async {
+        isResolvingPlace = true
+        defer { isResolvingPlace = false }
+        do {
+            let resolved = try await addressSearch.resolve(completion)
+            suppressAddressSearchSync = true
+            newGeofenceAddress = resolved.address
+            pendingSetupCoordinate = resolved.coordinate
+            if newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                newGeofenceName = resolved.title
+            }
+            addressSearch.clearResults()
+            addressSearch.query = ""
+            HapticFeedback.notification(.success)
+            VisualLogger.shared.log(
+                "✅ place_completer_pick title=\(resolved.title)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
+            DispatchQueue.main.async {
+                suppressAddressSearchSync = false
+            }
+        } catch {
+            validationAlertMessage = localizationManager.localized("geofences_geocode_failed")
+            showValidationAlert = true
+        }
     }
 
     /// WAVE3 L6 — geocode (or refuse) before save; no silent places without coords.
@@ -8362,6 +8573,7 @@ struct GeofencesSettingsModal: View {
             newGeofenceAddress = ""
             newGeofenceRadius = 100
             pendingSetupCoordinate = nil
+            addressSearch.reset()
             showAddForm = false
             saveGeofences()
         } catch {
@@ -8386,6 +8598,7 @@ struct GeofencesSettingsModal: View {
             }
             let location = try await locationManager.getCurrentLocationForPlaceSetup()
             pendingSetupCoordinate = location.coordinate
+            suppressAddressSearchSync = true
             if let line = await GeofenceGeocodingService.shared.reverseGeocodeAddressLine(for: location) {
                 newGeofenceAddress = line
             } else {
@@ -8395,10 +8608,15 @@ struct GeofencesSettingsModal: View {
                     location.coordinate.longitude
                 )
             }
+            addressSearch.clearResults()
+            addressSearch.query = ""
             if newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 newGeofenceName = localizationManager.localized("geofences_current_place_name")
             }
             HapticFeedback.notification(.success)
+            DispatchQueue.main.async {
+                suppressAddressSearchSync = false
+            }
         } catch {
             validationAlertMessage = localizationManager.localized("geofences_current_location_failed")
             showValidationAlert = true
@@ -8698,10 +8916,14 @@ struct LocationHistoryDetailModal: View {
     
     var body: some View {
         FamilyModalBaseView(
-            title: localizationManager.localized("location_history_title"),
+            title: localizationManager.localized("location_history_30d_title"),
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.l) {
+                Text(localizationManager.localized("location_history_30d_subtitle"))
+                    .font(.subheadline)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 // Частые места — только при реальной статистике (не фейковые «32 визита»)
                 if !frequentPlaces.isEmpty {
                     VStack(alignment: .leading, spacing: Spacing.m) {

@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import SwiftUI
 
@@ -8,6 +9,19 @@ import SwiftUI
  */
 
 // MARK: - Driving Reports Models
+
+struct DrivingRoutePoint: Codable, Equatable {
+    let latitude: Double
+    let longitude: Double
+
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+
+    var isValid: Bool {
+        CLLocationCoordinate2DIsValid(coordinate)
+    }
+}
 
 struct DrivingReport: Identifiable, Codable {
     let id: String
@@ -25,9 +39,159 @@ struct DrivingReport: Identifiable, Codable {
     let events: [DrivingEvent]
     let violations: [DrivingViolation]
     let positioningSystem: String? // GPS, GLONASS, Galileo, BeiDou
+    /// Densitiy A — real endpoints only (optional; never invent mid-route points).
+    let startLatitude: Double?
+    let startLongitude: Double?
+    let endLatitude: Double?
+    let endLongitude: Double?
+    /// GPS track when API/local saved real samples (≥2). Never invent mid-points.
+    let routePoints: [DrivingRoutePoint]
+
+    enum CodingKeys: String, CodingKey {
+        case id, userId, userName, startTime, endTime, startLocation, endLocation
+        case distance, duration, averageSpeed, maxSpeed, safetyScore, events, violations, positioningSystem
+        case startLatitude, startLongitude, endLatitude, endLongitude
+        case routePoints, route_points
+    }
+
+    init(
+        id: String,
+        userId: String,
+        userName: String,
+        startTime: Date,
+        endTime: Date,
+        startLocation: String,
+        endLocation: String,
+        distance: Double,
+        duration: TimeInterval,
+        averageSpeed: Double,
+        maxSpeed: Double,
+        safetyScore: Double,
+        events: [DrivingEvent],
+        violations: [DrivingViolation],
+        positioningSystem: String? = nil,
+        startLatitude: Double? = nil,
+        startLongitude: Double? = nil,
+        endLatitude: Double? = nil,
+        endLongitude: Double? = nil,
+        routePoints: [DrivingRoutePoint] = []
+    ) {
+        self.id = id
+        self.userId = userId
+        self.userName = userName
+        self.startTime = startTime
+        self.endTime = endTime
+        self.startLocation = startLocation
+        self.endLocation = endLocation
+        self.distance = distance
+        self.duration = duration
+        self.averageSpeed = averageSpeed
+        self.maxSpeed = maxSpeed
+        self.safetyScore = safetyScore
+        self.events = events
+        self.violations = violations
+        self.positioningSystem = positioningSystem
+        self.startLatitude = startLatitude
+        self.startLongitude = startLongitude
+        self.endLatitude = endLatitude
+        self.endLongitude = endLongitude
+        self.routePoints = routePoints
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        userId = try c.decode(String.self, forKey: .userId)
+        userName = try c.decode(String.self, forKey: .userName)
+        startTime = try c.decode(Date.self, forKey: .startTime)
+        endTime = try c.decode(Date.self, forKey: .endTime)
+        startLocation = try c.decode(String.self, forKey: .startLocation)
+        endLocation = try c.decode(String.self, forKey: .endLocation)
+        distance = try c.decode(Double.self, forKey: .distance)
+        duration = try c.decode(Double.self, forKey: .duration)
+        averageSpeed = try c.decode(Double.self, forKey: .averageSpeed)
+        maxSpeed = try c.decode(Double.self, forKey: .maxSpeed)
+        safetyScore = try c.decode(Double.self, forKey: .safetyScore)
+        events = try c.decodeIfPresent([DrivingEvent].self, forKey: .events) ?? []
+        violations = try c.decodeIfPresent([DrivingViolation].self, forKey: .violations) ?? []
+        positioningSystem = try c.decodeIfPresent(String.self, forKey: .positioningSystem)
+        startLatitude = try c.decodeIfPresent(Double.self, forKey: .startLatitude)
+        startLongitude = try c.decodeIfPresent(Double.self, forKey: .startLongitude)
+        endLatitude = try c.decodeIfPresent(Double.self, forKey: .endLatitude)
+        endLongitude = try c.decodeIfPresent(Double.self, forKey: .endLongitude)
+        if let pts = try c.decodeIfPresent([DrivingRoutePoint].self, forKey: .routePoints) {
+            routePoints = pts.filter(\.isValid)
+        } else if let pts = try c.decodeIfPresent([DrivingRoutePoint].self, forKey: .route_points) {
+            routePoints = pts.filter(\.isValid)
+        } else {
+            routePoints = []
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(userId, forKey: .userId)
+        try c.encode(userName, forKey: .userName)
+        try c.encode(startTime, forKey: .startTime)
+        try c.encode(endTime, forKey: .endTime)
+        try c.encode(startLocation, forKey: .startLocation)
+        try c.encode(endLocation, forKey: .endLocation)
+        try c.encode(distance, forKey: .distance)
+        try c.encode(duration, forKey: .duration)
+        try c.encode(averageSpeed, forKey: .averageSpeed)
+        try c.encode(maxSpeed, forKey: .maxSpeed)
+        try c.encode(safetyScore, forKey: .safetyScore)
+        try c.encode(events, forKey: .events)
+        try c.encode(violations, forKey: .violations)
+        try c.encodeIfPresent(positioningSystem, forKey: .positioningSystem)
+        try c.encodeIfPresent(startLatitude, forKey: .startLatitude)
+        try c.encodeIfPresent(startLongitude, forKey: .startLongitude)
+        try c.encodeIfPresent(endLatitude, forKey: .endLatitude)
+        try c.encodeIfPresent(endLongitude, forKey: .endLongitude)
+        try c.encode(routePoints, forKey: .routePoints)
+    }
+
+    func withRoutePoints(_ points: [DrivingRoutePoint]) -> DrivingReport {
+        DrivingReport(
+            id: id,
+            userId: userId,
+            userName: userName,
+            startTime: startTime,
+            endTime: endTime,
+            startLocation: startLocation,
+            endLocation: endLocation,
+            distance: distance,
+            duration: duration,
+            averageSpeed: averageSpeed,
+            maxSpeed: maxSpeed,
+            safetyScore: safetyScore,
+            events: events,
+            violations: violations,
+            positioningSystem: positioningSystem,
+            startLatitude: startLatitude,
+            startLongitude: startLongitude,
+            endLatitude: endLatitude,
+            endLongitude: endLongitude,
+            routePoints: points
+        )
+    }
     
     var durationMinutes: Int {
         Int(duration / 60)
+    }
+
+    /// True only when start+end coords are present and valid — densitiy A map gate.
+    var hasRouteEndpoints: Bool {
+        guard let slat = startLatitude, let slon = startLongitude,
+              let elat = endLatitude, let elon = endLongitude else { return false }
+        let s = CLLocationCoordinate2D(latitude: slat, longitude: slon)
+        let e = CLLocationCoordinate2D(latitude: elat, longitude: elon)
+        return CLLocationCoordinate2DIsValid(s) && CLLocationCoordinate2DIsValid(e)
+    }
+
+    var hasGPSTrack: Bool {
+        routePoints.filter(\.isValid).count >= 2
     }
     
     var formattedDistance: String {
@@ -948,6 +1112,20 @@ extension DrivingReport {
     
     func localizedFormattedAverageSpeed(_ localizationManager: LocalizationManager) -> String {
         String(format: "%.0f %@", averageSpeed, localizationManager.localized("driving_reports_unit_km"))
+    }
+
+    /// Round2 S19f — max speed only when GPS reported a positive peak (no invented numbers).
+    func localizedFormattedMaxSpeed(_ localizationManager: LocalizationManager) -> String? {
+        guard maxSpeed > 0 else { return nil }
+        let speed = String(format: "%.0f %@", maxSpeed, localizationManager.localized("driving_reports_unit_kmh"))
+        return String(format: localizationManager.localized("driving_reports_max_speed"), speed)
+    }
+
+    func localizedRiskEventsLine(_ localizationManager: LocalizationManager) -> String? {
+        let n = violations.count
+        guard n > 0 else { return nil }
+        let key = n == 1 ? "driving_reports_risk_events" : "driving_reports_risk_events_many"
+        return String(format: localizationManager.localized(key), n)
     }
 }
 

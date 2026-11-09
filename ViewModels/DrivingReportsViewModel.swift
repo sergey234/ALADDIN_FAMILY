@@ -23,12 +23,33 @@ class DrivingReportsViewModel: ObservableObject {
     private let localizationManager: LocalizationManager
     private let locationManager = LocationManager.shared
     private var cancellables = Set<AnyCancellable>()
+    private var trackSampleTask: Task<Void, Never>?
     
     // MARK: - Initialization
     
     init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
         self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
+    }
+
+    private func startTrackSampling(tripId: String) {
+        stopTrackSampling()
+        trackSampleTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 30_000_000_000)
+                guard !Task.isCancelled else { break }
+                guard DrivingTripTrackStore.activeTripId == tripId else { break }
+                guard let self else { break }
+                if let loc = try? await self.locationManager.getCurrentLocation() {
+                    DrivingTripTrackStore.append(tripId: tripId, coordinate: loc.coordinate)
+                }
+            }
+        }
+    }
+
+    private func stopTrackSampling() {
+        trackSampleTask?.cancel()
+        trackSampleTask = nil
     }
     
     // MARK: - Public Methods
@@ -95,6 +116,10 @@ class DrivingReportsViewModel: ObservableObject {
                     continuation.resume(with: result.map { _ in () })
                 }
             }
+
+            let tripId = "local_\(Int(Date().timeIntervalSince1970))"
+            DrivingTripTrackStore.begin(tripId: tripId, start: startLocation.coordinate)
+            startTrackSampling(tripId: tripId)
             
             // Обновляем отчеты
             await loadReports(userId: userId, period: "week")
@@ -130,10 +155,19 @@ class DrivingReportsViewModel: ObservableObject {
             print("📍 DrivingReportsViewModel: Завершение поездки \(tripId ?? "current"): \(endLocation.coordinate.latitude), \(endLocation.coordinate.longitude)")
             
             // ✅ ИНТЕГРАЦИЯ: Отправляем координаты конца поездки на сервер
+            let resolvedTripId = tripId
+                ?? DrivingTripTrackStore.activeTripId
+                ?? "current"
             try await withCheckedThrowingContinuation { continuation in
-                apiService.endDrivingTrip(tripId: tripId ?? "current", endLatitude: endLocation.coordinate.latitude, endLongitude: endLocation.coordinate.longitude) { result in
+                apiService.endDrivingTrip(tripId: resolvedTripId, endLatitude: endLocation.coordinate.latitude, endLongitude: endLocation.coordinate.longitude) { result in
                     continuation.resume(with: result.map { _ in () })
                 }
+            }
+            stopTrackSampling()
+            if let active = DrivingTripTrackStore.activeTripId {
+                DrivingTripTrackStore.finish(tripId: active, end: endLocation.coordinate)
+            } else {
+                DrivingTripTrackStore.finish(tripId: resolvedTripId, end: endLocation.coordinate)
             }
             
             // Обновляем отчеты
@@ -142,6 +176,10 @@ class DrivingReportsViewModel: ObservableObject {
             // Если ошибка получения местоположения - все равно завершаем поездку
             if error is LocationManagerError {
                 print("⚠️ DrivingReportsViewModel: Ошибка получения местоположения, но завершаем поездку: \(error.localizedDescription)")
+                stopTrackSampling()
+                if let active = DrivingTripTrackStore.activeTripId {
+                    DrivingTripTrackStore.finish(tripId: active, end: nil)
+                }
                 // Продолжаем без координат
                 await loadReports(userId: userId, period: "week")
             } else {

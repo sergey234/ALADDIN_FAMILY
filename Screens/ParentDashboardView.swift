@@ -25,32 +25,45 @@ struct ParentDashboardView: View {
     var body: some View {
         NavigationView {
             ZStack {
+                // S09 A + Snowball B: owner purple→magenta canvas + light StormMesh veil.
+                AladdinSnowballPalette.canvasGradient
+                    .ignoresSafeArea()
                 StormMeshBackground(variant: .grow)
+                    .opacity(0.18)
                     .ignoresSafeArea()
 
                 ScrollView(.vertical, showsIndicators: true) {
                     LazyVStack(spacing: 16) {
+                Text(localizationManager.localized("parent_dashboard_s09_hint"))
+                    .font(.caption)
+                    .foregroundColor(AladdinSnowballPalette.inkMuted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("parent_dashboard_title"))
                         .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(AladdinSnowballPalette.gold)
                     Text(
                         localizationManager.localized(
                             "parent_dashboard_daily_limit_format",
                             TimeLimitsManager.shared.currentDailyLimitMinutes()
                         )
                     )
+                    .foregroundColor(.white)
                     Text(
                         localizationManager.localized(
                             "parent_dashboard_remaining_format",
                             TimeLimitsManager.shared.currentRemainingMinutes()
                         )
                     )
+                    .foregroundColor(.white.opacity(0.85))
                     Button(localizationManager.localized("parent_dashboard_open_unified_limits")) {
                         showUnifiedTimeLimits = true
                     }
                     .accessibilityLabel(localizationManager.localized("parent_dashboard_open_unified_limits"))
                     .accessibilityHint(localizationManager.localized("parent_dashboard_open_unified_limits_hint"))
                     .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(AladdinSnowballPalette.gold)
                     .padding(.top, 4)
                     if pendingExtensionRequestCount > 0 {
                         Text(localizationManager.localized("parent_dashboard_pending_extension_requests", pendingExtensionRequestCount))
@@ -83,7 +96,8 @@ struct ParentDashboardView: View {
                                 }
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
-                                .background(allowedTypes.contains(type) ? Color.blue.opacity(0.3) : Color.gray.opacity(0.2))
+                                .foregroundColor(allowedTypes.contains(type) ? .backgroundDark : AladdinSnowballPalette.ink)
+                                .background(allowedTypes.contains(type) ? AladdinSnowballPalette.gold : AladdinSnowballPalette.glass)
                                 .clipShape(Capsule())
                             }
                         }
@@ -113,7 +127,12 @@ struct ParentDashboardView: View {
                                 }
                             }
                         }
-                        .buttonStyle(.borderedProminent)
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(.backgroundDark)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(AladdinSnowballPalette.gold)
+                        .clipShape(Capsule())
                         .accessibilityLabel(localizationManager.localized("parent_dashboard_export_child_package"))
 
                         Button(localizationManager.localized("parent_dashboard_delete_active_child")) {
@@ -130,7 +149,11 @@ struct ParentDashboardView: View {
                                     : localizationManager.localized("parent_dashboard_dsar_delete_no_match")
                             }
                         }
-                        .buttonStyle(.bordered)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(AladdinSnowballPalette.gold)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .overlay(Capsule().stroke(AladdinSnowballPalette.goldSoft, lineWidth: 1))
                         .accessibilityLabel(localizationManager.localized("parent_dashboard_delete_active_child"))
                     }
                     if let dsarMessage, !dsarMessage.isEmpty {

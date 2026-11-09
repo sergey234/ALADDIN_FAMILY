@@ -74,10 +74,11 @@ enum CompanionHeroLayout {
                 stageBottomInset: heroStatusOverlayHeight
             )
         case .immersive:
+            // QA16 G1: fit — голова/руки джина не уходят за край (fillBottom резал кадр).
             return PresenceLayout(
                 heroZoneFraction: 0.88,
                 chatZoneFraction: 0.12,
-                contentMode: .fillBottom,
+                contentMode: .fit,
                 statusOverlayAtTop: true,
                 stageBottomInset: 8
             )

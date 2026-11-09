@@ -630,6 +630,7 @@ refresh CX status on appear + scenePhase active
 | Дата | GO | Статус |
 |------|-----|--------|
 | 2026-11-05 | **W0** | ✅ код: Q13 · Q21 · Q22 · Q23 · Q24 · Q25 · §10.5 в план. Device evidence — после `GO на сборку`. |
+| 2026-11-09 | **Xcode** | ✅ owner: Xcode build OK · `CFBundleVersion` / `CURRENT_PROJECT_VERSION` = **18**. Device evidence still open (L-DEV-EVIDENCE). Next: Round2 S01–S80 → `FAMILY_SAFETY_DEVICE_QA_ROUND2_S01_S80_2026-11-09.md`. |
 
 ---
 
@@ -678,5 +679,7 @@ refresh CX status on appear + scenePhase active
 
 **Итого кода:** 36 / 36 ✅ код (W0–W9).  
 **L-W1-AF-SMOKE:** ✅ 5/5 (2026-11-06) — корень Q27–Q33 был на сервере: воркер Antifake без `.env` падал на каждой медиа-джобе с 16.10. Починено drop-in `env.conf`. Evidence: `qa_device_2026-11-05/evidence/antifake_smoke_20261106.md`.  
-**Device evidence:** ⏳ после `GO на сборку` + L-DEV-EVIDENCE.  
-**Не путать:** ✅ код ≠ ✅ device PASS.
+**Xcode build:** ✅ (2026-11-09, owner) · `CFBundleVersion` **18**.  
+**Device evidence:** ⏳ L-DEV-EVIDENCE — `evidence/Qxx_after.jpg` на iPhone + FACT rows (после явного `GO на сборку` / device QA).  
+**Не путать:** ✅ код ≠ ✅ device PASS.  
+**Round 2:** `FAMILY_SAFETY_DEVICE_QA_ROUND2_S01_S80_2026-11-09.md` (S01–S80).

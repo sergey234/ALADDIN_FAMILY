@@ -47,22 +47,19 @@ enum FamilyChildThreat: String, CaseIterable, Identifiable, Sendable {
     var titleKey: String { "tariffs_threat_child_\(catalogIndex)" }
     var pipelineKey: String { "family_hub_chd_\(String(format: "%02d", catalogIndex))_pipeline" }
 
+    /// Round2 S65: every card opens a real destination (no dead taps).
     var route: FamilyChildThreatRoute {
         switch self {
-        case .chd01, .chd07, .chd09:
-            return .familyRoot
-        case .chd02, .chd05, .chd08, .chd10, .chd11, .chd16, .chd17:
+        case .chd01, .chd06, .chd07, .chd08, .chd10:
             return .parentalControl
-        case .chd03:
+        case .chd02, .chd05, .chd09, .chd11, .chd16, .chd17:
+            return .parentalControl
+        case .chd03, .chd13:
             return .familyRoot
         case .chd04:
-            return .familyRoot
-        case .chd06:
             return .parentalControl
         case .chd12:
             return .networkProtection
-        case .chd13:
-            return .familyRoot
         case .chd14, .chd15:
             return .antifakeTab(.text, textMode: .text)
         }

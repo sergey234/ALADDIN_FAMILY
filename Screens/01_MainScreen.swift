@@ -487,15 +487,15 @@ struct MainScreen: View {
                                 VStack(spacing: 8) {
                                     HStack(spacing: 8) {
                                         Text("🛡️")
-                                            .font(.system(size: 20))
+                                            .font(.system(size: 28))
                                             .accessibilityLabel("Иконка защиты")
                                         Text(antivirusEnabled ? "🟢" : "🔴")
-                                            .font(.system(size: 24))
+                                            .font(.system(size: 22))
                                             .accessibilityLabel(antivirusEnabled ? "Статус: Активен" : "Статус: Отключен")
                                     }
                                     
                                     Text(localizationManager.localized("main_antivirus_title"))
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
                                         .accessibilityLabel("Название: Защита Aladdin")
                                     
@@ -505,7 +505,7 @@ struct MainScreen: View {
                                         .accessibilityLabel("Описание: Защита устройств")
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 80)
+                                .frame(height: 100)
                                 .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -519,11 +519,11 @@ struct MainScreen: View {
                             }) {
                                 VStack(spacing: 8) {
                                     Text("💎")
-                                        .font(.system(size: 20))
+                                        .font(.system(size: 28))
                                         .accessibilityLabel("Иконка тарифов")
                                     
                                     Text(localizationManager.localized("main_tariffs"))
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
                                         .accessibilityLabel("Название: Тарифы")
                                     
@@ -533,7 +533,7 @@ struct MainScreen: View {
                                         .accessibilityLabel("Описание: Выбор плана")
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 80)
+                                .frame(height: 100)
                                 .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -549,9 +549,9 @@ struct MainScreen: View {
                             }) {
                                 VStack(spacing: 8) {
                                     Text("🧓")
-                                        .font(.system(size: 20))
+                                        .font(.system(size: 28))
                                     Text(localizationManager.localized("main_senior_companion_title"))
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
                                         .multilineTextAlignment(.center)
                                     Text(localizationManager.localized("main_senior_companion_subtitle"))
@@ -560,7 +560,7 @@ struct MainScreen: View {
                                         .multilineTextAlignment(.center)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 80)
+                                .frame(height: 100)
                                 .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -572,10 +572,10 @@ struct MainScreen: View {
                             }) {
                                 VStack(spacing: 8) {
                                     Text("📊")
-                                        .font(.system(size: 20))
+                                        .font(.system(size: 28))
                                     
                                     Text(localizationManager.localized("main_analytics"))
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
                                     
                                     Text(localizationManager.localized("main_analytics_subtitle"))
@@ -583,7 +583,7 @@ struct MainScreen: View {
                                         .foregroundColor(.white.opacity(0.8))
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 80)
+                                .frame(height: 100)
                                 .stormGlassCard(cornerRadius: 10)
                             }
                             
@@ -593,10 +593,10 @@ struct MainScreen: View {
                             }) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")
-                                        .font(.system(size: 20))
+                                        .font(.system(size: 28))
                                     
                                     Text(localizationManager.localized("main_settings"))
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
                                     
                                     Text(localizationManager.localized("main_settings_subtitle"))
@@ -604,7 +604,7 @@ struct MainScreen: View {
                                         .foregroundColor(.white.opacity(0.8))
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 80)
+                                .frame(height: 100)
                                 .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(.plain)
@@ -624,9 +624,9 @@ struct MainScreen: View {
                                         .background(Color.secondaryGold)
                                         .clipShape(Capsule())
                                     Text("🏠")
-                                        .font(.system(size: 20))
+                                        .font(.system(size: 28))
                                     Text(localizationManager.localized("main_simple_version_title"))
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.secondaryGold)
                                         .multilineTextAlignment(.center)
                                     Text(localizationManager.localized("main_simple_version_subtitle"))

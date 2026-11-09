@@ -16,7 +16,10 @@ struct AddMoreMemberCard: View {
                 Text(localizationManager.localized("family_add_more_member"))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondaryGold)
-                    .lineLimit(2)
+                    // S60: «Добавить» without mid-word wrap.
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .allowsTightening(true)
                     .multilineTextAlignment(.center)
                 
                 Spacer()

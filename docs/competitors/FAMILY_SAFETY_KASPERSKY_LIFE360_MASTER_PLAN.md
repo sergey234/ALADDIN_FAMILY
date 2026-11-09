@@ -1,9 +1,10 @@
 # FAMILY SAFETY — единый master-план (Kaspersky + Life360 → ALADDIN)
 
-**Дата:** 2026-11-04 · **версия:** 1.4 (owner lock §17 · plan/fact checklist · Pet wizard = отдельный GO)  
+**Дата:** 2026-11-04 · **версия:** 1.5 (2026-11-09: канон места семьи **B**)  
 **Для кого:** другая ML-система / агент / подрядчик — **читать этот файл первым**.  
 **Статус docs:** канон реализации. **Код / Figma / xcodebuild / партнёры / Device QA — только после явного GO владельца.**  
-**Plan/fact:** [`FAMILY_SAFETY_PLAN_FACT_CHECKLIST.md`](FAMILY_SAFETY_PLAN_FACT_CHECKLIST.md)
+**Plan/fact:** [`FAMILY_SAFETY_PLAN_FACT_CHECKLIST.md`](FAMILY_SAFETY_PLAN_FACT_CHECKLIST.md)  
+**Место семьи 2026-11-09:** [`FAMILY_LOCATION_CANON_B_PLAN_2026-11-09.md`](FAMILY_LOCATION_CANON_B_PLAN_2026-11-09.md) — UX как Life360, **не** трек 24/7; маршрут только в поездке; **Тихая зона**; юртексты на сайте опубликованы.
 
 ---
 
@@ -11,6 +12,7 @@
 
 | Вопрос | Ответ (канон) |
 |--------|----------------|
+| Место семьи / GPS трек? | **Канон B** (см. `FAMILY_LOCATION_CANON_B_PLAN`). Карта + места + Always для точки. Линия маршрута только Start→Stop. Не копим след дня как Life360. |
 | Сколько планов реализации? | **Один:** этот master. Два других файла = **аудиты-источники**, не конкурирующие планы. |
 | Kaspersky MD? | Этап 1 audit SSOT: `KASPERSKY_WHOCALLS_SAFEKIDS_60_SCREEN_AUDIT_ACTION_PLAN.md` (S01–S60) |
 | Life360 MD? | Этап 2 audit SSOT: `LIFE360_SCREEN_AUDIT_ACTION_PLAN.md` + `_partial_L01_L30/31_L60/61_L90.md` (L01–L90) |

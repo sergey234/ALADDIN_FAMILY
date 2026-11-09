@@ -123,21 +123,27 @@ struct MainScreenWithRegistration: View {
         }
     }
 
-    /// «Отмена» только в углу — без полноэкранного Spacer.
+    /// «Отмена» в углу только пока нет шагов роли/возраста/буквы (у модалок своя Отмена — иначе дубль «плавает»).
+    @ViewBuilder
     private var registrationCancelOverlay: some View {
-        Button(localizationManager.localized("common_cancel")) {
-            print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
-            completeRegistration(isSuccess: false)
+        if !registrationVM.showRoleModal,
+           !registrationVM.showAgeGroupModal,
+           !registrationVM.showLetterModal,
+           !registrationVM.showConsentModal {
+            Button(localizationManager.localized("common_cancel")) {
+                print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
+                completeRegistration(isSuccess: false)
+            }
+            .font(.system(size: 16, weight: .medium))
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.black.opacity(0.35))
+            .cornerRadius(20)
+            .accessibilityLabel(localizationManager.localized("common_cancel"))
+            .padding(.top, 20)
+            .padding(.trailing, 20)
         }
-        .font(.system(size: 16, weight: .medium))
-        .foregroundColor(.white)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color.black.opacity(0.35))
-        .cornerRadius(20)
-        .accessibilityLabel(localizationManager.localized("common_cancel"))
-        .padding(.top, 20)
-        .padding(.trailing, 20)
     }
 
     @ViewBuilder

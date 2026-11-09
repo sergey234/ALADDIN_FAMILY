@@ -556,6 +556,8 @@ struct ALADDINApp: App {
                 }
                 .onChange(of: hasCompletedOnboarding) { completed in
                     guard completed else { return }
+                    // Round2 S13: auto-start 14-day trial after onboarding (no extra tap).
+                    Task { await SubscriptionManager.shared.activateTrialIfNeeded() }
                     if let raw = PendingAuthTokenStore.loadDeviceBindToken() {
                         let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
                             ?? URL(string: raw).flatMap { DevicePairingLinkParser.extractToken(from: $0) }
@@ -618,6 +620,13 @@ struct ALADDINApp: App {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFamily"))) { _ in
                     navigationManager.navigateTo(.family)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: FamilyPushDeepLink.navigateToFamilyMapName)) { _ in
+                    // R10: open Convenient Mode shell only as host for WhereIsPhone map sheet — not as final dest.
+                    if navigationManager.currentScreen != .simpleHome,
+                       navigationManager.currentScreen != .family {
+                        navigationManager.navigateToSimpleHome()
+                    }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToTariffs"))) { _ in
                     navigationManager.navigateTo(.tariffs)
@@ -752,7 +761,7 @@ struct ALADDINApp: App {
                         UserDefaults.standard.set(userId, forKey: "user_id")
                     }
                     PendingAuthTokenStore.clearMagicAuthToken()
-                    navigationManager.currentScreen = .main
+                    navigationManager.navigateToHomeEntry(reason: "magicLink.success")
                 case .failure(let error):
                     print("⚠️ Magic-link auth failed: \(error.localizedDescription)")
                 }
@@ -1469,13 +1478,9 @@ extension ALADDINApp {
         } else {
             print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на вход")
             // Pay-pains: SimpleHome = корень входа. Main только по явному «Полная версия» / Меню.
-            // Раньше: root=.main + push SimpleHome → стек [main, simpleHome] и Main всплывал «сам».
-            if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-                navigationManager.navigateToRoot(.simpleHome)
-                print("🟢 SIMPLE_HOME: pay-pains — SimpleHome как корень входа (без Main под ним)")
-            } else {
-                navigationManager.navigateToRoot(.main)
-            }
+            // A1: init уже ставит homeEntry — здесь подтверждаем корень без вспышки Main.
+            navigationManager.navigateToHomeEntry(reason: "initializeNavigation")
+            print("🟢 HOME_ENTRY: корень входа = \(navigationManager.currentScreen.rawValue)")
         }
 
         print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ПОСЛЕ проверки: \(navigationManager.currentScreen)")
@@ -1918,39 +1923,48 @@ func syncDemoSettingsToServer() {
 
 /// ✅ НОВОЕ: View для отображения загрузки приложения
 struct AppLoadingView: View {
+    /// Без жёсткого EnvironmentObject — loading может появиться до полной инъекции.
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    private var preparingText: String {
+        let key = "app_loading_preparing"
+        let value = localizationManager.localized(key)
+        return value == key ? "…" : value
+    }
+
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.primaryBlue.opacity(0.8), Color.secondaryBlue.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // QA16 D1: storm + новый wordmark (не синий холст со старым логотипом).
+            StormMeshBackground(variant: .premiumSunrise)
+                .ignoresSafeArea()
 
             VStack(spacing: Spacing.xl) {
                 Spacer()
 
-                // Логотип или иконка приложения
-                ZStack {
-                    Circle()
-                        .fill(Color.secondaryGold.opacity(0.2))
-                        .frame(width: 120, height: 120)
-
-                    Text("🦄")
-                        .font(.system(size: 60))
+                Group {
+                    if UIImage(named: "OnboardingLogo_V2_Cinematic") != nil {
+                        Image("OnboardingLogo_V2_Cinematic")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 220, maxHeight: 88)
+                    } else if UIImage(named: "app_icon") != nil {
+                        Image("app_icon")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 96, height: 96)
+                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    } else {
+                        Text("ALADDIN AI")
+                            .font(.system(size: 28, weight: .bold, design: .serif))
+                            .foregroundColor(.secondaryGold)
+                    }
                 }
+                .accessibilityHidden(true)
 
-                // Текст загрузки
-                Text("ALADDIN")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.secondaryGold)
-                    .shadow(color: Color.secondaryGold.opacity(0.5), radius: 10)
-
-                Text("Подготовка приложения...")
+                Text(preparingText)
                     .font(.body)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(.white.opacity(0.85))
 
-                // Анимация загрузки
                 ProgressView()
                     .scaleEffect(1.2)
                     .tint(.secondaryGold)
@@ -1960,5 +1974,7 @@ struct AppLoadingView: View {
             }
             .padding(.horizontal, Spacing.screenPadding)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(preparingText)
     }
 }

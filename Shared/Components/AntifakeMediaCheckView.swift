@@ -202,11 +202,13 @@ struct AntifakeMediaCheckView: View {
                         .font(.subheadline)
                         .foregroundColor(.dangerRed)
                         .accessibilityIdentifier("\(panelId)_error")
-                    if viewModel.selectedFilename != nil, !viewModel.isChecking {
+                    // Show Retry whenever file is still held (timeout / network) — all media kinds.
+                    if viewModel.canSubmit || viewModel.selectedFilename != nil, !viewModel.isChecking {
                         SecondaryButton(
                             localizationManager.localized("antifake_retry"),
                             icon: "arrow.clockwise"
                         ) {
+                            SelectionHaptic.selection()
                             Task { await performSubmitCheck() }
                         }
                         .accessibilityIdentifier("\(panelId)_retry")

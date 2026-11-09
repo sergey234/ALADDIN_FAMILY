@@ -60,10 +60,13 @@ struct FamilyHabitRemindersSection: View {
                 parts.append(names.joined(separator: ", "))
             }
         }
+        let fmt = localizationManager.localized("family_habit_delivery_line_fmt")
+        // Round2 S63: empty fmt = hide “Пуши придут…” prose.
+        guard !fmt.isEmpty, fmt != "family_habit_delivery_line_fmt" else { return "" }
         let joined = parts.isEmpty
             ? localizationManager.localized("family_habit_delivery_none")
             : parts.joined(separator: " · ")
-        return String(format: localizationManager.localized("family_habit_delivery_line_fmt"), joined)
+        return String(format: fmt, joined)
     }
 
     var body: some View {
@@ -82,9 +85,13 @@ struct FamilyHabitRemindersSection: View {
                             .foregroundColor(.white.opacity(0.92))
                     }
 
-                    Text(localizationManager.localized("family_habit_not_bedtime_hint"))
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.92))
+                    // Round2 S63: hide soft-reminder prose when string empty.
+                    let softHint = localizationManager.localized("family_habit_not_bedtime_hint")
+                    if !softHint.isEmpty, softHint != "family_habit_not_bedtime_hint" {
+                        Text(softHint)
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.92))
+                    }
                 }
                 .padding(.top, Spacing.s)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -260,11 +267,13 @@ struct FamilyHabitRemindersSection: View {
             }
         }
 
-        Text(deliveryAudienceLine)
-            .font(.caption2)
-            .foregroundColor(.white.opacity(0.92))
-            .fixedSize(horizontal: false, vertical: true)
-            .accessibilityIdentifier("family_habit_delivery_line")
+        if !deliveryAudienceLine.isEmpty {
+            Text(deliveryAudienceLine)
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("family_habit_delivery_line")
+        }
 
         deliveryStatusBlock
 

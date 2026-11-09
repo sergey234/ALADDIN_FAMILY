@@ -140,6 +140,14 @@ struct SimpleHomeScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceNotes)) { _ in
             showVoiceNotes = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: FamilyPushDeepLink.navigateToFamilyMapName)) { _ in
+            showWherePhone = true
+        }
+        .onAppear {
+            if UserDefaults.standard.bool(forKey: FamilyPushDeepLink.pendingOpenMapKey) {
+                showWherePhone = true
+            }
+        }
         .sheet(isPresented: $showMoreSheet, onDismiss: {
             if let pending = pendingMoreNavigation {
                 pendingMoreNavigation = nil
@@ -468,26 +476,34 @@ struct SimpleHomeScreen: View {
                     .font(.system(.title3, design: .serif).weight(.bold))
                     .foregroundColor(.white)
             }
-            Text(localizationManager.localized("family_access_section_body"))
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
-                .fixedSize(horizontal: false, vertical: true)
+            // Round2 S08: no “паузы и лимиты…” prose.
+            let accessBody = localizationManager.localized("family_access_section_body")
+            if !accessBody.isEmpty, accessBody != "family_access_section_body" {
+                Text(accessBody)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Text(localizationManager.localized("family_access_hint"))
                 .font(.caption)
                 .foregroundColor(.white.opacity(0.7))
             HStack(spacing: Spacing.s) {
                 Button {
                     setFamilyAccessMode("full")
+                    HapticFeedback.selection()
                 } label: {
-                    Label(
-                        localizationManager.localized("family_access_full"),
-                        systemImage: "person.3.fill"
-                    )
-                    .font(.caption.weight(.semibold))
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.3.fill")
+                            .font(.caption.weight(.semibold))
+                        Text(localizationManager.localized("family_access_full"))
+                            .font(.caption.weight(.semibold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
                     .foregroundColor(familyAccessMode == "full" ? .backgroundDark : .white)
+                    .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
                     .padding(.horizontal, Spacing.m)
                     .padding(.vertical, Spacing.s)
-                    .frame(maxWidth: .infinity)
                     .background(familyAccessMode == "full" ? Color.secondaryGold : Color.white.opacity(0.12))
                     .clipShape(Capsule())
                 }
@@ -495,16 +511,20 @@ struct SimpleHomeScreen: View {
                 .accessibilityIdentifier("family_access_full")
                 Button {
                     setFamilyAccessMode("limited")
+                    HapticFeedback.selection()
                 } label: {
-                    Label(
-                        localizationManager.localized("family_access_limited"),
-                        systemImage: "person.fill"
-                    )
-                    .font(.caption.weight(.semibold))
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.fill")
+                            .font(.caption.weight(.semibold))
+                        Text(localizationManager.localized("family_access_limited"))
+                            .font(.caption.weight(.semibold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
                     .foregroundColor(familyAccessMode == "limited" ? .backgroundDark : .white)
+                    .frame(maxWidth: .infinity, minHeight: 36, alignment: .center)
                     .padding(.horizontal, Spacing.m)
                     .padding(.vertical, Spacing.s)
-                    .frame(maxWidth: .infinity)
                     .background(familyAccessMode == "limited" ? Color.secondaryGold : Color.white.opacity(0.12))
                     .clipShape(Capsule())
                 }
@@ -630,9 +650,14 @@ struct SimpleHomeScreen: View {
                     .padding(Spacing.l)
                 }
             }
-            .navigationTitle(localizationManager.localized("pay_pains_door_child_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(localizationManager.localized("pay_pains_door_child_title"))
+                        .font(.headline.weight(.bold))
+                        .foregroundColor(.secondaryGold)
+                        .accessibilityAddTraits(.isHeader)
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button(localizationManager.localized("wellness_done")) {
                         pendingChildNavigation = nil

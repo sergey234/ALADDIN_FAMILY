@@ -12,6 +12,7 @@ struct FamilyDayStripView: View {
 
     var body: some View {
         Button {
+            SelectionHaptic.selection()
             onOpenTimeRules?()
         } label: {
             VStack(alignment: .leading, spacing: Spacing.s) {
@@ -74,21 +75,34 @@ struct FamilyDayStripView: View {
     }
 
     private func dayChip(icon: String, title: String, value: String, active: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Label(title, systemImage: icon)
+        VStack(alignment: .center, spacing: 4) {
+            Image(systemName: icon)
                 .font(.caption.weight(.semibold))
                 .foregroundColor(active ? .secondaryGold : .white.opacity(0.7))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundColor(active ? .secondaryGold : .white.opacity(0.7))
+                // S66: no hard truncate — scale + 2 lines before ellipsis.
+                .lineLimit(2)
+                .minimumScaleFactor(0.65)
+                .allowsTightening(true)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             Text(value)
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.92))
                 .lineLimit(2)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(0.65)
+                .allowsTightening(true)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.s)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 6)
+        .padding(.vertical, Spacing.s)
         .background(Color.white.opacity(active ? 0.12 : 0.06))
         .cornerRadius(CornerRadius.medium)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(value)")
     }
 }

@@ -95,4 +95,36 @@ final class SpeechPathTests: XCTestCase {
         XCTAssertEqual(samples.count, 24)
         XCTAssertTrue(samples.allSatisfy { $0 >= 4 && $0 <= 22 })
     }
+
+    func testCleanerKeepsOrdinaryWords() {
+        let cleaned = VoiceNotesTextCleanup.cleaner("это ну как бы школа эээ ну вот типа да")
+        XCTAssertEqual(cleaned, "это ну как бы школа да")
+    }
+
+    func testClearSplitsALongLine() {
+        let text = "мама просила купить молоко хлеб яблоки груши бананы сыр чай сахар соль перец, и не забыть пакет"
+        let clear = VoiceNotesTextCleanup.makeClear(text)
+        XCTAssertTrue(clear.contains("\n"))
+        XCTAssertFalse(clear.contains("эээ"))
+    }
+
+    func testOverlapDropsRepeatedWords() {
+        let merged = VoiceNotesTextCleanup.stripOverlap(newText: "школа завтра утром", tail: "школа завтра")
+        XCTAssertEqual(merged, "утром")
+    }
+
+    func testStructureDropsFactsThatWereNotSaid() {
+        let kept = VoiceNotesStructureService.keepGrounded(
+            ["купить молоко", "улететь на Марс"],
+            source: "надо купить молоко"
+        )
+        XCTAssertEqual(kept, ["купить молоко"])
+    }
+
+    func testDictionaryStopsAtOneHundred() {
+        let previous = VoiceNotesDictionary.load()
+        defer { VoiceNotesDictionary.save(previous) }
+        VoiceNotesDictionary.save((1...120).map { "слово\($0)" })
+        XCTAssertEqual(VoiceNotesDictionary.load().count, 100)
+    }
 }

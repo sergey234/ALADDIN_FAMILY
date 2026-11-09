@@ -353,20 +353,29 @@ struct NotificationsScreen: View {
                         .fill(Color.warningOrange.opacity(0.15))
                 )
             } else if viewModel.filteredNotifications(for: selectedFilter).isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(localizationManager.localized("notifications_empty_title"))
+                VStack(spacing: 10) {
+                    Image(systemName: "tray")
+                        .font(.system(size: 36, weight: .light))
+                        .foregroundColor(.secondaryGold.opacity(0.85))
+                    Text(localizationManager.localized("inbox_empty_title"))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
-                    Text(localizationManager.localized("notifications_empty_filter_body"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
+                    Text(
+                        selectedFilter == .all
+                        ? localizationManager.localized("inbox_empty_body")
+                        : localizationManager.localized("notifications_empty_filter_body")
+                    )
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .multilineTextAlignment(.center)
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 12)
                         .fill(Color.backgroundMedium.opacity(0.4))
                 )
+                .accessibilityIdentifier("notifications_inbox_empty")
             }
             
             LazyVStack(spacing: 8) {
@@ -472,33 +481,39 @@ struct NotificationsScreen: View {
      */
     private func handleNotificationTap(_ notification: NotificationsViewModel.AppNotification) {
         HapticFeedback.selection()
+
+        // R10 / S52 — family pushes from inbox → map/family, not SimpleHome.
+        var userInfo: [AnyHashable: Any] = ["type": notification.rawType]
+        for (key, value) in notification.metadata {
+            userInfo[key] = value
+        }
+        if let actionURL = notification.actionURL, !actionURL.isEmpty {
+            userInfo["deepLink"] = actionURL
+        }
+        if FamilyPushDeepLink.enqueueFromUserInfo(userInfo) {
+            navigationManager.navigateTo(.family)
+            return
+        }
         
-        // Навигация в зависимости от типа уведомления (kind)
         switch notification.kind {
         case .threat:
-            // Угроза (threat attempt blocked) - переходим на экран защиты от угроз
             navigationManager.navigateTo(.threatProtection)
             
         case .success:
-            // Успех (например, "Protection enabled") - переходим на экран защиты сети
             let titleLower = notification.title.lowercased()
             let messageLower = notification.message.lowercased()
             if titleLower.contains("protection") || titleLower.contains("защита") ||
                messageLower.contains("protection") || messageLower.contains("защита") {
                 navigationManager.navigateTo(.networkProtection)
             }
-            // Для других успешных уведомлений остаемся на экране
             
         case .warning:
-            // Предупреждение - переходим на экран аналитики
             navigationManager.navigateTo(.analytics)
             
         case .info:
-            // Информация - остаемся на экране уведомлений
             break
             
         case .bypassAttempt:
-            // Попытка обхода - переходим на экран родительского контроля
             navigationManager.navigateTo(.parentalControl)
         }
     }

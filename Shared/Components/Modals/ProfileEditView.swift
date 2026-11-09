@@ -17,6 +17,8 @@ struct ProfileEditView: View {
     @State private var alias: String = ""
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage?
+    @State private var pendingCropImage: UIImage?
+    @State private var showAvatarCrop: Bool = false
     @State private var showPasswordResetSheet: Bool = false
     
     // MARK: - Body
@@ -78,7 +80,29 @@ struct ProfileEditView: View {
             }
         }
         .sheet(isPresented: $showImagePicker) {
-            ImagePicker(selectedImage: $selectedImage)
+            ImagePicker(selectedImage: $pendingCropImage)
+        }
+        .sheet(isPresented: $showAvatarCrop) {
+            if let pendingCropImage {
+                AvatarCropEditor(
+                    image: pendingCropImage,
+                    onCommit: { cropped in
+                        selectedImage = cropped
+                        showAvatarCrop = false
+                        self.pendingCropImage = nil
+                        HapticFeedback.selection()
+                    },
+                    onCancel: {
+                        showAvatarCrop = false
+                        self.pendingCropImage = nil
+                    }
+                )
+                .environmentObject(localizationManager)
+            }
+        }
+        .onChange(of: pendingCropImage) { img in
+            guard img != nil else { return }
+            showAvatarCrop = true
         }
         .sheet(isPresented: $showPasswordResetSheet) {
             PasswordResetSheet(initialEmail: PasswordResetEmailResolver.resolved(storedAlias: storedAlias))

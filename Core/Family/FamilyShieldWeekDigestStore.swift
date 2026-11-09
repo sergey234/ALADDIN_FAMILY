@@ -84,7 +84,7 @@ enum FamilyShieldWeekDigestStore {
             content.sound = .default
             content.userInfo = [
                 "type": notificationType,
-                "deepLink": "aladdin://family",
+                "deepLink": FamilyPushDeepLink.mapURL(memberId: nil, focus: .trips),
             ]
             let trigger = UNCalendarNotificationTrigger(dateMatching: date, repeats: true)
             let request = UNNotificationRequest(identifier: notificationId, content: content, trigger: trigger)

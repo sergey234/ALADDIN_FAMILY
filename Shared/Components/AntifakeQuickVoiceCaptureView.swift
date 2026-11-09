@@ -1,7 +1,7 @@
 import AVFoundation
 import SwiftUI
 
-/// 5-second voice snippet for in-call manual check (af-4-04 / af-m3).
+/// 30-second voice snippet for in-call manual check (Round2 S72 — owner: 30s, not 5/10).
 struct AntifakeQuickVoiceCaptureView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Binding var showPremiumPaywall: Bool
@@ -9,11 +9,12 @@ struct AntifakeQuickVoiceCaptureView: View {
     @StateObject private var viewModel = AntifakeMediaCheckViewModel(mediaKind: .audio)
     @State private var recorder: AVAudioRecorder?
     @State private var recordingURL: URL?
-    @State private var secondsLeft = 5
+    @State private var secondsLeft = 30
     @State private var isRecording = false
     @State private var timer: Timer?
 
-    private let maxDuration: TimeInterval = 5
+    /// Owner GO: 30s — enough phrase for antifake without companion STT-class load.
+    private let maxDuration: TimeInterval = 30
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
@@ -54,6 +55,35 @@ struct AntifakeQuickVoiceCaptureView: View {
                     Text(viewModel.statusMessage ?? localizationManager.localized("antifake_job_analyzing"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.85))
+                }
+            }
+
+            if let error = viewModel.errorMessage, !viewModel.isChecking {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red.opacity(0.95))
+                        .fixedSize(horizontal: false, vertical: true)
+                    if viewModel.canSubmit {
+                        Button {
+                            SelectionHaptic.selection()
+                            Task {
+                                _ = await viewModel.submitCheck()
+                                if viewModel.requiresPremiumUpgrade {
+                                    showPremiumPaywall = true
+                                }
+                            }
+                        } label: {
+                            Label(
+                                localizationManager.localized("antifake_retry"),
+                                systemImage: "arrow.clockwise"
+                            )
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("antifake_quick_voice_retry")
+                    }
                 }
             }
 

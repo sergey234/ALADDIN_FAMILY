@@ -174,8 +174,11 @@ struct ParentalControlScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон — Storm Mesh grow light (Batch 2, режим C)
+            // S18/S09 Snowball canvas (owner purple→magenta) + light StormMesh veil
+            AladdinSnowballPalette.canvasGradient
+                .ignoresSafeArea()
             StormMeshBackground(variant: .grow)
+                .opacity(0.22)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(localizationManager.localized("parental_accessibility_background"))
             
@@ -908,24 +911,60 @@ struct ParentalControlScreen: View {
                     }
                 }
 
-                // WAVE3 — Safari honesty + system NE filter toggle (below cards, next to 🔒 flow)
-                Text(localizationManager.localized("parental_filter_safari_honesty"))
-                    .font(.caption2)
-                    .foregroundColor(.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, Spacing.s)
-                if AppStoreBuildPolicy.allowsSystemContentFilter {
-                    SystemContentFilterToggleSection(
-                        categories: contentBlockerManager.activeCategories,
-                        compact: true
-                    )
-                    .environmentObject(localizationManager)
-                } else {
-                    Text(localizationManager.localized("parental_filter_system_gated"))
+                // Filter C — one hub: status + how to enable (Safari / Call / System)
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("filter_hub_title"))
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(.secondaryGold)
+                    Text(localizationManager.localized("filter_hub_subtitle"))
                         .font(.caption2)
                         .foregroundColor(.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    Text(localizationManager.localized("parental_filter_safari_honesty"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: Spacing.s) {
+                        filterHubChip(
+                            title: localizationManager.localized("filter_hub_safari_status"),
+                            on: isContentBlockEnabled
+                        )
+                        Text(localizationManager.localized("filter_hub_call_status"))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .overlay(Capsule().stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1))
+                    }
+                    AntifakeCallDirectorySettingsCard()
+                        .environmentObject(localizationManager)
+                    if AppStoreBuildPolicy.allowsSystemContentFilter {
+                        Text(localizationManager.localized("filter_hub_system_status"))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundColor(.textSecondary)
+                        SystemContentFilterToggleSection(
+                            categories: contentBlockerManager.activeCategories,
+                            compact: true
+                        )
+                        .environmentObject(localizationManager)
+                    } else {
+                        Text(localizationManager.localized("parental_filter_system_gated"))
+                            .font(.caption2)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Button {
+                        navigationManager.navigateTo(.advancedProtection)
+                    } label: {
+                        Text(localizationManager.localized("filter_hub_how_to"))
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("filter_hub_how_to")
                 }
+                .padding(.top, Spacing.s)
+                .accessibilityIdentifier("filter_hub_section")
             }
         }
         .padding(Spacing.m)
@@ -934,6 +973,18 @@ struct ParentalControlScreen: View {
             RoundedRectangle(cornerRadius: CornerRadius.large)
                 .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
         )
+    }
+
+    private func filterHubChip(title: String, on: Bool) -> some View {
+        let state = localizationManager.localized(on ? "filter_hub_on" : "filter_hub_off")
+        return Text("\(title) · \(state)")
+            .font(.caption2.weight(.semibold))
+            .foregroundColor(on ? .backgroundDark : .secondaryGold)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(on ? Color.secondaryGold : Color.clear)
+            .overlay(Capsule().stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1))
+            .clipShape(Capsule())
     }
 
     /// FC readiness + honest Screen Time usage line (WAVE 2 polish).

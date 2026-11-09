@@ -30,17 +30,27 @@ enum FamilyBatteryCriticalMonitor {
             format: localization.localized("battery_critical_push_body"),
             percent
         )
+        let name = UserDefaults.standard.string(forKey: "user_display_name")
+            ?? UserDefaults.standard.string(forKey: "user_name")
+            ?? localization.localized("battery_critical_member_fallback")
+        let memberId = (UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         NotificationManager.shared.sendLocalNotification(
             title: title,
             body: body,
             category: .family,
-            userInfo: ["type": "battery_critical", "percent": percent],
+            userInfo: [
+                "type": "battery_critical",
+                "percent": percent,
+                "member_id": memberId,
+                "display_name": name,
+                "deepLink": FamilyPushDeepLink.mapURL(
+                    memberId: memberId.isEmpty ? nil : memberId,
+                    focus: .battery
+                )
+            ],
             delay: 0.2
         )
-
-        let name = UserDefaults.standard.string(forKey: "user_display_name")
-            ?? UserDefaults.standard.string(forKey: "user_name")
-            ?? localization.localized("battery_critical_member_fallback")
         let api = apiService ?? APIService.shared
         Task {
             _ = await FamilyAutoAlertSender.send(

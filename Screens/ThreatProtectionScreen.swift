@@ -19,14 +19,7 @@ struct ThreatProtectionScreen: View {
                     showProfileButton: false, // Убираем кнопку профиля
                     showListButton: false, // Убираем кнопку списка экранов
                     onBack: {
-                        // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
-                        // Это гарантирует правильную навигацию на реальном устройстве
-                        if navigationManager.canGoBack {
-                            navigationManager.goBack(reason: "ThreatProtection.onBack")
-                        } else {
-                            // Если стек пуст, возвращаемся на главную
-                            navigationManager.currentScreen = .main
-                        }
+                        navigationManager.goBackToPreviousScreen(reason: "ThreatProtection.onBack")
                     }
                 )
                 

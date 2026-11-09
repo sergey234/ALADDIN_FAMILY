@@ -337,20 +337,35 @@ struct HeroAmbientLayerView: View {
         #endif
     }
 
-    /// Канон Figma OB_*: frame 393×852. `scaledToFill` на весь экран режет по X на части реальных iPhone (симулятор 14 Pro часто 1:1).
+    /// Канон Figma OB_*: frame 393×852. Как pay-pains baseline 2026-10-29 (`0cb009d4`): Fill + top zoom.
+    /// Снизу отступ под текст — норма. По бокам/сверху letterbox не держим.
     private static let onboardingFigmaAspect: CGFloat = 393.0 / 852.0
     private static let onboardingFigmaCanvasBG = Color(red: 10.0 / 255.0, green: 17.0 / 255.0, blue: 40.0 / 255.0)
 
-    /// W7 Q09–Q11: `scaledToFill` cropало голову/руки на device. Fit + letterbox = руки в кадре.
+    /// OB_02/03/04–07: full-bleed PNG + top zoom (OB_03/07 widened 2026-05-25, L/R≈12 как OB_02).
+    private func heroOnboardingTopZoom(for baseName: String) -> CGFloat {
+        switch baseName {
+        case "OnboardingHero_02", "OnboardingHero_03", "OnboardingHero_04", "OnboardingHero_05",
+             "OnboardingHero_06", "OnboardingHero_07", "OnboardingHero_08":
+            // 08: CapCut1 + ~6% side pad — 1.09 как 02–07, края экрана без letterbox, руки чуть в safe.
+            return 1.09
+        default:
+            return 1.0
+        }
+    }
+
     @ViewBuilder
     private func heroRasterImage(_ baseName: String) -> some View {
         if fillsViewport {
+            let topZoom = heroOnboardingTopZoom(for: baseName)
             Image(baseName)
                 .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .scaledToFill()
+                .scaleEffect(topZoom, anchor: .top)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .clipped()
                 .background(Self.onboardingFigmaCanvasBG)
-                .accessibilityIdentifier("onboarding_hero_fit_\(baseName)")
+                .accessibilityIdentifier("onboarding_hero_fill_\(baseName)")
         } else {
             Image(baseName)
                 .resizable()

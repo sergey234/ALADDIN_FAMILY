@@ -62,14 +62,18 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_trial_features_4"),
                 localizationManager.localized("tariffs_trial_features_5")
             ]
-            case .free: return freeIncludedFeatures(localizationManager: localizationManager)
+            case .free: return freeIncludedFeatures(localizationManager: localizationManager) + [
+                localizationManager.localized("tariffs_antifake_free")
+            ]
             case .personal: return [
                 localizationManager.localized("tariffs_personal_features_1"),
                 familyMemberLimitFeatureText(for: .personal, localizationManager: localizationManager),
                 localizationManager.localized("tariffs_personal_features_3"),
                 localizationManager.localized("tariffs_personal_features_4"),
                 localizationManager.localized("tariffs_personal_features_5"),
-                localizationManager.localized("tariffs_personal_features_6")
+                localizationManager.localized("tariffs_personal_features_6"),
+                localizationManager.localized("tariffs_antifake_paid"),
+                localizationManager.localized("tariffs_antifake_action_only")
             ]
             case .family: return [
                 localizationManager.localized("tariffs_family_features_1"),
@@ -77,7 +81,9 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_family_features_3"),
                 localizationManager.localized("tariffs_family_features_4"),
                 localizationManager.localized("tariffs_family_features_5"),
-                localizationManager.localized("tariffs_family_features_6")
+                localizationManager.localized("tariffs_family_features_6"),
+                localizationManager.localized("tariffs_antifake_paid"),
+                localizationManager.localized("tariffs_antifake_action_only")
             ]
             case .premium: return [
                 localizationManager.localized("tariffs_premium_features_1"),
@@ -87,7 +93,9 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_premium_features_5"),
                 localizationManager.localized("tariffs_premium_features_6"),
                 localizationManager.localized("tariffs_premium_features_7"),
-                localizationManager.localized("tariffs_premium_features_8")
+                localizationManager.localized("tariffs_premium_features_8"),
+                localizationManager.localized("tariffs_antifake_paid"),
+                localizationManager.localized("tariffs_antifake_action_only")
             ]
             }
         }
@@ -175,14 +183,13 @@ struct TariffsScreen: View {
                             activationCodeButton
                         }
                         
-                        // Карточки тарифов
-                        tariffCard(.trial)
+                        // Trial A: no «Пробный» card — trial starts after onboarding via activateTrialIfNeeded.
+                        // Tariffs C: paid cards first, honest comparison table below.
                         tariffCard(.free)
                         tariffCard(.personal)
                         tariffCard(.family)
                         tariffCard(.premium)
 
-                        // W8 Q12: comparison under Premium (not above cards); simple RU labels + live device counts.
                         honestGatesComparisonTable
                             .padding(.horizontal, Spacing.screenPadding)
 
@@ -197,11 +204,7 @@ struct TariffsScreen: View {
                                 } else {
                                     Image(systemName: "arrow.clockwise.circle")
                                 }
-                                Text(
-                                    localizationManager.currentLanguage == .russian
-                                        ? "Восстановить покупки"
-                                        : "Restore Purchases"
-                                )
+                                Text(localizationManager.localized("tariffs_restore_purchases"))
                             }
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
@@ -349,6 +352,22 @@ struct TariffsScreen: View {
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_members"),
                 free: false, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_sos"),
+                free: true, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_trips"),
+                free: false, family: true, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_antifake_limit"),
+                free: false, family: false, premium: true
+            )
+            gatesRow(
+                feature: localizationManager.localized("tariffs_gates_history_long"),
+                free: false, family: false, premium: true
             )
         }
         .padding(Spacing.m)

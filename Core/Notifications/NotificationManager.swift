@@ -391,9 +391,16 @@ class NotificationManager: NSObject, ObservableObject {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !type.isEmpty else { return }
         let persistFamilyHybrid = category == .family && (
-            type.hasPrefix("geofence_")
+            type.hasPrefix("geofence")
             || type.hasPrefix("im_ok")
             || type.hasPrefix("need_help")
+            || type == "battery_critical"
+            || type == "family_urgent_signal"
+            || type.hasPrefix("family_habit")
+            || type == "shield_ask_parent"
+            || type == "family_shield_week_digest"
+            || type == "family_event"
+            || type == "trip_week"
         )
         guard category == .security || persistFamilyHybrid else { return }
 
@@ -1438,6 +1445,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 )
                 return
             }
+            // R10 — aladdin://family/map|location|limits (before Unicorn habits-only parse)
+            if FamilyPushDeepLink.apply(url: url, memberIdFallback: userInfo["member_id"] as? String, displayNameFallback: userInfo["display_name"] as? String) {
+                return
+            }
             // inf-deeplink — Unicorn habit / check-in / recap / focus
             if let dest = UnicornDeepLinkRouter.parse(url) {
                 switch dest {
@@ -1485,8 +1496,21 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 return
             }
         }
+
+        // R10: typed family SOS / need_help / battery / geofence without deepLink → map.
+        if FamilyPushDeepLink.enqueueFromUserInfo(userInfo) {
+            return
+        }
         
-        // TODO: Обработка обычного нажатия
+        // Fallback: family category → map (never silent Convenient Mode).
+        let category = (userInfo["category"] as? String)?.lowercased()
+            ?? (userInfo["categoryIdentifier"] as? String)?.lowercased()
+        if category == "family" || category == NotificationCategory.family.rawValue {
+            FamilyPushDeepLink.enqueue(focus: .map)
+            FamilyPushDeepLink.postOpenMap()
+            return
+        }
+
         print("📱 Default notification action triggered")
     }
 }

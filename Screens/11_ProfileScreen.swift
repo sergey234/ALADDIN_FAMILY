@@ -20,6 +20,8 @@ struct ProfileScreen: View {
     @StateObject private var tariffManager = TariffManager.shared
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage?
+    @State private var pendingCropImage: UIImage?
+    @State private var showAvatarCrop: Bool = false
     @State private var showTwoFactor: Bool = false
     @State private var showActiveSessions: Bool = false
     @State private var showDeleteAccount: Bool = false
@@ -170,7 +172,30 @@ struct ProfileScreen: View {
             }
         }
         .sheet(isPresented: $showImagePicker) {
-            ProfileImagePicker(selectedImage: $selectedImage)
+            ProfileImagePicker(selectedImage: $pendingCropImage)
+        }
+        .sheet(isPresented: $showAvatarCrop) {
+            if let pendingCropImage {
+                AvatarCropEditor(
+                    image: pendingCropImage,
+                    onCommit: { cropped in
+                        selectedImage = cropped
+                        saveProfileImage(cropped)
+                        showAvatarCrop = false
+                        self.pendingCropImage = nil
+                        HapticFeedback.selection()
+                    },
+                    onCancel: {
+                        showAvatarCrop = false
+                        self.pendingCropImage = nil
+                    }
+                )
+                .environmentObject(localizationManager)
+            }
+        }
+        .onChange(of: pendingCropImage) { img in
+            guard img != nil else { return }
+            showAvatarCrop = true
         }
         .onChange(of: selectedImage) { newImage in
             if let image = newImage {
@@ -193,8 +218,8 @@ struct ProfileScreen: View {
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showEditProfile) {
-            EditProfileView(isPresented: $showEditProfile)
-                .environmentObject(navigationManager)
+            // S47 — ProfileEditView already wires AvatarCropEditor (not the stub EditProfileView).
+            ProfileEditView()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showAdultSafetyInstructions) {
@@ -1358,11 +1383,9 @@ struct DeleteAccountView: View {
         // Закрываем модальное окно
         isPresented = false
         
-        // Навигация на главный экран (который покажет экран входа, если пользователь не авторизован)
+        // Корень входа (SimpleHome / Main) — без вспышки старой сетки.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Сбрасываем навигацию на главный экран
-            navigationManager.navigationStack.removeAll()
-            navigationManager.currentScreen = .main
+            navigationManager.reset()
             
             // Отправляем уведомление о удалении аккаунта (для обработки в AppDelegate или главном экране)
             NotificationCenter.default.post(name: NSNotification.Name("UserAccountDeleted"), object: nil)

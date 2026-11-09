@@ -14,13 +14,15 @@ struct AntifakeCallDirectorySettingsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
+            // S76: gold title contrast (ALADDIN X AI) — not washed black/gray on dark.
             Label(localizationManager.localized("antifake_call_directory_title"), systemImage: SFSymbolCompat.phoneBadgeCheckmark)
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(.secondaryGold)
 
             Text(localizationManager.localized("antifake_call_directory_body"))
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.85))
+                .foregroundColor(.white.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(statusText)
                 .font(.caption.weight(.semibold))
@@ -81,7 +83,7 @@ struct AntifakeCallDirectorySettingsCard: View {
             }
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .secondaryGold)
         .accessibilityIdentifier("antifake_call_directory_card")
         .accessibilityLabel(localizationManager.localized("antifake_call_directory_title"))
         .accessibilityHint(localizationManager.localized("antifake_call_directory_body"))
@@ -253,6 +255,7 @@ private struct AntifakeCallDirectorySetupSheet: View {
                         Toggle(isOn: .constant(true)) {
                             Text(localizationManager.localized("antifake_call_directory_extension_name"))
                                 .font(.caption.weight(.semibold))
+                                .foregroundColor(.secondaryGold)
                         }
                         .toggleStyle(SwitchToggleStyle(tint: .successGreen))
                         .disabled(true)

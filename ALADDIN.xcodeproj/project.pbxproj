@@ -188,6 +188,7 @@
 		5E95A00A2F9B000500000001 /* CrashLogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0092F9B000500000001 /* CrashLogsView.swift */; };
 		5EA10D112F91A01100ABCD01 /* HeroAmbientPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA10D102F91A01100ABCD01 /* HeroAmbientPresentation.swift */; };
 		5EA10D202F91A02200ABCD01 /* StormMeshBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA10D222F91A02200ABCD01 /* StormMeshBackground.swift */; };
+		SNOWB22F90000100C7D34B /* AladdinSnowballPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = SNOWB12F90000100C7D34B /* AladdinSnowballPalette.swift */; };
 		5EA10D212F91A02200ABCD01 /* StormGlassCardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA10D232F91A02200ABCD01 /* StormGlassCardStyle.swift */; };
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
@@ -565,10 +566,13 @@
 		FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */; };
 		FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL05112F90000100C7D34B /* GeofenceEventStore.swift */; };
 		WPHONE22F90000100C7D34B /* WhereIsPhoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WPHONE12F90000100C7D34B /* WhereIsPhoneScreen.swift */; };
+		FGRP022F90000100C7D34B /* FamilyGroupsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = FGRP012F90000100C7D34B /* FamilyGroupsModal.swift */; };
+		FGRP122F90000100C7D34B /* FamilyGroupLabelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FGRP112F90000100C7D34B /* FamilyGroupLabelStore.swift */; };
 		FSREM22F90000100C7D34B /* FamilySafetyRemainderHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSREM12F90000100C7D34B /* FamilySafetyRemainderHub.swift */; };
 		UX36W502F90000100C7D34B /* GeofenceFamilyBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W501F90000100C7D34B /* GeofenceFamilyBridge.swift */; };
 		UX36W508F90000100C7D34B /* UX36W5GeoHybridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W507F90000100C7D34B /* UX36W5GeoHybridTests.swift */; };
 		FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL07112F90000100C7D34B /* FamilyDayStripView.swift */; };
+		R2AVATAR02CROPEDIT00C7D34B /* AvatarCropEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = R2AVATAR01CROPEDIT00C7D34B /* AvatarCropEditor.swift */; };
 		UX36W206F90000100C7D34B /* ParentalScreenTimeFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */; };
 		UX36W204F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */; };
 		PRODQA04B90000100D3VNM /* DeviceMarketingName.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRODQA04F90000100D3VNM /* DeviceMarketingName.swift */; };
@@ -589,6 +593,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		FSLGEO722F90000100C7D34B /* GeofencePlacesCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO712F90000100C7D34B /* GeofencePlacesCloudSync.swift */; };
 		FSLGEO822F90000100C7D34B /* GeofenceAdultSelfShareStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO812F90000100C7D34B /* GeofenceAdultSelfShareStore.swift */; };
 		URGNT822F90000100C7D34B /* FamilyUrgentSignalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = URGNT812F90000100C7D34B /* FamilyUrgentSignalService.swift */; };
+		FPUSH022F90000100C7D34B /* FamilyPushDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FPUSH012F90000100C7D34B /* FamilyPushDeepLink.swift */; };
 		CRITD122F90000300C7D34B /* FamilyCriticalAlertsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CRITD112F90000300C7D34B /* FamilyCriticalAlertsService.swift */; };
 		COMMS822F90000100C7D34B /* CommunicationScamNotificationPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = COMMS812F90000100C7D34B /* CommunicationScamNotificationPresenter.swift */; };
 		CFSTR822F90000100C7D34B /* SystemContentFilterRulesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFSTR812F90000100C7D34B /* SystemContentFilterRulesStore.swift */; };
@@ -643,6 +648,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		STMAIN0E2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN0D2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift */; };
 		STMAIN102F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = STMAIN0F2F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift */; };
 		GEOGC22F90000100C7D34B /* GeofenceGeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */; };
+		PLASC22F90000100C7D34B /* PlaceAddressSearchCompleter.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLASC12F90000100C7D34B /* PlaceAddressSearchCompleter.swift */; };
 		GOBLIN22F90000100C7D34B /* CompanionBreakStepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */; };
 		GOBLIN42F90000100C7D34B /* CompanionBreakStepsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */; };
 		HMSEC22F90000100C7D34B /* HomeMapSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = HMSEC12F90000100C7D34B /* HomeMapSection.swift */; };
@@ -729,6 +735,9 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		UNICARE22F90000100C7D34B /* UnicornCareReward.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICARE12F90000100C7D34B /* UnicornCareReward.swift */; };
 		UNICN00F90000100C7D34B /* FamilyHabitDuePingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20712F90000100C7D34B /* FamilyHabitDuePingFeature.swift */; };
 		UNICN01F90000100C7D34B /* HabitStreakStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICN03F90000100C7D34B /* HabitStreakStore.swift */; };
+		FMAPQZ01F90000100C7D34B /* FamilyMapQuietZoneStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPQZ02F90000100C7D34B /* FamilyMapQuietZoneStore.swift */; };
+		FMAPAT01F90000100C7D34B /* FamilyMapAutoTripTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPAT02F90000100C7D34B /* FamilyMapAutoTripTracker.swift */; };
+		FMAPDT01F90000100C7D34B /* DrivingTripTrackStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPDT02F90000100C7D34B /* DrivingTripTrackStore.swift */; };
 		UNICN02F90000100C7D34B /* WellnessBreath2MinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICN05F90000100C7D34B /* WellnessBreath2MinView.swift */; };
 		UXCOBAR22F90000100C7D34B /* AladdinComposerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */; };
 		UXCOBDL22F90000100C7D34B /* BundledSleepStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */; };
@@ -975,6 +984,8 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
 		5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
 		WPHONE12F90000100C7D34B /* WhereIsPhoneScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhereIsPhoneScreen.swift; sourceTree = "<group>"; };
+		FGRP012F90000100C7D34B /* FamilyGroupsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyGroupsModal.swift; sourceTree = "<group>"; };
+		FGRP112F90000100C7D34B /* FamilyGroupLabelStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyGroupLabelStore.swift; path = Core/Family/FamilyGroupLabelStore.swift; sourceTree = "<group>"; };
 		FSREM12F90000100C7D34B /* FamilySafetyRemainderHub.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilySafetyRemainderHub.swift; sourceTree = "<group>"; };
 		5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChildContentScreen.swift; sourceTree = "<group>"; };
 		5E0C30BB2EAFF09800FD6647 /* SecurityEducationScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityEducationScreen.swift; sourceTree = "<group>"; };
@@ -1108,6 +1119,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		5E95A0092F9B000500000001 /* CrashLogsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashLogsView.swift; sourceTree = "<group>"; };
 		5EA10D102F91A01100ABCD01 /* HeroAmbientPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HeroAmbientPresentation.swift; path = Shared/Components/HeroAmbientPresentation.swift; sourceTree = "<group>"; };
 		5EA10D222F91A02200ABCD01 /* StormMeshBackground.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StormMeshBackground.swift; path = Shared/Components/StormMeshBackground.swift; sourceTree = "<group>"; };
+		SNOWB12F90000100C7D34B /* AladdinSnowballPalette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinSnowballPalette.swift; path = Shared/Theme/AladdinSnowballPalette.swift; sourceTree = "<group>"; };
 		5EA10D232F91A02200ABCD01 /* StormGlassCardStyle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StormGlassCardStyle.swift; path = Shared/Components/StormGlassCardStyle.swift; sourceTree = "<group>"; };
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
@@ -1501,6 +1513,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		UX36W501F90000100C7D34B /* GeofenceFamilyBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceFamilyBridge.swift; path = Core/Family/GeofenceFamilyBridge.swift; sourceTree = "<group>"; };
 		UX36W507F90000100C7D34B /* UX36W5GeoHybridTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UX36W5GeoHybridTests.swift; sourceTree = "<group>"; };
 		FSL07112F90000100C7D34B /* FamilyDayStripView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyDayStripView.swift; path = Shared/Components/FamilyDayStripView.swift; sourceTree = "<group>"; };
+		R2AVATAR01CROPEDIT00C7D34B /* AvatarCropEditor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AvatarCropEditor.swift; path = Shared/Components/AvatarCropEditor.swift; sourceTree = "<group>"; };
 		UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalScreenTimeFormat.swift; path = Shared/Utilities/ParentalScreenTimeFormat.swift; sourceTree = "<group>"; };
 		UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMemberDisplayNameFormatter.swift; path = Shared/Utilities/FamilyMemberDisplayNameFormatter.swift; sourceTree = "<group>"; };
 		PRODQA04F90000100D3VNM /* DeviceMarketingName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceMarketingName.swift; path = Shared/Utilities/DeviceMarketingName.swift; sourceTree = "<group>"; };
@@ -1520,6 +1533,10 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceMonitoringBootstrap.swift; path = Core/Family/GeofenceMonitoringBootstrap.swift; sourceTree = "<group>"; };
 		FSLGEO712F90000100C7D34B /* GeofencePlacesCloudSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofencePlacesCloudSync.swift; path = Core/Family/GeofencePlacesCloudSync.swift; sourceTree = "<group>"; };
 		URGNT812F90000100C7D34B /* FamilyUrgentSignalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyUrgentSignalService.swift; path = Core/Family/FamilyUrgentSignalService.swift; sourceTree = "<group>"; };
+		FPUSH012F90000100C7D34B /* FamilyPushDeepLink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyPushDeepLink.swift; path = Core/Family/FamilyPushDeepLink.swift; sourceTree = "<group>"; };
+		FMAPQZ02F90000100C7D34B /* FamilyMapQuietZoneStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMapQuietZoneStore.swift; path = Core/Family/FamilyMapQuietZoneStore.swift; sourceTree = "<group>"; };
+		FMAPAT02F90000100C7D34B /* FamilyMapAutoTripTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMapAutoTripTracker.swift; path = Core/Family/FamilyMapAutoTripTracker.swift; sourceTree = "<group>"; };
+		FMAPDT02F90000100C7D34B /* DrivingTripTrackStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DrivingTripTrackStore.swift; path = Core/Family/DrivingTripTrackStore.swift; sourceTree = "<group>"; };
 		CRITD112F90000300C7D34B /* FamilyCriticalAlertsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCriticalAlertsService.swift; path = Core/Family/FamilyCriticalAlertsService.swift; sourceTree = "<group>"; };
 		COMMS812F90000100C7D34B /* CommunicationScamNotificationPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CommunicationScamNotificationPresenter.swift; path = Core/Notifications/CommunicationScamNotificationPresenter.swift; sourceTree = "<group>"; };
 		CFSTR812F90000100C7D34B /* SystemContentFilterRulesStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SystemContentFilterRulesStore.swift; path = Core/Family/SystemContentFilterRulesStore.swift; sourceTree = "<group>"; };
@@ -1576,6 +1593,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		STMAIN0D2F90000200C7D34B /* FamilyScreenTimeEligibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyScreenTimeEligibilityTests.swift; sourceTree = "<group>"; };
 		STMAIN0F2F90000200C7D34B /* ScreenTimeUsageStoreStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTimeUsageStoreStatsTests.swift; sourceTree = "<group>"; };
 		GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceGeocodingService.swift; path = Core/Services/GeofenceGeocodingService.swift; sourceTree = "<group>"; };
+		PLASC12F90000100C7D34B /* PlaceAddressSearchCompleter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlaceAddressSearchCompleter.swift; path = Core/Services/PlaceAddressSearchCompleter.swift; sourceTree = "<group>"; };
 		GOBLIN12F90000100C7D34B /* CompanionBreakStepsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionBreakStepsService.swift; path = Core/Companion/CompanionBreakStepsService.swift; sourceTree = "<group>"; };
 		GOBLIN32F90000100C7D34B /* CompanionBreakStepsSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionBreakStepsSheet.swift; path = Shared/Components/CompanionBreakStepsSheet.swift; sourceTree = "<group>"; };
 		HMSEC12F90000100C7D34B /* HomeMapSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HomeMapSection.swift; path = Shared/Components/HomeMapSection.swift; sourceTree = "<group>"; };
@@ -1893,6 +1911,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */,
 				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
 				WPHONE12F90000100C7D34B /* WhereIsPhoneScreen.swift */,
+				FGRP012F90000100C7D34B /* FamilyGroupsModal.swift */,
 				FSREM12F90000100C7D34B /* FamilySafetyRemainderHub.swift */,
 				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
 				5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */,
@@ -2095,6 +2114,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E0798222F17D54500D20CF6 /* PositioningSystemPickerView.swift */,
 				5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */,
 				GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */,
+				PLASC12F90000100C7D34B /* PlaceAddressSearchCompleter.swift */,
 				5E0798202F17D2C200D20CF6 /* PasswordGeneratorModal.swift */,
 				5E07981E2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift */,
 				5E07981C2F17D29400D20CF6 /* DarkWebMonitoringModal.swift */,
@@ -2200,6 +2220,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */,
 				FWS20712F90000100C7D34B /* FamilyHabitDuePingFeature.swift */,
 				UNICN03F90000100C7D34B /* HabitStreakStore.swift */,
+				FMAPQZ02F90000100C7D34B /* FamilyMapQuietZoneStore.swift */,
+				FMAPAT02F90000100C7D34B /* FamilyMapAutoTripTracker.swift */,
+				FMAPDT02F90000100C7D34B /* DrivingTripTrackStore.swift */,
 				FWS23012F90000100C7D34B /* FamilyFocusSessionFeature.swift */,
 				UDLNK012F90000100C7D34B /* UnicornDeepLinkRouter.swift */,
 				FWS23212F90000100C7D34B /* FocusSessionStore.swift */,
@@ -2229,8 +2252,10 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSLGEO612F90000100C7D34B /* GeofenceMonitoringBootstrap.swift */,
 				FSLGEO712F90000100C7D34B /* GeofencePlacesCloudSync.swift */,
 				FSLGEO812F90000100C7D34B /* GeofenceAdultSelfShareStore.swift */,
+				FGRP112F90000100C7D34B /* FamilyGroupLabelStore.swift */,
 				CFSTR812F90000100C7D34B /* SystemContentFilterRulesStore.swift */,
 				URGNT812F90000100C7D34B /* FamilyUrgentSignalService.swift */,
+				FPUSH012F90000100C7D34B /* FamilyPushDeepLink.swift */,
 				CRITD112F90000300C7D34B /* FamilyCriticalAlertsService.swift */,
 				STACT7122F90000200C7D34B /* ShieldAskParentStore.swift */,
 				FSLHAB612F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift */,
@@ -2379,6 +2404,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSLSOS612F90000100C7D34B /* FamilyNeedHelpButton.swift */,
 				SYSCF011F90000300C7D34B /* SystemContentFilterToggleSection.swift */,
 				FSL07112F90000100C7D34B /* FamilyDayStripView.swift */,
+				R2AVATAR01CROPEDIT00C7D34B /* AvatarCropEditor.swift */,
 				UX36W205F90000100C7D34B /* ParentalScreenTimeFormat.swift */,
 				UX36W203F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift */,
 				PRODQA04F90000100D3VNM /* DeviceMarketingName.swift */,
@@ -2407,6 +2433,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */,
 				5EA10D102F91A01100ABCD01 /* HeroAmbientPresentation.swift */,
 				5EA10D222F91A02200ABCD01 /* StormMeshBackground.swift */,
+				SNOWB12F90000100C7D34B /* AladdinSnowballPalette.swift */,
 				5EA10D232F91A02200ABCD01 /* StormGlassCardStyle.swift */,
 				5EC308E12EA6AB8B00C7D34B /* Screens */,
 				B5001300 /* Tests */,
@@ -3532,6 +3559,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FWS20322F90000100C7D34B /* FamilyHabitRemindersScheduler.swift in Sources */,
 				UNICN00F90000100C7D34B /* FamilyHabitDuePingFeature.swift in Sources */,
 				UNICN01F90000100C7D34B /* HabitStreakStore.swift in Sources */,
+				FMAPQZ01F90000100C7D34B /* FamilyMapQuietZoneStore.swift in Sources */,
+				FMAPAT01F90000100C7D34B /* FamilyMapAutoTripTracker.swift in Sources */,
+				FMAPDT01F90000100C7D34B /* DrivingTripTrackStore.swift in Sources */,
 				FWS23122F90000100C7D34B /* FamilyFocusSessionFeature.swift in Sources */,
 				UDLNK022F90000100C7D34B /* UnicornDeepLinkRouter.swift in Sources */,
 				FWS23322F90000100C7D34B /* FocusSessionStore.swift in Sources */,
@@ -3565,6 +3595,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CFSTR822F90000100C7D34B /* SystemContentFilterRulesStore.swift in Sources */,
 				COMMS822F90000100C7D34B /* CommunicationScamNotificationPresenter.swift in Sources */,
 				URGNT822F90000100C7D34B /* FamilyUrgentSignalService.swift in Sources */,
+				FPUSH022F90000100C7D34B /* FamilyPushDeepLink.swift in Sources */,
 				CRITD122F90000300C7D34B /* FamilyCriticalAlertsService.swift in Sources */,
 				STACT7222F90000200C7D34B /* ShieldAskParentStore.swift in Sources */,
 				FSLHAB622F90000100C7D34B /* FamilyHabitRemindersBootstrap.swift in Sources */,
@@ -3575,6 +3606,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FSLSOS622F90000100C7D34B /* FamilyNeedHelpButton.swift in Sources */,
 				SYSCF012F90000300C7D34B /* SystemContentFilterToggleSection.swift in Sources */,
 				FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */,
+				R2AVATAR02CROPEDIT00C7D34B /* AvatarCropEditor.swift in Sources */,
 				UX36W206F90000100C7D34B /* ParentalScreenTimeFormat.swift in Sources */,
 				UX36W204F90000100C7D34B /* FamilyMemberDisplayNameFormatter.swift in Sources */,
 				PRODQA04B90000100D3VNM /* DeviceMarketingName.swift in Sources */,
@@ -3724,6 +3756,8 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */,
 				5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */,
 				WPHONE22F90000100C7D34B /* WhereIsPhoneScreen.swift in Sources */,
+				FGRP022F90000100C7D34B /* FamilyGroupsModal.swift in Sources */,
+				FGRP122F90000100C7D34B /* FamilyGroupLabelStore.swift in Sources */,
 				FSREM22F90000100C7D34B /* FamilySafetyRemainderHub.swift in Sources */,
 				5EC309192EA6B63400C7D34B /* 20_DevicesScreen.swift in Sources */,
 				5ED91A102FAA100100C7D34B /* 28_JoinDeviceScreen.swift in Sources */,
@@ -3736,6 +3770,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */,
 				5EA10D112F91A01100ABCD01 /* HeroAmbientPresentation.swift in Sources */,
 				5EA10D202F91A02200ABCD01 /* StormMeshBackground.swift in Sources */,
+				SNOWB22F90000100C7D34B /* AladdinSnowballPalette.swift in Sources */,
 				5EA10D212F91A02200ABCD01 /* StormGlassCardStyle.swift in Sources */,
 				B1000021 /* CollapsibleSection.swift in Sources */,
 				5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */,
@@ -3828,6 +3863,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FCHCV22F90000100C7D34B /* FamilyChildThreatCoverageView.swift in Sources */,
 				PRMON22F90000100C7D34B /* ParentalMonitoringValidation.swift in Sources */,
 				GEOGC22F90000100C7D34B /* GeofenceGeocodingService.swift in Sources */,
+				PLASC22F90000100C7D34B /* PlaceAddressSearchCompleter.swift in Sources */,
 				PRMEX22F90000100C7D34B /* ParentalMonitoringReportExporter.swift in Sources */,
 				PRMGR22F90000100C7D34B /* ParentalControlReportsManager.swift in Sources */,
 				DVCYB22F90000100C7D34B /* DeviceCyberScanViewModel.swift in Sources */,
@@ -4101,7 +4137,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4135,7 +4171,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4294,7 +4330,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -4328,7 +4364,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				ENABLE_PREVIEWS = YES;
@@ -4359,7 +4395,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -4385,7 +4421,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -4415,7 +4451,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4449,7 +4485,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4482,7 +4518,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4508,7 +4544,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4532,7 +4568,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4557,7 +4593,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -4585,7 +4621,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4619,7 +4655,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4649,7 +4685,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityMonitor/ALADDINDeviceActivityMonitor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityMonitor/Info.plist;
@@ -4675,7 +4711,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityMonitor/ALADDINDeviceActivityMonitor.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityMonitor/Info.plist;
@@ -4701,7 +4737,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityReport/ALADDINDeviceActivityReport.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityReport/Info.plist;
@@ -4727,7 +4763,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINDeviceActivityReport/ALADDINDeviceActivityReport.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINDeviceActivityReport/Info.plist;
@@ -4753,7 +4789,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldConfiguration/ALADDINShieldConfiguration.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldConfiguration/Info.plist;
@@ -4779,7 +4815,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldConfiguration/ALADDINShieldConfiguration.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldConfiguration/Info.plist;
@@ -4805,7 +4841,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldAction/ALADDINShieldAction.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldAction/Info.plist;
@@ -4830,7 +4866,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentFilter/ALADDINContentFilter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINContentFilter/Info.plist;
@@ -4856,7 +4892,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINShieldAction/ALADDINShieldAction.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINShieldAction/Info.plist;
@@ -4883,7 +4919,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentFilter/ALADDINContentFilter.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = B3WGHSWL79;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINContentFilter/Info.plist;

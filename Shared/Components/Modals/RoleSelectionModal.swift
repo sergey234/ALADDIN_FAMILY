@@ -5,6 +5,10 @@ struct RoleSelectionModal: View {
     @State private var selectedRole: FamilyRole = FamilyRole.selectableRoles.first ?? .parent
     let onRoleSelected: (FamilyRole) -> Void
     @EnvironmentObject private var localizationManager: LocalizationManager
+
+    /// QA16 I1: тёплый персик (план Snowball-warm), не белая клиника.
+    static let peachFill = Color(red: 0.96, green: 0.82, blue: 0.71) // #F5D0B5
+    static let peachInk = Color(red: 0.22, green: 0.14, blue: 0.10)
     
     private var roles: [FamilyRole] {
         FamilyRole.selectableRoles
@@ -15,11 +19,11 @@ struct RoleSelectionModal: View {
             VStack(spacing: 12) {
                 Text(localizationManager.localized("role_selection_title"))
                     .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.primary)
+                    .foregroundColor(Self.peachInk)
                 
                 Text(localizationManager.localized("role_selection_subtitle"))
                     .font(.body)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Self.peachInk.opacity(0.72))
                     .multilineTextAlignment(.center)
             }
             
@@ -40,18 +44,21 @@ struct RoleSelectionModal: View {
                     isPresented = false
                 }
                 .buttonStyle(.bordered)
+                .tint(Self.peachInk)
                 
                 Button(localizationManager.localized("common_continue")) {
                     onRoleSelected(selectedRole)
                     isPresented = false
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Color.secondaryGold)
             }
         }
         .padding(20)
-        .background(Color(.systemBackground))
+        .background(Self.peachFill)
         .cornerRadius(16)
         .shadow(radius: 20)
+        .accessibilityIdentifier("role_selection_modal_peach")
     }
 }
 
@@ -78,18 +85,18 @@ struct RoleSelectionCard: View {
             HStack(spacing: 16) {
                 Image(systemName: role.systemImageName)
                     .font(.title2)
-                    .foregroundColor(isSelected ? .blue : .secondary)
+                    .foregroundColor(isSelected ? Color.secondaryGold : RoleSelectionModal.peachInk.opacity(0.55))
                     .frame(width: 30)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localizedName)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(RoleSelectionModal.peachInk)
                     
                     if hasDescription {
                         Text(descriptionText)
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(RoleSelectionModal.peachInk.opacity(0.7))
                     }
                 }
                 
@@ -97,17 +104,17 @@ struct RoleSelectionCard: View {
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color.secondaryGold)
                         .font(.title3)
                 }
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+                    .fill(isSelected ? Color.secondaryGold.opacity(0.18) : Color.white.opacity(0.45))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(isSelected ? Color.secondaryGold : Color.white.opacity(0.35), lineWidth: 2)
                     )
             )
         }

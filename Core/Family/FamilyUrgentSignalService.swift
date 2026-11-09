@@ -86,6 +86,9 @@ final class FamilyUrgentSignalService: ObservableObject {
         let body = loc.localized("family_urgent_signal_body")
 
         let useCritical = FamilyCriticalAlertsService.shared.shouldUseCriticalDelivery
+        let memberId = (UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let displayName = currentDisplayName(localization: loc)
         NotificationManager.shared.scheduleLocalNotification(
             identifier: "family.urgent.\(UUID().uuidString)",
             title: title,
@@ -94,7 +97,10 @@ final class FamilyUrgentSignalService: ObservableObject {
             userInfo: [
                 "type": "family_urgent_signal",
                 "reason": reason,
-                "critical": useCritical
+                "critical": useCritical,
+                "member_id": memberId,
+                "display_name": displayName,
+                "deepLink": FamilyPushDeepLink.mapURL(memberId: memberId.isEmpty ? nil : memberId, focus: .sos)
             ],
             trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.3, repeats: false),
             useCriticalAlert: useCritical

@@ -61,4 +61,7 @@ enum PayPainsHiddenComponents {
     static let hideAdvancedMessengersSection = true
     static let hideAdvancedPrivacySection = true
     static let hideAdvancedMonitoringSection = true
+
+    /// Round2 S74: «Экстренная помощь на дорогах» в Network — спрятать целиком (раздел живёт в «Где семья»).
+    static let hideNetworkEmergencyHelpSection = true
 }

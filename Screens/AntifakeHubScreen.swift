@@ -470,10 +470,36 @@ struct AntifakeTextCheckView: View {
                 }
                 .environmentObject(localizationManager)
             } else if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .font(.subheadline)
-                    .foregroundColor(.dangerRed)
-                    .accessibilityIdentifier("antifake_text_error")
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.dangerRed)
+                        .accessibilityIdentifier("antifake_text_error")
+                    if viewModel.canSubmit, !viewModel.isChecking {
+                        Button {
+                            SelectionHaptic.selection()
+                            Task {
+                                let ok = await viewModel.submitCheck()
+                                if viewModel.requiresPremiumUpgrade {
+                                    showPremiumPaywall = true
+                                } else if ok {
+                                    HapticFeedback.notification(.success)
+                                } else if viewModel.errorMessage != nil {
+                                    HapticFeedback.notification(.error)
+                                }
+                            }
+                        } label: {
+                            Label(
+                                localizationManager.localized("antifake_retry"),
+                                systemImage: "arrow.clockwise"
+                            )
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("antifake_text_retry")
+                    }
+                }
             }
 
             PrimaryButton(

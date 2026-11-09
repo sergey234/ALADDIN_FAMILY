@@ -500,9 +500,10 @@ private struct OnboardingFigmaAnchoredContent: View {
         maxLines: Int,
         screenYOffset: CGFloat = 0
     ) -> some View {
+        // QA16 C3: как двери Удобного режима — serif title, sans body.
         let titleFont: Font = isOB07
-            ? .system(size: 24, weight: .semibold)
-            : .system(size: OnboardingReadableLayout.titleFontSize, weight: .bold)
+            ? .system(size: 24, weight: .semibold, design: .serif)
+            : .system(size: OnboardingReadableLayout.titleFontSize, weight: .bold, design: .serif)
         let bodyFont: Font = .system(size: OnboardingReadableLayout.bodyFontSize, weight: .regular)
         let bodyColor: Color = isOB07 ? .white.opacity(0.75) : .white.opacity(0.92)
 
@@ -1282,11 +1283,7 @@ struct OnboardingScreen: View {
                     Task { @MainActor in
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
-                    if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-                        navigationManager.navigateToRoot(.simpleHome)
-                    } else {
-                        navigationManager.navigateToRoot(.main)
-                    }
+                    navigationManager.navigateToHomeEntry(reason: "onboarding.createFamilyDone")
                 }
             )
             .aladdinSheetPresentation()
@@ -1453,12 +1450,8 @@ struct OnboardingScreen: View {
                                 print("ℹ️ OnboardingScreen: Онбординг завершён без JWT — локальный режим до регистрации")
                             }
 
-                            if PayPainsUIFlags.shouldOpenSimpleHomeAtLaunch() {
-                                navigationManager.navigateToRoot(.simpleHome)
-                            } else {
-                                navigationManager.navigateToRoot(.main)
-                            }
-                            print("✅ OnboardingScreen: Онбординг завершён, вход = SimpleHome (корень) или Main")
+                            navigationManager.navigateToHomeEntry(reason: "onboarding.finish")
+                            print("✅ OnboardingScreen: Онбординг завершён, вход = \(navigationManager.currentScreen.rawValue)")
                         }
                     }) {
                         Group {

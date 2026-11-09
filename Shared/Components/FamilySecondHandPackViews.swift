@@ -104,7 +104,12 @@ struct FamilySecondHandPackCard: View {
 
         }
         .padding(Spacing.m)
+        // S59: stronger gold accent strip (readable on dark Snowball).
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .secondaryGold)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(Color.secondaryGold.opacity(0.55), lineWidth: 1.5)
+        )
         .accessibilityIdentifier("family_second_hand_pack_card")
         .sheet(isPresented: $showSetupSheet) {
             FamilySecondHandSetupSheet(isPresented: $showSetupSheet)

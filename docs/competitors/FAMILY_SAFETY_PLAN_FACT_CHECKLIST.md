@@ -1,7 +1,8 @@
 # Family Safety — plan / факт (чек-лист)
 
 **Master:** `FAMILY_SAFETY_KASPERSKY_LIFE360_MASTER_PLAN.md` v1.4 · §17  
-**Цель владельца (lock):** **100% Kaspersky A + Life360 B/C кроме Figma**; **P4 out** (live Pet GPS / roadside dispatch / multi-circle).  
+**Цель владельца (lock):** **100% Kaspersky A + Life360 UX B/C кроме Figma**; **P4 out** (live Pet GPS / roadside dispatch / multi-circle).  
+**Место семьи (2026-11-09):** канон **B** — [`FAMILY_LOCATION_CANON_B_PLAN_2026-11-09.md`](FAMILY_LOCATION_CANON_B_PLAN_2026-11-09.md) (не трек 24/7; маршрут только в поездке; Тихая зона; юртексты на сайте ✅).  
 **§17 hub 1–6+7a** = только первая фаза, **не** весь план.  
 **Правило:** отмечать **Факт** только после кода + короткого verify (не «на словах»).  
 **Сборка:** после кода 100% (кроме Figma) · владелец: сборка → правки → commit+push.
@@ -89,6 +90,9 @@
 | 2026-11-04 | 6 gaps | chrome-only | SOS→sendNeedHelp · pet→habit-reminders · share TTL · quiet filter · MK mapType · Full/Limited gate | code; AnalyticsViewModel(service:) compile fix |
 | 2026-11-05 | Device QA screens | §8 open | Новый план `FAMILY_SAFETY_DEVICE_QA_MASTER_PLAN_2026-11-05.md` · Q01–Q36 · волны W0–W9 | screenshots `qa_device_2026-11-05/` |
 | 2026-11-05 | **GO код W0** | open | Q13 back→Main · Q21 spy/precise · Q22 custom pet · Q23 fake-pins copy · Q24 calendar light inset · Q25 crash timeout+toast · plan §10.5 lock | code+strings; device evidence ⏳ `GO на сборку` |
+| 2026-11-09 | Xcode build ✅ | code 36/36 | Owner: Xcode OK · CFBundleVersion **18** · Device evidence still open | journal §11 Device QA plan |
+| 2026-11-09 | Round2 S01–S80 | open | SSOT `FAMILY_SAFETY_DEVICE_QA_ROUND2_S01_S80_2026-11-09.md` · index `qa_device_2026-11-09/` | docs + waves R0–R9 |
+| 2026-11-09 | Round2 code R0–R8 | code | Onboarding Fill · antifake copy/10s · Call Filter X AI · auto trial · haptic scroll · AvatarCrop · invisible-hat FAB · monitoring · roadside hide | static; device ⏳ GO |
 
 ---
 

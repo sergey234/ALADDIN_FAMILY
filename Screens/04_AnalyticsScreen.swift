@@ -101,6 +101,7 @@ struct AnalyticsScreen: View {
         .sheet(isPresented: $showDrivingReportsModal) {
             DrivingReportsModal(isPresented: $showDrivingReportsModal)
                 .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
                 .environmentObject(viewModel)
         }
         .sheet(isPresented: $showDarkWebMonitoringModal) {

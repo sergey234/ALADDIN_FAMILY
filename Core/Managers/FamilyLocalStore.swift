@@ -558,6 +558,12 @@ enum FamilyLocalStore {
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
     }
 
+    /// S46 — leave family on this device only (no self-remove API). Parent may still remove on server.
+    static func leaveFamilyOnThisDevice() {
+        clearPersistedFamilyContextWhenServerReportsNoFamily()
+        NotificationCenter.default.post(name: familyCreationRequiredNotification, object: nil)
+    }
+
     /// 404 от `GET /api/family/members` при «нет семьи / неверный query» (после смены контракта бэкенда).
     static func shouldClearFamilyCacheAfterMembersRequestFailure(_ error: Error) -> Bool {
         switch NetworkError.from(error) {

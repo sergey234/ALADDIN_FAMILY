@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import CoreLocation
+import MapKit
 
 /**
  * 🚗 Driving Reports Modal
@@ -15,6 +16,7 @@ struct DrivingReportsModal: View {
     
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var analyticsViewModel: AnalyticsViewModel
     @StateObject private var positioningService = PositioningSystemService.shared
     @StateObject private var viewModel = DrivingReportsViewModel()
@@ -35,6 +37,8 @@ struct DrivingReportsModal: View {
     @State private var explainKind: DriveIncidentKind?
     @State private var sharePDFItems: [Any] = []
     @State private var showSharePDF = false
+    /// Play A — real trip metrics playback (no invented GPS points).
+    @State private var playbackReport: DrivingReport?
     
     enum FilterType: String, CaseIterable {
         case all = "all"
@@ -110,6 +114,10 @@ struct DrivingReportsModal: View {
         .sheet(isPresented: $showSharePDF) {
             ShareSheet(activityItems: sharePDFItems)
         }
+        .sheet(item: $playbackReport) { report in
+            DrivingTripPlaybackSheet(report: report)
+                .environmentObject(localizationManager)
+        }
     }
 
     private var selectedUserBinding: Binding<String?> {
@@ -124,7 +132,7 @@ struct DrivingReportsModal: View {
 
     private var modalContent: some View {
         ZStack {
-            LinearGradient.backgroundGradient
+            AladdinSnowballPalette.canvasGradient
                 .ignoresSafeArea()
 
             ScrollView(.vertical, showsIndicators: false) {
@@ -376,7 +384,14 @@ struct DrivingReportsModal: View {
             
             VStack(spacing: Spacing.s) {
                 ForEach(viewModel.reports) { report in
-                    tripRow(report: report)
+                    Button {
+                        HapticFeedback.selection()
+                        playbackReport = report
+                    } label: {
+                        tripRow(report: report)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("driving_trip_play_\(report.id)")
                 }
             }
         }
@@ -387,31 +402,74 @@ struct DrivingReportsModal: View {
     
     private func tripRow(report: DrivingReport) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            HStack {
-                Text(report.formattedSafetyScore)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(safetyScoreColor(report.safetyScore))
-                
+            HStack(spacing: Spacing.s) {
+                Image(systemName: "car.fill")
+                    .foregroundColor(.secondaryGold)
+                Text(localizationManager.localized("trip_drive_mode"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondaryGold)
                 Spacer()
-                
                 Text(report.startTime, style: .date)
                     .font(.caption)
                     .foregroundColor(.textSecondary)
+                Text(report.formattedSafetyScore)
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(safetyScoreColor(report.safetyScore))
             }
+
+            // S19b/f densitiy: HH:mm – HH:mm from real trip timestamps only.
+            Text(
+                String(
+                    format: localizationManager.localized("driving_reports_time_range"),
+                    Self.tripClock(report.startTime),
+                    Self.tripClock(report.endTime)
+                )
+            )
+            .font(.caption.weight(.semibold))
+            .foregroundColor(.textSecondary)
             
-            HStack {
-                Text(report.startLocation)
+            HStack(alignment: .top) {
+                Text(Self.streetTitleWithoutAtPrefix(report.startLocation))
                     .font(.body)
                     .foregroundColor(.textPrimary)
+                    .lineLimit(2)
                 
                 Image(systemName: "arrow.right")
                     .font(.caption)
                     .foregroundColor(.textSecondary)
+                    .padding(.top, 4)
                 
-                Text(report.endLocation)
-                    .font(.body)
-                    .foregroundColor(.textPrimary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(Self.streetTitleWithoutAtPrefix(report.endLocation))
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(2)
+                    HStack(spacing: 4) {
+                        Image(systemName: "flag.checkered")
+                            .font(.caption2)
+                        Text(localizationManager.localized("trip_arrived"))
+                            .font(.caption2.weight(.semibold))
+                    }
+                    .foregroundColor(.secondaryGold)
+                }
+            }
+
+            // Densitiy A / GPS track: real samples or endpoints only — never invent mid-points.
+            if report.hasGPSTrack || report.hasRouteEndpoints {
+                TripEndpointMapPreview(report: DrivingTripTrackStore.mergeInto(report))
+                    .frame(height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                    .accessibilityIdentifier(report.hasGPSTrack ? "trip_map_gps_track" : "trip_map_endpoints")
+                if report.hasGPSTrack || DrivingTripTrackStore.load(tripId: report.id).count >= 2 {
+                    Text(localizationManager.localized("trip_route_track_ready"))
+                        .font(.caption2)
+                        .foregroundColor(.secondaryGold)
+                }
+            } else {
+                Text(localizationManager.localized("trip_no_map_track"))
+                    .font(.caption2)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             HStack(spacing: Spacing.m) {
@@ -422,25 +480,28 @@ struct DrivingReportsModal: View {
                 Label("\(report.durationMinutes) \(localizationManager.localized("driving_reports_unit_min"))", systemImage: "clock")
                     .font(.caption)
                     .foregroundColor(.textSecondary)
+
+                if let maxSpeed = report.localizedFormattedMaxSpeed(localizationManager) {
+                    Label(maxSpeed, systemImage: "speedometer")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
                 
-                if !report.violations.isEmpty {
-                    Label("\(report.violations.count)", systemImage: "exclamationmark.triangle.fill")
+                if let risk = report.localizedRiskEventsLine(localizationManager) {
+                    Label(risk, systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
                         .foregroundColor(.dangerRed)
                 }
             }
-            
-            // Система позиционирования
-            if let system = report.positioningSystem {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: "location.fill")
-                        .font(.caption2)
-                        .foregroundColor(.textSecondary)
-                    Text(system)
-                        .font(.caption2)
-                        .foregroundColor(.textSecondary)
-                }
+
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "play.circle.fill")
+                    .foregroundColor(.secondaryGold)
+                Text(localizationManager.localized("trip_open_detail"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondaryGold)
             }
+            .padding(.top, 2)
         }
         .padding(Spacing.m)
         .background(
@@ -457,6 +518,24 @@ struct DrivingReportsModal: View {
         } else {
             return .dangerRed
         }
+    }
+
+    /// S19b — wall-clock for real trip bounds.
+    private static func tripClock(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = .current
+        f.dateFormat = "HH:mm"
+        return f.string(from: date)
+    }
+
+    /// C1 — drop Life360-style «В » / «At » before street names.
+    private static func streetTitleWithoutAtPrefix(_ raw: String) -> String {
+        var s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        for p in ["В ", "в ", "At ", "at ", "On ", "on "] where s.hasPrefix(p) {
+            s = String(s.dropFirst(p.count)).trimmingCharacters(in: .whitespacesAndNewlines)
+            break
+        }
+        return s
     }
     
     // MARK: - Empty State
@@ -644,16 +723,77 @@ struct DrivingReportsModal: View {
     // MARK: - W3 Q02–Q06 weekly strip + PDF
 
     private func weeklyIncidentStrip(stats: DrivingStats?) -> some View {
-        let counts = incidentCounts(from: stats)
+        let entitled = FamilyMapLiveAccess.isEntitled
+        let counts = incidentCounts(from: stats, entitled: entitled)
         return VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("drive_weekly_title"))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
-            if stats == nil || (stats?.totalTrips ?? 0) == 0 {
+
+            // S58 densitiy: real trips/km when present (never invent).
+            if let stats, stats.totalTrips > 0 {
+                HStack(spacing: Spacing.s) {
+                    weeklyStatChip(
+                        title: String(
+                            format: localizationManager.localized("drive_weekly_stats_trips"),
+                            stats.totalTrips
+                        ),
+                        subtitle: String(
+                            format: localizationManager.localized("drive_weekly_stats_km"),
+                            stats.totalDistance
+                        )
+                    )
+                    weeklyStatChip(
+                        title: localizationManager.localized("drive_weekly_stats_max"),
+                        subtitle: localizationManager.localized("drive_weekly_stats_max_na")
+                    )
+                }
+                if entitled, stats.violationsCount > 0 {
+                    Text(
+                        String(
+                            format: localizationManager.localized("drive_weekly_violations_total"),
+                            stats.violationsCount
+                        )
+                    )
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                }
+            } else {
                 Text(localizationManager.localized("drive_no_trips"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
             }
+
+            if !entitled {
+                // S58 tariff gate — honest lock, no fake Life360 risk counts.
+                Button {
+                    HapticFeedback.selection()
+                    navigationManager.navigateTo(.tariffs)
+                } label: {
+                    HStack(spacing: Spacing.m) {
+                        Image(systemName: "lock.fill")
+                            .foregroundColor(.secondaryGold)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(localizationManager.localized("drive_weekly_locked_title"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized("drive_weekly_locked_body"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                        Text(localizationManager.localized("drive_weekly_locked_cta"))
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("drive_weekly_tariff_gate")
+            }
+
             HStack(spacing: Spacing.s) {
                 ForEach(DriveIncidentKind.allCases) { kind in
                     Button {
@@ -662,9 +802,15 @@ struct DrivingReportsModal: View {
                         VStack(spacing: 4) {
                             Text(kind.emoji)
                                 .font(.title2)
-                            Text("\(counts[kind] ?? 0)")
-                                .font(.headline.weight(.bold))
-                                .foregroundColor(.textPrimary)
+                            if entitled {
+                                Text("\(counts[kind] ?? 0)")
+                                    .font(.headline.weight(.bold))
+                                    .foregroundColor(.textPrimary)
+                            } else {
+                                Image(systemName: "lock.fill")
+                                    .font(.headline)
+                                    .foregroundColor(.secondaryGold)
+                            }
                             Text(localizationManager.localized(kind.titleKey))
                                 .font(.caption2)
                                 .foregroundColor(.textSecondary)
@@ -687,9 +833,35 @@ struct DrivingReportsModal: View {
         .accessibilityIdentifier("drive_weekly_incident_strip")
     }
 
-    private func incidentCounts(from stats: DrivingStats?) -> [DriveIncidentKind: Int] {
-        _ = stats?.violationsCount
-        return Dictionary(uniqueKeysWithValues: DriveIncidentKind.allCases.map { ($0, 0) })
+    private func weeklyStatChip(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textPrimary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+            Text(subtitle)
+                .font(.caption2)
+                .foregroundColor(.textSecondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+    }
+
+    /// Honest counts: aggregate violations only on speed when entitled; never invent per-type splits.
+    private func incidentCounts(from stats: DrivingStats?, entitled: Bool) -> [DriveIncidentKind: Int] {
+        guard entitled, let stats else {
+            return Dictionary(uniqueKeysWithValues: DriveIncidentKind.allCases.map { ($0, 0) })
+        }
+        return [
+            .phone: 0,
+            .speed: max(0, stats.violationsCount),
+            .accel: 0,
+            .brake: 0
+        ]
     }
 
     private func exportPDFButton(stats: DrivingStats) -> some View {
@@ -736,7 +908,7 @@ struct DrivingReportsModal: View {
                 Spacer()
             }
             .padding(Spacing.l)
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_done")) {
                 explainKind = nil
             })
@@ -822,6 +994,410 @@ enum FamilyDrivingWeeklyReportPDF {
     }
 }
 
+// MARK: - S61–62 play: real GPS / endpoints only (never invent mid points)
+
+/// Layer 1 = GPS track · Layer 2 = start→end line. Interpolate only between real samples.
+enum TripRoutePlaybackGeometry {
+    static func coordinates(for report: DrivingReport) -> [CLLocationCoordinate2D] {
+        var coords = report.routePoints.filter(\.isValid).map(\.coordinate)
+        if coords.count < 2, report.hasRouteEndpoints {
+            coords = [
+                CLLocationCoordinate2D(latitude: report.startLatitude!, longitude: report.startLongitude!),
+                CLLocationCoordinate2D(latitude: report.endLatitude!, longitude: report.endLongitude!)
+            ]
+        }
+        return coords
+    }
+
+    static func coordinate(along coords: [CLLocationCoordinate2D], progress: Double) -> CLLocationCoordinate2D? {
+        guard let first = coords.first else { return nil }
+        guard coords.count >= 2 else { return first }
+        let p = min(1, max(0, progress))
+        var segmentLengths: [CLLocationDistance] = []
+        var total: CLLocationDistance = 0
+        for i in 1..<coords.count {
+            let d = CLLocation(latitude: coords[i - 1].latitude, longitude: coords[i - 1].longitude)
+                .distance(from: CLLocation(latitude: coords[i].latitude, longitude: coords[i].longitude))
+            segmentLengths.append(d)
+            total += d
+        }
+        if total <= 0 { return first }
+        let target = total * p
+        var acc: CLLocationDistance = 0
+        for i in 0..<segmentLengths.count {
+            let next = acc + segmentLengths[i]
+            if target <= next {
+                let t = segmentLengths[i] > 0 ? (target - acc) / segmentLengths[i] : 0
+                let a = coords[i]
+                let b = coords[i + 1]
+                return CLLocationCoordinate2D(
+                    latitude: a.latitude + (b.latitude - a.latitude) * t,
+                    longitude: a.longitude + (b.longitude - a.longitude) * t
+                )
+            }
+            acc = next
+        }
+        return coords.last
+    }
+}
+
+final class TripPlayheadAnnotation: NSObject, MKAnnotation {
+    @objc dynamic var coordinate: CLLocationCoordinate2D
+    init(coordinate: CLLocationCoordinate2D) {
+        self.coordinate = coordinate
+        super.init()
+    }
+}
+
+struct TripEndpointMapPreview: View {
+    let report: DrivingReport
+    /// 0…1 playhead along real samples / endpoint line.
+    var progress: Double = 0
+
+    var body: some View {
+        TripRouteMapRepresentable(report: report, progress: progress)
+            .allowsHitTesting(false)
+            .accessibilityIdentifier(
+                report.hasGPSTrack ? "trip_map_gps_track_play" : "trip_map_endpoints_play"
+            )
+    }
+}
+
+struct TripRouteMapRepresentable: UIViewRepresentable {
+    let report: DrivingReport
+    var progress: Double
+
+    func makeUIView(context: Context) -> MKMapView {
+        let map = MKMapView(frame: .zero)
+        map.isScrollEnabled = false
+        map.isZoomEnabled = false
+        map.isRotateEnabled = false
+        map.isPitchEnabled = false
+        map.pointOfInterestFilter = .excludingAll
+        context.coordinator.apply(report: report, progress: progress, on: map)
+        return map
+    }
+
+    func updateUIView(_ map: MKMapView, context: Context) {
+        context.coordinator.apply(report: report, progress: progress, on: map)
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject, MKMapViewDelegate {
+        private var appliedId: String?
+        private var coords: [CLLocationCoordinate2D] = []
+        private var playhead: TripPlayheadAnnotation?
+
+        func apply(report: DrivingReport, progress: Double, on map: MKMapView) {
+            let key = "\(report.id)-\(report.routePoints.count)-\(report.hasRouteEndpoints)"
+            map.delegate = self
+            if appliedId != key {
+                appliedId = key
+                map.removeOverlays(map.overlays)
+                map.removeAnnotations(map.annotations)
+                playhead = nil
+                coords = TripRoutePlaybackGeometry.coordinates(for: report)
+                guard coords.count >= 2 else { return }
+
+                var path = coords
+                let line = MKPolyline(coordinates: &path, count: path.count)
+                map.addOverlay(line)
+
+                let start = MKPointAnnotation()
+                start.coordinate = coords.first!
+                start.title = "start"
+                let end = MKPointAnnotation()
+                end.coordinate = coords.last!
+                end.title = "end"
+                map.addAnnotations([start, end])
+
+                var rect = MKMapRect.null
+                for c in coords {
+                    let p = MKMapPoint(c)
+                    rect = rect.union(MKMapRect(x: p.x, y: p.y, width: 0, height: 0))
+                }
+                map.setVisibleMapRect(
+                    rect,
+                    edgePadding: UIEdgeInsets(top: 18, left: 18, bottom: 18, right: 18),
+                    animated: false
+                )
+            }
+            updatePlayhead(progress: progress, on: map)
+        }
+
+        private func updatePlayhead(progress: Double, on map: MKMapView) {
+            guard let point = TripRoutePlaybackGeometry.coordinate(along: coords, progress: progress) else {
+                return
+            }
+            if let playhead {
+                playhead.coordinate = point
+            } else {
+                let ann = TripPlayheadAnnotation(coordinate: point)
+                playhead = ann
+                map.addAnnotation(ann)
+            }
+        }
+
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let line = overlay as? MKPolyline {
+                let r = MKPolylineRenderer(polyline: line)
+                r.strokeColor = UIColor(Color.secondaryGold)
+                r.lineWidth = 3
+                return r
+            }
+            return MKOverlayRenderer(overlay: overlay)
+        }
+
+        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            if annotation is TripPlayheadAnnotation {
+                let id = "trip_playhead"
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: id)
+                    ?? MKAnnotationView(annotation: annotation, reuseIdentifier: id)
+                view.annotation = annotation
+                view.canShowCallout = false
+                view.centerOffset = .zero
+                if view.viewWithTag(77) == nil {
+                    let dot = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 16))
+                    dot.backgroundColor = UIColor(Color.secondaryGold)
+                    dot.layer.cornerRadius = 8
+                    dot.layer.borderWidth = 2
+                    dot.layer.borderColor = UIColor.white.cgColor
+                    dot.tag = 77
+                    view.addSubview(dot)
+                    view.bounds = CGRect(x: 0, y: 0, width: 16, height: 16)
+                    dot.center = CGPoint(x: 8, y: 8)
+                }
+                return view
+            }
+            if let point = annotation as? MKPointAnnotation {
+                let id = "trip_endpoint"
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: id) as? MKMarkerAnnotationView
+                    ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: id)
+                view.annotation = annotation
+                view.canShowCallout = false
+                view.markerTintColor = point.title == "start"
+                    ? UIColor(Color.secondaryGold)
+                    : UIColor(Color.primaryBlue)
+                view.glyphImage = UIImage(systemName: point.title == "start" ? "flag.fill" : "flag.checkered")
+                view.displayPriority = .defaultLow
+                return view
+            }
+            return nil
+        }
+    }
+}
+
+// MARK: - Play A (honest metrics scrubber — no mock map points)
+
+private struct DrivingTripPlaybackSheet: View {
+    let report: DrivingReport
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var progress: Double = 0
+    @State private var isPlaying = false
+    @State private var playTask: Task<Void, Never>?
+
+    private var durationSeconds: Double {
+        max(report.duration, 1)
+    }
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(localizationManager.localized("driving_play_title"))
+                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .foregroundColor(AladdinSnowballPalette.gold)
+
+                    let merged = DrivingTripTrackStore.mergeInto(report)
+                    if merged.hasGPSTrack || merged.hasRouteEndpoints {
+                        TripEndpointMapPreview(report: merged, progress: progress)
+                            .frame(height: 180)
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                    } else {
+                        Text(localizationManager.localized("driving_play_no_track"))
+                            .font(.caption)
+                            .foregroundColor(AladdinSnowballPalette.inkMuted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        Text(Self.streetTitle(report.startLocation) + " → " + Self.streetTitle(report.endLocation))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(AladdinSnowballPalette.ink)
+                        HStack(spacing: Spacing.m) {
+                            Label(report.localizedFormattedDistance(localizationManager), systemImage: "ruler")
+                            Label("\(report.durationMinutes) \(localizationManager.localized("driving_reports_unit_min"))", systemImage: "clock")
+                            if let maxSpeed = report.localizedFormattedMaxSpeed(localizationManager) {
+                                Label(maxSpeed, systemImage: "speedometer")
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundColor(AladdinSnowballPalette.inkMuted)
+                    }
+                    .padding(Spacing.m)
+                    .background(AladdinSnowballPalette.glassCard())
+
+                    Text(localizationManager.localized("driving_play_progress"))
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(AladdinSnowballPalette.inkMuted)
+
+                    Slider(
+                        value: Binding(
+                            get: { progress },
+                            set: { newValue in
+                                if isPlaying { stop() }
+                                progress = newValue
+                            }
+                        ),
+                        in: 0...1
+                    )
+                        .tint(AladdinSnowballPalette.gold)
+                        .accessibilityIdentifier("driving_play_scrubber")
+
+                    ProgressView(value: progress)
+                        .tint(AladdinSnowballPalette.gold)
+
+                    Text(elapsedLabel)
+                        .font(.caption.monospacedDigit())
+                        .foregroundColor(AladdinSnowballPalette.ink)
+
+                    Button {
+                        togglePlay()
+                    } label: {
+                        HStack {
+                            Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                            Text(localizationManager.localized(isPlaying ? "driving_play_pause" : "driving_play_resume"))
+                                .font(.bodyBold)
+                        }
+                        .foregroundColor(.backgroundDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(Spacing.m)
+                        .background(AladdinSnowballPalette.gold)
+                        .cornerRadius(CornerRadius.medium)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("driving_play_toggle")
+
+                    // S24/S25/S28 — chrono + risks from real trip data only.
+                    Text(localizationManager.localized("trip_detail_chrono_title"))
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(AladdinSnowballPalette.inkMuted)
+                    if report.events.isEmpty {
+                        Text(localizationManager.localized("trip_detail_chrono_empty"))
+                            .font(.caption)
+                            .foregroundColor(AladdinSnowballPalette.inkMuted)
+                    } else {
+                        ForEach(Array(report.events.prefix(8).enumerated()), id: \.offset) { _, event in
+                            HStack(alignment: .top, spacing: Spacing.s) {
+                                Text(Self.clock(event.timestamp))
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundColor(AladdinSnowballPalette.gold)
+                                    .frame(width: 44, alignment: .leading)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(event.type.localizedDisplayName(localizationManager))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(AladdinSnowballPalette.ink)
+                                    Text(event.localizedSeverityLevel(localizationManager))
+                                        .font(.caption2)
+                                        .foregroundColor(AladdinSnowballPalette.inkMuted)
+                                }
+                                Spacer(minLength: 0)
+                            }
+                        }
+                    }
+
+                    if !report.violations.isEmpty {
+                        Text(localizationManager.localized("trip_detail_risk_title"))
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(AladdinSnowballPalette.inkMuted)
+                            .padding(.top, Spacing.xs)
+                        ForEach(Array(report.violations.prefix(6).enumerated()), id: \.offset) { _, violation in
+                            HStack(spacing: Spacing.s) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.dangerRed)
+                                Text(violation.localizedDisplayName(localizationManager))
+                                    .font(.caption)
+                                    .foregroundColor(AladdinSnowballPalette.ink)
+                                Spacer(minLength: 0)
+                                Text(Self.clock(violation.timestamp))
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundColor(AladdinSnowballPalette.inkMuted)
+                            }
+                        }
+                    }
+                }
+                .padding(Spacing.l)
+            }
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localized("common_done")) {
+                        stop()
+                        dismiss()
+                    }
+                    .foregroundColor(AladdinSnowballPalette.gold)
+                }
+            }
+            .onDisappear { stop() }
+        }
+    }
+
+    private static func clock(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = .current
+        f.dateFormat = "HH:mm"
+        return f.string(from: date)
+    }
+
+    private var elapsedLabel: String {
+        let elapsed = Int(progress * durationSeconds)
+        let total = Int(durationSeconds)
+        return String(format: "%d:%02d / %d:%02d", elapsed / 60, elapsed % 60, total / 60, total % 60)
+    }
+
+    private func togglePlay() {
+        if isPlaying {
+            stop()
+            return
+        }
+        if progress >= 1 {
+            progress = 0
+        }
+        isPlaying = true
+        HapticFeedback.impact(.light)
+        playTask = Task { @MainActor in
+            while !Task.isCancelled && progress < 1 {
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                guard !Task.isCancelled else { return }
+                // ~4x realtime for short trips; still proportional to duration.
+                let step = max(0.008, 0.25 / max(durationSeconds / 4.0, 1))
+                progress = min(1, progress + step)
+            }
+            isPlaying = false
+        }
+    }
+
+    private func stop() {
+        isPlaying = false
+        playTask?.cancel()
+        playTask = nil
+    }
+
+    private static func streetTitle(_ raw: String) -> String {
+        var t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        for prefix in ["В ", "в ", "At ", "at "] {
+            if t.hasPrefix(prefix) {
+                t = String(t.dropFirst(prefix.count))
+            }
+        }
+        return t
+    }
+}
 
 // MARK: - Preview
 
@@ -830,6 +1406,8 @@ struct DrivingReportsModal_Previews: PreviewProvider {
     static var previews: some View {
         DrivingReportsModal(isPresented: .constant(true))
             .environmentObject(LocalizationManager())
+            .environmentObject(NavigationManager())
+            .environmentObject(AnalyticsViewModel(service: RemoteAnalyticsService()))
     }
 }
 #endif

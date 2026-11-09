@@ -61,16 +61,20 @@ struct UnifiedTimeLimitsScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(localizationManager.localized("unified_time_limits_local_section"))
                 .font(.headline)
+                .foregroundColor(.white)
             Text(localizationManager.localized("unified_time_limits_local_hint"))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.75))
             HStack {
                 Text(localizationManager.localized("unified_time_limits_local_minutes"))
+                    .foregroundColor(.white)
                 Spacer()
                 Text("\(Int(localLimitMinutes))")
                     .fontWeight(.semibold)
+                    .foregroundColor(.secondaryGold)
             }
             Slider(value: $localLimitMinutes, in: 5...240, step: 5)
+                .tint(Color.secondaryGold)
             HStack {
                 Text(
                     localizationManager.localized(
@@ -79,32 +83,40 @@ struct UnifiedTimeLimitsScreen: View {
                     )
                 )
                 .font(.caption)
+                .foregroundColor(.white.opacity(0.85))
                 Spacer()
             }
             Button(localizationManager.localized("unified_time_limits_apply_local")) {
+                HapticFeedback.selection()
                 TimeTracker.shared.setDailyLimitMinutes(Int(localLimitMinutes))
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.secondaryGold)
         }
         .padding()
-        .background(Color.white.opacity(0.08))
+        .background(Color.white.opacity(0.10))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+        )
     }
 
     private var serverSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(localizationManager.localized("unified_time_limits_server_section"))
                 .font(.headline)
+                .foregroundColor(.white)
             if childIdMissing {
                 Text(localizationManager.localized("unified_time_limits_no_child"))
                     .font(.caption)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.secondaryGold)
             } else if isLoadingServer {
-                ProgressView()
+                ProgressView().tint(.secondaryGold)
             } else if let err = lastServerError, serverDailyMinutes == nil {
                 Text(localizationManager.localized("unified_time_limits_server_error_fmt", err))
                     .font(.caption)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.secondaryGold)
             } else {
                 Text(
                     localizationManager.localized(
@@ -112,14 +124,16 @@ struct UnifiedTimeLimitsScreen: View {
                         serverDailyMinutes ?? 0
                     )
                 )
+                .foregroundColor(.white)
                 if let s = serverBedtimeStart, let e = serverBedtimeEnd, !s.isEmpty, !e.isEmpty {
                     Text(localizationManager.localized("unified_time_limits_server_bedtime_fmt", s, e))
                         .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
                 }
             }
         }
         .padding()
-        .background(Color.white.opacity(0.08))
+        .background(Color.white.opacity(0.10))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 

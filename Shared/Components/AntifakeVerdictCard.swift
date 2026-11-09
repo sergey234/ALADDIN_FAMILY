@@ -505,9 +505,13 @@ struct AntifakeVerdictCard: View {
                     .foregroundColor(.dangerRed)
             }
 
-            Text(localizationManager.localized("antifake_verdict_disclaimer"))
-                .font(.caption2)
-                .foregroundColor(.white.opacity(0.55))
+            // Round2 S06: no legal/news disclaimer sheet on the result card.
+            let disclaimer = localizationManager.localized("antifake_verdict_disclaimer")
+            if !disclaimer.isEmpty, disclaimer != "antifake_verdict_disclaimer" {
+                Text(disclaimer)
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.55))
+            }
         }
         .padding(Spacing.l)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: presentation.accentColor)

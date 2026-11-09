@@ -83,7 +83,7 @@ enum FamilyImOkOfflineQueue {
                 userInfo: [
                     "type": "im_ok_queue_delivered",
                     "event_id": "imok-flush-\(Int(Date().timeIntervalSince1970))",
-                    "deepLink": "aladdin://family"
+                    "deepLink": FamilyPushDeepLink.mapURL(memberId: nil, focus: .map)
                 ],
                 delay: 0.2
             )
