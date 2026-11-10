@@ -903,7 +903,13 @@
 "driving_reports_safety_score" = "Оценка безопасности";
 "driving_reports_violations" = "Нарушения";
 "driving_reports_history_title" = "История поездок";
-"driving_reports_empty" = "Данные о вождении недоступны";
+"driving_reports_empty" = "Пока нет данных о поездках";
+"driving_reports_empty_lead" = "Счётчики появятся после реальной поездки. Ничего не выдумываем.";
+"driving_reports_why_motion" = "1. Разрешите «Движение и фитнес» для ALADDIN — так телефон понимает поездку.";
+"driving_reports_why_location" = "2. Включите геолокацию «Всегда» (и точное место) — иначе поездки в фоне не пишутся.";
+"driving_reports_why_trip" = "3. Проедьте за рулём с открытым или в фоне ALADDIN — затем откройте «Вождение» снова.";
+"driving_reports_enable_motion" = "Разрешить движение и фитнес";
+"driving_reports_open_settings_motion" = "Открыть Настройки iPhone";
 "driving_reports_error_load_failed" = "Не удалось загрузить отчеты: %@";
 "driving_reports_unit_min" = "мин";
 /* ═══════════════════════════════════════════════════════════════
@@ -1747,6 +1753,15 @@
 "family_content_block_card_status_off" = "Политика выключена";
 "main_family_tariff_label" = "Тариф:";
 "main_family_header_member_slots" = "%d из %d";
+"main_family_trial_days_left" = "Пробный: ещё %d дн.";
+"main_family_trial_ended_banner" = "Пробный закончился · тариф БАЗОВЫЙ (1 участник). Можно выбрать Личный или Семейный.";
+"main_family_trial_ended_dismiss" = "Понятно";
+"main_family_over_capacity_banner" = "Участников %d при лимите %d. Обновите тариф или сократите состав семьи.";
+"main_family_restore_trial_cta" = "Вернуть пробный до %@";
+"tariffs_downgrade_trial_confirm_title" = "Перейти на БАЗОВЫЙ?";
+"tariffs_downgrade_trial_confirm_body" = "Пробный оборвётся сейчас. Слоты семьи станут 1. Продолжить?";
+"tariffs_downgrade_trial_confirm_cancel" = "Отмена";
+"tariffs_downgrade_trial_confirm_continue" = "Перейти на БАЗОВЫЙ";
 "family_member_capacity_with_plan_fmt" = "%d из %d участников";
 "family_members_label" = "Участники";
 "family_members_accessibility_fmt" = "Семья: %@";
@@ -3570,7 +3585,7 @@
 "map_quiet_active_badge" = "Тихая зона";
 "map_quiet_share_blocked" = "Вы в тихой зоне. Точку семье не отправляем.";
 "map_share_expires_fmt" = "Ссылка ещё ≈ %d мин";
-"map_share_expired" = "Срок ссылки истёк — поделитесь снова";
+"map_share_expired" = "Срок ссылки истёк — отправьте место снова";
 
 /* ===== Family hub interiors Life360 L98+ (2026-11-04) ===== */
 "map_chip_people" = "Семья";
@@ -3685,7 +3700,7 @@
 "map_pin_size_m" = "M";
 "map_pin_size_l" = "L";
 "map_motion_row_title" = "Движение и фитнес";
-"map_motion_row_body" = "Нужно для отчётов о поездках и сигналов о ДТП. Включите в Настройках iPhone.";
+"map_motion_row_body" = "Нужно для отчётов о поездках и сигналов о ДТП. Сначала разрешите в ALADDIN (вкладка Вождение), иначе приложение не появится в списке «Движение и фитнес».";
 "map_motion_open_settings" = "Открыть Настройки";
 "map_bt_soon_title" = "Bluetooth";
 "map_bt_soon_body" = "Рядом / метки — в скором времени.";
@@ -3718,7 +3733,7 @@
 "drive_inc_speed_explain" = "Риск высокой скорости. Пока нет детальных поездок — показываем честный ноль, без выдуманных цифр.";
 "drive_inc_accel_explain" = "Резкий разгон — резкое ускорение. Когда появятся данные с датчиков, здесь будет число за неделю.";
 "drive_inc_brake_explain" = "Резкое торможение. Пояснение для семьи: что случилось и когда появятся реальные события.";
-"drive_inc_explain_data_note" = "Пока нет поездок с датчиками — счётчики 0. Включите «Движение и фитнес» в Настройках.";
+"drive_inc_explain_data_note" = "Пока нет поездок с датчиками — счётчики 0. На вкладке «Вождение» нажмите «Разрешить движение и фитнес», затем совершите поездку.";
 "drive_export_pdf" = "Поделиться PDF";
 "drive_pdf_disclaimer" = "Оценка для семьи, не страховой отчёт.";
 /* ===== Family Safety Round2 S01–S80 (2026-11-09) ===== */
@@ -3940,7 +3955,7 @@
 /* WAVE S45–47 share / leave / profile */
 "map_share_activity_title" = "Поделиться местом";
 "map_share_activity_hint" = "Одна точка семье на выбранное время. Без скрытого трека.";
-"map_share_stop" = "Остановить шаринг";
+"map_share_stop" = "Скрыть моё место";
 "map_share_active_fmt" = "Активно ещё ≈ %d мин";
 "family_leave_title" = "Покинуть семью";
 "family_leave_body" = "Семья пропадёт на этом iPhone. На сервере вас может убрать родитель.";

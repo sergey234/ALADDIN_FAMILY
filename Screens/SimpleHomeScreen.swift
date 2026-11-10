@@ -766,8 +766,9 @@ struct SimpleHomeScreen: View {
     private var payPainsMenuSheet: some View {
         WellnessNavigationStack {
             ZStack {
-                // Как заставка ALADDIN AI: синяя ночь → золотой восход, стекло storm.
-                StormMeshBackground(variant: .premiumSunrise)
+                // Hub Calm Navy — same Family Hub canvas (readable glass rows).
+                AladdinSnowballPalette.canvasGradient
+                    .ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: Spacing.m) {
                         // Отличается от белого List: тёмный glass + serif title (иконка/золото ALADDIN).

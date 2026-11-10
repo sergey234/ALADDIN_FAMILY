@@ -80,8 +80,8 @@
 |---------|---------------|-----------|
 | **Фон экрана** | `LinearGradient.backgroundGradient` / storm mesh (тёмный `#0F172A` + indigo) | Плоский purple Life360 `#7D4CFA`; Kaspersky teal/green |
 | **Карточка** | `.stormGlassCard(cornerRadius: CornerRadius.large)` — glass + золотая обводка | Белые Material-карточки Life360; серые плиты |
-| **Заголовок двери/карточки** | `Font.system(.title2 или .title3, design: .serif).weight(.bold)` | SF Pro only everywhere; Inter |
-| **Подзаголовок** | `.font(.subheadline)` · secondary/white opacity | Мелкий серый нечитаемый |
+| **Заголовок двери/карточки** | `AladdinFamilyType.title2()` / `title3()` (New York serif) | SF Pro only everywhere; Inter |
+| **Подзаголовок / описание** | `AladdinFamilyType.subheadline()` · secondary/white opacity | Мелкий серый нечитаемый; глобальный `Font.h*` |
 | **Акцент / pill / badge** | `Color.secondaryGold` `#F59E0B` | Life360 purple accents as brand |
 | **Иконка в двери** | SF Symbol `.title` / `.title2` semibold в круге frost | Чужие PNG логотипы конкурентов |
 | **Отступы** | `Spacing.m/l/xl` (16/24/32); horizontal `Spacing.l` | Магические 13/17pt |

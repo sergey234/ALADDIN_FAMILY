@@ -113,7 +113,7 @@ class StoreManager: ObservableObject {
             case .basic: return "1 устройство, базовая защита"
             case .individual, .individualYearly: return "1 устройство, полная защита, AI помощник"
             case .family, .familyYearly: return "До 6 участников, родительский контроль, live-карта"
-            case .premium, .premiumYearly: return "До 10 участников, все функции, приоритетная поддержка"
+            case .premium, .premiumYearly: return "До 15 участников, все функции, приоритетная поддержка"
             }
         }
         

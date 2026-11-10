@@ -68,6 +68,8 @@ struct WhereIsPhoneScreen: View {
     }
 
     @State private var hubTab: HubTab = .location
+    /// One system Motion & Fitness prompt per hub session (Driving / Safety).
+    @State private var didAskMotionThisSession = false
     @State private var activeChip: SheetChip = .people
     @State private var isChipProgrammaticScroll = false
     @State private var chipScrollRequest = 0
@@ -254,6 +256,20 @@ struct WhereIsPhoneScreen: View {
                 }
             }
         }
+        .onChange(of: hubTab) { tab in
+            if tab == .driving || tab == .safety {
+                askMotionIfNeededForHub()
+            }
+        }
+    }
+
+    /// Triggers iOS Motion & Fitness dialog once so ALADDIN appears in system Settings list.
+    private func askMotionIfNeededForHub() {
+        guard !didAskMotionThisSession else { return }
+        didAskMotionThisSession = true
+        Task { @MainActor in
+            _ = await LocationManager.requestMotionIfNeeded()
+        }
     }
 
     private func applyPrimarySheets<Content: View>(_ content: Content) -> some View {
@@ -373,10 +389,10 @@ struct WhereIsPhoneScreen: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized("map_privacy_zone_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.secondaryGold)
                 Text(localizationManager.localized("map_privacy_zone_hint"))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.white.opacity(0.85))
                 Slider(value: $quietMeters, in: 50...500, step: 25)
                     .tint(Color.secondaryGold)
@@ -389,7 +405,7 @@ struct WhereIsPhoneScreen: View {
                         Int(quietMeters)
                     )
                 )
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.75))
                 Spacer()
             }
@@ -473,7 +489,7 @@ struct WhereIsPhoneScreen: View {
         HStack {
             // Title follows active tab (not always «Карта» on Subscription/Safety).
             Text(localizationManager.localized(hubTab.titleKey))
-                .font(.system(.title2, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
 
             Spacer()
@@ -1307,7 +1323,7 @@ struct WhereIsPhoneScreen: View {
                     Image(systemName: "calendar")
                         .foregroundColor(.secondaryGold)
                     Text(localizationManager.localized("family_cal_title"))
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(.textPrimary)
                 }
                 if localEvents.isEmpty {
@@ -1337,10 +1353,10 @@ struct WhereIsPhoneScreen: View {
     private var inviteBanner: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("map_invite_banner_title"))
-                .font(.system(.title3, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
             Text(localizationManager.localized("map_create_circle_teaser"))
-                .font(.subheadline)
+                .font(AladdinFamilyType.subheadline())
                 .foregroundColor(.textSecondary)
             actionButton("map_invite_banner_cta", id: "where_phone_invite_banner") {
                 showInviteRole = true
@@ -1363,11 +1379,11 @@ struct WhereIsPhoneScreen: View {
                 Image(systemName: symbol)
                     .foregroundColor(.secondaryGold)
                 Text(localizationManager.localized(titleKey))
-                    .font(.system(.title3, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title3())
                     .foregroundColor(.textPrimary)
             }
             Text(localizationManager.localized(bodyKey))
-                .font(.subheadline)
+                .font(AladdinFamilyType.subheadline())
                 .foregroundColor(.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             actionButton(ctaKey, id: "where_phone_soon_\(titleKey)") {
@@ -1387,10 +1403,10 @@ struct WhereIsPhoneScreen: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized(titleKey))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized(bodyKey))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
@@ -1398,7 +1414,7 @@ struct WhereIsPhoneScreen: View {
                     isPresented.wrappedValue = false
                 } label: {
                     Text(localizationManager.localized("map_soon_ok"))
-                        .font(.subheadline.weight(.semibold))
+                        .font(AladdinFamilyType.subheadline(weight: .semibold))
                         .foregroundColor(.backgroundDark)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -1469,18 +1485,18 @@ struct WhereIsPhoneScreen: View {
                         .font(.title2.weight(.semibold))
                         .foregroundColor(.secondaryGold)
                     Text(localizationManager.localized("map_hub_safety_title"))
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(.textPrimary)
                 }
 
                 Text(localizationManager.localized("map_hub_safety_body"))
-                    .font(.subheadline)
-                    .foregroundColor(.textSecondary)
+                    .font(AladdinFamilyType.subheadline())
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Toggle(isOn: $crashConsentAccepted) {
                     Text(localizationManager.localized("crash_consent_accept"))
-                        .font(.subheadline.weight(.semibold))
+                        .font(AladdinFamilyType.subheadline(weight: .semibold))
                         .foregroundColor(.textPrimary)
                 }
                 .tint(Color.secondaryGold)
@@ -1498,17 +1514,17 @@ struct WhereIsPhoneScreen: View {
                         emergencyContactsCount()
                     )
                 )
-                .font(.subheadline)
-                .foregroundColor(.textSecondary)
+                .font(AladdinFamilyType.subheadline())
+                .foregroundColor(.white.opacity(0.92))
 
                 Text(localizationManager.localized("crash_limits_body"))
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .font(AladdinFamilyType.caption())
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(localizationManager.localized("map_hub_safety_sos_note"))
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .font(AladdinFamilyType.caption())
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
 
                 FamilySOSHoldButton()
@@ -1520,11 +1536,11 @@ struct WhereIsPhoneScreen: View {
 
                 Text(localizationManager.localized("map_soon_tile_title") + " · " + localizationManager.localized("map_soon_tile_body"))
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
                 Text(localizationManager.localized("map_soon_evac_title") + " · " + localizationManager.localized("map_soon_evac_body"))
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
 
                 actionButton("map_hub_safety_open_settings", id: "where_phone_safety_settings") {
@@ -1548,12 +1564,12 @@ struct WhereIsPhoneScreen: View {
                         .font(.title2.weight(.semibold))
                         .foregroundColor(.secondaryGold)
                     Text(localizationManager.localized("map_hub_subscription_title"))
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(.textPrimary)
                 }
                 Text(localizationManager.localized("map_hub_subscription_body"))
-                    .font(.subheadline)
-                    .foregroundColor(.textSecondary)
+                    .font(AladdinFamilyType.subheadline())
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
                 actionButton("map_hub_subscription_cta", id: "where_phone_open_tariffs") {
                     leaveHubThenNavigate(to: NavigationManager.ALADDINScreen.tariffs)
@@ -1652,7 +1668,7 @@ struct WhereIsPhoneScreen: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized("map_type_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                 ForEach(HubMapType.allCases) { type in
                     Button {
@@ -1661,7 +1677,7 @@ struct WhereIsPhoneScreen: View {
                     } label: {
                         HStack {
                             Text(localizationManager.localized(type.titleKey))
-                                .font(.subheadline.weight(.semibold))
+                                .font(AladdinFamilyType.subheadline(weight: .semibold))
                                 .foregroundColor(.textPrimary)
                             Spacer()
                             if mapTypeRaw == type.rawValue {
@@ -1707,23 +1723,23 @@ struct WhereIsPhoneScreen: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized("map_perm_always_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized("map_perm_always_body"))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(localizationManager.localized("map_perm_precise_hint"))
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.textSecondary)
                 // W9 Q15: Motion honest row (no fake toggle) → Settings.
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     Text(localizationManager.localized("map_motion_row_title"))
-                        .font(.subheadline.weight(.semibold))
+                        .font(AladdinFamilyType.subheadline(weight: .semibold))
                         .foregroundColor(.textPrimary)
                     Text(localizationManager.localized("map_motion_row_body"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .font(AladdinFamilyType.caption())
+                        .foregroundColor(.white.opacity(0.92))
                     Button {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
@@ -1808,7 +1824,7 @@ struct WhereIsPhoneScreen: View {
                     memberAvatarHeader(member)
 
                     Text(member.name)
-                        .font(.system(.title2, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .center)
 
@@ -2245,7 +2261,7 @@ struct WhereIsPhoneScreen: View {
     private var softInviteSheet: some View {
         VStack(spacing: Spacing.m) {
             Text(localizationManager.localized("family_invite_soft_title"))
-                .font(.system(.title2, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
             Text(localizationManager.localized("family_invite_soft_body"))
@@ -2283,7 +2299,7 @@ struct WhereIsPhoneScreen: View {
     private var softPaywallSheet: some View {
         VStack(spacing: Spacing.m) {
             Text(localizationManager.localized("premium_nudge_map_title"))
-                .font(.system(.title2, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
             Text(localizationManager.localized("premium_nudge_map_body"))
@@ -2321,11 +2337,11 @@ struct WhereIsPhoneScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("family_cal_title"))
-                        .font(.system(.title2, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.textPrimary)
 
                     Text(localizationManager.localized("family_cal_create_title"))
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(.textPrimary)
                     TextField(localizationManager.localized("family_cal_name_ph"), text: $draftEventTitle)
                         .textFieldStyle(.roundedBorder)
@@ -2380,7 +2396,7 @@ struct WhereIsPhoneScreen: View {
                     .tint(Color.secondaryGold)
 
                     Text(localizationManager.localized("family_cal_who_title"))
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(.textPrimary)
                     Text(localizationManager.localized("family_cal_who_hint"))
                         .font(.caption)
@@ -2585,11 +2601,12 @@ struct WhereIsPhoneScreen: View {
                         Image(systemName: tab.systemImage)
                             .font(.system(size: 18, weight: .semibold))
                         Text(localizationManager.localized(tab.titleKey))
-                            .font(.caption2.weight(.semibold))
+                            .font(AladdinFamilyType.caption(weight: .semibold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
                     }
-                    .foregroundColor(hubTab == tab ? Color.secondaryGold : Color.textSecondary)
+                    // Calm Navy tab: gold active, near-white inactive (readable on dark bar).
+                    .foregroundColor(hubTab == tab ? Color.secondaryGold : Color.white.opacity(0.92))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.s)
                 }
@@ -2600,10 +2617,10 @@ struct WhereIsPhoneScreen: View {
         .padding(.horizontal, Spacing.xs)
         .padding(.bottom, Spacing.xs)
         .background(
-            AladdinSnowballPalette.canvasBottom.opacity(0.92)
+            AladdinSnowballPalette.canvasTop
                 .overlay(
                     Rectangle()
-                        .fill(AladdinSnowballPalette.goldSoft)
+                        .fill(Color.secondaryGold.opacity(0.45))
                         .frame(height: 1),
                     alignment: .top
                 )

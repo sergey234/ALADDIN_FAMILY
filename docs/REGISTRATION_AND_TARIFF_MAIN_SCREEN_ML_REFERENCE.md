@@ -104,8 +104,8 @@
 
 ### 3.4 Присоединение (`joinFamily`)
 
-- Код санитизируется (`sanitizedAsFamilyId()`).
-- Запрос: `JoinFamilyRequest(family_id:, role:, age_group:, personal_letter:, device_type:)` → **`POST /api/family/join`**.
+- Код/QR нормализуется через `FamilyInviteCodeParser`: manual `FAM-XXXX-XXXX-XXXX` идёт как `invite_code`, QR JSON может передать `invite_token`.
+- Запрос: `JoinFamilyRequest(family_id:, invite_code:, invite_token:, role:, age_group:, personal_letter:, device_type:)` → **`POST /api/family/join`**.
 - Успех: сохранение `family_id`, `your_member_id` (с теми же правилами `admin_add_mode`), маппинг `members`, `saveJoinedMemberAsFamilyMember`, детям/подросткам — стартовый баланс единорога в `UserDefaults`.
 
 **Прод-сервер:** в актуальном **`docs/release/current/openapi.json`** (снимок после выката) у **`/api/family/join`** есть и **`GET`** (compat), и **`POST`** (боевой контракт iOS). Если другой стенд отстаёт — сверять **`/openapi.json`** на том же хосте.
@@ -167,7 +167,7 @@
 | `trial`             | 3        |
 | `personal`          | 2        |
 | `family`  | 6                |
-| `premium` | 10               |
+| `premium` | 15               |
 
 **Важно:** для расчёта **потолка семьи** используется не только `subscription.level`, но и активный триал — см. `subscriptionLevelForFamilyMemberCap` внутри `updateSubscriptionStatus`: если триал активен, кап может быть **`trial` (3)**, даже если `plan_level` в снимке ещё `free`.
 
@@ -450,7 +450,7 @@ flowchart TD
 | `free`           | 1 |
 | **`personal`** | **2** |
 | `family`         | 6 |
-| `premium`        | 10 |
+| `premium`        | 15 |
 
 **Согласование с iOS (2026-05-05+):** `SubscriptionManager.familyMemberLimit(for: .personal)` выровнен на **2** — как в `subscription_limits.py` / reconcile на проде. Маркетинговые строки про «3 устройства» в тарифах относятся к **другому** лимиту (устройства), не к слотам ростера семьи.
 
@@ -534,7 +534,7 @@ flowchart TD
 | trial   | 3 | 3 |
 | personal| **2** | **2** |
 | family  | 6 | 6 |
-| premium | 10 | 10 |
+| premium | 15 | 15 |
 
 ---
 

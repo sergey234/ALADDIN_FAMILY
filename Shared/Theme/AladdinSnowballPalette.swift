@@ -1,32 +1,32 @@
 import SwiftUI
 
-/// S18/S09/S43/S51 Snowball B — owner color lock 2026-11-09.
-/// SSOT: `docs/competitors/SNOWBALL_S18_COLOR_CANON_FOR_ML_2026-11-09.md`
-/// Эталон: `docs/competitors/snowball_s18_ref/OWNER_SNOWBALL_COLOR_REF_2026-11-09.jpg`
-/// Vertical purple → magenta glow (NOT navy). Icon from ref is NOT pasted onto screens.
+/// Family Hub canvas — Hub Calm Navy (Device QA 2026-11-10).
+/// Supersedes lilac/magenta mid·glow for contrast; keeps `canvasTop` + gold accents.
+/// Prior lock: `docs/competitors/SNOWBALL_S18_COLOR_CANON_FOR_ML_2026-11-09.md` (historical).
+/// Vertical: near-black → deep indigo → soft navy + light gold veil. No pink/lilac.
 enum AladdinSnowballPalette {
-    // MARK: Canvas stops (sampled from owner jpg, mid-frame avoiding icon)
+    // MARK: Canvas stops — Hub Calm Navy
     static let canvasTop = Color(red: 0.067, green: 0.043, blue: 0.075)       // #110B13
-    static let canvasDeep = Color(red: 0.137, green: 0.090, blue: 0.153)      // #231727
-    static let canvasMid = Color(red: 0.494, green: 0.329, blue: 0.514)       // #7E5483
-    static let canvasGlow = Color(red: 0.816, green: 0.612, blue: 0.788)      // #D09CC9
-    static let canvasBottom = Color(red: 0.690, green: 0.569, blue: 0.722)    // #B091B8
+    static let canvasDeep = Color(red: 0.078, green: 0.094, blue: 0.165)      // #14182A
+    static let canvasMid = Color(red: 0.110, green: 0.141, blue: 0.220)       // #1C2438
+    static let canvasGlow = Color(red: 0.145, green: 0.165, blue: 0.255)      // #252A41 soft indigo
+    static let canvasBottom = Color(red: 0.090, green: 0.100, blue: 0.145)    // #171A25
 
     static let glass = Color.white.opacity(0.12)
     static let glassStroke = Color.white.opacity(0.18)
     static let gold = Color.secondaryGold
     static let goldSoft = Color.secondaryGold.opacity(0.35)
     static let ink = Color.white
-    static let inkMuted = Color.white.opacity(0.78)
+    static let inkMuted = Color.white.opacity(0.92)
 
-    /// Vertical multi-stop gradient — top → bottom (owner canon).
+    /// Vertical Calm Navy — readable body text on glass cards.
     static var canvasGradient: LinearGradient {
         LinearGradient(
             stops: [
                 .init(color: canvasTop, location: 0.00),
-                .init(color: canvasDeep, location: 0.12),
-                .init(color: canvasMid, location: 0.36),
-                .init(color: canvasGlow, location: 0.62),
+                .init(color: canvasDeep, location: 0.28),
+                .init(color: canvasMid, location: 0.55),
+                .init(color: canvasGlow.opacity(0.85), location: 0.78),
                 .init(color: canvasBottom, location: 1.00)
             ],
             startPoint: .top,

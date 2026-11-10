@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import CoreLocation
+import CoreMotion
 import MapKit
 
 /**
@@ -78,6 +79,8 @@ struct DrivingReportsModal: View {
             
             // Первичное применение данных из объединённой аналитики (без сетевых запросов)
             viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: selectedPeriod)
+            // System Motion dialog — ALADDIN appears under Motion & Fitness once requested.
+            _ = await LocationManager.requestMotionIfNeeded()
         }
         // Обновляем при смене периода
         .onChange(of: selectedPeriod) { newValue in
@@ -541,17 +544,78 @@ struct DrivingReportsModal: View {
     // MARK: - Empty State
     
     private var emptyStateView: some View {
-        VStack(spacing: Spacing.m) {
-            Image(systemName: "car.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.textSecondary)
-            
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Spacer(minLength: 0)
+                Image(systemName: "car.fill")
+                    .font(.system(size: 44))
+                    .foregroundColor(.secondaryGold)
+                Spacer(minLength: 0)
+            }
+
             Text(localizationManager.localized("driving_reports_empty"))
-                .font(.body)
-                .foregroundColor(.textSecondary)
+                .font(.system(.title3, design: .serif).weight(.bold))
+                .foregroundColor(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .multilineTextAlignment(.center)
+
+            Text(localizationManager.localized("driving_reports_empty_lead"))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text(localizationManager.localized("driving_reports_why_motion"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.92))
+                Text(localizationManager.localized("driving_reports_why_location"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.92))
+                Text(localizationManager.localized("driving_reports_why_trip"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.92))
+            }
+
+            Button {
+                HapticFeedback.selection()
+                Task { @MainActor in
+                    let ok = await LocationManager.requestMotionIfNeeded()
+                    if !ok,
+                       CMMotionActivityManager.authorizationStatus() == .denied
+                        || CMMotionActivityManager.authorizationStatus() == .restricted {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                }
+            } label: {
+                Text(localizationManager.localized("driving_reports_enable_motion"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.backgroundDark)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.s)
+                    .background(Color.secondaryGold)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("driving_reports_enable_motion")
+
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                Text(localizationManager.localized("driving_reports_open_settings_motion"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("driving_reports_open_settings_motion")
         }
-        .frame(maxWidth: .infinity)
-        .padding(Spacing.xxl)
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Card Background
@@ -761,7 +825,7 @@ struct DrivingReportsModal: View {
             } else {
                 Text(localizationManager.localized("drive_no_trips"))
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
             }
 
             if !entitled {
@@ -779,7 +843,7 @@ struct DrivingReportsModal: View {
                                 .foregroundColor(.textPrimary)
                             Text(localizationManager.localized("drive_weekly_locked_body"))
                                 .font(.caption)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.92))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         Spacer(minLength: 0)
@@ -813,7 +877,7 @@ struct DrivingReportsModal: View {
                             }
                             Text(localizationManager.localized(kind.titleKey))
                                 .font(.caption2)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.92))
                                 .multilineTextAlignment(.center)
                                 .lineLimit(2)
                                 .minimumScaleFactor(0.8)
@@ -900,11 +964,12 @@ struct DrivingReportsModal: View {
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized(kind.explainKey))
                     .font(.body)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
                 Text(localizationManager.localized("drive_inc_explain_data_note"))
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer()
             }
             .padding(Spacing.l)

@@ -90,7 +90,7 @@ extension TariffType {
     /// Создать карточку тарифа.
     /// - Parameter price: живая цена StoreKit (`displayPrice`). Если nil — Free/Trial = «Бесплатно», платные = «—».
     func createCard(localizationManager: LocalizationManager, price: String? = nil) -> TariffCard {
-        // qa-16b: roster caps SSOT (free=1 · trial=3 · personal=2 · family=6 · premium=10)
+        // qa-16b: roster caps SSOT (free=1 · trial=3 · personal=2 · family=6 · premium=15)
         let devices: String = {
             String(SubscriptionManager.familyMemberLimitStatic(for: {
                 switch self {

@@ -121,3 +121,33 @@ enum LetterSpacing {
     static let tight: CGFloat = -0.5
 }
 
+// MARK: - Family Hub New York (W0)
+
+/// Типографика scope Family Hub / двери Семья·Ребёнок·Проверить.
+/// Только system New York (`design: .serif`). **Не** менять глобальные `Font.h1`…`bodyBold` выше.
+enum AladdinFamilyType {
+    static func title2(weight: Font.Weight = .bold) -> Font {
+        .system(.title2, design: .serif).weight(weight)
+    }
+
+    static func title3(weight: Font.Weight = .bold) -> Font {
+        .system(.title3, design: .serif).weight(weight)
+    }
+
+    static func body(weight: Font.Weight = .regular) -> Font {
+        .system(.body, design: .serif).weight(weight)
+    }
+
+    static func subheadline(weight: Font.Weight = .regular) -> Font {
+        .system(.subheadline, design: .serif).weight(weight)
+    }
+
+    static func caption(weight: Font.Weight = .regular) -> Font {
+        .system(.caption, design: .serif).weight(weight)
+    }
+
+    static func caption2(weight: Font.Weight = .regular) -> Font {
+        .system(.caption2, design: .serif).weight(weight)
+    }
+}
+

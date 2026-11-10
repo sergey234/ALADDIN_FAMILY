@@ -3504,7 +3504,7 @@ class LocalizationManager: ObservableObject {
             "driving_reports_filter_week": "Week",
             "driving_reports_filter_month": "Month",
             "driving_reports_export": "Экспорт отчета",
-            "driving_reports_empty": "No driving data available",
+            "driving_reports_empty": "No trip data yet",
             "driving_reports_filter_all": "All",
             "driving_reports_filter_with_violations": "With Violations",
             "driving_reports_filter_without_violations": "Without Violations",

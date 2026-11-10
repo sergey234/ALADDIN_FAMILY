@@ -802,7 +802,13 @@
 "driving_reports_safety_score" = "Safety Score";
 "driving_reports_violations" = "Violations";
 "driving_reports_history_title" = "Trip History";
-"driving_reports_empty" = "No driving data available";
+"driving_reports_empty" = "No trip data yet";
+"driving_reports_empty_lead" = "Counters appear after a real drive. We never invent numbers.";
+"driving_reports_why_motion" = "1. Allow Motion & Fitness for ALADDIN so the phone can detect driving.";
+"driving_reports_why_location" = "2. Turn on Location Always (and Precise) so trips can record in the background.";
+"driving_reports_why_trip" = "3. Take a drive with ALADDIN open or in the background, then open Driving again.";
+"driving_reports_enable_motion" = "Allow Motion & Fitness";
+"driving_reports_open_settings_motion" = "Open iPhone Settings";
 "driving_reports_error_load_failed" = "Failed to load reports: %@";
 "driving_reports_unit_min" = "min";
 /* ═══════════════════════════════════════════════════════════════
@@ -1862,6 +1868,15 @@
 "family_content_block_card_status_off" = "Policy off";
 "main_family_tariff_label" = "Plan:";
 "main_family_header_member_slots" = "%d of %d";
+"main_family_trial_days_left" = "Trial: %d days left";
+"main_family_trial_ended_banner" = "Trial ended · BASIC plan (1 member). You can choose Personal or Family.";
+"main_family_trial_ended_dismiss" = "Got it";
+"main_family_over_capacity_banner" = "%d members with a limit of %d. Upgrade your plan or reduce the family roster.";
+"main_family_restore_trial_cta" = "Restore trial until %@";
+"tariffs_downgrade_trial_confirm_title" = "Switch to BASIC?";
+"tariffs_downgrade_trial_confirm_body" = "Your trial will end now. Family slots become 1. Continue?";
+"tariffs_downgrade_trial_confirm_cancel" = "Cancel";
+"tariffs_downgrade_trial_confirm_continue" = "Switch to BASIC";
 "family_member_capacity_with_plan_fmt" = "%d of %d members";
 "family_members_label" = "Members";
 "family_members_accessibility_fmt" = "Family: %@";
@@ -3659,7 +3674,7 @@
 "map_quiet_active_badge" = "Quiet zone";
 "map_quiet_share_blocked" = "You’re in a quiet zone. We won’t send this point to family.";
 "map_share_expires_fmt" = "Link left ≈ %d min";
-"map_share_expired" = "Share link expired — share again";
+"map_share_expired" = "Location link expired — send your place again";
 
 /* ===== Family hub interiors Life360 L98+ (2026-11-04) ===== */
 "map_chip_people" = "Family";
@@ -3774,7 +3789,7 @@
 "map_pin_size_m" = "M";
 "map_pin_size_l" = "L";
 "map_motion_row_title" = "Motion & Fitness";
-"map_motion_row_body" = "Needed for trip reports and crash alerts. Turn it on in iPhone Settings.";
+"map_motion_row_body" = "Needed for trip reports and crash alerts. Allow it in ALADDIN first (Driving tab), or the app will not appear under Motion & Fitness.";
 "map_motion_open_settings" = "Open Settings";
 "map_bt_soon_title" = "Bluetooth";
 "map_bt_soon_body" = "Nearby / tags — coming soon.";
@@ -3807,7 +3822,7 @@
 "drive_inc_speed_explain" = "High-speed risk. Until detailed trips exist we show an honest zero — no invented numbers.";
 "drive_inc_accel_explain" = "Harsh acceleration. When sensor trips exist, you’ll see a weekly count here.";
 "drive_inc_brake_explain" = "Harsh braking. Family-friendly explain; real events show when trips are recorded.";
-"drive_inc_explain_data_note" = "No sensor trips yet — counters stay 0. Enable Motion & Fitness in Settings.";
+"drive_inc_explain_data_note" = "No sensor trips yet — counters stay 0. On the Driving tab tap Allow Motion & Fitness, then take a drive.";
 "drive_export_pdf" = "Share PDF";
 "drive_pdf_disclaimer" = "Family estimate only — not an insurance report.";
 /* ===== Family Safety Round2 S01–S80 (2026-11-09) ===== */
@@ -4030,7 +4045,7 @@
 /* WAVE S45–47 share / leave / profile */
 "map_share_activity_title" = "Share place";
 "map_share_activity_hint" = "One point for the family for the chosen time. No hidden track.";
-"map_share_stop" = "Stop sharing";
+"map_share_stop" = "Hide my place";
 "map_share_active_fmt" = "Active ≈ %d min left";
 "family_leave_title" = "Leave family";
 "family_leave_body" = "Family clears on this iPhone. A parent may still need to remove you on the server.";

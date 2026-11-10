@@ -718,7 +718,7 @@ final class SubscriptionManager: ObservableObject {
         bumpSubscriptionDisplayEpoch()
     }
 
-    /// Family member limit by tariff level (aligned with prod `subscription_limits.py` / `family_roster_reconcile.py`: free=1, trial=3, personal=2, family=6, premium=10)
+    /// Family member limit by tariff level (aligned with prod `subscription_limits.py` / `family_roster_reconcile.py`: free=1, trial=3, personal=2, family=6, premium=15)
     /// Single source of truth used by all add flows
     nonisolated static func familyMemberLimitStatic(for level: SubscriptionLevel) -> Int {
         switch level {
@@ -731,12 +731,85 @@ final class SubscriptionManager: ObservableObject {
         case .family:
             return 6
         case .premium:
-            return 10
+            return 15
         }
     }
 
     func familyMemberLimit(for level: SubscriptionLevel) -> Int {
         Self.familyMemberLimitStatic(for: level)
+    }
+
+    /// Карточка Семьи на Main: подпись тарифа и «N из M» только из одной структуры (W-pre-A).
+    struct EffectiveFamilyDisplay: Equatable {
+        let level: SubscriptionLevel
+        let slotsMax: Int
+        let slotsUsed: Int
+        let isOverCapacity: Bool
+        let trialDaysRemaining: Int?
+    }
+
+    private static let pendingTrialEndedBannerKey = "pending_trial_ended_banner"
+    private static let recoverableTrialEndEpochKey = "recoverable_trial_end_epoch"
+
+    /// SSOT для UI: level = `getCurrentLevel()`, M = таблица тарифа (не чужой snapshot.max).
+    func effectiveFamilyDisplay(localRosterCount: Int? = nil) -> EffectiveFamilyDisplay {
+        let level = getCurrentLevel()
+        let slotsMax = Self.familyMemberLimitStatic(for: level)
+        let localCount = max(0, localRosterCount ?? FamilyLocalStore.persistedLocalRosterCount())
+        let quotaUsed: Int
+        if familyQuotaSnapshot.source == .persistedCache {
+            quotaUsed = localCount
+        } else {
+            quotaUsed = max(localCount, familyQuotaSnapshot.used)
+        }
+        let trialDays: Int? = {
+            guard level == .trial, let trial = trialStatus, trial.isActive else { return nil }
+            return max(0, trial.daysRemaining)
+        }()
+        return EffectiveFamilyDisplay(
+            level: level,
+            slotsMax: slotsMax,
+            slotsUsed: quotaUsed,
+            isOverCapacity: slotsMax > 0 && quotaUsed > slotsMax,
+            trialDaysRemaining: trialDays
+        )
+    }
+
+    var shouldShowTrialEndedBanner: Bool {
+        guard getCurrentLevel() == .free else { return false }
+        return UserDefaults.standard.bool(forKey: Self.pendingTrialEndedBannerKey)
+    }
+
+    func dismissTrialEndedBanner() {
+        UserDefaults.standard.set(false, forKey: Self.pendingTrialEndedBannerKey)
+        bumpSubscriptionDisplayEpoch()
+    }
+
+    /// После случайного `downgradeToFree`, пока серверный `trial_end` ещё в будущем.
+    var recoverableTrialEndDate: Date? {
+        guard getCurrentLevel() == .free else { return nil }
+        let epoch = UserDefaults.standard.double(forKey: Self.recoverableTrialEndEpochKey)
+        guard epoch > 0 else { return nil }
+        let end = Date(timeIntervalSince1970: epoch)
+        guard end > Date() else { return nil }
+        return end
+    }
+
+    var canRestoreRecoverableTrial: Bool {
+        recoverableTrialEndDate != nil
+    }
+
+    func clearRecoverableTrialMarker() {
+        UserDefaults.standard.removeObject(forKey: Self.recoverableTrialEndEpochKey)
+    }
+
+    private func markRecoverableTrialIfNeeded(from trial: TrialInfo?) {
+        guard let trial, trial.endDate > Date() else { return }
+        UserDefaults.standard.set(trial.endDate.timeIntervalSince1970, forKey: Self.recoverableTrialEndEpochKey)
+    }
+
+    private func markTrialEndedBannerPending() {
+        UserDefaults.standard.set(true, forKey: Self.pendingTrialEndedBannerKey)
     }
 
     /// Central guard for adding family members. Used by FamilyScreen, FamilyRegistrationViewModel, AddMemberOptionsScreen.
@@ -874,6 +947,9 @@ final class SubscriptionManager: ObservableObject {
                    let jwtToken = self.parseJWTToken(newToken) {
                     await self.storeToken(jwtToken)
                 }
+
+                // W-pre-D: запомнить окно trial до очистки — кнопка «Вернуть пробный», пока endDate в будущем.
+                markRecoverableTrialIfNeeded(from: trialStatus)
 
                 if trialStatus != nil {
                     NotificationManager.shared.cancelTrialNotifications()
@@ -1562,7 +1638,7 @@ final class SubscriptionManager: ObservableObject {
     /// Roster **fallback** tier when `family/stats` ещё не принёс `familyRosterMax`.
     /// Hybrid-B: цвет/подпись — `getCurrentLevel()`; слоты add-gate — serverStats, иначе этот кап.
     /// DEBUG QA local trial красит peacock, но **не** раздувает cap до 3 (сервер остаётся free).
-    /// Платные personal/family/premium всегда берут кап с `status.level` (2/6/10), не trial(3).
+    /// Платные personal/family/premium всегда берут кап с `status.level` (2/6/15), не trial(3).
     private func subscriptionLevelForFamilyMemberCap(_ status: SubscriptionStatus) -> SubscriptionLevel {
         switch status.level {
         case .personal, .family, .premium:
@@ -1665,7 +1741,7 @@ final class SubscriptionManager: ObservableObject {
         }
 
         // Hybrid-B: slots SSOT = last `familyRosterMax` from stats when present; tariffFallback only otherwise.
-        // Matrix unchanged: free=1 · trial=3 · personal=2 · family=6 · premium=10
+        // Matrix: free=1 · trial=3 · personal=2 · family=6 · premium=15
         let levelForFamilyCap = subscriptionLevelForFamilyMemberCap(status)
         let tariffBasedLimit = familyMemberLimit(for: levelForFamilyCap)
         let trimmedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
@@ -1742,7 +1818,13 @@ final class SubscriptionManager: ObservableObject {
         // Cancel trial notifications if trial is no longer active
         if !trial.isActive && trialStatus?.isActive == true {
             NotificationManager.shared.cancelTrialNotifications()
+            markTrialEndedBannerPending()
             logger.business("❌ Trial notifications cancelled - trial no longer active")
+        }
+
+        if trial.isActive {
+            clearRecoverableTrialMarker()
+            UserDefaults.standard.set(false, forKey: Self.pendingTrialEndedBannerKey)
         }
 
         trialStatus = trial

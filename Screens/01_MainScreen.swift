@@ -671,17 +671,13 @@ struct MainScreen: View {
                                     Text(localizationManager.localized("main_family_header_title"))
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundColor(.black)
-                                    // Чип слотов: «N из M» (название тарифа — строка «Тариф: …» в теле; цвет = градиент карточки).
-                                    let quotaMax = familySlotLimitForCurrentTariff
-                                    let quotaUsed = min(
-                                        subscriptionManager.effectiveFamilyQuotaUsed(),
-                                        max(quotaMax, 0)
-                                    )
+                                    // Чип слотов: «N из M» — только из effectiveFamilyDisplay (W-pre-A).
+                                    let familyDisplay = subscriptionManager.effectiveFamilyDisplay()
                                     Text(
                                         localizationManager.localized(
                                             "main_family_header_member_slots",
-                                            quotaUsed,
-                                            quotaMax
+                                            familyDisplay.slotsUsed,
+                                            familyDisplay.slotsMax
                                         )
                                     )
                                     .font(.system(size: 10, weight: .semibold))
@@ -696,8 +692,8 @@ struct MainScreen: View {
                                     .accessibilityLabel(
                                         localizationManager.localized(
                                             "main_family_header_member_slots",
-                                            quotaUsed,
-                                            quotaMax
+                                            familyDisplay.slotsUsed,
+                                            familyDisplay.slotsMax
                                         )
                                     )
                                 }
@@ -778,15 +774,15 @@ struct MainScreen: View {
                                 }
                             }
                             
-                            // Информация о семье - ДИНАМИЧЕСКАЯ из MainViewModel
-                            // N из M: used + лимит тарифа (free=1 · trial=3 · personal=2 · family=6 · premium=10)
+                            // Информация о семье — слоты/тариф из effectiveFamilyDisplay (W-pre-A).
+                            let familyDisplayBody = subscriptionManager.effectiveFamilyDisplay()
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(localizationManager.localized(
                                     "main_family_info",
                                     mainViewModel.familyMembers,
-                                    familySlotLimitForCurrentTariff,
+                                    familyDisplayBody.slotsMax,
                                     mainViewModel.devicesProtected,
-                                    familySlotLimitForCurrentTariff
+                                    familyDisplayBody.slotsMax
                                 ))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
@@ -808,10 +804,75 @@ struct MainScreen: View {
                                     .minimumScaleFactor(0.8)
                                     .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
 
+                                if let days = familyDisplayBody.trialDaysRemaining {
+                                    Text(localizationManager.localized("main_family_trial_days_left", days))
+                                        .font(.system(size: 9, weight: .semibold))
+                                        .foregroundColor(.black.opacity(0.85))
+                                }
+
+                                if subscriptionManager.shouldShowTrialEndedBanner {
+                                    HStack(alignment: .top, spacing: 6) {
+                                        Text(localizationManager.localized("main_family_trial_ended_banner"))
+                                            .font(.system(size: 9, weight: .semibold))
+                                            .foregroundColor(.black)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                        Spacer(minLength: 4)
+                                        Button(localizationManager.localized("main_family_trial_ended_dismiss")) {
+                                            subscriptionManager.dismissTrialEndedBanner()
+                                        }
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(.black.opacity(0.7))
+                                    }
+                                    .padding(6)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(Color.black.opacity(0.12))
+                                    )
+                                    .accessibilityIdentifier("main_family_trial_ended_banner")
+                                }
+
+                                if familyDisplayBody.isOverCapacity {
+                                    Text(localizationManager.localized(
+                                        "main_family_over_capacity_banner",
+                                        familyDisplayBody.slotsUsed,
+                                        familyDisplayBody.slotsMax
+                                    ))
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundColor(.black)
+                                    .padding(6)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(Color.black.opacity(0.12))
+                                    )
+                                    .accessibilityIdentifier("main_family_over_capacity_banner")
+                                }
+
+                                if subscriptionManager.canRestoreRecoverableTrial,
+                                   let end = subscriptionManager.recoverableTrialEndDate {
+                                    Button {
+                                        Task { @MainActor in
+                                            await SubscriptionManager.shared.activateTrialIfNeeded()
+                                            if SubscriptionManager.shared.getCurrentLevel() == .trial {
+                                                SubscriptionManager.shared.clearRecoverableTrialMarker()
+                                            }
+                                        }
+                                    } label: {
+                                        Text(localizationManager.localized(
+                                            "main_family_restore_trial_cta",
+                                            dateFormatterService.formatDisplayDate(end)
+                                        ))
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(.secondaryGold)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .accessibilityIdentifier("main_family_restore_trial_cta")
+                                }
+
 #if DEBUG
-                                // Hybrid-B: DEBUG QA local trial — цвет peacock, слоты только с сервера.
+                                // Hybrid-B: DEBUG QA local trial — цвет peacock, слоты по SSOT display.
                                 if subscriptionManager.showsDebugQALocalTrialBanner {
-                                    Text("QA: цвет trial · слоты с сервера (\(familySlotLimitForCurrentTariff))")
+                                    Text("QA: цвет trial · slots SSOT (\(familyDisplayBody.slotsMax))")
                                         .font(.system(size: 8, weight: .semibold))
                                         .foregroundColor(.black.opacity(0.7))
                                         .lineLimit(1)
@@ -1029,17 +1090,14 @@ struct MainScreen: View {
         return "\(level.rawValue)|trial:\(trialOn)|\(lang)"
     }
 
-    /// Лимит слотов семьи/устройств по текущему effective-тарифу (SSOT).
+    /// Лимит слотов для UI — только таблица тарифа через SSOT (не snapshot.max).
     private var familySlotLimitForCurrentTariff: Int {
-        let fromQuota = subscriptionManager.familyQuotaSnapshot.max
-        if fromQuota > 0 { return fromQuota }
-        return SubscriptionManager.familyMemberLimitStatic(for: subscriptionManager.getCurrentLevel())
+        subscriptionManager.effectiveFamilyDisplay().slotsMax
     }
     
     private var currentTariffDisplayName: String {
-        // ✅ FIXED: Use single source of truth from SubscriptionManager
-        // getCurrentLevel() is more reliable than currentSubscription?.level
-        let level = subscriptionManager.getCurrentLevel()
+        // W-pre-A: тот же level, что и «N из M».
+        let level = subscriptionManager.effectiveFamilyDisplay().level
         let key: String
         switch level {
         case .trial: key = "tariffs_trial"
@@ -1056,12 +1114,12 @@ struct MainScreen: View {
 
     // Helper to get tariff color for UI accent — SSOT: TariffAccentPalette / ALADDIN_SHYAM_COLOR_CANON
     private var currentTariffColor: Color {
-        TariffAccentPalette.color(for: subscriptionManager.getCurrentLevel())
+        TariffAccentPalette.color(for: subscriptionManager.effectiveFamilyDisplay().level)
     }
 
     // Helper for SF Symbols icon based on current tariff level
     private func tariffIconForCurrentLevel() -> String {
-        let level = subscriptionManager.getCurrentLevel()
+        let level = subscriptionManager.effectiveFamilyDisplay().level
         switch level {
         case .free, .trial: return "shield.fill"
         case .personal: return "person.fill"

@@ -928,7 +928,7 @@ struct FamilyMapRoutesSheet: View {
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized("map_routes_body"))
                     .font(.subheadline)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
 
                 // Preferred app first (RU→Yandex, EN→Apple); user always sees both.
                 if preferredMaps == "apple" {
@@ -1087,7 +1087,7 @@ struct FamilyCrashConfirmSheet: View {
                     .multilineTextAlignment(.center)
                 Text(localizationManager.localized("crash_limits_body"))
                     .font(.subheadline)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
                     .multilineTextAlignment(.center)
                 if isSending {
                     ProgressView()

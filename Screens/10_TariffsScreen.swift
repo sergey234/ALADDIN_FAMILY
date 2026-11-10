@@ -16,6 +16,8 @@ struct TariffsScreen: View {
     @State private var showTermsOfService = false
     /// Paid subscribe → choose month or year (with prices) before StoreKit / website.
     @State private var billingChooserTariff: TariffType? = nil
+    /// W-pre-C: confirm before ending trial via Базовый.
+    @State private var showDowngradeFromTrialConfirm = false
     
     // Сохраняем выбранный тариф в AppStorage
     @AppStorage("selected_tariff_type") private var selectedTariffRaw: String = "family"
@@ -280,6 +282,19 @@ struct TariffsScreen: View {
             }
         } message: {
             Text(localizationManager.localized("tariffs_subscription_activated"))
+        }
+        .alert(
+            localizationManager.localized("tariffs_downgrade_trial_confirm_title"),
+            isPresented: $showDowngradeFromTrialConfirm
+        ) {
+            Button(localizationManager.localized("tariffs_downgrade_trial_confirm_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("tariffs_downgrade_trial_confirm_continue"), role: .destructive) {
+                Task { @MainActor in
+                    await SubscriptionManager.shared.downgradeToFree()
+                }
+            }
+        } message: {
+            Text(localizationManager.localized("tariffs_downgrade_trial_confirm_body"))
         }
         .sheet(isPresented: Binding(
             get: { billingChooserTariff != nil },
@@ -645,8 +660,14 @@ struct TariffsScreen: View {
                 selectedTariff = tariff
                 
                 if tariff == .free {
-                    Task { @MainActor in
-                        await SubscriptionManager.shared.downgradeToFree()
+                    // W-pre-C: во время trial — confirm, не silent downgrade.
+                    if SubscriptionManager.shared.trialStatus?.isActive == true
+                        || SubscriptionManager.shared.getCurrentLevel() == .trial {
+                        showDowngradeFromTrialConfirm = true
+                    } else {
+                        Task { @MainActor in
+                            await SubscriptionManager.shared.downgradeToFree()
+                        }
                     }
                     return
                 }

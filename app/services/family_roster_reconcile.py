@@ -16,7 +16,7 @@ _DEFAULT_LEVEL_MAX: dict[str, int] = {
     "free": 1,
     "personal": 2,
     "family": 6,
-    "premium": 10,
+    "premium": 15,
 }
 
 

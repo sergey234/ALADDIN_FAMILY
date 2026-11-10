@@ -6,7 +6,7 @@ _DEFAULT_MAP: Dict[str, int] = {
     "free": 1,
     "personal": 2,
     "family": 6,
-    "premium": 10,
+    "premium": 15,
 }
 
 def _normalize(level: str) -> str:

@@ -9,6 +9,8 @@
 ```json
 {
   "family_id": "<uuid или извлечённый из FAM-… кода>",
+  "invite_code": "FAM-XXXX-XXXX-XXXX",
+  "invite_token": "<optional token from QR JSON>",
   "role": "parent|child|…",
   "age_group": "<строка как сегодня с клиента>",
   "personal_letter": "<A-Z>",
@@ -19,8 +21,12 @@
 **Требование:** реализовать **`POST /api/family/join`** (рядом с существующим GET compat или вместо заглушки), который:
 
 - Принимает тело, совместимое с полями выше (имена полей как в iOS `JoinFamilyRequest`).
+- Для новых семей проверяет persisted invite из таблицы `family_invites`: QR token (`invite_token`) или manual `FAM-…` (`invite_code`) должен быть активным и не истекшим.
+- Для семей, созданных до появления `family_invites`, оставляет backward compatibility по `family_id`, чтобы не сломать старые recovery-коды.
 - Возвращает структуру, которую уже декодирует клиент как успешный join (аналог `FamilyResponse` / обёртка `APIResponse<FamilyResponse>` — как у действующего create/join на стенде, где join работает).
 - Отдаёт осмысленные **409 / 403 / 404** с `detail`, чтобы приложение могло показать причину.
+
+**Важно про UX:** код вида `FAM-XXXX-XXXX-XXXX` — это вступление в семью. **6 цифр** относятся только к `POST /api/devices/bind` и привязке устройства.
 
 В репозитории iOS: реализация в `app/routers/family.py` (`POST /join`), схемы в `docs/release/current/openapi.json`. После выката на хост — при желании перезаписать весь **`openapi.json`** снимком с `GET /openapi.json` API (чтобы пути совпали с продом на 100%) и перепроверить смоук `docs/FAMILY_API_SMOKE_REGIMEN.md` §4.
 
@@ -44,6 +50,6 @@
 | trial     | 3 |
 | personal  | **2** |
 | family    | 6 |
-| premium   | 10 |
+| premium   | 15 |
 
 iOS **`SubscriptionManager.familyMemberLimit`** для `personal` выровнен на **2** под эту таблицу.
