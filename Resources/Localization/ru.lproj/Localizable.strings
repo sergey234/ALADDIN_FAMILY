@@ -1758,6 +1758,7 @@
 "main_family_trial_ended_dismiss" = "Понятно";
 "main_family_over_capacity_banner" = "Участников %d при лимите %d. Обновите тариф или сократите состав семьи.";
 "main_family_restore_trial_cta" = "Вернуть пробный до %@";
+"driving_reports_empty_other_member" = "Пока нет поездок у «%@». Они появятся, когда его устройство запишет реальную поездку (GPS + движение).";
 "tariffs_downgrade_trial_confirm_title" = "Перейти на БАЗОВЫЙ?";
 "tariffs_downgrade_trial_confirm_body" = "Пробный оборвётся сейчас. Слоты семьи станут 1. Продолжить?";
 "tariffs_downgrade_trial_confirm_cancel" = "Отмена";

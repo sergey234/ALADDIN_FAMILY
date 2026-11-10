@@ -39,7 +39,13 @@ enum FamilyMapAutoTripTracker {
             stopHits = 0
             if DrivingTripTrackStore.activeTripId == nil, movingHits >= movingHitsToStart {
                 let tripId = "auto_\(Int(Date().timeIntervalSince1970))"
+                let member = FamilyDrivingTripLedger.currentDeviceMember()
                 DrivingTripTrackStore.begin(tripId: tripId, start: location.coordinate)
+                FamilyDrivingTripLedger.beginMeta(
+                    tripId: tripId,
+                    memberId: member.id,
+                    memberName: member.name
+                )
             } else if let tripId = DrivingTripTrackStore.activeTripId {
                 maybeAppend(tripId: tripId, location: location)
             }
@@ -47,7 +53,11 @@ enum FamilyMapAutoTripTracker {
             stopHits += 1
             movingHits = 0
             if let tripId = DrivingTripTrackStore.activeTripId, stopHits >= stopHitsToEnd {
-                DrivingTripTrackStore.finish(tripId: tripId, end: location.coordinate)
+                // Persist real trip into per-member ledger (no mock stats).
+                _ = FamilyDrivingTripLedger.finalizeActiveTrip(
+                    tripId: tripId,
+                    end: location.coordinate
+                )
             }
         } else {
             movingHits = 0

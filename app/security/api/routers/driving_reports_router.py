@@ -201,38 +201,69 @@ def get_driving_reports(
         return []
 
 @router.get("/stats", response_model=DrivingStats)
-async def get_driving_stats(period: str = Query("week", regex="^(week|month|year)$")):
-    """Получить статистику вождения"""
+def get_driving_stats(
+    userId: Optional[str] = Query(None),
+    period: str = Query("week", regex="^(week|month|year)$"),
+    db: Session = Depends(get_db),
+):
+    """Статистика только из реальных строк `driving_reports` (без mock цифр)."""
+    now = datetime.utcnow()
     if period == "week":
-        return {
-            "totalTrips": 14,
-            "totalDistance": 245.5,
-            "totalDuration": 32400, # 9 часов
-            "averageSafetyScore": 8.7,
-            "violationsCount": 2,
-            "period": "week",
-            "positioningSystem": "GPS"
-        }
+        start_date = now - timedelta(days=7)
     elif period == "month":
-        return {
-            "totalTrips": 58,
-            "totalDistance": 1120.0,
-            "totalDuration": 144000,
-            "averageSafetyScore": 9.1,
-            "violationsCount": 5,
-            "period": "month",
-            "positioningSystem": "GPS/GLONASS"
-        }
+        start_date = now - timedelta(days=30)
     else:
+        start_date = now - timedelta(days=365)
+
+    empty = {
+        "totalTrips": 0,
+        "totalDistance": 0.0,
+        "totalDuration": 0.0,
+        "averageSafetyScore": 0.0,
+        "violationsCount": 0,
+        "period": period,
+        "positioningSystem": None,
+    }
+    try:
+        if userId:
+            q = text(
+                """
+                SELECT COUNT(*), COALESCE(SUM(distance),0), COALESCE(SUM(duration),0),
+                       COALESCE(AVG(safety_score),0), COALESCE(SUM(
+                         CASE WHEN violations IS NULL OR violations::text IN ('[]','null','') THEN 0 ELSE 1 END
+                       ),0)
+                FROM driving_reports
+                WHERE start_time >= :start_date AND user_id = :user_id
+                """
+            )
+            row = db.execute(q, {"start_date": start_date, "user_id": userId}).fetchone()
+        else:
+            q = text(
+                """
+                SELECT COUNT(*), COALESCE(SUM(distance),0), COALESCE(SUM(duration),0),
+                       COALESCE(AVG(safety_score),0), COALESCE(SUM(
+                         CASE WHEN violations IS NULL OR violations::text IN ('[]','null','') THEN 0 ELSE 1 END
+                       ),0)
+                FROM driving_reports
+                WHERE start_time >= :start_date
+                """
+            )
+            row = db.execute(q, {"start_date": start_date}).fetchone()
+        if not row:
+            return empty
+        trips = int(row[0] or 0)
         return {
-            "totalTrips": 640,
-            "totalDistance": 12500.0,
-            "totalDuration": 1555200,
-            "averageSafetyScore": 8.9,
-            "violationsCount": 42,
-            "period": "year",
-            "positioningSystem": "GLONASS"
+            "totalTrips": trips,
+            "totalDistance": float(row[1] or 0),
+            "totalDuration": float(row[2] or 0),
+            "averageSafetyScore": float(row[3] or 0) if trips else 0.0,
+            "violationsCount": int(row[4] or 0),
+            "period": period,
+            "positioningSystem": "GPS" if trips else None,
         }
+    except Exception as e:
+        print(f"⚠️ driving stats from DB failed: {e}")
+        return empty
 
 @router.get("/export", response_model=ExportResponse)
 async def export_driving_report(format: str = Query("pdf", regex="^(pdf|csv|xlsx)$")):

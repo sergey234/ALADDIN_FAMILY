@@ -54,41 +54,60 @@ class DrivingReportsViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Применить данные из объединённой аналитики компонентов (без прямых сетевых запросов)
+    /// Legacy hook from AnalyticsViewModel — больше не источник правды (агент без trip list).
+    /// Оставляем no-op, чтобы старые call sites не затирали ledger/API данными.
     func applyFrom(components: ComponentsAnalytics?, period: String) {
-        // Достаём агрегированные метрики по компоненту Driving
-        guard let stats = components?.getStats(for: "driving_reports_agent") else {
-            self.stats = nil
-            self.reports = []
-            self.errorMessage = nil
-            return
-        }
-        // Преобразуем агрегированные метрики к нашим UI-моделям
-        let totalTrips = stats.getIntMetric(key: "trips_total")
-        let totalDistanceKm = stats.getDoubleMetric(key: "distance_km_total")
-        let totalDurationSec = stats.getDoubleMetric(key: "duration_sec_total")
-        let avgSafety = stats.getDoubleMetric(key: "avg_safety_score")
-        let violations = stats.getIntMetric(key: "violations_total")
-        let positioning = stats.getMetric(key: "positioning") // может быть пустым
-        
-        self.stats = DrivingStats(
-            totalTrips: totalTrips,
-            totalDistance: totalDistanceKm,
-            totalDuration: totalDurationSec,
-            averageSafetyScore: avgSafety,
-            violationsCount: violations,
-            period: period,
-            positioningSystem: positioning.isEmpty ? nil : positioning
-        )
-        // Агрегатор компонентов не отдаёт детальные поездки — показываем пустой список (UI отрисует «Нет данных»)
-        self.reports = []
-        self.errorMessage = nil
+        _ = components
+        _ = period
     }
     
+    /// Life360-паттерн: поездки выбранного члена за период = remote (если есть) ∪ local ledger.
+    /// Статистику считаем **только** из реальных поездок. `/stats` mock на сервере не вызываем.
     func loadReports(userId: String?, period: String) async {
-        // Переведено на единый источник данных: AnalyticsViewModel.componentsAnalytics
-        // Сетевая загрузка здесь больше не выполняется.
-        return
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        let normalizedPeriod: String = {
+            switch period {
+            case "today", "week", "month", "year": return period
+            default: return "week"
+            }
+        }()
+
+        let local = FamilyDrivingTripLedger.reports(memberId: userId, period: normalizedPeriod)
+
+        var remote: [DrivingReport] = []
+        do {
+            // API period: today → week window on server (фильтр today уже на клиенте).
+            let apiPeriod = (normalizedPeriod == "today") ? "week" : normalizedPeriod
+            remote = try await withCheckedThrowingContinuation { continuation in
+                apiService.getDrivingReports(userId: userId, period: apiPeriod) { result in
+                    continuation.resume(with: result)
+                }
+            }
+            if normalizedPeriod == "today" {
+                let start = FamilyDrivingTripLedger.periodStart("today")
+                remote = remote.filter { $0.startTime >= start }
+            }
+            if let uid = userId?.trimmingCharacters(in: .whitespacesAndNewlines), !uid.isEmpty, uid != "current" {
+                remote = remote.filter { $0.userId == uid }
+            }
+        } catch {
+            let networkError = NetworkError.from(error)
+            if case .unauthorized = networkError {
+                // Local ledger всё равно показываем — родитель видит свои поездки offline.
+                print("⚠️ DrivingReportsViewModel: unauthorized — local ledger only")
+            } else {
+                print("⚠️ DrivingReportsViewModel: remote load failed: \(networkError.localizedDescription)")
+            }
+        }
+
+        let merged = FamilyDrivingTripLedger.merge(remote: remote, local: local)
+            .map { DrivingTripTrackStore.mergeInto($0) }
+        reports = merged
+        stats = FamilyDrivingTripLedger.stats(from: merged, period: normalizedPeriod)
+        errorMessage = nil
     }
     
     func exportReport(reportId: String, format: String) async throws -> Data {
@@ -118,7 +137,14 @@ class DrivingReportsViewModel: ObservableObject {
             }
 
             let tripId = "local_\(Int(Date().timeIntervalSince1970))"
+            let device = FamilyDrivingTripLedger.currentDeviceMember()
+            let mid = (userId?.isEmpty == false) ? userId! : device.id
             DrivingTripTrackStore.begin(tripId: tripId, start: startLocation.coordinate)
+            FamilyDrivingTripLedger.beginMeta(
+                tripId: tripId,
+                memberId: mid,
+                memberName: device.name
+            )
             startTrackSampling(tripId: tripId)
             
             // Обновляем отчеты
@@ -164,11 +190,12 @@ class DrivingReportsViewModel: ObservableObject {
                 }
             }
             stopTrackSampling()
-            if let active = DrivingTripTrackStore.activeTripId {
-                DrivingTripTrackStore.finish(tripId: active, end: endLocation.coordinate)
-            } else {
-                DrivingTripTrackStore.finish(tripId: resolvedTripId, end: endLocation.coordinate)
-            }
+            let finishId = DrivingTripTrackStore.activeTripId ?? resolvedTripId
+            _ = FamilyDrivingTripLedger.finalizeActiveTrip(
+                tripId: finishId,
+                end: endLocation.coordinate,
+                memberId: userId
+            )
             
             // Обновляем отчеты
             await loadReports(userId: userId, period: "week")
@@ -178,7 +205,7 @@ class DrivingReportsViewModel: ObservableObject {
                 print("⚠️ DrivingReportsViewModel: Ошибка получения местоположения, но завершаем поездку: \(error.localizedDescription)")
                 stopTrackSampling()
                 if let active = DrivingTripTrackStore.activeTripId {
-                    DrivingTripTrackStore.finish(tripId: active, end: nil)
+                    _ = FamilyDrivingTripLedger.finalizeActiveTrip(tripId: active, end: nil, memberId: userId)
                 }
                 // Продолжаем без координат
                 await loadReports(userId: userId, period: "week")

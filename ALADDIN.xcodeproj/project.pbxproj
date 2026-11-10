@@ -738,6 +738,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		FMAPQZ01F90000100C7D34B /* FamilyMapQuietZoneStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPQZ02F90000100C7D34B /* FamilyMapQuietZoneStore.swift */; };
 		FMAPAT01F90000100C7D34B /* FamilyMapAutoTripTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPAT02F90000100C7D34B /* FamilyMapAutoTripTracker.swift */; };
 		FMAPDT01F90000100C7D34B /* DrivingTripTrackStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPDT02F90000100C7D34B /* DrivingTripTrackStore.swift */; };
+		FMAPDT03F90000100C7D34B /* FamilyDrivingTripLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMAPDT04F90000100C7D34B /* FamilyDrivingTripLedger.swift */; };
 		UNICN02F90000100C7D34B /* WellnessBreath2MinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = UNICN05F90000100C7D34B /* WellnessBreath2MinView.swift */; };
 		UXCOBAR22F90000100C7D34B /* AladdinComposerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */; };
 		UXCOBDL22F90000100C7D34B /* BundledSleepStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */; };
@@ -1537,6 +1538,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 		FMAPQZ02F90000100C7D34B /* FamilyMapQuietZoneStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMapQuietZoneStore.swift; path = Core/Family/FamilyMapQuietZoneStore.swift; sourceTree = "<group>"; };
 		FMAPAT02F90000100C7D34B /* FamilyMapAutoTripTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMapAutoTripTracker.swift; path = Core/Family/FamilyMapAutoTripTracker.swift; sourceTree = "<group>"; };
 		FMAPDT02F90000100C7D34B /* DrivingTripTrackStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DrivingTripTrackStore.swift; path = Core/Family/DrivingTripTrackStore.swift; sourceTree = "<group>"; };
+		FMAPDT04F90000100C7D34B /* FamilyDrivingTripLedger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyDrivingTripLedger.swift; path = Core/Family/FamilyDrivingTripLedger.swift; sourceTree = "<group>"; };
 		CRITD112F90000300C7D34B /* FamilyCriticalAlertsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCriticalAlertsService.swift; path = Core/Family/FamilyCriticalAlertsService.swift; sourceTree = "<group>"; };
 		COMMS812F90000100C7D34B /* CommunicationScamNotificationPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CommunicationScamNotificationPresenter.swift; path = Core/Notifications/CommunicationScamNotificationPresenter.swift; sourceTree = "<group>"; };
 		CFSTR812F90000100C7D34B /* SystemContentFilterRulesStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SystemContentFilterRulesStore.swift; path = Core/Family/SystemContentFilterRulesStore.swift; sourceTree = "<group>"; };
@@ -2223,6 +2225,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FMAPQZ02F90000100C7D34B /* FamilyMapQuietZoneStore.swift */,
 				FMAPAT02F90000100C7D34B /* FamilyMapAutoTripTracker.swift */,
 				FMAPDT02F90000100C7D34B /* DrivingTripTrackStore.swift */,
+				FMAPDT04F90000100C7D34B /* FamilyDrivingTripLedger.swift */,
 				FWS23012F90000100C7D34B /* FamilyFocusSessionFeature.swift */,
 				UDLNK012F90000100C7D34B /* UnicornDeepLinkRouter.swift */,
 				FWS23212F90000100C7D34B /* FocusSessionStore.swift */,
@@ -3562,6 +3565,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				FMAPQZ01F90000100C7D34B /* FamilyMapQuietZoneStore.swift in Sources */,
 				FMAPAT01F90000100C7D34B /* FamilyMapAutoTripTracker.swift in Sources */,
 				FMAPDT01F90000100C7D34B /* DrivingTripTrackStore.swift in Sources */,
+				FMAPDT03F90000100C7D34B /* FamilyDrivingTripLedger.swift in Sources */,
 				FWS23122F90000100C7D34B /* FamilyFocusSessionFeature.swift in Sources */,
 				UDLNK022F90000100C7D34B /* UnicornDeepLinkRouter.swift in Sources */,
 				FWS23322F90000100C7D34B /* FocusSessionStore.swift in Sources */,

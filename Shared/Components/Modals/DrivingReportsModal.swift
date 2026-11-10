@@ -75,20 +75,15 @@ struct DrivingReportsModal: View {
         }
         .task {
             await loadUsers()
-            // ✅ ИСПРАВЛЕНИЕ 3: Синхронизация selectedUserId происходит в конце loadUsers()
-            
-            // Первичное применение данных из объединённой аналитики (без сетевых запросов)
-            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: selectedPeriod)
+            await reloadDrivingData()
             // System Motion dialog — ALADDIN appears under Motion & Fitness once requested.
             _ = await LocationManager.requestMotionIfNeeded()
         }
-        // Обновляем при смене периода
-        .onChange(of: selectedPeriod) { newValue in
-            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: newValue)
+        .onChange(of: selectedPeriod) { _ in
+            Task { await reloadDrivingData() }
         }
-        // И при поступлении свежих компонентных данных из AnalyticsViewModel
-        .onReceive(analyticsViewModel.$componentsAnalytics) { components in
-            viewModel.applyFrom(components: components, period: selectedPeriod)
+        .onChange(of: selectedUserId) { _ in
+            Task { await reloadDrivingData() }
         }
         .overlay(alignment: .center) {
             loadingOverlay
@@ -128,9 +123,46 @@ struct DrivingReportsModal: View {
             get: { selectedUserId.isEmpty ? nil : selectedUserId },
             set: { newValue in
                 selectedUserId = newValue ?? currentUserId
-                loadReports()
+                Task { await reloadDrivingData() }
             }
         )
+    }
+
+    private var resolvedMemberId: String {
+        let id = selectedUserId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !id.isEmpty { return id }
+        return currentUserId
+    }
+
+    private var selectedMemberName: String {
+        if let u = users.first(where: { $0.id == resolvedMemberId }) {
+            return u.name
+        }
+        return FamilyDrivingTripLedger.currentDeviceMember().name
+    }
+
+    private var filteredReports: [DrivingReport] {
+        switch selectedFilter {
+        case .all:
+            return viewModel.reports
+        case .withViolations:
+            return viewModel.reports.filter { !$0.violations.isEmpty }
+        case .withoutViolations:
+            return viewModel.reports.filter { $0.violations.isEmpty }
+        }
+    }
+
+    private var isViewingOtherFamilyMember: Bool {
+        let device = FamilyDrivingTripLedger.currentDeviceMember().id
+        let selected = resolvedMemberId
+        guard !selected.isEmpty, selected != "current" else { return false }
+        guard !device.isEmpty, device != "current" else { return false }
+        return selected != device
+    }
+
+    @MainActor
+    private func reloadDrivingData() async {
+        await viewModel.loadReports(userId: resolvedMemberId, period: selectedPeriod)
     }
 
     private var modalContent: some View {
@@ -169,7 +201,7 @@ struct DrivingReportsModal: View {
                     filtersSection
                         .padding(.horizontal, Spacing.screenPadding)
 
-                    if !viewModel.reports.isEmpty {
+                    if !filteredReports.isEmpty {
                         tripsHistorySection
                             .padding(.horizontal, Spacing.screenPadding)
                     } else if !viewModel.isLoading {
@@ -285,7 +317,7 @@ struct DrivingReportsModal: View {
     private func statsSection(stats: DrivingStats) -> some View {
         VStack(spacing: Spacing.m) {
             Text(localizationManager.localized("driving_reports_stats_title"))
-                .font(.h3)
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -342,7 +374,7 @@ struct DrivingReportsModal: View {
     private var filtersSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("driving_reports_filter_period"))
-                .font(.bodyBold)
+                .font(AladdinFamilyType.subheadline(weight: .bold))
                 .foregroundColor(.textPrimary)
             
             HStack(spacing: Spacing.s) {
@@ -361,10 +393,10 @@ struct DrivingReportsModal: View {
     private func periodButton(_ period: String, title: String) -> some View {
         Button(action: {
             selectedPeriod = period
-            loadReports()
+            Task { await reloadDrivingData() }
         }) {
             Text(title)
-                .font(.body)
+                .font(AladdinFamilyType.subheadline())
                 .foregroundColor(selectedPeriod == period ? .white : .textPrimary)
                 .padding(.horizontal, Spacing.m)
                 .padding(.vertical, Spacing.s)
@@ -381,12 +413,12 @@ struct DrivingReportsModal: View {
     private var tripsHistorySection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(localizationManager.localized("driving_reports_history_title"))
-                .font(.h3)
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             VStack(spacing: Spacing.s) {
-                ForEach(viewModel.reports) { report in
+                ForEach(filteredReports) { report in
                     Button {
                         HapticFeedback.selection()
                         playbackReport = report
@@ -554,25 +586,29 @@ struct DrivingReportsModal: View {
             }
 
             Text(localizationManager.localized("driving_reports_empty"))
-                .font(.system(.title3, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .multilineTextAlignment(.center)
 
-            Text(localizationManager.localized("driving_reports_empty_lead"))
-                .font(.subheadline)
+            Text(
+                isViewingOtherFamilyMember
+                    ? localizationManager.localized("driving_reports_empty_other_member", selectedMemberName)
+                    : localizationManager.localized("driving_reports_empty_lead")
+            )
+                .font(AladdinFamilyType.subheadline())
                 .foregroundColor(.white.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: Spacing.s) {
                 Text(localizationManager.localized("driving_reports_why_motion"))
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.92))
                 Text(localizationManager.localized("driving_reports_why_location"))
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.92))
                 Text(localizationManager.localized("driving_reports_why_trip"))
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.92))
             }
 
@@ -590,7 +626,7 @@ struct DrivingReportsModal: View {
                 }
             } label: {
                 Text(localizationManager.localized("driving_reports_enable_motion"))
-                    .font(.subheadline.weight(.semibold))
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
                     .foregroundColor(.backgroundDark)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.s)
@@ -606,7 +642,7 @@ struct DrivingReportsModal: View {
                 }
             } label: {
                 Text(localizationManager.localized("driving_reports_open_settings_motion"))
-                    .font(.caption.weight(.semibold))
+                    .font(AladdinFamilyType.caption(weight: .semibold))
                     .foregroundColor(.secondaryGold)
                     .frame(maxWidth: .infinity)
             }
@@ -780,8 +816,7 @@ struct DrivingReportsModal: View {
     }
     
     private func loadReports() {
-        // Сетевая загрузка больше не требуется: используем данные из AnalyticsViewModel.componentsAnalytics
-        viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: selectedPeriod)
+        Task { await reloadDrivingData() }
     }
 
     // MARK: - W3 Q02–Q06 weekly strip + PDF
@@ -791,7 +826,7 @@ struct DrivingReportsModal: View {
         let counts = incidentCounts(from: stats, entitled: entitled)
         return VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("drive_weekly_title"))
-                .font(.h3)
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
 
             // S58 densitiy: real trips/km when present (never invent).
@@ -824,7 +859,7 @@ struct DrivingReportsModal: View {
                 }
             } else {
                 Text(localizationManager.localized("drive_no_trips"))
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.92))
             }
 
@@ -839,16 +874,16 @@ struct DrivingReportsModal: View {
                             .foregroundColor(.secondaryGold)
                         VStack(alignment: .leading, spacing: 4) {
                             Text(localizationManager.localized("drive_weekly_locked_title"))
-                                .font(.subheadline.weight(.semibold))
+                                .font(AladdinFamilyType.subheadline(weight: .semibold))
                                 .foregroundColor(.textPrimary)
                             Text(localizationManager.localized("drive_weekly_locked_body"))
-                                .font(.caption)
+                                .font(AladdinFamilyType.caption())
                                 .foregroundColor(.white.opacity(0.92))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         Spacer(minLength: 0)
                         Text(localizationManager.localized("drive_weekly_locked_cta"))
-                            .font(.caption.weight(.bold))
+                            .font(AladdinFamilyType.caption(weight: .bold))
                             .foregroundColor(.secondaryGold)
                     }
                     .padding(Spacing.m)
@@ -930,11 +965,18 @@ struct DrivingReportsModal: View {
 
     private func exportPDFButton(stats: DrivingStats) -> some View {
         Button {
+            let periodKey: String = {
+                switch selectedPeriod {
+                case "today": return "driving_reports_filter_today"
+                case "month": return "driving_reports_filter_month"
+                default: return "driving_reports_filter_week"
+                }
+            }()
             if let url = FamilyDrivingWeeklyReportPDF.write(
                 stats: stats,
-                periodLabel: localizationManager.localized(
-                    selectedPeriod == "month" ? "driving_reports_filter_month" : "drive_this_week"
-                ),
+                trips: filteredReports,
+                memberName: selectedMemberName,
+                periodLabel: localizationManager.localized(periodKey),
                 localization: localizationManager
             ) {
                 sharePDFItems = [url]
@@ -953,6 +995,7 @@ struct DrivingReportsModal: View {
             .cornerRadius(CornerRadius.medium)
         }
         .buttonStyle(.plain)
+        .disabled(stats.totalTrips == 0 && filteredReports.isEmpty)
         .accessibilityIdentifier("drive_export_pdf")
     }
 
@@ -960,14 +1003,14 @@ struct DrivingReportsModal: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(kind.emoji + " " + localizationManager.localized(kind.titleKey))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized(kind.explainKey))
-                    .font(.body)
+                    .font(AladdinFamilyType.body())
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
                 Text(localizationManager.localized("drive_inc_explain_data_note"))
-                    .font(.caption)
+                    .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
@@ -1020,23 +1063,45 @@ enum DriveIncidentKind: String, CaseIterable, Identifiable {
 enum FamilyDrivingWeeklyReportPDF {
     static func write(
         stats: DrivingStats,
+        trips: [DrivingReport] = [],
+        memberName: String = "",
         periodLabel: String,
         localization: LocalizationManager
     ) -> URL? {
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
+        let safeName = memberName
+            .replacingOccurrences(of: "/", with: "-")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let fileStub = safeName.isEmpty ? "member" : safeName.replacingOccurrences(of: " ", with: "_")
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("aladdin_drive_\(Int(Date().timeIntervalSince1970)).pdf")
+            .appendingPathComponent("aladdin_drive_\(fileStub)_\(Int(Date().timeIntervalSince1970)).pdf")
         do {
             try renderer.writePDF(to: url) { ctx in
                 ctx.beginPage()
                 let title = localization.localized("drive_weekly_title")
+                let df = DateFormatter()
+                df.dateStyle = .short
+                df.timeStyle = .short
+                var tripLines: [String] = []
+                for (idx, trip) in trips.prefix(40).enumerated() {
+                    tripLines.append(
+                        "\(idx + 1). \(df.string(from: trip.startTime)) · \(String(format: "%.1f", trip.distance)) km · \(trip.formattedSafetyScore)"
+                    )
+                }
+                if trips.isEmpty {
+                    tripLines.append(localization.localized("drive_no_trips"))
+                }
                 let body = """
+                \(memberName.isEmpty ? "" : memberName)
                 \(periodLabel)
 
                 \(localization.localized("drive_trips")): \(stats.totalTrips)
                 \(localization.localized("drive_total_km")): \(String(format: "%.1f", stats.totalDistance))
                 \(localization.localized("driving_reports_safety_score")): \(stats.formattedAverageSafetyScore)
                 \(localization.localized("driving_reports_violations")): \(stats.violationsCount)
+
+                \(localization.localized("driving_reports_history_title")):
+                \(tripLines.joined(separator: "\n"))
 
                 \(localization.localized("drive_pdf_disclaimer"))
                 """
@@ -1045,10 +1110,10 @@ enum FamilyDrivingWeeklyReportPDF {
                 ]
                 (title as NSString).draw(at: CGPoint(x: 48, y: 48), withAttributes: attrs)
                 let bodyAttrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 14)
+                    .font: UIFont.systemFont(ofSize: 12)
                 ]
                 (body as NSString).draw(
-                    in: CGRect(x: 48, y: 90, width: 516, height: 600),
+                    in: CGRect(x: 48, y: 90, width: 516, height: 660),
                     withAttributes: bodyAttrs
                 )
             }
@@ -1274,7 +1339,7 @@ private struct DrivingTripPlaybackSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("driving_play_title"))
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(AladdinSnowballPalette.gold)
 
                     let merged = DrivingTripTrackStore.mergeInto(report)
@@ -1284,14 +1349,14 @@ private struct DrivingTripPlaybackSheet: View {
                             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                     } else {
                         Text(localizationManager.localized("driving_play_no_track"))
-                            .font(.caption)
+                            .font(AladdinFamilyType.caption())
                             .foregroundColor(AladdinSnowballPalette.inkMuted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         Text(Self.streetTitle(report.startLocation) + " → " + Self.streetTitle(report.endLocation))
-                            .font(.subheadline.weight(.semibold))
+                            .font(AladdinFamilyType.subheadline(weight: .semibold))
                             .foregroundColor(AladdinSnowballPalette.ink)
                         HStack(spacing: Spacing.m) {
                             Label(report.localizedFormattedDistance(localizationManager), systemImage: "ruler")

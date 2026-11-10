@@ -413,17 +413,13 @@ struct SimpleHomeScreen: View {
                     .frame(width: 36)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) {
-                    // D1.5: New York (system serif) только на заголовке двери; подпись — sans.
+                    // W4 / D1.5: New York на заголовке и подписи двери (AladdinFamilyType).
                     Text(title)
-                        .font(
-                            prominent
-                                ? Font.system(.title2, design: .serif).weight(.bold)
-                                : Font.system(.title3, design: .serif).weight(.bold)
-                        )
+                        .font(prominent ? AladdinFamilyType.title2() : AladdinFamilyType.title3())
                         .foregroundColor(.white)
                         .minimumScaleFactor(sizeCategory.isAccessibilityCategory ? 0.85 : 1)
                     Text(subtitle)
-                        .font(.subheadline)
+                        .font(AladdinFamilyType.subheadline())
                         .foregroundColor(.white.opacity(0.82))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -473,14 +469,14 @@ struct SimpleHomeScreen: View {
                     .foregroundColor(.secondaryGold)
                     .accessibilityHidden(true)
                 Text(localizationManager.localized("family_access_section_title"))
-                    .font(.system(.title3, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title3())
                     .foregroundColor(.white)
             }
             // Round2 S08: no “паузы и лимиты…” prose.
             let accessBody = localizationManager.localized("family_access_section_body")
             if !accessBody.isEmpty, accessBody != "family_access_section_body" {
                 Text(accessBody)
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.white.opacity(0.8))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -557,10 +553,10 @@ struct SimpleHomeScreen: View {
                     VStack(spacing: Spacing.m) {
                         VStack(alignment: .leading, spacing: Spacing.s) {
                             Text(localizationManager.localized("child_overview_title"))
-                                .font(.system(.title3, design: .serif).weight(.bold))
+                                .font(AladdinFamilyType.title3())
                                 .foregroundColor(.white)
                             Text(localizationManager.localized("child_overview_body"))
-                                .font(.subheadline)
+                                .font(AladdinFamilyType.subheadline())
                                 .foregroundColor(.white.opacity(0.8))
                         }
                         .padding(Spacing.m)
@@ -773,7 +769,7 @@ struct SimpleHomeScreen: View {
                     VStack(spacing: Spacing.m) {
                         // Отличается от белого List: тёмный glass + serif title (иконка/золото ALADDIN).
                         Text(localizationManager.localized("pay_pains_menu_title"))
-                            .font(Font.system(.title2, design: .serif).weight(.bold))
+                            .font(AladdinFamilyType.title2())
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, Spacing.s)
@@ -879,7 +875,7 @@ struct SimpleHomeScreen: View {
                     .foregroundColor(.secondaryGold)
                     .frame(width: 28)
                 Text(localizationManager.localized(titleKey))
-                    .font(Font.system(.body, design: .serif).weight(.semibold))
+                    .font(AladdinFamilyType.body(weight: .semibold))
                     .foregroundColor(.white)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")

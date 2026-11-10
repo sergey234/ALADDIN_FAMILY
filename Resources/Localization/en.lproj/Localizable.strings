@@ -1873,6 +1873,7 @@
 "main_family_trial_ended_dismiss" = "Got it";
 "main_family_over_capacity_banner" = "%d members with a limit of %d. Upgrade your plan or reduce the family roster.";
 "main_family_restore_trial_cta" = "Restore trial until %@";
+"driving_reports_empty_other_member" = "No trips for “%@” yet. They appear when that member’s device records a real trip (GPS + motion).";
 "tariffs_downgrade_trial_confirm_title" = "Switch to BASIC?";
 "tariffs_downgrade_trial_confirm_body" = "Your trial will end now. Family slots become 1. Continue?";
 "tariffs_downgrade_trial_confirm_cancel" = "Cancel";

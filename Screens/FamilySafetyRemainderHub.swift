@@ -601,11 +601,11 @@ struct FamilyMapPinPreviewSheet: View {
                 }
                 .padding(.top, Spacing.m)
                 Text(localizationManager.localized("map_pin_preview_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(localizationManager.localized("map_pin_preview_body"))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
                 Text(localizationManager.localized("map_pin_size_title"))
@@ -671,10 +671,10 @@ struct FamilyMapInviteRoleSheet: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized("map_role_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized("map_create_circle_teaser"))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.textSecondary)
                 ForEach(roles, id: \.id) { role in
                     Button {
@@ -733,10 +733,10 @@ struct FamilyPetWizardSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("pet_add_title"))
-                        .font(.system(.title2, design: .serif).weight(.bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.textPrimary)
                     Text(localizationManager.localized("map_soon_pet_body"))
-                        .font(.caption)
+                        .font(AladdinFamilyType.caption())
                         .foregroundColor(.textSecondary)
                     TextField(localizationManager.localized("pet_name_ph"), text: $name)
                         .textFieldStyle(.roundedBorder)
@@ -924,10 +924,10 @@ struct FamilyMapRoutesSheet: View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized("map_routes_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                 Text(localizationManager.localized("map_routes_body"))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.white.opacity(0.92))
 
                 // Preferred app first (RU→Yandex, EN→Apple); user always sees both.
@@ -1082,11 +1082,11 @@ struct FamilyCrashConfirmSheet: View {
                     .font(.system(size: 48))
                     .foregroundColor(.secondaryGold)
                 Text(localizationManager.localized("crash_confirm_title"))
-                    .font(.system(.title2, design: .serif).weight(.bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(localizationManager.localized("crash_limits_body"))
-                    .font(.subheadline)
+                    .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.white.opacity(0.92))
                     .multilineTextAlignment(.center)
                 if isSending {
@@ -1315,7 +1315,7 @@ struct AntifakeWaveAExtrasSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(localizationManager.localized("pay_pains_door_check_title"))
-                .font(.system(.title3, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.white)
 
             sectionCard(
@@ -1380,10 +1380,10 @@ struct AntifakeWaveAExtrasSection: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(title)
-                .font(.system(.title3, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.white)
             Text(body)
-                .font(.subheadline)
+                .font(AladdinFamilyType.subheadline())
                 .foregroundColor(.white.opacity(0.8))
             content()
         }
@@ -1395,10 +1395,10 @@ struct AntifakeWaveAExtrasSection: View {
     private func emptySoonCard(titleKey: String, bodyKey: String) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized(titleKey))
-                .font(.system(.title3, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.white)
             Text(localizationManager.localized(bodyKey))
-                .font(.subheadline)
+                .font(AladdinFamilyType.subheadline())
                 .foregroundColor(.white.opacity(0.8))
         }
         .padding(Spacing.m)

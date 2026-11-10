@@ -56,9 +56,10 @@ D1.5: helper в `Shared/Styles/Fonts.swift` (enum в конце файла).
 |-------|-----|------|--------|
 | **W0** | `AladdinFamilyType` + docs D1.5 | низкий | ✅ |
 | **W1** | WhereIsPhoneScreen (заголовки / таббар / Safety / Subscription / sheets) | средний | ✅ |
-| **W2** | DrivingReportsModal | средний | ⏳ |
-| **W3** | FamilySafetyRemainderHub → ⏸ Device QA Hub | низкий |
-| **W4** | SimpleHomeScreen двери | низкий |
+| **W2** | DrivingReportsModal | средний | ✅ |
+| **W3** | FamilySafetyRemainderHub sheets | низкий | ✅ |
+| **Drive** | Per-member ledger + API merge + honest PDF (не mock `/stats`) | высокий | ✅ код |
+| **W4** | SimpleHomeScreen двери (title+subtitle serif) | низкий | ✅ |
 | **W5** | Parental + Child + ParentDashboard | средний |
 | **W6** | Antifake / Проверить | средний |
 | **W7** | 02_FamilyScreen шапка/секции/Добавить | высокий |
