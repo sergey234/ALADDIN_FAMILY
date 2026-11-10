@@ -163,6 +163,17 @@ struct DrivingReportsModal: View {
     @MainActor
     private func reloadDrivingData() async {
         await viewModel.loadReports(userId: resolvedMemberId, period: selectedPeriod)
+        // HUB-P1.7 — backfill street names for any leftover lat/lon labels, then refresh list.
+        let needEnrich = viewModel.reports.filter {
+            FamilyDrivingTripLedger.looksLikeCoordinatePair($0.startLocation)
+                || FamilyDrivingTripLedger.looksLikeCoordinatePair($0.endLocation)
+        }
+        if !needEnrich.isEmpty {
+            for report in needEnrich.prefix(12) {
+                await FamilyDrivingTripLedger.enrichStreetLabels(for: report)
+            }
+            await viewModel.loadReports(userId: resolvedMemberId, period: selectedPeriod)
+        }
     }
 
     private var modalContent: some View {
@@ -573,6 +584,38 @@ struct DrivingReportsModal: View {
         return s
     }
     
+    /// HUB-P0.1 — explicit feedback; Simulator often has no Motion dialog.
+    @MainActor
+    private func handleMotionPermissionTap() async {
+        let before = CMMotionActivityManager.authorizationStatus()
+        print("WHERE_PHONE motion tap before=\(before.rawValue) available=\(CMMotionActivityManager.isActivityAvailable())")
+        guard CMMotionActivityManager.isActivityAvailable() else {
+            ToastManager.shared.showInfo(localizationManager.localized("driving_motion_unavailable"))
+            print("WHERE_PHONE motion tap → unavailable")
+            return
+        }
+        if before == .authorized {
+            ToastManager.shared.showSuccess(localizationManager.localized("driving_motion_already"))
+            print("WHERE_PHONE motion tap → already authorized")
+            return
+        }
+        let ok = await SensitivePermissionCoordinator.requestMotionIfNeeded()
+        let after = CMMotionActivityManager.authorizationStatus()
+        print("WHERE_PHONE motion tap after=\(after.rawValue) ok=\(ok)")
+        if ok || after == .authorized {
+            ToastManager.shared.showSuccess(localizationManager.localized("driving_motion_granted"))
+            return
+        }
+        if after == .denied || after == .restricted {
+            ToastManager.shared.showInfo(localizationManager.localized("driving_motion_denied"))
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                _ = await UIApplication.shared.open(url)
+            }
+            return
+        }
+        ToastManager.shared.showInfo(localizationManager.localized("driving_motion_unavailable"))
+    }
+
     // MARK: - Empty State
     
     private var emptyStateView: some View {
@@ -615,14 +658,7 @@ struct DrivingReportsModal: View {
             Button {
                 HapticFeedback.selection()
                 Task { @MainActor in
-                    let ok = await SensitivePermissionCoordinator.requestMotionIfNeeded()
-                    if !ok,
-                       CMMotionActivityManager.authorizationStatus() == .denied
-                        || CMMotionActivityManager.authorizationStatus() == .restricted {
-                        if let url = URL(string: UIApplication.openSettingsURLString) {
-                            _ = await UIApplication.shared.open(url)
-                        }
-                    }
+                    await handleMotionPermissionTap()
                 }
             } label: {
                 Text(localizationManager.localized("driving_reports_enable_motion"))
@@ -1329,9 +1365,18 @@ private struct DrivingTripPlaybackSheet: View {
     @State private var progress: Double = 0
     @State private var isPlaying = false
     @State private var playTask: Task<Void, Never>?
+    /// HUB-P1.6 — resolved street labels (fallback = report strings).
+    @State private var startStreet: String = ""
+    @State private var endStreet: String = ""
 
     private var durationSeconds: Double {
         max(report.duration, 1)
+    }
+
+    private var routeTitle: String {
+        let a = Self.streetTitle(startStreet.isEmpty ? report.startLocation : startStreet)
+        let b = Self.streetTitle(endStreet.isEmpty ? report.endLocation : endStreet)
+        return "\(a) → \(b)"
     }
 
     var body: some View {
@@ -1355,7 +1400,7 @@ private struct DrivingTripPlaybackSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text(Self.streetTitle(report.startLocation) + " → " + Self.streetTitle(report.endLocation))
+                        Text(routeTitle)
                             .font(AladdinFamilyType.subheadline(weight: .semibold))
                             .foregroundColor(AladdinSnowballPalette.ink)
                         HStack(spacing: Spacing.m) {
@@ -1475,6 +1520,24 @@ private struct DrivingTripPlaybackSheet: View {
                 }
             }
             .onDisappear { stop() }
+            .task {
+                await resolveStreetLabels()
+            }
+        }
+    }
+
+    /// HUB-P1.6 — geocode for screen 14 when ledger still has lat/lon strings.
+    private func resolveStreetLabels() async {
+        startStreet = report.startLocation
+        endStreet = report.endLocation
+        if FamilyDrivingTripLedger.looksLikeCoordinatePair(report.startLocation)
+            || FamilyDrivingTripLedger.looksLikeCoordinatePair(report.endLocation) {
+            await FamilyDrivingTripLedger.enrichStreetLabels(for: report)
+            if let fresh = FamilyDrivingTripLedger.loadAll().first(where: { $0.id == report.id }) {
+                startStreet = fresh.startLocation
+                endStreet = fresh.endLocation
+                print("WHERE_PHONE trip detail streets → \(startStreet) → \(endStreet)")
+            }
         }
     }
 

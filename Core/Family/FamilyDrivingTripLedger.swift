@@ -133,7 +133,80 @@ enum FamilyDrivingTripLedger {
         upsert(report)
         DrivingTripTrackStore.finish(tripId: tripId, end: nil)
         clearMeta(tripId: tripId)
+        // HUB-P1.6/7 — replace lat/lon labels with street names when geocoder answers.
+        Task { @MainActor in
+            await enrichStreetLabels(for: report)
+        }
         return report
+    }
+
+    /// Reverse-geocode start/end when labels still look like coordinates.
+    @MainActor
+    static func enrichStreetLabels(for report: DrivingReport) async {
+        guard looksLikeCoordinatePair(report.startLocation)
+            || looksLikeCoordinatePair(report.endLocation)
+            || report.startLatitude != nil else { return }
+        let startCoord: CLLocationCoordinate2D? = {
+            if let lat = report.startLatitude, let lon = report.startLongitude {
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            return nil
+        }()
+        let endCoord: CLLocationCoordinate2D? = {
+            if let lat = report.endLatitude, let lon = report.endLongitude {
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            return nil
+        }()
+        var startLabel = report.startLocation
+        var endLabel = report.endLocation
+        if let c = startCoord, looksLikeCoordinatePair(report.startLocation) {
+            let loc = CLLocation(latitude: c.latitude, longitude: c.longitude)
+            if let line = await GeofenceGeocodingService.shared.reverseGeocodeAddressLine(for: loc) {
+                startLabel = line
+            }
+        }
+        if let c = endCoord, looksLikeCoordinatePair(report.endLocation) {
+            let loc = CLLocation(latitude: c.latitude, longitude: c.longitude)
+            if let line = await GeofenceGeocodingService.shared.reverseGeocodeAddressLine(for: loc) {
+                endLabel = line
+            }
+        }
+        guard startLabel != report.startLocation || endLabel != report.endLocation else { return }
+        print("WHERE_PHONE trip streets id=\(report.id) start=\(startLabel) end=\(endLabel)")
+        let updated = DrivingReport(
+            id: report.id,
+            userId: report.userId,
+            userName: report.userName,
+            startTime: report.startTime,
+            endTime: report.endTime,
+            startLocation: startLabel,
+            endLocation: endLabel,
+            distance: report.distance,
+            duration: report.duration,
+            averageSpeed: report.averageSpeed,
+            maxSpeed: report.maxSpeed,
+            safetyScore: report.safetyScore,
+            events: report.events,
+            violations: report.violations,
+            positioningSystem: report.positioningSystem,
+            startLatitude: report.startLatitude,
+            startLongitude: report.startLongitude,
+            endLatitude: report.endLatitude,
+            endLongitude: report.endLongitude,
+            routePoints: report.routePoints
+        )
+        upsert(updated)
+    }
+
+    static func looksLikeCoordinatePair(_ raw: String) -> Bool {
+        let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // e.g. "53.1069, 50.0843"
+        let parts = t.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard parts.count == 2,
+              Double(parts[0]) != nil,
+              Double(parts[1]) != nil else { return false }
+        return true
     }
 
     private static func safetyScore(maxSpeedKmh: Double) -> Double {

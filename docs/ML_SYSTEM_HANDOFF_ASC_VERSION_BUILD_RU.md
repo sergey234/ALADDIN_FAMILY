@@ -1,6 +1,6 @@
 # ML Handoff: ASC Version + Build (ai.aladdin Path B)
 
-**Дата фиксации:** 2026-10-16 · **обновлён** 2026-11-10 (Build **19** · MAP-95-CLIP · Family Safety)
+**Дата фиксации:** 2026-10-16 · **обновлён** 2026-11-10 (Build **21** · Hub P0/P1 Day Journal)
 **Приложение:** `ai.aladdin` / ALADDIN AI (команда **B3WGHSWL79**, org SAUDAPAYDI)
 **Не путать** с личным TF `family.aladdin.ios` / team `6CJVBBUGSN` / номерами 247–248.
 
@@ -8,7 +8,7 @@
 → §**0** факт · §**0a** secrets через `gh` · §**0b** push+CI · §**0c** план–факт · §**4** уроки 409/подпись
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`
-**CI:** `check-secrets.yml` · candidate **1.0.2 / 19** (после **GO на push** · Archive+Upload)
+**CI:** `check-secrets.yml` · candidate **1.0.2 / 21** (после **GO на push** · Archive+Upload)
 
 ---
 
@@ -17,11 +17,11 @@
 | Имя | Что это | Ключи в коде | Сейчас (канон) | В App Store Connect |
 |-----|---------|--------------|----------------|---------------------|
 | **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.2** | iOS version **1.0.2** |
-| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **20** | train **1.0.2**; candidate upload **20** |
+| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **21** | train **1.0.2**; candidate upload **21** |
 
-В Xcode должно читаться: **Version 1.0.2 · Build 19**.
+В Xcode должно читаться: **Version 1.0.2 · Build 21**.
 
-- Следующее поднятие **Build** (20→21): только после нового **GO на bump** build.
+- Следующее поднятие **Build** (21→22): только после нового **GO на bump** build.
 - Поднимать **Version** (1.0.1→1.0.2): только если ASC закрыл train / после approve, и только после **GO** + создания новой version в ASC.
 - **Нельзя** заливать новые Build на уже closed/approved marketing train (урок ниже).
 
@@ -32,8 +32,8 @@
 Файл: `docs/RELEASE_BUILD_PROMPT.md`
 
 ```text
-PREV_BUILD = 20
-NEXT_BUILD = 21
+PREV_BUILD = 21
+NEXT_BUILD = 22
 CURRENT_MARKETING_VERSION = 1.0.2
 ```
 

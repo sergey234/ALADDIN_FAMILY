@@ -3487,6 +3487,11 @@
 "crash_confirm_sent" = "Семья получила сигнал";
 "crash_confirm_fail" = "Не удалось отправить. Попробуйте ещё раз или напишите в чат семьи.";
 "crash_confirm_offline" = "Нет сети — сохраним и отправим позже.";
+"crash_confirm_local_queued" = "Сигнал сохранён на телефоне. Семье уйдёт, когда появится сеть.";
+"driving_motion_already" = "Движение и фитнес уже разрешены.";
+"driving_motion_unavailable" = "На Simulator Motion недоступен. Проверьте на iPhone.";
+"driving_motion_denied" = "Доступ запрещён. Откройте Настройки → Конфиденциальность → Движение и фитнес.";
+"driving_motion_granted" = "Доступ к движению разрешён.";
 "calldir_guide_title" = "Определитель и блокировка";
 "calldir_guide_body" = "Включите расширение Call Directory в Настройках iPhone, чтобы спам-номера фильтровались.";
 "adblock_title" = "Анти-Баннер";
@@ -3540,6 +3545,8 @@
 "map_member_quiet_zone" = "Тихая зона";
 
 /* journal / share / privacy */
+"family_day_journal_title" = "Журнал дня";
+"family_day_journal_empty" = "Пока нет точек и поездок за сегодня";
 "map_journal_title" = "История за сегодня";
 "map_journal_empty" = "Пока нет перемещений за сегодня";
 "map_share_link_title" = "Ссылка на место";

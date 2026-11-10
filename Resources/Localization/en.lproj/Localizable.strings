@@ -3576,6 +3576,11 @@
 "crash_confirm_sent" = "Family notified";
 "crash_confirm_fail" = "Couldn’t send. Try again or message family chat.";
 "crash_confirm_offline" = "You’re offline — we’ll save and send later.";
+"crash_confirm_local_queued" = "Saved on this iPhone. Family will get it when you’re back online.";
+"driving_motion_already" = "Motion & Fitness is already allowed.";
+"driving_motion_unavailable" = "Motion isn’t available in Simulator. Try on an iPhone.";
+"driving_motion_denied" = "Access denied. Open Settings → Privacy → Motion & Fitness.";
+"driving_motion_granted" = "Motion & Fitness allowed.";
 "calldir_guide_title" = "Caller ID & blocking";
 "calldir_guide_body" = "Enable the Call Directory extension in iPhone Settings so spam numbers can be filtered.";
 "adblock_title" = "Ad filter";
@@ -3629,6 +3634,8 @@
 "map_member_quiet_zone" = "Quiet zone";
 
 /* journal / share / privacy */
+"family_day_journal_title" = "Day journal";
+"family_day_journal_empty" = "No places or trips today yet";
 "map_journal_title" = "Today’s history";
 "map_journal_empty" = "No moves today yet";
 "map_share_link_title" = "Location link";

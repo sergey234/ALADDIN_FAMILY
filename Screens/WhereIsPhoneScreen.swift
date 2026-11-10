@@ -67,6 +67,25 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// Nested hub presents — queue one after dismiss so sheets don’t stack.
+    private enum PendingHubSheet: Equatable {
+        case places(preferredNameKey: String?)
+        case routes
+        case familyGroups
+        case mapType
+        case invisibleHat
+        case alwaysAllow
+        case petWizard
+        case petSoon
+        case itemsSoon
+        case familyCalendar
+        case crashSettings
+        case softPaywall
+        case softInvite
+        case inviteRole
+        case pinPreview
+    }
+
     @State private var hubTab: HubTab = .location
     /// One system Motion & Fitness prompt per hub session (Driving / Safety).
     @State private var didAskMotionThisSession = false
@@ -74,14 +93,16 @@ struct WhereIsPhoneScreen: View {
     @State private var isChipProgrammaticScroll = false
     @State private var chipScrollRequest = 0
     /// W2 Q34–Q36 Life360: 0 = map ~full · 1 = sheet covers ~90%.
-    /// Start at peek so map is the hero (not a 50/50 split). S1b fallback (iOS 15).
+    /// Start at peek so map is the hero (not a 50/50 split). CLIP = primary (MAP-95 PASS).
     @State private var sheetExpansion: CGFloat = 0.08
     @State private var sheetDragStart: CGFloat = 0.08
     @State private var sheetDragActive = false
     /// Pane height for converting drag px → expansion (set by GeometryReader).
     @State private var locationPaneHeight: CGFloat = 560
-    /// S2: system sheet always on for Location tab (iOS 16+).
-    @State private var showLocationSystemSheet = true
+    /// Emergency only: `true` → iOS 16+ S2 system detents. Default **false** = CLIP on all OS.
+    private let preferLocationSystemSheetS2 = false
+    /// S2: system sheet on Location tab (only if preferLocationSystemSheetS2).
+    @State private var showLocationSystemSheet = false
     /// S2: false = medium · true = fraction(0.95). Не храним PresentationDetent в @State (iOS 15 deploy).
     @State private var locationSheetIsFull = false
     /// Bump to force live map camera (locate FAB) without epsilon wait.
@@ -96,6 +117,10 @@ struct WhereIsPhoneScreen: View {
     /// Debounce double-taps on CTA (device lag / stacked sheets).
     @State private var lastWherePhoneTapId: String = ""
     @State private var lastWherePhoneTapAt: Date = .distantPast
+    /// 1A: one deferred present after dismiss (member / S2 location sheet).
+    @State private var pendingHubSheet: PendingHubSheet?
+    /// Explicit send-fail UI (CLError 0 was only statusText in scroll).
+    @State private var sendFailAlertMessage: String?
     @State private var statusText: String?
     @State private var locatorHint: String?
     @State private var showPlaces = false
@@ -260,6 +285,8 @@ struct WhereIsPhoneScreen: View {
             if tab == .driving || tab == .safety {
                 askMotionIfNeededForHub()
             }
+            // 3A: leaving Location must not leave deferred nested presents → cascade.
+            clearNestedHubSheetsForTabChange(to: tab)
         }
     }
 
@@ -276,6 +303,7 @@ struct WhereIsPhoneScreen: View {
         content
             .sheet(isPresented: $showPlaces, onDismiss: {
                 placesPreferredNameKey = nil
+                flushPendingHubSheetIfNeeded(reason: "placesDismiss")
             }) {
                 GeofencesSettingsModal(
                     isPresented: $showPlaces,
@@ -356,7 +384,9 @@ struct WhereIsPhoneScreen: View {
             .sheet(isPresented: $showAlwaysAllowSheet) {
                 alwaysAllowSheet
             }
-            .sheet(item: $selectedMember) { member in
+            .sheet(item: $selectedMember, onDismiss: {
+                flushPendingHubSheetIfNeeded(reason: "memberDismiss")
+            }) { member in
                 memberDetailSheet(member)
             }
             .sheet(isPresented: $showMemberImagePicker) {
@@ -398,6 +428,7 @@ struct WhereIsPhoneScreen: View {
                     .tint(Color.secondaryGold)
                     .onChange(of: quietMeters) { value in
                         FamilyMapQuietZoneStore.meters = value
+                        print("WHERE_PHONE quiet meters=\(Int(value))")
                     }
                 Text(
                     String(
@@ -482,6 +513,120 @@ struct WhereIsPhoneScreen: View {
             .onChange(of: shareDuration) { dur in
                 FamilyMapShareSessionStore.selectedHours = dur.rawValue
             }
+            .alert(
+                localizationManager.localized("where_phone_share_button"),
+                isPresented: Binding(
+                    get: { sendFailAlertMessage != nil },
+                    set: { if !$0 { sendFailAlertMessage = nil } }
+                )
+            ) {
+                Button(localizationManager.localized("common_ok"), role: .cancel) {
+                    sendFailAlertMessage = nil
+                }
+            } message: {
+                Text(sendFailAlertMessage ?? "")
+            }
+    }
+
+    /// 3A — wipe nested presents when switching hub tabs (stops Driving cascade).
+    private func clearNestedHubSheetsForTabChange(to tab: HubTab) {
+        print("WHERE_PHONE hubTab → \(String(describing: tab)) clear nested + pending")
+        pendingHubSheet = nil
+        showPlaces = false
+        showRoutes = false
+        showFamilyGroups = false
+        showPetSoon = false
+        showPetWizard = false
+        showItemsSoon = false
+        showFamilyCalendar = false
+        showCrashSettings = false
+        showMapTypeSheet = false
+        showInvisibleHatSheet = false
+        showAlwaysAllowSheet = false
+        showSoftPaywall = false
+        showSoftInvite = false
+        showInviteRole = false
+        showPinPreview = false
+        showCrashConfirm = false
+        selectedMember = nil
+        showMemberImagePicker = false
+        memberCropSource = nil
+        if tab != .location {
+            showLocationSystemSheet = false
+        } else if preferLocationSystemSheetS2 {
+            showLocationSystemSheet = true
+            locationSheetIsFull = false
+        } else {
+            showLocationSystemSheet = false
+            sheetExpansion = 0.08
+            sheetDragStart = 0.08
+        }
+    }
+
+    /// 1A — present nested sheet; if member/S2 location sheet blocks, dismiss first then flush.
+    private func queueHubSheet(_ action: PendingHubSheet) {
+        let blockedByMember = selectedMember != nil
+        let blockedByS2 = preferLocationSystemSheetS2 && showLocationSystemSheet
+        if blockedByMember || blockedByS2 {
+            print("WHERE_PHONE pending set → \(String(describing: action)) blocked member=\(blockedByMember) s2=\(blockedByS2)")
+            pendingHubSheet = action
+            if blockedByMember {
+                selectedMember = nil
+            }
+            if blockedByS2 {
+                showLocationSystemSheet = false
+            }
+            // Flush on next runloop after dismiss animation starts.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                self.flushPendingHubSheetIfNeeded(reason: "afterDismiss")
+            }
+            return
+        }
+        print("WHERE_PHONE present → \(String(describing: action))")
+        applyPendingHubSheet(action)
+    }
+
+    private func flushPendingHubSheetIfNeeded(reason: String) {
+        guard let action = pendingHubSheet else { return }
+        pendingHubSheet = nil
+        print("WHERE_PHONE pending flush reason=\(reason) → \(String(describing: action))")
+        applyPendingHubSheet(action)
+    }
+
+    private func applyPendingHubSheet(_ action: PendingHubSheet) {
+        switch action {
+        case .places(let key):
+            placesPreferredNameKey = key
+            showPlaces = true
+        case .routes:
+            showRoutes = true
+        case .familyGroups:
+            showFamilyGroups = true
+        case .mapType:
+            showMapTypeSheet = true
+        case .invisibleHat:
+            showInvisibleHatSheet = true
+        case .alwaysAllow:
+            showAlwaysAllowSheet = true
+        case .petWizard:
+            showPetWizard = true
+        case .petSoon:
+            showPetSoon = true
+        case .itemsSoon:
+            showItemsSoon = true
+        case .familyCalendar:
+            showFamilyCalendar = true
+        case .crashSettings:
+            showCrashSettings = true
+        case .softPaywall:
+            showSoftPaywall = true
+        case .softInvite:
+            showSoftInvite = true
+        case .inviteRole:
+            showInviteRole = true
+        case .pinPreview:
+            showPinPreview = true
+        }
     }
 
     /// X закрывает хаб → Удобный (`isPresented = false`), не «стек Назад».
@@ -605,17 +750,17 @@ struct WhereIsPhoneScreen: View {
 
     /// Map pan/zoom when sheet is peek/half and not mid-drag.
     private var mapInteractionEnabled: Bool {
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, *), preferLocationSystemSheetS2 {
             return !locationSheetIsFull
         }
         return !sheetDragActive && sheetExpansion < 0.92
     }
 
-    /// Expand location sheet to ~95% (S2 detent or S1b expansion).
+    /// Expand location sheet to ~95% (CLIP expansion · S2 detent only if fallback on).
     private func expandLocationSheetToFull() {
-        print("WHERE_PHONE sheet expandToFull requested (was full=\(locationSheetIsFull) expansion=\(String(format: "%.2f", sheetExpansion)))")
+        print("WHERE_PHONE sheet expandToFull requested (was full=\(locationSheetIsFull) expansion=\(String(format: "%.2f", sheetExpansion)) s2=\(preferLocationSystemSheetS2))")
         withAnimation(.interactiveSpring(response: 0.32, dampingFraction: 0.86)) {
-            if #available(iOS 16.0, *) {
+            if #available(iOS 16.0, *), preferLocationSystemSheetS2 {
                 locationSheetIsFull = true
             } else {
                 sheetExpansion = 1.0
@@ -637,12 +782,13 @@ struct WhereIsPhoneScreen: View {
         )
     }
 
-    /// Full-screen Life360 canvas. S2 = system detents (iOS 16+); else S1b custom height.
+    /// Full-screen Life360 canvas. Primary = CLIP (S1b) on all OS — MAP-95 PASS.
+    /// S2 system detents only if `preferLocationSystemSheetS2` (emergency fallback).
     private var locationLife360Canvas: some View {
         GeometryReader { geo in
             let tabBarH: CGFloat = 64
             Group {
-                if #available(iOS 16.0, *) {
+                if #available(iOS 16.0, *), preferLocationSystemSheetS2 {
                     locationLife360CanvasS2(geo: geo, tabBarH: tabBarH)
                 } else {
                     locationLife360CanvasS1b(geo: geo, tabBarH: tabBarH)
@@ -650,9 +796,16 @@ struct WhereIsPhoneScreen: View {
             }
             .onAppear {
                 locationPaneHeight = geo.size.height
-                print("WHERE_PHONE sheet canvas appear h=\(Int(geo.size.height)) full=\(locationSheetIsFull) expansion=\(String(format: "%.2f", sheetExpansion)) systemSheet=\(showLocationSystemSheet)")
-                if #available(iOS 16.0, *) {
+                let path = preferLocationSystemSheetS2 ? "S2" : "CLIP"
+                print(
+                    "WHERE_PHONE sheet canvas appear path=\(path) h=\(Int(geo.size.height)) " +
+                    "full=\(locationSheetIsFull) expansion=\(String(format: "%.2f", sheetExpansion)) " +
+                    "systemSheet=\(showLocationSystemSheet)"
+                )
+                if #available(iOS 16.0, *), preferLocationSystemSheetS2 {
                     showLocationSystemSheet = true
+                } else {
+                    showLocationSystemSheet = false
                 }
             }
             .onChange(of: geo.size.height) { h in locationPaneHeight = h }
@@ -681,6 +834,7 @@ struct WhereIsPhoneScreen: View {
                 pinDiameter: pinDiameterForSize(pinSizeRaw),
                 interactionEnabled: mapInteractionEnabled,
                 cameraToken: mapCameraToken,
+                quietRadiusMeters: quietMeters,
                 onPinSelected: {
                     openMemberFromMapPin()
                 }
@@ -731,7 +885,9 @@ struct WhereIsPhoneScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .sheet(isPresented: $showLocationSystemSheet) {
+        .sheet(isPresented: $showLocationSystemSheet, onDismiss: {
+            flushPendingHubSheetIfNeeded(reason: "s2LocationDismiss")
+        }) {
             locationSystemSheetContent(tabBarH: tabBarH)
                 .presentationDetents([.medium, .fraction(0.95)], selection: locationDetentBinding)
                 .presentationDragIndicator(.visible)
@@ -739,9 +895,12 @@ struct WhereIsPhoneScreen: View {
                 .modifier(LocationSheetChromeModifier())
         }
         .onChange(of: hubTab) { tab in
-            showLocationSystemSheet = (tab == .location)
-            if tab == .location {
-                locationSheetIsFull = false
+            // Tab clear owns nested flags (3A). S2 only re-opens location sheet here.
+            if preferLocationSystemSheetS2 {
+                showLocationSystemSheet = (tab == .location)
+                if tab == .location {
+                    locationSheetIsFull = false
+                }
             }
         }
     }
@@ -810,6 +969,7 @@ struct WhereIsPhoneScreen: View {
                     pinDiameter: pinDiameterForSize(pinSizeRaw),
                     interactionEnabled: mapInteractionEnabled,
                     cameraToken: mapCameraToken,
+                    quietRadiusMeters: quietMeters,
                     onPinSelected: {
                         openMemberFromMapPin()
                     }
@@ -1063,7 +1223,7 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.textSecondary)
                 Spacer()
                 Button {
-                    showFamilyGroups = true
+                    queueHubSheet(.familyGroups)
                 } label: {
                     Text(localizationManager.localized("family_groups_title"))
                         .font(.caption.weight(.semibold))
@@ -1155,7 +1315,7 @@ struct WhereIsPhoneScreen: View {
                     ctaKey: "pet_add_title",
                     symbol: "pawprint.fill"
                 ) {
-                    showPetWizard = true
+                    queueHubSheet(.petWizard)
                 }
             }
         }
@@ -1169,7 +1329,7 @@ struct WhereIsPhoneScreen: View {
                 ctaKey: "items_promo_cta",
                 symbol: "key.fill"
             ) {
-                showItemsSoon = true
+                queueHubSheet(.itemsSoon)
             }
         }
     }
@@ -1189,8 +1349,7 @@ struct WhereIsPhoneScreen: View {
                     placeSuggestChip("map_places_suggest_other")
                 }
                 actionButton("map_places_manage", id: "where_phone_manage_places") {
-                    placesPreferredNameKey = nil
-                    showPlaces = true
+                    queueHubSheet(.places(preferredNameKey: nil))
                 }
             }
         }
@@ -1208,7 +1367,7 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.textSecondary)
                 Button {
                     HapticFeedback.selection()
-                    showPlaces = true
+                    queueHubSheet(.places(preferredNameKey: nil))
                 } label: {
                     Text(localizationManager.localized("map_member_save_place"))
                         .font(.caption.weight(.bold))
@@ -1228,8 +1387,7 @@ struct WhereIsPhoneScreen: View {
                         Spacer(minLength: 0)
                         Button {
                             HapticFeedback.selection()
-                            placesPreferredNameKey = nil
-                            showPlaces = true
+                            queueHubSheet(.places(preferredNameKey: nil))
                         } label: {
                             Text(localizationManager.localized("map_member_save_place"))
                                 .font(.caption2.weight(.bold))
@@ -1301,8 +1459,7 @@ struct WhereIsPhoneScreen: View {
     private func placeSuggestChip(_ key: String) -> some View {
         Button {
             runWherePhoneTap(id: "where_phone_\(key)") {
-                placesPreferredNameKey = key
-                showPlaces = true
+                queueHubSheet(.places(preferredNameKey: key))
             }
         } label: {
             Text(localizationManager.localized(key))
@@ -1341,7 +1498,7 @@ struct WhereIsPhoneScreen: View {
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                 actionButton("family_cal_add", id: "where_phone_add_event") {
-                    showFamilyCalendar = true
+                    queueHubSheet(.familyCalendar)
                 }
             }
             .padding(Spacing.m)
@@ -1608,7 +1765,7 @@ struct WhereIsPhoneScreen: View {
             Button {
                 print("WHERE_PHONE FAB map-type tap")
                 HapticFeedback.selection()
-                showMapTypeSheet = true
+                queueHubSheet(.mapType)
             } label: {
                 Image("FIG_L03_FABLayers")
                     .resizable()
@@ -1635,14 +1792,14 @@ struct WhereIsPhoneScreen: View {
             fabButton(systemImage: "arrow.triangle.turn.up.right.diamond.fill", id: "where_phone_fab_routes") {
                 print("WHERE_PHONE FAB routes tap")
                 HapticFeedback.selection()
-                showRoutes = true
+                queueHubSheet(.routes)
             }
 
             // Round2 S20/S27: Life360-style «шапка-невидимка» entry (quiet zone radius).
             fabButton(systemImage: "eye.slash.fill", id: "where_phone_fab_invisible_hat") {
                 print("WHERE_PHONE FAB invisible-hat tap")
                 HapticFeedback.selection()
-                showInvisibleHatSheet = true
+                queueHubSheet(.invisibleHat)
             }
             .accessibilityLabel(localizationManager.localized("map_create_invisible_hat"))
         }
@@ -1692,7 +1849,7 @@ struct WhereIsPhoneScreen: View {
                 }
                 Button {
                     showMapTypeSheet = false
-                    showPetSoon = true
+                    queueHubSheet(.petSoon)
                 } label: {
                     HStack {
                         Image(systemName: "pawprint.fill")
@@ -1817,10 +1974,52 @@ struct WhereIsPhoneScreen: View {
     }
 
     private func memberDetailSheet(_ member: HubMemberCard) -> some View {
-        // P0-4: one scroll — avatar → name → near → since → save → trips → stays → weekly → upsell → quiet.
+        // HUB-P1.5 — Day Journal (L360 4–13): title + date + timeline first; actions below.
         NavigationView {
-            ScrollView {
+            VStack(spacing: 0) {
+                // HUB-P1.8 — sticky «шапка-невидимка» CTA above journal scroll.
+                Button {
+                    HapticFeedback.selection()
+                    print("WHERE_PHONE day journal → sticky hat")
+                    selectedMember = nil
+                    queueHubSheet(.invisibleHat)
+                } label: {
+                    HStack(spacing: Spacing.s) {
+                        Image(systemName: "eye.slash.fill")
+                            .foregroundColor(.secondaryGold)
+                        Text(localizationManager.localized("map_create_invisible_hat"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.textSecondary)
+                    }
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.vertical, Spacing.s)
+                    .background(Color.backgroundMedium.opacity(0.45))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("where_phone_journal_sticky_hat")
+
+                ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(localizationManager.localized("family_day_journal_title"))
+                        .font(AladdinFamilyType.title2())
+                        .foregroundColor(.secondaryGold)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, Spacing.s)
+
+                    Text(Self.dayJournalDateLabel())
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.textSecondary)
+                        .padding(.horizontal, Spacing.m)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(Color.backgroundMedium.opacity(0.45)))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .accessibilityIdentifier("where_phone_day_journal_date")
+
                     memberAvatarHeader(member)
 
                     Text(member.name)
@@ -1861,13 +2060,13 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
 
+                    memberDayJournalCard(memberId: member.id)
+
                     actionButton("map_member_save_place", id: "where_phone_member_save") {
-                        showPlaces = true
-                        selectedMember = nil
+                        queueHubSheet(.places(preferredNameKey: nil))
                     }
                     actionButton("map_member_directions", id: "where_phone_member_directions") {
-                        selectedMember = nil
-                        showRoutes = true
+                        queueHubSheet(.routes)
                     }
 
                     // Trip cards (real endpoints / honest empty) — densitiy mini-map in S19-POLISH.
@@ -1898,6 +2097,7 @@ struct WhereIsPhoneScreen: View {
                         .tint(Color.secondaryGold)
                         .onChange(of: quietMeters) { value in
                             FamilyMapQuietZoneStore.meters = value
+                            print("WHERE_PHONE quiet meters=\(Int(value))")
                         }
                         Text(
                             String(
@@ -1935,18 +2135,97 @@ struct WhereIsPhoneScreen: View {
                     }
                 }
                 .padding(Spacing.l)
+                }
             }
             .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 selectedMember = nil
             })
             .onAppear {
+                print("WHERE_PHONE day journal present member=\(member.id)")
                 if memberAvatarImage == nil {
                     memberAvatarImage = ProfileImageManager.shared.loadProfileImage(for: .main)
                 }
             }
             .id(memberAvatarEpoch)
         }
+    }
+
+    /// HUB-P1.5 — chronological day trail (places + trips), real data only.
+    private func memberDayJournalCard(memberId: String) -> some View {
+        let trips = FamilyDrivingTripLedger.reports(memberId: memberId, period: "today")
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("map_journal_title"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.textPrimary)
+            if todayTrail.isEmpty && trips.isEmpty {
+                Text(localizationManager.localized("family_day_journal_empty"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                if todayTrail.count > 1 {
+                    Text(localizationManager.localized("map_journal_scrub_hint"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    let idx = min(max(0, Int(journalIndex.rounded())), todayTrail.count - 1)
+                    Text(trailLine(todayTrail[idx]))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Slider(
+                        value: $journalIndex,
+                        in: 0...Double(todayTrail.count - 1),
+                        step: 1
+                    )
+                    .tint(Color.secondaryGold)
+                    .accessibilityIdentifier("where_phone_day_journal_scrub")
+                }
+                ForEach(todayTrail) { event in
+                    Text(trailLine(event))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                ForEach(trips.prefix(6)) { trip in
+                    Button {
+                        SelectionHaptic.selection()
+                        selectedMember = nil
+                        hubTab = .driving
+                    } label: {
+                        HStack(spacing: Spacing.s) {
+                            Image(systemName: "car.fill")
+                                .foregroundColor(.secondaryGold)
+                            Text(
+                                "\(Self.streetTitleWithoutAtPrefix(trip.startLocation)) → \(Self.streetTitleWithoutAtPrefix(trip.endLocation))"
+                            )
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(2)
+                            Spacer(minLength: 0)
+                            Text(Self.wallClockTime(trip.startTime))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.textSecondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.28))
+        )
+        .accessibilityIdentifier("where_phone_day_journal")
+    }
+
+    private static func dayJournalDateLabel() -> String {
+        let f = DateFormatter()
+        f.locale = .current
+        f.setLocalizedDateFormatFromTemplate("EEEEdMMMM")
+        return f.string(from: Date())
     }
 
     /// P0-5: Life360-style overlapping avatar — tap opens crop/pan.
@@ -2089,6 +2368,7 @@ struct WhereIsPhoneScreen: View {
             name = displayName()
             at = mapPointAt ?? Date()
         }
+        print("WHERE_PHONE pin → day journal id=\(id) name=\(name)")
         selectedMember = HubMemberCard(id: id, name: name, at: at)
     }
 
@@ -2775,7 +3055,7 @@ struct WhereIsPhoneScreen: View {
                 }
             } else if placeCount == 0 {
                 actionButton("where_phone_places_empty", id: "where_phone_add_place") {
-                    showPlaces = true
+                    queueHubSheet(.places(preferredNameKey: nil))
                 }
             } else {
                 Text(placesWaitingLine())
@@ -3172,7 +3452,9 @@ struct WhereIsPhoneScreen: View {
                     self.isSending = false
                     let ns = error as NSError
                     print("WHERE_PHONE send fail domain=\(ns.domain) code=\(ns.code)")
-                    self.statusText = self.shareFailureText(error)
+                    let message = self.shareFailureText(error)
+                    self.statusText = message
+                    self.sendFailAlertMessage = message
                 case .success(let location):
                     print("WHERE_PHONE send ok")
                     self.deliver(location)

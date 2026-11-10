@@ -225,6 +225,8 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         mapView.pointOfInterestFilter = .includingAll
     }
 
+    private var lastQuietRadius: CLLocationDistance = -1
+
     /// Cheap apply — skip MapKit work unless inputs actually changed.
     func apply(
         region: MKCoordinateRegion,
@@ -233,7 +235,8 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         mapTypeRaw: String,
         pinDiameter: CGFloat,
         interactionEnabled: Bool,
-        forceCamera: Bool
+        forceCamera: Bool,
+        quietRadiusMeters: CLLocationDistance = 0
     ) {
         self.pinDiameter = pinDiameter
         mapView.isScrollEnabled = interactionEnabled
@@ -283,6 +286,20 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
                 mapView.addAnnotation(pin)
             }
         }
+
+        // HUB-P1.8 — optional quiet-zone circle around pin (Life360 purple circle).
+        let quietChanged =
+            abs(quietRadiusMeters - lastQuietRadius) > 0.5
+            || pinChanged
+            || forceCamera
+        if quietChanged {
+            lastQuietRadius = quietRadiusMeters
+            mapView.removeOverlays(mapView.overlays.filter { $0 is MKCircle })
+            if let coordinate, quietRadiusMeters >= 50 {
+                let circle = MKCircle(center: coordinate, radius: quietRadiusMeters)
+                mapView.addOverlay(circle)
+            }
+        }
     }
 
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -293,6 +310,17 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         view.annotation = annotation
         view.apply(size: pinDiameter, title: annotation.title ?? nil)
         return view
+    }
+
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let circle = overlay as? MKCircle {
+            let r = MKCircleRenderer(circle: circle)
+            r.fillColor = UIColor(red: 0.45, green: 0.28, blue: 0.85, alpha: 0.18)
+            r.strokeColor = UIColor(red: 0.45, green: 0.28, blue: 0.85, alpha: 0.85)
+            r.lineWidth = 2
+            return r
+        }
+        return MKOverlayRenderer(overlay: overlay)
     }
 
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -321,6 +349,8 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
     var interactionEnabled: Bool
     /// Bump (e.g. locate FAB) to force camera without waiting for epsilon.
     var cameraToken: Int = 0
+    /// HUB-P1.8 — quiet-zone radius in meters (0 = hide circle).
+    var quietRadiusMeters: CLLocationDistance = 0
     var onPinSelected: (() -> Void)? = nil
 
     func makeUIViewController(context: Context) -> FamilyHubLiveMapViewController {
@@ -353,7 +383,8 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
             mapTypeRaw: mapTypeRaw,
             pinDiameter: pinDiameter,
             interactionEnabled: interactionEnabled,
-            forceCamera: force
+            forceCamera: force,
+            quietRadiusMeters: quietRadiusMeters
         )
     }
 
@@ -1153,16 +1184,24 @@ struct FamilyCrashConfirmSheet: View {
                 await FamilyMapFamilyAlert.sendNeedHelp(localization: localizationManager)
             }
             if timedOut {
-                // Still enqueue offline so family gets signal when net returns.
+                // Local ack already fired inside ImOk/NeedHelp; queue for network retry.
                 FamilyMapFamilyAlert.enqueueNeedHelpOffline(localization: localizationManager)
-                ToastManager.shared.showError(localizationManager.localized("crash_confirm_fail"))
-                statusText = localizationManager.localized("crash_confirm_fail")
+                print("WHERE_PHONE crash yes → local_queued (network timeout)")
+                ToastManager.shared.showInfo(localizationManager.localized("crash_confirm_local_queued"))
+                statusText = localizationManager.localized("crash_confirm_local_queued")
+                // Keep sheet open briefly so owner sees explicit status.
+                try? await Task.sleep(nanoseconds: 900_000_000)
+                isPresented = false
                 return
             }
             if offline {
+                print("WHERE_PHONE crash yes → offline queued")
                 ToastManager.shared.showInfo(localizationManager.localized("crash_confirm_offline"))
+                statusText = localizationManager.localized("crash_confirm_offline")
             } else {
+                print("WHERE_PHONE crash yes → sent")
                 ToastManager.shared.showSuccess(localizationManager.localized("crash_confirm_sent"))
+                statusText = localizationManager.localized("crash_confirm_sent")
             }
             isPresented = false
         }

@@ -71,8 +71,8 @@ Sheet ≈ **95%** высоты (полоска карты 5–8% сверху), 
 ### 3.1 Канон рабочих настроек (НЕ ЛОМАТЬ без GO)
 
 **Файл:** `Screens/WhereIsPhoneScreen.swift` · функция `locationLife360CanvasS1b`  
-**Runtime канона:** iOS **15.2** (deploy target) → путь **S1b CLIP** (не S2 modal).  
-**S2** (`presentationDetents`) остаётся только для iOS 16+; на 15.x **не** primary.
+**Runtime канона:** **CLIP (S1b) primary на всех OS** (вкл. iOS 16+) — Life360 жест peek / mid / full 95%.  
+**S2** (`presentationDetents`) — только emergency fallback (`preferLocationSystemSheetS2 = false` по умолчанию).
 
 | Параметр | Канон (PASS) |
 |----------|----------------|
@@ -303,12 +303,32 @@ Purple brand · второй map hub · spy-copy · fake «помощь едет
 
 ## 8. Порядок работ для следующей ML
 
+### 8.1 Hub Device QA queue (GO владельца 2026-11-10) — **code ✅ · Device QA ⏳**
+
+**CLIP** ✅ PASS (лог Device QA: `path=CLIP` cover=0.95). **P2 VPN/DNS — НЕ делаем** (отдельная сеть/utun4).
+
+| ID | Что | Статус |
+|----|-----|--------|
+| **HUB-P0.1** | Motion CTA: лог + toast (sim/unavailable / already / Settings) | ✅ code |
+| **HUB-P0.2** | Quiet radius: лог `quiet meters=` при слайдере | ✅ code |
+| **HUB-P0.3** | Crash Yes: статус local ok / сеть fail (явный UI) | ✅ code |
+| **HUB-P0.4** | `queueHubSheet`: лог present vs pending (не misleading) | ✅ code |
+| **HUB-P1.6** | Trip detail (скрин 14): reverse geocode → улица→улица, не lat/lon | ✅ code |
+| **HUB-P1.7** | Карточки поездок показывают те же улицы (после geocode в ledger) | ✅ code |
+| **HUB-P1.5** | Тап аватара/пина → Day Journal (эталон L360 4–13), не только HubMemberCard | ✅ code |
+| **HUB-P1.8** | Sticky «шапка-невидимка» в журнале + опц. круг на карте | ✅ code |
+| ~~HUB-P2~~ | ~~VPN/DNS -1001/-1003~~ | ❌ **out of scope** |
+
+Скрины: 1→P0.1 · 2→P0.3 · 3 ok · 4–13→P1.5/8 · 5–6→P1.8 · 14→P1.6–7.
+
 ```text
-1) MAP-95-CLIP ✅ · Build 19 на master ✅ — не регрессировать sheet
-2) Device/TF smoke: pin→member · Events→lost · OB-QA глазами
-3) FIG-L file ✅ b6gFc8G… · GO батч кадров L34/L15/L25 (§7.0)
-4) Дальше FIG-L по порядку §7 · export → xcassets только с GO
-5) DEV-88 evidence · следующий bump 20 только с GO
+1) MAP-95-CLIP ✅ · Hub CLIP primary iOS16+ ✅ — не регрессировать
+2) HUB-P0.1…P0.4 + HUB-P1.6/7 ✅ code → Device QA (нужен GO на сборку)
+3) HUB-P1.5 Day Journal ✅ code
+4) HUB-P1.8 sticky hat + quiet circle ✅ code
+5) FIG-L file ✅ · батчи §7 / §12 параллельно по GO
+6) DEV-88 · bump только с GO
+НЕ: Hub-P2 VPN/DNS
 ```
 
 ---
@@ -323,9 +343,246 @@ Purple brand · второй map hub · spy-copy · fake «помощь едет
 | 2026-11-10 | DIAG: iOS 15.2 · expansion=1 · UI mid → S2 мёртв |
 | 2026-11-10 | S1b-HARD FAIL (sheetH=729 / UI mid · Metal z-order) |
 | 2026-11-10 | **MAP-95-CLIP PASS** · full `cover=0.95 strip=0.05 mapStrip=41` · канон §3.1 |
+| 2026-11-10 | Hub P0: CLIP primary на **iOS 16+** (`preferLocationSystemSheetS2=false`) · 1A `queueHubSheet` · 3A clear nested on tab · send-fail alert · Device QA pending |
+| 2026-11-10 | §8.1 Hub queue: P0 feedback + P1.6/7 улицы на trip detail · **P2 VPN ❌** · P1.5 journal после |
+| 2026-11-10 | **GO реализация** · HUB-P0+P1.5/6/7/8 code ✅ · P2 VPN skipped · стоп до `GO на сборку` |
 | 2026-11-10 | Build **19** push `e2f01b79` · hotfix PlaceAddress `09afdaf7` |
 | 2026-11-10 | FIG-L handoff §7.0 · file `b6gFc8GUtWC6ncPgb6X6II` + `FIGMA_FAMILY_SAFETY.env` · кадры 🔓 |
+| 2026-11-10 | Аудит код↔Figma батчи 1–6 · §10 world-class design · §11 icons alive · §12 checklist · Cursor `figl-*` / `ui-lift-*` |
+| 2026-11-10 | **GO владельца: старт реализации** · батч1 FIG-L34+L15+L25 (+ alive icons) · §11/§12 в работе |
+
+### 12.0 Статус реализации (живой)
+
+| Батч | Статус |
+|------|--------|
+| 1 · L34+L15+L25 + ICON-HUB/CHIP | ✅ page `01` · L34=`5:2` L15=`5:63` L25=`5:81` |
+| 2 · L01+L03 | ✅ page `02` · L01=`41:4` L03=`41:16` · Cursor browser skip (SSO) · смотреть Figma Desktop |
+| 3 · L02+L04+L12 | ✅ page `03` · L02=`59:4` L04=`59:9` L12=`59:20` |
+| 4 · L17 L08 L09 L13 L16 L18 | ✅ page `04` · L17=`60:4` L08=`60:18` L09=`60:24` L13=`60:42` L16=`60:54` L18=`60:96` |
+| 5 · L05 L06 L07 L14 L35 L36 | ✅ page `04` Batch5_Board · L05=`61:4` L06=`61:10` L07=`61:30` L14=`61:46` L35=`61:52` L36=`61:62` |
+| 6 · L10–L33 safety/soon/pets | ✅ page `04` Batch6_Board=`62:2` · L10=`62:4` … L33=`62:123` |
+| ICON app-wide (без VPN) ✅ · Kaspersky gaps ✅ · export | 🔓 export — отдельный GO |
+
+### 11.5 Alive icons — где делаем
+
+**Да, здесь в том же Figma-файле** `b6gFc8GUtWC6ncPgb6X6II` (новая страница или board на `04`/`05`), не в Onboarding/Companion.  
+Потом export→Assets — отдельный GO. Вставка в Swift — отдельный GO.
+
+Состав **только:**
+1. ICON-DOORS-3 (Проверить · Ребёнок · Где семья)  
+2. ICON-ANTIFAKE / ICON-PARENTAL / ICON-FAMILY / ICON-TARIFF / ICON-EMPTY  
+3. **Не:** VPN, tunnel, «включить VPN»
+
+### 11.6 Kaspersky — что именно делаем («только дыры»)
+
+Не рисуем все FIG-01…22 слепо. Сначала reuse из FIG-L:
+
+| Kaspersky ID | Действие |
+|--------------|----------|
+| FIG-09 pin | **reuse L01** — не рисовать |
+| FIG-11 Always Allow | **reuse L18** |
+| FIG-18 Crash/SOS | **reuse L10/L11** |
+| FIG-19 Tile | **reuse L19** |
+| FIG-20 Evac | **reuse L20** |
+| FIG-10 places markers | **reuse L17/L32** по смыслу |
+
+**Рисуем только дыры (дверь «Проверить» / «Ребёнок»):**
+- FIG-01 hero спокойный звонок  
+- FIG-02 Call Directory 5 steps  
+- FIG-03 Shield ON status  
+- FIG-04 empty lists  
+- FIG-05 child overview empty  
+- FIG-06 avatar grid add child  
+- FIG-13 content categories dots  
+- FIG-14 Анти-Баннер story  
+- FIG-15 Дом/сеть empty  
+- FIG-16 Safe QR  
+- FIG-17 VK empty (нейтрально)  
+- FIG-07/08 invite QR — только если L07/L35 недостаточно  
+
+Страница Figma: `05_Kaspersky_later` · после GO на Kaspersky.
+
+### B. Figma — батч1 (обновление чеклиста)
+- [x] GO → L34 + L15 + L25 стартовали  
+- [x] Frames созданы на `01_L34_L15_L25_Hub`  
+- [x] get_screenshot L34/L15/L25 (не solid)  
+- [ ] Owner visual Approve батч1  
+- [ ] GO батч2 L01+L03
 
 ---
 
-**Конец SSOT.** Sheet → §2–3. Figma FIG-L → §7 + §7.0 + `FIGMA_FAMILY_SAFETY_ML_PROMPTS.md`. Не плодить третий plan.
+## 10. Аудит код ↔ Figma (не потерять) · world-class lift
+
+**Правило:** код = мозг/честность/MAP-95. Figma = лицо топ-уровня. Export→Assets = отдельный GO. Карту polyline/bubble/geofence-circle = отдельный GO кода после art.
+
+### 10.1 Вердикт по FIG-L (кратко)
+
+| ID | Код сейчас | После Figma | После wire (GO) |
+|----|------------|-------------|-----------------|
+| L34 hub full | CLIP ✅ · текст/SF | **Лучше** эталон | — layout не трогать |
+| L15 4-tab | есть gold/SF | **Лучше** icons | заменить SF |
+| L25 5 chips | Capsule+SF · interim PNG не в UI | **Лучше** | wire PNG/PDF |
+| L01 pin+battery | круг фото/буква · **нет** battery badge · interim PNG не wired | **Лучше** | wire pin |
+| L03 FAB | 1 PNG + 3 SF | **Лучше** единый set | wire all FAB |
+| L02 last-seen bubble | текст в member · **нет** над пином | art | **GO код** bubble |
+| L04 member hero | scroll header есть | **Лучше** | polish |
+| L12 map thumbs | list sheet | **Лучше** 3×96 | replace list UI |
+| L17 places chips | text capsules | **Лучше** | swap icons |
+| L08 quiet circle | slider+badge · **нет** circle overlay | art | **GO код** overlay |
+| L09 day journal | list+scrub · **нет** polyline | art | **GO код** line optional |
+| L13 share card | shareCard есть | **Лучше** | polish |
+| L16 calendar | empty+add есть | **Лучше** month art | polish |
+| L18 Always Allow | text sheet | **Лучше** calm art | insert hero |
+| L05 empty inbox | слабо | **Дорисовать** | wire |
+| L06 Full/Limited | SimpleHome mode | **Лучше** 2 cards | polish Home |
+| L07 name/role chips | invite roles | **Лучше** density | polish |
+| L14 splash | brand/OB | FIG-L splash | optional launch |
+| L35 role modal | InviteRoleSheet | **Лучше** | polish |
+| L36 subscription tab | thin → Tariffs | **Лучше** cards | keep navigate Tariffs |
+| L10 SOS hold | hold 3s bar 56pt | **Лучше** big circle | keep hold logic |
+| L11 crash tips | text+toggle | **Лучше** icon row | insert |
+| L19–21 soon | text soon | **Лучше** 3D empty | wire |
+| L22 driving empty | DrivingReportsModal | **Лучше** teaser | polish |
+| L23 pin preview | S/M/L letter | **Лучше** | polish |
+| L24 routes | RoutesSheet | **Лучше** | polish |
+| L26 soft paywall | softPaywallSheet | **Лучше** timeline | polish |
+| L27/28 pets/items empty | soonSectionCard | **Лучше** clay | wire |
+| L29 pet wizard | FamilyPetWizardSheet | **Лучше** steps | polish |
+| L30 driving weekly | weekly strip | **Лучше** | polish |
+| L31 safety tab | crash+contacts+SOS | **Лучше** 2 cards | polish |
+| L32 places list | manage places | **Лучше** | polish |
+| L33 create event | calendar add | **Лучше** form | polish |
+| Kaspersky 01–22 | двери Проверить/Ребёнок | только gaps · reuse FIG-L | после FIG-L |
+
+### 10.2 Size-spec батч 1 (канон)
+
+Phone **393×852** · mapStrip **43** · sheet **745** · tab **64** · radius sheet **20** · H-pad **16** · chips **56×56** gap **10** · FAB/pin later **48** / **52–56**.  
+Детали: AgentStore `FIG_L_BATCH1_SIZE_SPEC.md`.
+
+### 10.3 Отдельные GO кода (после art — не смешивать с рисованием)
+
+| GO id | Что |
+|-------|-----|
+| WIRE-L02 | bubble last-seen над map pin |
+| WIRE-L08 | quiet-zone circle overlay на MKMap |
+| WIRE-L09 | optional day polyline (если продукт GO) |
+| WIRE-L01/L03/L25 | заменить SF/interim на final assets |
+| WIRE-L12 | map type 3 thumbs вместо list-only |
+| WIRE-L10 | SOS visual circle · hold logic сохранить |
+
+---
+
+## 11. World-class design — что ещё добавить (иконки «живые»)
+
+### 11.1 Система иконок ALADDIN Alive (NEW · обязательно в FIG-L + app-wide)
+
+Цель: иконки **яркие, объёмные, «живые»** (мягкий 3D/clay или glass+gold glow), не плоский серый SF Symbol.
+
+| Набор | Куда | Стиль |
+|-------|------|-------|
+| **ICON-HUB-4** | L15 tabs | Location / Car / Shield / Crown — gold selected, soft depth |
+| **ICON-CHIP-5** | L25 | People / Paw / Key / Home / Calendar — selected filled |
+| **ICON-FAB-4** | L03 | Layers / Locate / Routes / Invisible |
+| **ICON-DOORS-3** | SimpleHome 3 двери | Проверить / Ребёнок / Где семья — large living icons |
+| **ICON-HOME-ROW** | SimpleHome secondary rows | Family / Access Full-Limited |
+| **ICON-ANTIFAKE** | дверь Проверить | Call / Link / QR / Banner / Shield ON |
+| **ICON-PARENTAL** | дверь Ребёнок | Limits / Content / Rewards / Screen Time |
+| **ICON-FAMILY** | FamilyScreen cards | Members / Chat / Groups / Invite |
+| **ICON-TARIFF** | Tariffs + L36 | Free / Family / Trial timeline |
+| **ICON-COMPANION** | Companion hub | 3 heroes already Rive — не дублировать FIG-L; только chrome icons |
+| **ICON-EMPTY** | all empty states | mailbox / pets / items / tile / evac — clay ALADDIN |
+
+**⛔ НЕТ VPN в мобильном ALADDIN.** Не рисовать ICON-VPN / «VPN-дверь» / connect-tunnel art.  
+Network Protection в коде (если встречается) ≠ продукт VPN для пользователя — **не включать в FIG-L alive icons.**
+
+**Запрет иконок:** Life360 purple · Kaspersky green lockup · spy eye art · emoji как единственный icon · **VPN branding**.
+
+**Export:** PDF/SVG предпочтительно + PNG @2x/@3x · имена `ICON_*` / `FIG_L*`.
+
+### 11.2 Рекомендации по ключевым экранам приложения
+
+| Экран | Сейчас | Рекомендация топ-уровня |
+|-------|--------|-------------------------|
+| **SimpleHome** (3 двери) | SF + storm cards | Living door icons · stronger hierarchy · Full/Limited как L06 cards · micro-motion press |
+| **WhereIsPhone hub** | CLIP ✅ · SF chips/FAB | FIG-L34/15/25/01/03 first · alive icons · invite banner art |
+| **Member sheet** | functional scroll | L04 hero · battery · clearer section cards |
+| **Driving tab** | DrivingReportsModal | L22/L30 art · empty state premium |
+| **Safety tab** | text dense | L31 2 cards · L10 circle SOS · L11 tip row · L19/20 soon art |
+| **Subscription tab** | thin CTA | L36 plan cards · keep Tariffs destination |
+| **Antifake / Проверить** | mixed | Kaspersky FIG only gaps · alive status shield |
+| **Parental / Ребёнок** | mixed | calm icons · no spy · clear cards |
+| **FamilyScreen** | many SF | ICON-FAMILY · invite L07 · empty states |
+| **Tariffs** | text/cards | align with L36 · gold CTA · trust copy |
+| **Network Protection** (если экран) | не путать с VPN | **не** в FIG-L alive-icons · только явный GO |
+| **Profile / Settings** | dense | section icons consistent · less gray |
+| **Notifications** | list | unread gold dot · empty alive |
+| **Family Chat** | ok | avatar rings gold · send FAB glass |
+| **Companion** | Rive heroes | **не** в FIG-L file · chrome only |
+| **Onboarding OB_*** | CapCut/heroes ✅ | **не** трогать в FIG-L волне |
+| **Referral** | promo | brand illustration optional later |
+| **Devices** | list | device glyphs alive |
+| **Analytics** | charts | keep data honest · soften chrome |
+
+### 11.3 Карточки — единый visual language
+
+Каждая product-card:
+1. Frost glass / storm fill  
+2. Stroke gold ~35–40%  
+3. Radius 16–20  
+4. Leading **alive icon** 28–32 (не tiny SF)  
+5. Title serif/bold + sub 70% white  
+6. CTA gold или quiet text  
+7. Empty = illustration + one CTA (не стена текста)
+
+### 11.4 Motion (после visuals · отдельный GO)
+
+- Chip select spring  
+- FAB press scale 0.96  
+- Sheet grabber  
+- SOS hold ring progress (уже hold — улучшить visual)  
+Не анимировать карту Metal тяжёлым blur.
+
+---
+
+## 12. Чеклист владельца / агента (не забыть)
+
+### A. Уже ✅
+- [x] MAP-95 CLIP  
+- [x] Baseline S1 md  
+- [x] Heroes OB + CapCut1  
+- [x] Build 19 + PlaceAddress  
+- [x] FIG-L file + pages + env  
+- [x] Аудит код↔Figma §10  
+- [x] Size-spec batch1  
+
+### B. Figma (каждый батч = GO)
+- [ ] GO → L34 + L15 + L25 (+ alive icons в них)  
+- [ ] GO → L01 + L03  
+- [ ] GO → L02 + L04 + L12  
+- [ ] GO → L17 L08 L09 L13 L16 L18  
+- [ ] GO → L05 L06 L07 L14 L35 L36  
+- [ ] GO → L10–L33 soon/safety pack  
+- [x] ICON-DOORS-3 + ICON-HOME + ICON-FAMILY + ICON-ANTIFAKE + ICON-PARENTAL + ICON-TARIFF + ICON-EMPTY · **без VPN** · page `06_Alive_Icons` board `64:222` · 27 components · 2026-11-10  
+- [x] Kaspersky gaps only · page `05` Board1 `67:171` + Board2 `68:130` · masters 393×852 · FIG-01…08 + 13…17 + REUSE legend · 2026-11-10  
+- [ ] get_screenshot каждый кадр · не SOLID  
+
+### C. Wire / iOS (отдельные GO)
+- [ ] Export → xcassets  
+- [ ] WIRE L01/L03/L25/L15 icons  
+- [ ] WIRE-L02 bubble · WIRE-L08 circle · WIRE-L12 thumbs · WIRE-L10 SOS visual  
+- [ ] SimpleHome doors icons  
+- [ ] Empty states swap  
+- [ ] DEV-88 smoke · OB-QA глаза  
+- [ ] Bump 20 только GO  
+
+### D. Не делать
+- [ ] Ломать CLIP ratios  
+- [ ] Sticky lost  
+- [ ] Purple L360 / spy  
+- [ ] Трогать OB_* / Companion Figma  
+- [ ] Mock family/map  
+- [ ] «Figma 100%» после interim PNG  
+
+---
+
+**Конец SSOT.** Sheet → §2–3. Figma FIG-L → §7 + §7.0 + §10–12. Icons alive → §11. Промпты кадров → `FIGMA_FAMILY_SAFETY_ML_PROMPTS.md`. Не плодить третий plan.
