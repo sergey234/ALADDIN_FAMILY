@@ -77,7 +77,7 @@ struct DrivingReportsModal: View {
             await loadUsers()
             await reloadDrivingData()
             // System Motion dialog — ALADDIN appears under Motion & Fitness once requested.
-            _ = await LocationManager.requestMotionIfNeeded()
+            _ = await SensitivePermissionCoordinator.requestMotionIfNeeded()
         }
         .onChange(of: selectedPeriod) { _ in
             Task { await reloadDrivingData() }
@@ -615,7 +615,7 @@ struct DrivingReportsModal: View {
             Button {
                 HapticFeedback.selection()
                 Task { @MainActor in
-                    let ok = await LocationManager.requestMotionIfNeeded()
+                    let ok = await SensitivePermissionCoordinator.requestMotionIfNeeded()
                     if !ok,
                        CMMotionActivityManager.authorizationStatus() == .denied
                         || CMMotionActivityManager.authorizationStatus() == .restricted {

@@ -367,7 +367,7 @@ struct ParentalControlScreen: View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("parental_achievements_weekly_map"))
-                    .font(.h3)
+                    .font(AladdinFamilyType.title3())
                     .foregroundColor(.secondaryGold)
                 
                 Spacer()
@@ -384,10 +384,10 @@ struct ParentalControlScreen: View {
                         .foregroundColor(.secondaryGold)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(localizationManager.localized("parental_dashboard_button"))
-                            .font(.bodyBold)
+                            .font(AladdinFamilyType.subheadline(weight: .bold))
                             .foregroundColor(.textPrimary)
                         Text(localizationManager.localized("parental_dashboard_open_hint"))
-                            .font(.caption)
+                            .font(AladdinFamilyType.caption())
                             .foregroundColor(.textSecondary)
                             .lineLimit(1)
                     }
@@ -430,10 +430,10 @@ struct ParentalControlScreen: View {
                 } else {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(localizationManager.localized("parental_achievements_weekly_empty"))
-                            .font(.bodyBold)
+                            .font(AladdinFamilyType.subheadline(weight: .bold))
                             .foregroundColor(.textPrimary)
                         Text(localizationManager.localized("parental_achievements_weekly_empty_hint"))
-                            .font(.caption)
+                            .font(AladdinFamilyType.caption())
                             .foregroundColor(.textSecondary)
                     }
                 }
@@ -497,7 +497,7 @@ struct ParentalControlScreen: View {
         VStack(spacing: Spacing.s) {
             HStack {
                 Text(localizationManager.localized("parental_select_child"))
-                    .font(.h3)
+                    .font(AladdinFamilyType.title3())
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
@@ -623,7 +623,7 @@ struct ParentalControlScreen: View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("parental_title"))
-                    .font(.h3)
+                    .font(AladdinFamilyType.title3())
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 

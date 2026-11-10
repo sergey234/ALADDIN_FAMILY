@@ -268,7 +268,7 @@ struct WhereIsPhoneScreen: View {
         guard !didAskMotionThisSession else { return }
         didAskMotionThisSession = true
         Task { @MainActor in
-            _ = await LocationManager.requestMotionIfNeeded()
+            _ = await SensitivePermissionCoordinator.requestMotionIfNeeded()
         }
     }
 

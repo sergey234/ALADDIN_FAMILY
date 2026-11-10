@@ -60,7 +60,8 @@ D1.5: helper в `Shared/Styles/Fonts.swift` (enum в конце файла).
 | **W3** | FamilySafetyRemainderHub sheets | низкий | ✅ |
 | **Drive** | Per-member ledger + API merge + honest PDF (не mock `/stats`) | высокий | ✅ код |
 | **W4** | SimpleHomeScreen двери (title+subtitle serif) | низкий | ✅ |
-| **W5** | Parental + Child + ParentDashboard | средний |
+| **W5** | Parental + Child + ParentDashboard | средний | ✅ |
+| **QA Hub** | Device QA checklist (сборка только по GO) | — | 📋 `docs/DEVICE_QA_FAMILY_HUB_CHECKLIST_2026-11-10.md` |
 | **W6** | Antifake / Проверить | средний |
 | **W7** | 02_FamilyScreen шапка/секции/Добавить | высокий |
 | **финал** | grep; build/push только по GO | |

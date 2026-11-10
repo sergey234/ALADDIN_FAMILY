@@ -818,6 +818,13 @@ enum SensitivePermissionCoordinator {
     }
 }
 
+// Convenience alias — callers historically used LocationManager.requestMotionIfNeeded().
+extension LocationManager {
+    static func requestMotionIfNeeded() async -> Bool {
+        await SensitivePermissionCoordinator.requestMotionIfNeeded()
+    }
+}
+
 // MARK: - Notification Names
 
 extension Notification.Name {

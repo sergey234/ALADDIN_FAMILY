@@ -98,10 +98,10 @@ struct ChildInterfaceScreen: View {
                                         .foregroundColor(.secondaryGold)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(localizationManager.localized("focus_session_title"))
-                                            .font(.headline)
+                                            .font(AladdinFamilyType.subheadline(weight: .semibold))
                                             .foregroundColor(.white)
                                         Text(localizationManager.localized("focus_teen_entry_subtitle"))
-                                            .font(.caption)
+                                            .font(AladdinFamilyType.caption())
                                             .foregroundColor(.white.opacity(0.8))
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
@@ -259,7 +259,7 @@ struct ChildInterfaceScreen: View {
             
             // Приветствие — одна строка на всех возрастах
             Text(localizationManager.localized("child_interface_greeting_hi"))
-                .font(.title)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -299,11 +299,11 @@ struct ChildInterfaceScreen: View {
                 .font(.system(size: 64))
             
             Text(localizationManager.localized("child_interface_what_to_do"))
-                .font(.largeTitle)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.white)
             
             Text(localizationManager.localized("child_interface_choose_activity"))
-                .font(.body)
+                .font(AladdinFamilyType.body())
                 .foregroundColor(.white.opacity(0.8))
         }
         .padding(16)
@@ -371,10 +371,10 @@ struct ChildInterfaceScreen: View {
                     .foregroundColor(.white)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localizationManager.localized("nav_screen_wellness_hub"))
-                        .font(.title3.bold())
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(.white)
                     Text(localizationManager.localized("wellness_entry_from_companion"))
-                        .font(.caption)
+                        .font(AladdinFamilyType.caption())
                         .foregroundColor(.white.opacity(0.85))
                 }
                 Spacer()
@@ -410,10 +410,10 @@ struct ChildInterfaceScreen: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localizationManager.localized("companion_friends_button"))
-                        .font(.title2.bold())
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.white)
                     Text(localizationManager.localized("companion_friends_hint"))
-                        .font(.caption)
+                        .font(AladdinFamilyType.caption())
                         .foregroundColor(.white.opacity(0.85))
                         .fixedSize(horizontal: false, vertical: true)
                 }

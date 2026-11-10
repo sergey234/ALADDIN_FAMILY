@@ -41,7 +41,7 @@ struct ParentDashboardView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("parent_dashboard_title"))
-                        .font(.system(size: 24, weight: .bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(AladdinSnowballPalette.gold)
                     Text(
                         localizationManager.localized(
@@ -87,7 +87,7 @@ struct ParentDashboardView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("parent_dashboard_content_filters"))
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(AladdinFamilyType.title3(weight: .semibold))
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(ContentItemType.allCases, id: \.rawValue) { type in
@@ -110,7 +110,7 @@ struct ParentDashboardView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("parent_dashboard_data_rights"))
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(AladdinFamilyType.title3(weight: .semibold))
                     HStack(spacing: 10) {
                         Button(localizationManager.localized("parent_dashboard_export_child_package")) {
                             runSensitiveAction {
@@ -233,10 +233,10 @@ struct ParentDashboardView: View {
     private var activityDigestSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("activity_digest_title"))
-                .font(.system(size: 16, weight: .semibold))
+                .font(AladdinFamilyType.subheadline(weight: .semibold))
             ForEach(Array(digestLines.enumerated()), id: \.offset) { _, line in
                 Text(line)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(AladdinFamilyType.caption(weight: .medium))
                     .foregroundColor(.white.opacity(0.88))
             }
         }
@@ -248,9 +248,9 @@ struct ParentDashboardView: View {
     private var parentReportExportSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("parent_dashboard_report_export_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
             Text(localizationManager.localized("parent_dashboard_report_export_subtitle"))
-                .font(.system(size: 12, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.72))
             HStack(spacing: 10) {
                 Button(localizationManager.localized("parent_dashboard_report_export_csv")) {
@@ -283,13 +283,13 @@ struct ParentDashboardView: View {
     private var learnedPanelSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("parent_dashboard_learned_panel_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
             Text(localizationManager.localized("parent_dashboard_learned_panel_subtitle"))
-                .font(.system(size: 12, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.74))
             if learnedSkillDeltas.isEmpty {
                 Text(localizationManager.localized("parent_dashboard_learned_panel_empty"))
-                    .font(.system(size: 13, weight: .medium))
+                    .font(AladdinFamilyType.caption(weight: .medium))
                     .foregroundColor(.white.opacity(0.72))
             } else {
                 ForEach(learnedSkillDeltas) { delta in
@@ -317,9 +317,9 @@ struct ParentDashboardView: View {
         )
         return VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized(MnemoBrandChrome.parentSmartTitleKey))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
             Text(localizationManager.localized(MnemoBrandChrome.parentSmartSubtitleKey))
-                .font(.system(size: 12, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.78))
             Text(
                 String(
@@ -329,7 +329,7 @@ struct ParentDashboardView: View {
             )
             .font(.system(size: 14, weight: .semibold))
             Text(localizationManager.localized(level.localizationKey))
-                .font(.system(size: 12, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.8))
             Text(
                 String(
@@ -388,7 +388,7 @@ struct ParentDashboardView: View {
     private var masteryLevelsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("parent_dashboard_mastery_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
             if masteryTopics.isEmpty {
                 Text(localizationManager.localized("parent_dashboard_mastery_empty"))
                     .font(.system(size: 13, weight: .medium))
@@ -418,9 +418,9 @@ struct ParentDashboardView: View {
     private var roiSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("parent_dashboard_roi_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
             Text(localizationManager.localized("parent_dashboard_roi_subtitle"))
-                .font(.system(size: 12, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.72))
             if roiRows.isEmpty {
                 Text(localizationManager.localized("parent_dashboard_roi_empty"))
@@ -447,9 +447,9 @@ struct ParentDashboardView: View {
     private var autoDigestSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("parent_dashboard_auto_digest_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
             Text(localizationManager.localized("parent_dashboard_auto_digest_subtitle"))
-                .font(.system(size: 12, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.72))
             ForEach(Array(digestAutoLines.enumerated()), id: \.offset) { _, line in
                 Text(line)
@@ -632,10 +632,10 @@ struct ParentDashboardView: View {
     private var mirrorOverviewSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(localizationManager.localized("parent_dashboard_mirror_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
 
             Text(localizationManager.localized("parent_dashboard_mirror_subtitle"))
-                .font(.system(size: 13, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.72))
 
             mirrorAudienceBlock(
@@ -664,9 +664,9 @@ struct ParentDashboardView: View {
         let names = categories.map { localizationManager.localized($0) }
         return VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 14, weight: .semibold))
+                .font(AladdinFamilyType.subheadline(weight: .semibold))
             Text(names.joined(separator: " • "))
-                .font(.system(size: 13, weight: .medium))
+                .font(AladdinFamilyType.caption(weight: .medium))
                 .foregroundColor(.white.opacity(0.86))
                 .lineLimit(3)
                 .minimumScaleFactor(0.8)
@@ -728,7 +728,7 @@ private struct ParentDashboardTrendSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(localizationManager.localized("parent_dashboard_trends_title"))
-                .font(.system(size: 18, weight: .semibold))
+                .font(AladdinFamilyType.title3(weight: .semibold))
 
             Picker("", selection: $window) {
                 Text(localizationManager.localized("parent_dashboard_trends_week")).tag(ParentDashboardTrendWindow.week)
