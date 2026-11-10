@@ -82,9 +82,14 @@ struct PrivacyReportsModal: View {
                     }
                 }
             }
-            .navigationTitle(localizationManager.localized("privacy_reports_modal_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(localizationManager.localized("privacy_reports_modal_title"))
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .accessibilityAddTraits(.isHeader)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         isPresented = false

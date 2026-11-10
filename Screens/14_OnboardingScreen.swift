@@ -101,11 +101,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 2:
-            // Описание на 36 pt выше: третья строка была под точками страниц (низ chrome y=698).
+            // OB_03 Родительский контроль: gap title→desc ≥ 1 строка (~18pt), как OB_04.
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 552, width: 361, height: 60),
-                desc: CGRect(x: 14, y: 594, width: 361, height: 96),
+                title: CGRect(x: 16, y: 540, width: 361, height: 44),
+                desc: CGRect(x: 14, y: 602, width: 361, height: 96),
                 scrim: CGRect(x: 0, y: 500, width: 393, height: 320),
                 scrimMaxOpacity: 0.40,
                 maxTitleLines: 4,
@@ -137,25 +137,24 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 5:
-            // «Где семья» (O3) — крупный title над desc, как соседние слайды
+            // «Где семья» — gap title→desc ≥ 1 строка (было 566−556≈10).
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 496, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 566, width: 361, height: 100),
-                scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
+                title: CGRect(x: 16, y: 488, width: 361, height: 48),
+                desc: CGRect(x: 16, y: 554, width: 361, height: 110),
+                scrim: CGRect(x: 0, y: 540, width: 393, height: 312),
                 scrimMaxOpacity: 0.40,
                 maxTitleLines: 4,
                 maxBodyLines: 5,
                 layoutMode: .standard
             )
         case 6:
-            // Antifake (page7) — обычный слайд. НЕ ob07Final: иначе title уезжает в угол,
-            // а финал (page8) остаётся без якоря → EmptyView и «Продолжить» мёртвый.
+            // Antifake (page7) — gap title→desc ≥ 1 строка; НЕ ob07Final.
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 472, width: 361, height: 72),
-                desc: CGRect(x: 16, y: 554, width: 361, height: 120),
-                scrim: CGRect(x: 0, y: 520, width: 393, height: 320),
+                title: CGRect(x: 16, y: 464, width: 361, height: 56),
+                desc: CGRect(x: 16, y: 538, width: 361, height: 120),
+                scrim: CGRect(x: 0, y: 512, width: 393, height: 328),
                 scrimMaxOpacity: 0.40,
                 maxTitleLines: 2,
                 maxBodyLines: 5,
@@ -811,7 +810,7 @@ struct OnboardingScreen: View {
         "onboarding_page5_title": "Защита для детей!",
         "onboarding_page5_desc": "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах",
         "onboarding_page6_title": "Где семья",
-        "onboarding_page6_desc": "Сообщим, когда ребёнок пришёл домой, в школу или секцию.",
+        "onboarding_page6_desc": "Местоположение всей семьи — на карте в приложении. Сообщим, когда ребёнок пришёл домой, в школу или секцию.",
         "onboarding_page7_title": "Antifake для людей 18+",
         "onboarding_page7_desc": "Можно проверить звонок, новости, сообщения, видео, голос, смс, текст и ссылку.",
         "onboarding_page8_title": "Присоединяйтесь к ALADDIN!",
@@ -843,7 +842,7 @@ struct OnboardingScreen: View {
         "onboarding_page5_title": "Protection for kids",
         "onboarding_page5_desc": "Block unsafe websites and risky content",
         "onboarding_page6_title": "Where they are",
-        "onboarding_page6_desc": "We’ll tell you when your child gets home, to school, or to a club.",
+        "onboarding_page6_desc": "See the whole family on the map. We’ll tell you when your child gets home, to school, or to a club.",
         "onboarding_page7_title": "Antifake for people 18+",
         "onboarding_page7_desc": "Check a call, news, messages, video, voice, SMS, text, or a link.",
         "onboarding_page8_title": "Join ALADDIN",

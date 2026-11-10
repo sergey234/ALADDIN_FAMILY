@@ -1142,8 +1142,9 @@ struct TripRouteMapRepresentable: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let line = overlay as? MKPolyline {
                 let r = MKPolylineRenderer(polyline: line)
-                r.strokeColor = UIColor(Color.secondaryGold)
-                r.lineWidth = 3
+                // Trip path: soft violet (readable on Apple Maps, not gold-on-orange clash).
+                r.strokeColor = UIColor(red: 0.55, green: 0.40, blue: 0.95, alpha: 1)
+                r.lineWidth = 4
                 return r
             }
             return MKOverlayRenderer(overlay: overlay)

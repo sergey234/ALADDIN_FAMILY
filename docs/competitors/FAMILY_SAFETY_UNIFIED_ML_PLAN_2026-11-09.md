@@ -26,9 +26,9 @@ Principal iOS + Family Safety ALADDIN. Mech Pilot.
 SSOT: docs/competitors/FAMILY_SAFETY_UNIFIED_ML_PLAN_2026-11-09.md
 Карта sheet 95%: **MAP-95-CLIP ✅ PASS** — канон §3.1. Не откатывать на overlay/S2 как primary на iOS 15.
 «Телефон потерян»: только scroll (P0-6), sticky ОТКАТ — не возвращать.
-Онбординг Hero_08 CapCut1 ✅ — не переделывать без GO.
-FIG-L = НОВЫЙ Figma file, не OB_*. Список §7.
-Сборка / commit / push / FIG create — только после явного GO владельца.
+Онбординг Hero_08 CapCut1 ✅ · OB-QA = только глаза в симе (не код).
+Build 19 на master (e2f01b79 + PlaceAddress 09afdaf7). Bump 20 — только GO.
+FIG-L = НОВЫЙ Figma file (§7 + §7.0 handoff). Не OB_*. Create file — только GO владельца.
 ```
 
 ---
@@ -84,9 +84,9 @@ Sheet ≈ **95%** высоты (полоска карты 5–8% сверху), 
 | Snap points | peek `0.08` · half `0.42` · full `1.0` |
 | Drag thresholds | `<0.22` → peek · `<0.62` → half · else → full |
 | `fullH` / `locationSheetFullTarget` | `max(120, mapHeight * 0.95 − tabBarH)` |
-| Peek / half height | `peekH = usable * 0.22` · `halfH = usable * 0.48` · `usable = mapHeight − tab` |
+| Peek / half height | `peekH = max(110, usable * 0.12)` · `halfH = usable * 0.48` · `usable = mapHeight − tab` |
 | Lerp | `expansion ≤ 0.42`: peek→half; else half→full |
-| Чип | любой чип → `expandLocationSheetToFull()` → на iOS 15 `sheetExpansion = 1.0` |
+| Чип | chip → `expandLocationSheetToFull()` только если `sheetExpansion < 0.95` · iOS 15 `sheetExpansion = 1.0` |
 | Lost CTA | только карточка в scroll (P0-6); **sticky запрещён** без нового GO |
 | FAB | hide / weak hit при `expansion > 0.55` |
 | DIAG лог | `WHERE_PHONE sheet S1b height` · поля `sheetH` `geoH` `mapStrip` `cover` `strip` |
@@ -99,11 +99,13 @@ CLIP отдаёт карте только `mapStripH` в **layout** + `.clipped(
 
 | Состояние | Лог |
 |-----------|-----|
-| appear peek | `sheetH=207 geoH=835 mapStrip=563 expansion=0.08 cover=0.33 strip=0.67` |
+| appear peek (до Device QA) | `sheetH=207 geoH=835 mapStrip=563 expansion=0.08 cover=0.33 strip=0.67` |
+| peek target (Device QA 2026-11-10) | `peekH≈usable×0.12` · **GATES peek: `strip ≥ 0.85` · `cover ≤ 0.15`** |
 | half snap | `sheetH=370 mapStrip=400 expansion=0.42 cover=0.52 strip=0.48` |
 | **full snap** | `sheetH=729 mapStrip=41 expansion=1.00 fullTarget=729 cover=0.95 strip=0.05 tab=64` |
 
-GATES: `cover ≥ 0.90` · `strip ≤ 0.08` на full — **PASS**. Владелец: «Сейчас все работает корректно».
+GATES full: `cover ≥ 0.90` · `strip ≤ 0.08` — **PASS**.  
+GATES peek (симметрия): `strip ≥ 0.85` · `cover ≤ 0.15` — Device QA 2026-11-10.
 
 ### 3.2 Что пробовали и почему FAIL (не повторять)
 
@@ -174,15 +176,15 @@ GATES: `cover ≥ 0.90` · `strip ≤ 0.08` на full — **PASS**. Владел
 |----|--------|
 | OB-FILL + OB-PNG 29.10 | ✅ |
 | OB-08 CapCut1 | ✅ |
-| OB-QA | ⏳ глазами после сборки |
+| OB-QA | 🔓 глаза в симе/TF build 19 — **не** править PNG/код без бага |
 
 ### D. Закрытие
 
 | ID | Статус |
 |----|--------|
-| DEV-88 evidence | 🔓 MAP-95 ✅ · дальше pin/member/lost + FIG-L |
-| GIT-19 commit/push | 🔓 GO |
-| **FIG-L** новый файл | 🔓 после стабильного sheet UX (§7) |
+| DEV-88 evidence | 🔓 pin/member/lost smoke · FIG-L |
+| GIT-19 commit/push | ✅ `e2f01b79` + hotfix `09afdaf7` PlaceAddress · CI Archive |
+| **FIG-L** новый файл | ✅ file `b6gFc8GUtWC6ncPgb6X6II` · env ✅ · кадры 🔓 GO батч L34/L15/L25 |
 
 ### E. N/A
 S39 pet live · S48 flights · S49–50 pets beacon — **не делать**.
@@ -191,9 +193,60 @@ S39 pet live · S48 flights · S49–50 pets beacon — **не делать**.
 
 ## 7. FIG-L — что берём из Life360 (весь долг · новый Figma file)
 
+**Статус волны:** 🔓 **ни один FIG-L кадр ещё не нарисован в Figma** (код/SF Symbols уже в iOS).  
+**Блокер MAP-95 снят** (CLIP PASS) — можно рисовать L34 под sheet ~95%.  
 **Канон берём/не берём:** `FAMILY_SAFETY_KASPERSKY_LIFE360_MASTER_PLAN.md` § Max-UI  
-**Промпты AI:** `FIGMA_FAMILY_SAFETY_ML_PROMPTS.md`  
+**Промпты AI (полный текст на каждый ID):** `FIGMA_FAMILY_SAFETY_ML_PROMPTS.md` §1 общий + §3 FIG-L01…36  
 **Стиль:** Storm glass + gold `#F59E0B` · **не** purple L360 · **не** spy-copy
+
+### 7.0 Handoff другой ML — Figma FIG-L (копировать целиком)
+
+```text
+Ты — Figma MCP agent (figma-use skill ОБЯЗАТЕЛЕН перед use_figma).
+SSOT очереди: docs/competitors/FAMILY_SAFETY_UNIFIED_ML_PLAN_2026-11-09.md §7 + §7.0
+Промпты кадров: docs/competitors/FIGMA_FAMILY_SAFETY_ML_PROMPTS.md
+  — §1 общий промпт + §2 токены + §3 один FIG-Lid за раз
+Берём/не берём: FAMILY_SAFETY_KASPERSKY_LIFE360_MASTER_PLAN.md § Max-UI
+Референс JPG: docs/competitors/screenshots_life360/Lxx.jpg
+  (+ _partial_L01_L30.md / _partial_L31_L60.md / _partial_L61_L90.md)
+Kaspersky (после FIG-L): screenshots_kaspersky/Sxx.jpg · FIGMA_…_PROMPTS §4 FIG-01…22
+
+ЗАПРЕТ (read-only / не трогать):
+- Onboarding Figma file KvkUdyb5Ll31Z9FSzCbpNl · OB_00…08 · APP_AppStoreIcon*
+- Companion file vwKcGPUUEZjgayEHNn0BJM (docs/FIGMA_COMPANION.env) — другая волна
+- Sticky «Телефон потерян» · purple Life360 brand · spy-copy
+
+СДЕЛАНО В КОДЕ (не перерисовывать как «баг UI»):
+- MAP-95-CLIP: sheet full cover≈0.95 strip≈0.05 (WhereIsPhoneScreen S1b VStack)
+- Heroes OB PNG 29.10 + Hero_08 CapCut1 в Assets (не FIG-L)
+- Build 19 на master
+
+FIG-L file УЖЕ создан (не onboarding / не Companion):
+  key = b6gFc8GUtWC6ncPgb6X6II
+  env = docs/FIGMA_FAMILY_SAFETY.env
+  create_session(fileKey) перед use_figma / get_screenshot.
+НЕ писать в KvkUdyb5… или vwKcGPUUEZjgayEHNn0BJM.
+
+Порядок (GO владельца на каждый батч кадров):
+1) FIG-L34 + FIG-L15 + FIG-L25  (страница 01_L34_L15_L25_Hub)
+2) FIG-L01 + FIG-L03
+3) FIG-L02 + FIG-L04 + FIG-L12
+4) остальное по §7 таблице
+5) Kaspersky FIG-01…22 только если нет reuse
+
+На каждый кадр:
+1) Открыть JPG референс из строки FIG-Lid в FIGMA_…_PROMPTS §3
+2) Скопировать промпт §3 этого ID (+ общий §1)
+3) use_figma → frame 393×852 или component
+4) get_screenshot готового слоя — не SOLID-заглушка
+5) Короткий отчёт: ID | Figma node | export path | что осталось
+Export PNG/PDF — отдельный GO на вставку в xcassets (не смешивать с рисованием).
+Сейчас рисуй ТОЛЬКО: <ВСТАВИТЬ FIG-Lid после GO>.
+```
+
+**Хватит ли плана другой ML?** Да, если она читает **три файла**: UNIFIED §7/§7.0 (очередь+запреты) · FIGMA_…_PROMPTS (как рисовать) · JPG Lxx (что копировать по композиции).  
+**Figma file (2026-11-10):** key `b6gFc8GUtWC6ncPgb6X6II` · env `docs/FIGMA_FAMILY_SAFETY.env` · URL в env.  
+Кадры FIG-L* ещё **не нарисованы** — только файл + страницы-батчи + Spec cover. Рисовать L34/L15/L25 — отдельный GO.
 
 ### Берём (композиция / смысл)
 Карта full-bleed + нижняя дверь · 4 таба в хабе · FAB справа · member sheet · 5 чипов · места Дом/Школа/Работа · тип карты · день/маршрут · тихая зона · шаринг · календарь · SOS hold · empty 3D · soft paywall · роли инвайта · таб Подписка ALADDIN
@@ -201,61 +254,61 @@ S39 pet live · S48 flights · S49–50 pets beacon — **не делать**.
 ### Не берём
 Purple brand · второй map hub · spy-copy · fake «помощь едет» · multi-circle · Lost Pet live pins · Offers spam
 
-### Список кадров (без повторов)
+### Список кадров (без повторов) · Figma status = ещё не рисовали
 
-| ID | Простыми словами | Референс |
-|----|------------------|----------|
-| **FIG-L34** | Главный кадр: карта + sheet ~95% + баннер + семья + 5 чипов + секции + 4 таба | L91–97, L42 |
-| **FIG-L15** | 4 вкладки снизу | L42 |
-| **FIG-L25** | 5 чипов Семья/Питомцы/Вещи/Места/События | L91–97 |
-| **FIG-L01** | Пин фото+батарея | L42, L13, L83 |
-| **FIG-L03** | FAB stack | L42 |
-| **FIG-L02** | Last-seen bubble | L58, L83 |
-| **FIG-L04** | Member шапка | L83, L26 |
-| **FIG-L12** | Тип карты thumbs | L81, L25 |
-| **FIG-L17** | Places chips | L47, L19 |
-| **FIG-L08** | Тихая зона круг | L59, L85 |
-| **FIG-L09** | Day journal line | L87 |
-| **FIG-L13** | Share link card | L86, L28 |
-| **FIG-L16** | Календарь месяц | L48–51 |
-| **FIG-L18** | Always Allow art | L31, L70 |
-| **FIG-L05** | Empty inbox | L23, L76 |
-| **FIG-L06** | Full/Limited cards | L79, L21 |
-| **FIG-L07** | Name chips + roles | L08, L82 |
-| **FIG-L14** | Splash WORDMARK | L78 |
-| **FIG-L10** | SOS hold | L36–40 |
-| **FIG-L11** | Crash tip icons | L69, L54 |
-| **FIG-L19** | Tags/Tile скоро | L45, L64 |
-| **FIG-L20** | Roadside скоро | — |
-| **FIG-L21** | Pet row скоро | L81 |
-| **FIG-L22** | Driving empty | L52, L71 |
-| **FIG-L23** | Pin preview | L13 |
-| **FIG-L24** | Routes sheet | L61–62 |
-| **FIG-L26** | Soft family paywall | L96 |
-| **FIG-L27/28** | Pets/Items empty | L92, L94 |
-| **FIG-L29** | Pet wizard | L103… |
-| **FIG-L30** | Driving weekly | L116 |
-| **FIG-L31** | Safety crash+contacts | L117 |
-| **FIG-L32** | Places list | Places JPG |
-| **FIG-L33** | Create event | create event |
-| **FIG-L35** | Role modal | L98–99 |
-| **FIG-L36** | Subscription ALADDIN | L118 |
+| ID | Простыми словами | Референс JPG | Figma |
+|----|------------------|--------------|-------|
+| **FIG-L34** | Главный кадр: карта + sheet ~95% + баннер + семья + 5 чипов + секции + 4 таба | L91–97, L42 | 🔓 |
+| **FIG-L15** | 4 вкладки снизу | L42 | 🔓 |
+| **FIG-L25** | 5 чипов Семья/Питомцы/Вещи/Места/События | L91–97 | 🔓 |
+| **FIG-L01** | Пин фото+батарея | L42, L13, L83 | 🔓 |
+| **FIG-L03** | FAB stack | L42 | 🔓 |
+| **FIG-L02** | Last-seen bubble | L58, L83 | 🔓 |
+| **FIG-L04** | Member шапка | L83, L26 | 🔓 |
+| **FIG-L12** | Тип карты thumbs | L81, L25 | 🔓 |
+| **FIG-L17** | Places chips | L47, L19 | 🔓 |
+| **FIG-L08** | Тихая зона круг | L59, L85 | 🔓 |
+| **FIG-L09** | Day journal line | L87 | 🔓 |
+| **FIG-L13** | Share link card | L86, L28 | 🔓 |
+| **FIG-L16** | Календарь месяц | L48–51 | 🔓 |
+| **FIG-L18** | Always Allow art | L31, L70 | 🔓 |
+| **FIG-L05** | Empty inbox | L23, L76 | 🔓 |
+| **FIG-L06** | Full/Limited cards | L79, L21 | 🔓 |
+| **FIG-L07** | Name chips + roles | L08, L82 | 🔓 |
+| **FIG-L14** | Splash WORDMARK | L78 | 🔓 |
+| **FIG-L10** | SOS hold | L36–40 | 🔓 |
+| **FIG-L11** | Crash tip icons | L69, L54 | 🔓 |
+| **FIG-L19** | Tags/Tile скоро | L45, L64 | 🔓 |
+| **FIG-L20** | Roadside скоро | — | 🔓 |
+| **FIG-L21** | Pet row скоро | L81 | 🔓 |
+| **FIG-L22** | Driving empty | L52, L71 | 🔓 |
+| **FIG-L23** | Pin preview | L13 | 🔓 |
+| **FIG-L24** | Routes sheet | L61–62 | 🔓 |
+| **FIG-L26** | Soft family paywall | L96 | 🔓 |
+| **FIG-L27/28** | Pets/Items empty | L92, L94 | 🔓 |
+| **FIG-L29** | Pet wizard | L103… | 🔓 |
+| **FIG-L30** | Driving weekly | L116 | 🔓 |
+| **FIG-L31** | Safety crash+contacts | L117 | 🔓 |
+| **FIG-L32** | Places list | Places JPG | 🔓 |
+| **FIG-L33** | Create event | create event | 🔓 |
+| **FIG-L35** | Role modal | L98–99 | 🔓 |
+| **FIG-L36** | Subscription ALADDIN | L118 | 🔓 |
 
-Потом при необходимости: Kaspersky **FIG-01…22** (двери Проверить/Ребёнок) — reuse FIG-L где смысл тот же.
+Потом при необходимости: Kaspersky **FIG-01…22** (двери Проверить/Ребёнок) — `FIGMA_…_PROMPTS` §4 · reuse FIG-L где смысл тот же.
 
 **Порядок рисования:** L34+L15+L25 → L01+L03 → L02+L04+L12 → остальное → Kaspersky.  
-**Не рисовать в FIG-L:** онбординг «Где семья» / OB_00…08 (это CapCut/Assets, не FIG-L34).
+**Не рисовать в FIG-L:** онбординг «Где семья» / OB_00…08 (CapCut/Assets + onboarding Figma — другая волна).
 
 ---
 
 ## 8. Порядок работ для следующей ML
 
 ```text
-1) MAP-95-CLIP ✅ PASS — канон §3.1 · не регрессировать
-2) Device smoke остальное: pin→member · Events→lost CTA
-3) OB-QA глазами (уже ассеты ✅) — не чинить без бага
-4) GO FIG-L → create file → L34/L15/L25 first
-5) DEV-88 · GO commit (без telegram_stars_shop_bot) · GO push
+1) MAP-95-CLIP ✅ · Build 19 на master ✅ — не регрессировать sheet
+2) Device/TF smoke: pin→member · Events→lost · OB-QA глазами
+3) FIG-L file ✅ b6gFc8G… · GO батч кадров L34/L15/L25 (§7.0)
+4) Дальше FIG-L по порядку §7 · export → xcassets только с GO
+5) DEV-88 evidence · следующий bump 20 только с GO
 ```
 
 ---
@@ -270,7 +323,9 @@ Purple brand · второй map hub · spy-copy · fake «помощь едет
 | 2026-11-10 | DIAG: iOS 15.2 · expansion=1 · UI mid → S2 мёртв |
 | 2026-11-10 | S1b-HARD FAIL (sheetH=729 / UI mid · Metal z-order) |
 | 2026-11-10 | **MAP-95-CLIP PASS** · full `cover=0.95 strip=0.05 mapStrip=41` · канон §3.1 |
+| 2026-11-10 | Build **19** push `e2f01b79` · hotfix PlaceAddress `09afdaf7` |
+| 2026-11-10 | FIG-L handoff §7.0 · file `b6gFc8GUtWC6ncPgb6X6II` + `FIGMA_FAMILY_SAFETY.env` · кадры 🔓 |
 
 ---
 
-**Конец SSOT.** Вопросы по sheet — только §2–3. По Figma — только §7. Не плодить третий «sheet plan».
+**Конец SSOT.** Sheet → §2–3. Figma FIG-L → §7 + §7.0 + `FIGMA_FAMILY_SAFETY_ML_PROMPTS.md`. Не плодить третий plan.

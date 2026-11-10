@@ -91,6 +91,9 @@ struct WhereIsPhoneScreen: View {
     @State private var remoteSignals: [WherePhoneFamilySignal] = []
     @State private var remotePoints: [WherePhoneFamilyPoint] = []
     @State private var isSending = false
+    /// Debounce double-taps on CTA (device lag / stacked sheets).
+    @State private var lastWherePhoneTapId: String = ""
+    @State private var lastWherePhoneTapAt: Date = .distantPast
     @State private var statusText: String?
     @State private var locatorHint: String?
     @State private var showPlaces = false
@@ -499,7 +502,8 @@ struct WhereIsPhoneScreen: View {
     private func locationSheetHeight(mapHeight: CGFloat, tabBarHeight: CGFloat) -> CGFloat {
         let usable = max(160, mapHeight - tabBarHeight)
         let fullH = locationSheetFullTarget(mapHeight: mapHeight, tabBarHeight: tabBarHeight)
-        let peekH = max(120, usable * 0.22)
+        // Peek: grabber+chips only so map strip ≥ ~0.85 (symmetric to full cover 0.95).
+        let peekH = max(110, usable * 0.12)
         let halfH = usable * 0.48
         if sheetExpansion <= 0.42 {
             let t = max(0, sheetExpansion) / 0.42
@@ -588,7 +592,7 @@ struct WhereIsPhoneScreen: View {
         if #available(iOS 16.0, *) {
             return !locationSheetIsFull
         }
-        return !sheetDragActive && sheetExpansion < 0.55
+        return !sheetDragActive && sheetExpansion < 0.92
     }
 
     /// Expand location sheet to ~95% (S2 detent or S1b expansion).
@@ -649,7 +653,9 @@ struct WhereIsPhoneScreen: View {
     /// S2: map + chrome; bottom sheet via system detents (medium / 0.95). Tab bar sticky inside sheet.
     @available(iOS 16.0, *)
     private func locationLife360CanvasS2(geo: GeometryProxy, tabBarH: CGFloat) -> some View {
-        let fabBottomPad = locationSheetIsFull ? (geo.size.height * 0.08 + tabBarH) : (geo.size.height * 0.45)
+        let fabBottomPad = locationSheetIsFull
+            ? (geo.size.height * 0.10 + tabBarH)
+            : max(220, geo.size.height * 0.56)
         return ZStack(alignment: .bottom) {
             FamilyHubLiveMapRepresentable(
                 region: $mapRegion,
@@ -683,6 +689,8 @@ struct WhereIsPhoneScreen: View {
                             endPoint: .bottom
                         )
                     )
+                    // Header only — do not let empty VStack steal FAB/map hits.
+                    .zIndex(2)
 
                 HStack {
                     Spacer()
@@ -690,8 +698,10 @@ struct WhereIsPhoneScreen: View {
                 }
                 .padding(.horizontal, Spacing.m)
                 .padding(.top, 4)
+                .zIndex(2)
 
                 Spacer(minLength: 0)
+                    .allowsHitTesting(false)
 
                 HStack {
                     Spacer()
@@ -701,6 +711,7 @@ struct WhereIsPhoneScreen: View {
                 .padding(.bottom, fabBottomPad)
                 .opacity(locationSheetIsFull ? 0.25 : 1)
                 .allowsHitTesting(!locationSheetIsFull)
+                .zIndex(5)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
@@ -823,8 +834,10 @@ struct WhereIsPhoneScreen: View {
                     }
                     .padding(.trailing, Spacing.m)
                     .padding(.bottom, Spacing.s)
-                    .opacity(sheetExpansion > 0.55 ? 0.2 : 1)
-                    .allowsHitTesting(sheetExpansion < 0.55)
+                    // Keep FABs tappable until sheet is nearly full (was 0.55 → dead controls).
+                    .opacity(sheetExpansion > 0.88 ? 0.25 : 1)
+                    .allowsHitTesting(sheetExpansion < 0.92)
+                    .zIndex(5)
                 }
                 .frame(width: geo.size.width, height: mapStripH, alignment: .top)
             }
@@ -931,8 +944,9 @@ struct WhereIsPhoneScreen: View {
                     .background(Color.secondaryGold.opacity(0.9))
                     .clipShape(Capsule())
             }
-            // S03 densitiy: wall-clock under pin when we have a real last fix.
-            if mapCoordinate != nil, mapPinSource != .none, let at = mapPointAt {
+            // Wall-clock of last GPS fix. Hide when «только что» (same minute as now) — avoids «С 12:24» noise.
+            if mapCoordinate != nil, mapPinSource != .none, let at = mapPointAt,
+               Date().timeIntervalSince(at) >= 60 {
                 Text(
                     String(
                         format: localizationManager.localized("dens_map_pin_time"),
@@ -943,16 +957,16 @@ struct WhereIsPhoneScreen: View {
                 .foregroundColor(.backgroundDark)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color.white.opacity(0.92))
+                .background(Color.secondaryGold.opacity(0.92))
                 .clipShape(Capsule())
                 .accessibilityIdentifier("where_phone_pin_time_badge")
             }
             if mapPinSource == .live,
                let speed = liveLocation.speedKmh,
                speed > 0,
-               speed <= 250,
+               speed <= 140,
                !inQuietZone {
-                // Round2 S77: online speed label (max lives on trip detail).
+                // Cap UI at 140 km/h — GPS spikes (e.g. 181) are noise, not real driving.
                 Text(
                     String(
                         format: localizationManager.localized("map_live_speed_online"),
@@ -976,9 +990,11 @@ struct WhereIsPhoneScreen: View {
                 ForEach(SheetChip.allCases) { chip in
                     Button {
                         HapticFeedback.selection()
-                        // S2/S1b: любой чип → full (~95%).
                         print("WHERE_PHONE sheet chip tap → \(chip)")
-                        expandLocationSheetToFull()
+                        // Expand only if not already near-full (avoids layout thrash on iOS 15).
+                        if sheetExpansion < 0.95 {
+                            expandLocationSheetToFull()
+                        }
                         isChipProgrammaticScroll = true
                         activeChip = chip
                         chipScrollRequest += 1
@@ -1236,7 +1252,7 @@ struct WhereIsPhoneScreen: View {
                         .foregroundColor(.textPrimary)
                     Text(localizationManager.localized("location_history_30d_subtitle"))
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.92))
                 }
                 Spacer()
                 Text(localizationManager.localized("location_history_30d_cta"))
@@ -1268,8 +1284,10 @@ struct WhereIsPhoneScreen: View {
 
     private func placeSuggestChip(_ key: String) -> some View {
         Button {
-            placesPreferredNameKey = key
-            showPlaces = true
+            runWherePhoneTap(id: "where_phone_\(key)") {
+                placesPreferredNameKey = key
+                showPlaces = true
+            }
         } label: {
             Text(localizationManager.localized(key))
                 .font(.caption.weight(.semibold))
@@ -1325,7 +1343,6 @@ struct WhereIsPhoneScreen: View {
                 .font(.subheadline)
                 .foregroundColor(.textSecondary)
             actionButton("map_invite_banner_cta", id: "where_phone_invite_banner") {
-                HapticFeedback.impact(.light)
                 showInviteRole = true
             }
         }
@@ -1573,12 +1590,15 @@ struct WhereIsPhoneScreen: View {
     private var mapFabStack: some View {
         VStack(spacing: Spacing.s) {
             Button {
+                print("WHERE_PHONE FAB map-type tap")
+                HapticFeedback.selection()
                 showMapTypeSheet = true
             } label: {
                 Image("FIG_L03_FABLayers")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 44, height: 44)
+                    .frame(width: 48, height: 48)
+                    .contentShape(Circle())
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1))
             }
@@ -1586,6 +1606,8 @@ struct WhereIsPhoneScreen: View {
             .accessibilityIdentifier("where_phone_fab_map_type")
 
             fabButton(systemImage: "location.fill", id: "where_phone_fab_locate") {
+                print("WHERE_PHONE FAB locate tap")
+                HapticFeedback.selection()
                 if let coordinate = mapCoordinate {
                     mapRegion.center = coordinate
                     mapCameraToken += 1
@@ -1595,16 +1617,20 @@ struct WhereIsPhoneScreen: View {
             }
 
             fabButton(systemImage: "arrow.triangle.turn.up.right.diamond.fill", id: "where_phone_fab_routes") {
+                print("WHERE_PHONE FAB routes tap")
+                HapticFeedback.selection()
                 showRoutes = true
             }
 
             // Round2 S20/S27: Life360-style «шапка-невидимка» entry (quiet zone radius).
             fabButton(systemImage: "eye.slash.fill", id: "where_phone_fab_invisible_hat") {
+                print("WHERE_PHONE FAB invisible-hat tap")
                 HapticFeedback.selection()
                 showInvisibleHatSheet = true
             }
             .accessibilityLabel(localizationManager.localized("map_create_invisible_hat"))
         }
+        .contentShape(Rectangle())
     }
 
     private func fabButton(systemImage: String, id: String, action: @escaping () -> Void) -> some View {
@@ -1612,7 +1638,8 @@ struct WhereIsPhoneScreen: View {
             Image(systemName: systemImage)
                 .font(.body.weight(.semibold))
                 .foregroundColor(.secondaryGold)
-                .frame(width: 44, height: 44)
+                .frame(width: 48, height: 48)
+                .contentShape(Circle())
                 .background(Color.backgroundMedium.opacity(0.92))
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.secondaryGold.opacity(0.4), lineWidth: 1))
@@ -1848,7 +1875,7 @@ struct WhereIsPhoneScreen: View {
                             .foregroundColor(.textPrimary)
                         Text(localizationManager.localized("map_privacy_zone_hint"))
                             .font(.caption)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.92))
                         Slider(value: $quietMeters, in: 50...500, step: 25) {
                             Text(localizationManager.localized("map_member_quiet_zone"))
                         }
@@ -1863,7 +1890,7 @@ struct WhereIsPhoneScreen: View {
                             )
                         )
                             .font(.caption)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.white.opacity(0.92))
                         Text(localizationManager.localized("map_share_link_title"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.textPrimary)
@@ -1948,33 +1975,36 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// S19: trip card + mini-map from real local GPS track when present (never invent mid-points).
+    /// Whole card opens Driving tab (trial/family/premium entitled) — not only the footer link.
     private var memberRecentTripsCard: some View {
         let liveTrip = Self.liveTripPreviewReport()
-        return VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(localizationManager.localized("map_member_weekly_trips_title"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundColor(.textPrimary)
-            if let liveTrip {
-                Text("\(Self.streetTitleWithoutAtPrefix(liveTrip.startLocation)) → \(Self.streetTitleWithoutAtPrefix(liveTrip.endLocation))")
-                    .font(.caption.weight(.semibold))
+        return Button {
+            print("WHERE_PHONE member recent-trips card tap → driving tab")
+            SelectionHaptic.selection()
+            selectedMember = nil
+            hubTab = .driving
+        } label: {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text(localizationManager.localized("map_member_weekly_trips_title"))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(.textPrimary)
-                TripEndpointMapPreview(report: liveTrip)
-                    .frame(height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-                    .accessibilityIdentifier("where_phone_member_trip_minimap")
-            } else {
-                Text(localizationManager.localized("map_journal_empty"))
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                Text(localizationManager.localized("trip_no_map_track"))
-                    .font(.caption2)
-                    .foregroundColor(.textSecondary)
-            }
-            Button {
-                SelectionHaptic.selection()
-                selectedMember = nil
-                hubTab = .driving
-            } label: {
+                if let liveTrip {
+                    Text("\(Self.streetTitleWithoutAtPrefix(liveTrip.startLocation)) → \(Self.streetTitleWithoutAtPrefix(liveTrip.endLocation))")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                    TripEndpointMapPreview(report: liveTrip)
+                        .frame(height: 120)
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                        .allowsHitTesting(false)
+                        .accessibilityIdentifier("where_phone_member_trip_minimap")
+                } else {
+                    Text(localizationManager.localized("map_journal_empty"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.92))
+                    Text(localizationManager.localized("trip_no_map_track"))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.92))
+                }
                 Text(
                     String(
                         format: localizationManager.localized("map_member_weekly_trips_subtitle"),
@@ -1984,15 +2014,16 @@ struct WhereIsPhoneScreen: View {
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.secondaryGold)
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("where_phone_member_recent_trips")
+            .padding(Spacing.m)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.28))
+            )
+            .contentShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
         }
-        .padding(Spacing.m)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.28))
-        )
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("where_phone_member_recent_trips")
     }
 
     /// Build a preview report from the active (or last known) local GPS track — real samples only.
@@ -2069,12 +2100,12 @@ struct WhereIsPhoneScreen: View {
                         )
                     )
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.white.opacity(0.92))
             }
             .padding(Spacing.m)
             .background(
@@ -2880,7 +2911,9 @@ struct WhereIsPhoneScreen: View {
     }
 
     private func actionButton(_ key: String, id: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button {
+            runWherePhoneTap(id: id, action: action)
+        } label: {
             Text(localizationManager.localized(key))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.backgroundDark)
@@ -2891,6 +2924,19 @@ struct WhereIsPhoneScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)
+    }
+
+    /// Instant haptic + DIAG; debounce 300ms per id; never await network here.
+    private func runWherePhoneTap(id: String, action: @escaping () -> Void) {
+        HapticFeedback.selection()
+        print("WHERE_PHONE tap id=\(id) t=\(Date())")
+        let now = Date()
+        if id == lastWherePhoneTapId, now.timeIntervalSince(lastWherePhoneTapAt) < 0.3 {
+            return
+        }
+        lastWherePhoneTapId = id
+        lastWherePhoneTapAt = now
+        action()
     }
 
     private func step(_ number: String, _ key: String) -> some View {
@@ -3091,8 +3137,10 @@ struct WhereIsPhoneScreen: View {
     }
 
     private func sendPlace() {
+        HapticFeedback.selection()
+        print("WHERE_PHONE tap id=where_phone_send t=\(Date())")
         isSending = true
-        statusText = nil
+        statusText = localizationManager.localized("where_phone_share_sending")
         if let cached = LocationManager.shared.currentLocation,
            abs(cached.timestamp.timeIntervalSinceNow) < 15 * 60 {
             print("WHERE_PHONE send using cached location")
@@ -3101,15 +3149,17 @@ struct WhereIsPhoneScreen: View {
         }
         print("WHERE_PHONE send asking for one location")
         locator.request { result in
-            switch result {
-            case .failure(let error):
-                self.isSending = false
-                let ns = error as NSError
-                print("WHERE_PHONE send fail domain=\(ns.domain) code=\(ns.code)")
-                self.statusText = self.shareFailureText(error)
-            case .success(let location):
-                print("WHERE_PHONE send ok")
-                self.deliver(location)
+            DispatchQueue.main.async {
+                switch result {
+                case .failure(let error):
+                    self.isSending = false
+                    let ns = error as NSError
+                    print("WHERE_PHONE send fail domain=\(ns.domain) code=\(ns.code)")
+                    self.statusText = self.shareFailureText(error)
+                case .success(let location):
+                    print("WHERE_PHONE send ok")
+                    self.deliver(location)
+                }
             }
         }
     }

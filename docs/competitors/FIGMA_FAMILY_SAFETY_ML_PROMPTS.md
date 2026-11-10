@@ -4,7 +4,10 @@
 **Очередь + статусы (SSOT):** [`FAMILY_SAFETY_UNIFIED_ML_PLAN_2026-11-09.md`](FAMILY_SAFETY_UNIFIED_ML_PLAN_2026-11-09.md) §7 — этот файл = тексты промптов, не дублировать backlog.  
 **Канон продукта:** [`FAMILY_SAFETY_KASPERSKY_LIFE360_MASTER_PLAN.md`](FAMILY_SAFETY_KASPERSKY_LIFE360_MASTER_PLAN.md)  
 **Приоритет отрисовки:** **сначала Life360 (FIG-L\*)**, потом Kaspersky (FIG-01…22) если не reuse.  
-**Блокер перед FIG-L:** MAP-95 sheet 95% на device (UNIFIED §3) — иначе дважды перерисовывать L34.
+**Блокер MAP-95 снят (2026-11-10):** CLIP PASS на device — L34 можно рисовать под sheet ~95%.  
+**Handoff агенту:** UNIFIED §7.0 (копировать целиком).  
+**Figma file:** `b6gFc8GUtWC6ncPgb6X6II` · `docs/FIGMA_FAMILY_SAFETY.env` · не OB_* / не Companion.  
+**Кадры:** ещё пусто — GO на батч L34+L15+L25.
 
 ---
 

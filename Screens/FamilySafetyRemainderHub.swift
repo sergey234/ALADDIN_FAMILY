@@ -86,9 +86,14 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             guard FamilyMapLiveAccess.isEntitled else { return }
             self.coordinate = loc.coordinate
             self.updatedAt = loc.timestamp
-            // Round2 S10/S77: real CL only; drop invalid / GPS spikes (>250 km/h).
+            // Real CL only; drop invalid / GPS spikes. UI also caps at 140 — 181 km/h was a spike.
             let kmh = loc.speed * 3.6
-            if loc.speed >= 0, loc.horizontalAccuracy >= 0, loc.horizontalAccuracy < 65, kmh <= 250 {
+            let speedOK = loc.speedAccuracy < 0 || loc.speedAccuracy <= 8
+            if loc.speed >= 0,
+               loc.horizontalAccuracy >= 0,
+               loc.horizontalAccuracy < 40,
+               speedOK,
+               kmh <= 140 {
                 self.speedKmh = Int(kmh.rounded())
             } else {
                 self.speedKmh = nil
@@ -1090,7 +1095,7 @@ struct FamilyCrashConfirmSheet: View {
                         .accessibilityIdentifier("crash_confirm_progress")
                     Text(statusText ?? localizationManager.localized("crash_confirm_sending"))
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.white.opacity(0.92))
                         .multilineTextAlignment(.center)
                 }
                 Button {
@@ -1132,9 +1137,10 @@ struct FamilyCrashConfirmSheet: View {
         }
     }
 
-    /// Q25: never leave the button stuck — 8s timeout + toast + always clear `isSending`.
+    /// Device QA: haptic immediately; 3s UI timeout; never wait on 60s network.
     private func sendNeedHelpTapped() {
         guard !isSending else { return }
+        HapticFeedback.impact(.medium)
         isSending = true
         statusText = localizationManager.localized("crash_confirm_sending")
         let offline = !OfflineManager.shared.isOnline
@@ -1143,10 +1149,12 @@ struct FamilyCrashConfirmSheet: View {
         }
         Task { @MainActor in
             defer { isSending = false }
-            let timedOut = await withTimeout(seconds: 8) {
+            let timedOut = await withTimeout(seconds: 3) {
                 await FamilyMapFamilyAlert.sendNeedHelp(localization: localizationManager)
             }
             if timedOut {
+                // Still enqueue offline so family gets signal when net returns.
+                FamilyMapFamilyAlert.enqueueNeedHelpOffline(localization: localizationManager)
                 ToastManager.shared.showError(localizationManager.localized("crash_confirm_fail"))
                 statusText = localizationManager.localized("crash_confirm_fail")
                 return
@@ -1182,18 +1190,37 @@ struct FamilyCrashConfirmSheet: View {
 enum FamilyMapFamilyAlert {
     @MainActor
     static func sendNeedHelp(localization: LocalizationManager) async {
-        let name = (
-            UserDefaults.standard.string(forKey: "user_name")
-                ?? UserDefaults.standard.string(forKey: "user_display_name")
-                ?? localization.localized("where_phone_you")
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = displayName(localization: localization)
         _ = await FamilyImOkService.sendNeedHelp(
-            displayName: name.isEmpty ? localization.localized("where_phone_you") : name,
+            displayName: name,
             localization: localization,
             attachLocation: true
         )
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "family_sos_last_sent_ts")
         NotificationCenter.default.post(name: Notification.Name("aladdin.family.sos.sent"), object: nil)
+    }
+
+    /// On UI timeout / offline — queue for later flush; do not block the sheet.
+    @MainActor
+    static func enqueueNeedHelpOffline(localization: LocalizationManager) {
+        let name = displayName(localization: localization)
+        FamilyImOkOfflineQueue.enqueue(
+            FamilyAutoAlertEvent(
+                kind: .needHelp,
+                displayName: name,
+                legacyPlaintext: localization.localized("crash_confirm_yes")
+            )
+        )
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "family_sos_last_sent_ts")
+    }
+
+    private static func displayName(localization: LocalizationManager) -> String {
+        let name = (
+            UserDefaults.standard.string(forKey: "user_name")
+                ?? UserDefaults.standard.string(forKey: "user_display_name")
+                ?? localization.localized("where_phone_you")
+        ).trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? localization.localized("where_phone_you") : name
     }
 }
 

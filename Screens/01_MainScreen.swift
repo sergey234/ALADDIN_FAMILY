@@ -615,7 +615,7 @@ struct MainScreen: View {
                             Button(action: {
                                 navigationManager.navigateToSimpleHome()
                             }) {
-                                VStack(spacing: 6) {
+                                VStack(spacing: 4) {
                                     Text(localizationManager.localized("main_simple_badge"))
                                         .font(.system(size: 9, weight: .bold))
                                         .foregroundColor(.backgroundDark)
@@ -624,18 +624,25 @@ struct MainScreen: View {
                                         .background(Color.secondaryGold)
                                         .clipShape(Capsule())
                                     Text("🏠")
-                                        .font(.system(size: 28))
+                                        .font(.system(size: 24))
                                     Text(localizationManager.localized("main_simple_version_title"))
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.secondaryGold)
                                         .multilineTextAlignment(.center)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.85)
                                     Text(localizationManager.localized("main_simple_version_subtitle"))
                                         .font(.system(size: 10))
                                         .foregroundColor(.white.opacity(0.9))
                                         .multilineTextAlignment(.center)
+                                        .lineLimit(2)
+                                        .minimumScaleFactor(0.85)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 8)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 92)
+                                .frame(minHeight: 112)
                                 .stormGlassCard(cornerRadius: 10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
