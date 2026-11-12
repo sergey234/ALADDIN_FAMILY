@@ -11,3 +11,12 @@ Canvas: **1290×2796**. Headlines outside phone (Life360 #6). Gold `#F59E0B` · 
 | H21 | ALADDIN_ASC_H21_DrivingSpeed | Семья в пути — спокойнее за рулём | Family on the road — drive with peace of mind | Driving |
 
 Spares (clean): `H02_SofiaFriends_source_clean.jpg`, `H04_DadWork_source_clean.jpg` in READY/15_ASC_LiveMap.
+
+
+## Also in this folder: H22–H24 (map-path phone pack)
+
+See `ASC_H22_H24_COPY_RU_EN.md`. Upload after H01/H03/H21 if ASC gallery has free slots.
+
+## H25–H26 Driving History
+
+See `ASC_H25_H26_COPY_RU_EN.md`.

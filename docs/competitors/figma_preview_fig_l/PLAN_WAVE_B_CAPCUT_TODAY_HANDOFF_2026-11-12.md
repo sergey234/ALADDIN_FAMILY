@@ -364,6 +364,30 @@ Pets/Family hero keys: `where_phone_pets_hero_*` · `where_phone_family_hero_*` 
 
 Готово RU+EN · navy/gold · не purple · не in-app Where chrome. Copy: `ASC_TOP3_COPY_RU_EN.md`.
 
+### 11.10 ASC H22–H24 — map-path phone pack (GO 2026-11-12)
+
+| Shot | Смысл | Файл |
+|------|-------|------|
+| H22 | Круг семьи · 4 пина · путь | `ALADDIN_ASC_H22_FamilyCircle_MapPath_*` |
+| H23 | Lifestyle sunset · 3 пина | `ALADDIN_ASC_H23_FamilySunset_LiveMap_*` |
+| H24 | Путь + машина · Driving | `ALADDIN_ASC_H24_DrivingPath_Bubble_*` |
+
+Папка та же: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/` · copy `ASC_H22_H24_COPY_RU_EN.md`.  
+In-app tip D/E — отдельно по GO (crop ~361×220). Не OB_* · не замена H20 OG.
+
 ---
 
 **Конец хэндоффа 2026-11-12 (+ §11 JOB13).** Следующий CapCut после JOB13: JOB14 speedometer / ASC по GO.
+
+### 11.11 ASC H25–H26 — Driving History (GO 2026-11-12)
+
+| Shot | Смысл | Файл |
+|------|-------|------|
+| H25 | Список поездок · км/мин | `ALADDIN_ASC_H25_DrivingTrips_List_*` |
+| H26 | День · таймлайн остановок | `ALADDIN_ASC_H26_DayTimeline_Route_*` |
+
+- Repo: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/`
+- READY: `READY/18_ASC_DrivingHistory/`
+- Finder Downloads: `~/Downloads/ALADDIN_ASC_H25_H26_DrivingHistory/` · полный пакет `~/Downloads/ALADDIN_ASC_WaveB_All/`
+- In-app feature: **Where → Езда → отчёты** (`DrivingReportsModal`). Tip crop — later GO.
+
