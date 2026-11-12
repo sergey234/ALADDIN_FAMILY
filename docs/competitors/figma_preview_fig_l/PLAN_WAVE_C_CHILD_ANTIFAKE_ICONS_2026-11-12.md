@@ -145,7 +145,8 @@
 - [x] Fitted RU+EN Draft / H03 / H21  
 - [x] Tip wire + SOS mid ✅  
 - [x] Artifact map no-dupes ✅  
-- [ ] Commit Wave A+B (этот проход)  
+- [x] Commit Wave A+B `55fb5602` ✅  
+
 - [ ] ASC upload слоты  
 - [ ] OB wordmark — Figma SYNC отдельно  
 
