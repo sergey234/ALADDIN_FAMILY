@@ -1,10 +1,20 @@
 # Wave B CapCut → iOS — хэндофф за сессию 2026-11-11…12
 
-**Verified 2026-11-12 ~21:10 Asia/Dubai:** imagesets ×14 heroes + Wave A `ICON_G1_*` · tip+SOS mid wired · ASC H*+Draft fitted · ветка `master`.
+**Verified 2026-11-12 ~21:30 Asia/Dubai:** imagesets ×14 heroes + Wave A `ICON_G1_*` · tip+SOS mid wired · ASC H*+Draft fitted · QA-11 ✅ · ветка `master`.
 
 **Карта всего (пути/Figma/CapCut/антидубль):** `ARTIFACT_MAP_WAVE_ABC_NO_DUPES_2026-11-12.md` — читать **первой** другой ML.
 
-**Для другой ML-системы:** этот файл = SSOT Wave B session. Не OB_*. Не bot. Не bump/push без GO владельца. Сборка Xcode — только после фразы владельца «GO на сборку».
+### Сделано → старт → финиш → кто собирает
+
+| | |
+|--|--|
+| **СДЕЛАНО (код в git)** | Wave A G1 icons+wire · Wave B CapCut heroes JOB01–13 · tip Езда · SOS mid 6 стр · ASC PNG H*+Draft в репо · Invite OG site+API · QA-11 (Notif/ПК/Profile/Devices/Onboarding parent) · commits `55fb5602` · `62ee8dc2` |
+| **С ЧЕГО НАЧАТЬ (владелец)** | 1) Сами собрать в Xcode / устройство 2) Пройти §8 QA (Places…tip…SOS pager) 3) По желанию — ASC upload в Connect (чеклист § «простыми словами») |
+| **ГДЕ ЗАКОНЧИТЬ этот пакет Wave B** | После вашей Device QA + (опц.) upload скринов. Дальше **не** этот чат. |
+| **СЛЕДУЮЩИЙ ПАКЕТ** | Wave C — **другой чат** · старт: `ML_HANDOFF_WAVE_C_VARIANT_A_…` · фраза **«GO Wave C art Batch1»** |
+| **СБОРКУ ДЕЛАЕТ ВЛАДЕЛЕЦ** | Агент **не** запускает `xcodebuild` / Simulator / Archive. Правило `ask-before-ios-build`. Даже «verify» ≠ GO на сборку. |
+
+**Для другой ML-системы:** этот файл = SSOT Wave B session. Не OB_*. Не bot. Не bump/push без GO. **Сборку проекта делает владелец сам.**
 
 | Поле | Значение |
 |------|----------|
@@ -192,7 +202,7 @@ Pets/Family hero keys: `where_phone_pets_hero_*` · `where_phone_family_hero_*` 
 | A | CapCut JOB13 Invite OG + site/API | ✅ DONE + deploy |
 | A2 | CapCut JOB14+ / ASC H01–H28 RU+EN + Draft A–D fitted | ✅ ASC pack; Draft extras в `07_FITTED` |
 | B | SOS carousel mid tips (intro + 4 mid text/SF + release) | ✅ wire 2026-11-12 · CapCut art later optional |
-| C | Owner Device QA: Places…Safety pager | ⏳ без agent xcodebuild · нужен **GO на сборку** |
+| C | Owner Device QA: Places…Safety pager | ⏳ **владелец собирает сам** · агент xcodebuild не трогает |
 | D | Цвет live `FamilySOSHoldButton` gold ↔ красный illust | ⏳ спросить |
 | E | Commit на `master` Wave A+B tip/SOS/ASC/docs | ✅ этот коммит · bump — отдельно |
 | F | OB-QA / DEV-88 / bump 20 | ⏳ Wave A open |

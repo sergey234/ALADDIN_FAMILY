@@ -64,6 +64,22 @@ Handoff: `docs/competitors/figma_preview_fig_l/PLAN_WAVE_B_CAPCUT_TODAY_HANDOFF_
 
 ---
 
+## Статус пакета: где мы · с чего начать · где конец
+
+| Этап | Статус | Кто |
+|------|--------|-----|
+| Код tip + SOS mid + G1 + heroes + QA-11 | ✅ в `master` (`55fb5602` · `62ee8dc2`) | агент сделал · **закоммичено** |
+| ASC PNG H\*+Draft в репо/Downloads | ✅ готовы | агент |
+| **Сборка Xcode / устройство** | ⏳ **вы сами** | владелец · агент **не** собирает |
+| Device QA по приложению | ⏳ после вашей сборки | владелец |
+| ASC upload в Connect | ⏳ когда решите | владелец (руками, § выше) |
+| **Конец Wave B-чата** | после вашей QA (+ опц. ASC upload) | — |
+| **Старт Wave C** | другой чат · `ML_HANDOFF_WAVE_C_…` · «GO Wave C art Batch1» | другая ML |
+
+**Инвариант:** проект собирает **владелец**. Агент не делает `xcodebuild` / Simulator / Archive без явной фразы «GO на сборку» (и по умолчанию вы собираете сами).
+
+---
+
 ## ⏳ Осталось
 
 ### ASC / продукт (нужен ваш GO)
@@ -78,19 +94,20 @@ Handoff: `docs/competitors/figma_preview_fig_l/PLAN_WAVE_B_CAPCUT_TODAY_HANDOFF_
 ### Wave C — Ребёнок + Проверить (следующая волна иконок)
 - [x] Стиль **Вариант A LOCKED** («всё как Семья»)
 - [x] План + ML handoff: `PLAN_WAVE_C_…` · `ML_HANDOFF_WAVE_C_VARIANT_A_…`
-- [ ] GO Wave C art Batch1 (C04–C10) → Glyph+Black → AliveGlyph wire
+- [ ] GO Wave C art Batch1 (C04–C10) → Glyph+Black → AliveGlyph wire — **другой чат**
 - [ ] Не смешивать с Draft ASC
 
 ### Владелец / релиз
 - [x] Wave A+B tip/SOS/ASC/docs → commit `55fb5602` (без bot / `.env`)
-- [x] QA-11 хвост после build 20 → commit (см. § ниже) — **без** `*_BACKUP_*` / bot
-- [ ] Device / Simulator QA Wave B — **после GO на сборку**
+- [x] QA-11 хвост после build 20 → commit `62ee8dc2` — **без** `*_BACKUP_*` / bot
+- [ ] **Сборка проекта — владелец сам** (Xcode)
+- [ ] Device QA Wave B — после вашей сборки (агент не запускает sim)
 - [ ] OB-QA · DEV-88 · bump · push — только ваши GO
 
 ### Инварианты (всегда)
 - [x] Не коммитить `telegram_stars_shop_bot/` · `.env` · VPN secrets · `*_BACKUP_*` экраны
 - [x] Не трогать OB_* Figma
-- [x] Нет agent `xcodebuild` без GO
+- [x] Агент **не** `xcodebuild` — сборку делает владелец
 
 ---
 
@@ -123,7 +140,8 @@ Handoff: `docs/competitors/figma_preview_fig_l/PLAN_WAVE_B_CAPCUT_TODAY_HANDOFF_
 
 ## Куда смотреть сейчас
 
-1. `07_FITTED_1290x2796/` — все свежие RU+EN  
-2. `05_Full_ASC_RU_EN/` — пакет под ASC upload  
-3. Repo ASC folder — то же  
-4. Commit — ждём **«Сохраняй»**
+1. **Вы:** собрать в Xcode → Device QA (tip + SOS 6 стр + иконки).  
+2. ASC PNG: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/` · Downloads `ALADDIN_ASC_WaveB_All/` · `07_FITTED_1290x2796/`.  
+3. Upload Connect — когда решите (не блокирует сборку).  
+4. Код Wave B/QA-11 уже закоммичен — **не** ждать ещё «Сохраняй» на этот пакет.  
+5. Wave C — **новый чат**, не продолжать art Child здесь.
