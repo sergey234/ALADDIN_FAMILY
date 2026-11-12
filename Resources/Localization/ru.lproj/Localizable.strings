@@ -912,6 +912,16 @@
 "driving_reports_open_settings_motion" = "Открыть Настройки iPhone";
 "driving_reports_error_load_failed" = "Не удалось загрузить отчеты: %@";
 "driving_reports_unit_min" = "мин";
+/* QA Device Round — short driving metric labels (2×2) */
+"driving_stat_trips_short" = "Поездки";
+"driving_stat_score_short" = "Оценка";
+"driving_stat_risks_short" = "Риски";
+"driving_stat_km_short" = "км";
+"driving_stat_min_short" = "мин";
+"driving_stat_max_kmh_short" = "макс. км/ч";
+"map_refresh_my_place" = "Обновить моё место";
+"map_refresh_my_place_toast" = "Обновляем место…";
+"map_accuracy_meters_format" = "Точность ±%d м";
 /* ═══════════════════════════════════════════════════════════════
  * АВТОРИЗАЦИЯ
  * ═══════════════════════════════════════════════════════════════ */
@@ -1147,7 +1157,9 @@
  * ═══════════════════════════════════════════════════════════════ */
 
 /* Экстренная помощь */
-"component.crash_detection_agent.title" = "Обнаружение аварий";
+"component.crash_detection_agent.title" = "Обнаружение";
+"crash_sensitivity_saved_local" = "Сохранено";
+"motion_settings_hint_open_driving" = "Если в Настройках нет «Движение и фитнес» — откройте вкладку Вождение один раз, затем снова Настройки.";
 "component.crash_detection_agent.desc" = "Автоматическое обнаружение ДТП и вызов помощи";
 "component.roadside_assistance_agent.title" = "Помощь на дороге";
 "component.roadside_assistance_agent.desc" = "Быстрая помощь при поломке автомобиля";
@@ -1752,6 +1764,7 @@
 "family_content_block_card_status_on" = "Политика включена";
 "family_content_block_card_status_off" = "Политика выключена";
 "main_family_tariff_label" = "Тариф:";
+"main_family_tariff_checking" = "Проверяем тариф…";
 "main_family_header_member_slots" = "%d из %d";
 "main_family_trial_days_left" = "Пробный: ещё %d дн.";
 "main_family_trial_ended_banner" = "Пробный закончился · тариф БАЗОВЫЙ (1 участник). Можно выбрать Личный или Семейный.";
@@ -2094,7 +2107,8 @@
 
 "profile_edit_save" = "Сохранить";
 
-"profile_edit_title" = "Редактирование профиля";
+"profile_edit_title" = "Профиль";
+"profile_edit_photo_saved" = "Фото профиля сохранено";
 
 "profile_edit_photo_title" = "Фотография профиля";
 
@@ -3249,6 +3263,8 @@
 "geofence_notifications_permission_denied" = "Уведомления не включены. Разрешите их в настройках iPhone.";
 "geofence_notifications_open_settings_hint" = "Открыл настройки iPhone. Включите уведомления для ALADDIN и вернитесь в приложение.";
 "recovery_share_text_family_link" = "Приглашаю тебя в мою семью ALADDIN.\nКод: %@\nСсылка: %@\nОткрой ALADDIN и выбери «Ввести код», если ссылка не открылась автоматически.";
+"recovery_copy" = "Копировать";
+"recovery_share" = "Поделиться";
 "invitation_paste_code_button" = "Вставить";
 "family_invite_card_title" = "Пригласить семью";
 "family_invite_card_body" = "QR, FAM-код или ссылка для мамы, ребёнка или близкого. Это не код устройства.";
@@ -3574,6 +3590,14 @@
 "map_soon_driving_body" = "В скором времени. Сейчас можно видеть скорость на карте, когда GPS её даёт.";
 
 /* sos / crash */
+"sos_edu_nav_title" = "SOS";
+"sos_edu_intro_title" = "Кнопка «SOS» в ALADDIN пригодится, если вы в беде";
+"sos_edu_intro_bullet_1" = "Идете в одиночку по темной улице";
+"sos_edu_intro_bullet_2" = "Оказались рядом с опасностью";
+"sos_edu_intro_bullet_3" = "Срочно нужна медицинская помощь";
+"sos_edu_intro_cta" = "К удержанию SOS";
+"sos_edu_release_title" = "Отпустите кнопку, чтобы беззвучно оповестить членов семьи и экстренные контакты";
+"sos_edu_release_cta" = "Понятно";
 "sos_hold_hint" = "Удерживайте для SOS";
 "sos_countdown" = "Отмена · %d";
 "sos_sent_family" = "Семья получила сигнал";
@@ -3631,6 +3655,14 @@
 "family_cal_end" = "Окончание";
 "family_cal_pick" = "Выбрать";
 "pet_add_title" = "Добавить питомца";
+"where_phone_family_hero_title" = "Ваша семья на карте";
+"where_phone_family_hero_body" = "Пригласите близких — увидите, кто рядом, без лишнего шума.";
+"pet_type_picker_title" = "Кто ваш питомец?";
+"pet_type_dog" = "Собака";
+"pet_type_cat" = "Кошка";
+"pet_type_other" = "Другой";
+"where_phone_pets_hero_title" = "Питомцы семьи";
+"where_phone_pets_hero_body" = "Профиль и напоминания на этом iPhone. Живая метка на карте — позже.";
 "pet_add_photo_title" = "Добавьте фото питомца";
 "pet_add_photo_cta" = "Добавить фото";
 "pet_skip" = "Пропустить";

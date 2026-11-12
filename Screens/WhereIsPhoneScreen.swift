@@ -83,7 +83,6 @@ struct WhereIsPhoneScreen: View {
         case softPaywall
         case softInvite
         case inviteRole
-        case pinPreview
     }
 
     @State private var hubTab: HubTab = .location
@@ -138,11 +137,12 @@ struct WhereIsPhoneScreen: View {
     @State private var showAlwaysAllowSheet = false
     @State private var showSoftPaywall = false
     @State private var showSoftInvite = false
-    @State private var showPinPreview = false
     @State private var showInviteRole = false
     @State private var showRoutes = false
     @State private var showInvisibleHatSheet = false
     @State private var showCrashConfirm = false
+    /// JOB11–12 · Safety SOS education pager (0 = intro, 1 = release).
+    @State private var sosEduPage: Int = 0
     @State private var shareDuration: FamilyMapShareDuration =
         FamilyMapShareDuration(rawValue: FamilyMapShareSessionStore.selectedHours) ?? .oneHour
     @State private var journalIndex: Double = 0
@@ -155,8 +155,9 @@ struct WhereIsPhoneScreen: View {
     @State private var memberCropSource: UIImage?
     @State private var savedPets: [FamilyPetProfile] = FamilyPetProfileStore.load()
     @StateObject private var liveLocation = FamilyMapLiveLocationController.shared
-    @AppStorage("where_phone_pin_preview_done") private var pinPreviewDone = false
-    @AppStorage("where_phone_pin_size") private var pinSizeRaw: String = "M"
+    @AppStorage("where_phone_pin_preview_done") private var pinPreviewDone = true
+    /// QA-15: always L; pin-preview sheet retired.
+    @AppStorage("where_phone_pin_size") private var pinSizeRaw: String = "L"
     @State private var localEvents: [FamilyMapLocalEvent] = FamilyMapLocalEventStore.load()
     @State private var draftEventTitle = ""
     @State private var draftEventPlace = ""
@@ -331,10 +332,6 @@ struct WhereIsPhoneScreen: View {
                 FamilyPetWizardSheet(isPresented: $showPetWizard)
                     .environmentObject(localizationManager)
             }
-            .sheet(isPresented: $showPinPreview) {
-                FamilyMapPinPreviewSheet(isPresented: $showPinPreview)
-                    .environmentObject(localizationManager)
-            }
             .sheet(isPresented: $showInviteRole) {
                 FamilyMapInviteRoleSheet(isPresented: $showInviteRole) { _ in }
                     .environmentObject(localizationManager)
@@ -463,9 +460,9 @@ struct WhereIsPhoneScreen: View {
                 savedPets = FamilyPetProfileStore.load()
                 maybeOfferAlwaysAllow()
                 maybeOfferSoftPaywall()
-                if !pinPreviewDone {
-                    showPinPreview = true
-                }
+                // QA-15: never auto-present pin size sheet; force L.
+                pinPreviewDone = true
+                if pinSizeRaw != "L" { pinSizeRaw = "L" }
                 applyPendingFamilyPushFocusIfNeeded()
             }
             .onDisappear {
@@ -546,7 +543,6 @@ struct WhereIsPhoneScreen: View {
         showSoftPaywall = false
         showSoftInvite = false
         showInviteRole = false
-        showPinPreview = false
         showCrashConfirm = false
         selectedMember = nil
         showMemberImagePicker = false
@@ -624,8 +620,6 @@ struct WhereIsPhoneScreen: View {
             showSoftInvite = true
         case .inviteRole:
             showInviteRole = true
-        case .pinPreview:
-            showPinPreview = true
         }
     }
 
@@ -1101,6 +1095,45 @@ struct WhereIsPhoneScreen: View {
 
     private var mapStatusBadges: some View {
         VStack(alignment: .trailing, spacing: 6) {
+            // QA-08 A: refresh my place + accuracy ±m · time.
+            Button {
+                HapticFeedback.selection()
+                liveLocation.requestFreshFix()
+                ToastManager.shared.showSuccess(
+                    localizationManager.localized("map_refresh_my_place_toast")
+                )
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "location.north.line.fill")
+                        .font(.caption.weight(.bold))
+                    Text(localizationManager.localized("map_refresh_my_place"))
+                        .font(.caption.weight(.bold))
+                }
+                .foregroundColor(.backgroundDark)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.secondaryGold.opacity(0.95))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_refresh_my_place")
+
+            if liveLocation.accuracyMeters >= 0, mapCoordinate != nil {
+                Text(
+                    String(
+                        format: localizationManager.localized("map_accuracy_meters_format"),
+                        Int(liveLocation.accuracyMeters.rounded())
+                    )
+                )
+                .font(.caption2.weight(.bold))
+                .foregroundColor(.backgroundDark)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color.white.opacity(0.88))
+                .clipShape(Capsule())
+                .accessibilityIdentifier("where_phone_accuracy_badge")
+            }
+
             if mapCoordinate == nil || mapPinSource == .none {
                 Text(localizationManager.localized("map_live_no_signal"))
                     .font(.caption.weight(.bold))
@@ -1176,6 +1209,7 @@ struct WhereIsPhoneScreen: View {
                         chipScrollRequest += 1
                     } label: {
                         VStack(spacing: 4) {
+                            // Chips Where — всегда Классика (SF), без Glyph/Blue/Black (P0.4).
                             Image(systemName: chip.systemImage)
                                 .font(.system(size: 16, weight: .semibold))
                             Text(localizationManager.localized(chip.titleKey))
@@ -1206,12 +1240,38 @@ struct WhereIsPhoneScreen: View {
     private var peopleSheetSection: some View {
         sectionFrame(.people) {
             VStack(alignment: .leading, spacing: Spacing.m) {
+                /// JOB08 CapCut · H17 FamilyWalk · People hero · UI 320×220 (map bg kept).
+                peopleFamilyHeroWalk
                 familyGroupsFilterBar
                 inviteBanner
                 shareCard
                 trailCard
             }
         }
+    }
+
+    /// JOB08b · Walk variant · «семья на карте» · не OB_*.
+    private var peopleFamilyHeroWalk: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Image("ICON_ALIVE_HERO_H17_FamilyWalk")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .accessibilityHidden(true)
+            Text(localizationManager.localized("where_phone_family_hero_title"))
+                .font(AladdinFamilyType.title3())
+                .foregroundColor(.textPrimary)
+            Text(localizationManager.localized("where_phone_family_hero_body"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("where_phone_people_hero_family_walk")
     }
 
     /// Circles B — filter people list by group label (same family roster).
@@ -1283,12 +1343,18 @@ struct WhereIsPhoneScreen: View {
     private var petsSheetSection: some View {
         sectionFrame(.pets) {
             VStack(alignment: .leading, spacing: Spacing.m) {
+                /// JOB05 CapCut · H15 dog hero · Pets empty · UI 120×120.
+                petsHeroDogRow
                 if !savedPets.isEmpty {
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         ForEach(savedPets) { pet in
-                            HStack {
-                                Image(systemName: "pawprint.fill")
-                                    .foregroundColor(.secondaryGold)
+                            HStack(spacing: Spacing.m) {
+                                Image(pet.heroAssetName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 56, height: 56)
+                                    .clipShape(Circle())
+                                    .accessibilityHidden(true)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(pet.name)
                                         .font(.subheadline.weight(.semibold))
@@ -1302,7 +1368,7 @@ struct WhereIsPhoneScreen: View {
                                 Spacer()
                             }
                             .padding(Spacing.m)
-                            .stormGlassCard(cornerRadius: CornerRadius.medium)
+                            .aladdinProductCard(cornerRadius: CornerRadius.medium)
                         }
                         Text(localizationManager.localized("map_soon_pet_body"))
                             .font(.caption)
@@ -1321,6 +1387,31 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// JOB05 CapCut · dog sticker · transparent PNG · Pets chip hero.
+    private var petsHeroDogRow: some View {
+        HStack(alignment: .center, spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localizationManager.localized("where_phone_pets_hero_title"))
+                    .font(AladdinFamilyType.title3())
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized("where_phone_pets_hero_body"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Image("ICON_ALIVE_HERO_H15_PetDog")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
+                .accessibilityHidden(true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("where_phone_pets_hero_dog")
+    }
+
     private var itemsSheetSection: some View {
         sectionFrame(.items) {
             soonSectionCard(
@@ -1337,6 +1428,8 @@ struct WhereIsPhoneScreen: View {
     private var placesSheetSection: some View {
         sectionFrame(.places) {
             VStack(alignment: .leading, spacing: Spacing.m) {
+                // Wave B JOB01 — 3D place pin (Life360 H14). One slot: Places sheet hero.
+                placesHeroLandPinRow
                 placesCard
                 // S19d densitiy — stops today (real geofences only; empty = honest).
                 densPlacesDayCard
@@ -1353,6 +1446,31 @@ struct WhereIsPhoneScreen: View {
                 }
             }
         }
+    }
+
+    /// JOB01 CapCut hero · UI 120×120 · transparent PNG · no checker in app.
+    private var placesHeroLandPinRow: some View {
+        HStack(alignment: .center, spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localizationManager.localized("where_phone_places_title"))
+                    .font(AladdinFamilyType.title3())
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized("where_phone_places_empty"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Image("ICON_ALIVE_HERO_H14_PlaceLandPin")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
+                .accessibilityHidden(true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("where_phone_places_hero_land_pin")
     }
 
     private var densPlacesDayCard: some View {
@@ -1475,36 +1593,58 @@ struct WhereIsPhoneScreen: View {
 
     private var eventsSheetSection: some View {
         sectionFrame(.events) {
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                HStack(spacing: Spacing.s) {
-                    Image(systemName: "calendar")
-                        .foregroundColor(.secondaryGold)
-                    Text(localizationManager.localized("family_cal_title"))
-                        .font(AladdinFamilyType.title3())
-                        .foregroundColor(.textPrimary)
-                }
-                if localEvents.isEmpty {
-                    Text(localizationManager.localized("family_cal_empty"))
-                        .font(.subheadline)
-                        .foregroundColor(.textSecondary)
-                } else {
-                    ForEach(localEvents.prefix(3)) { event in
-                        Text("\(event.title) · \(event.place)")
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                // Wave B JOB02 — calendar+pencil (Life360 H14/H09). One slot: Events sheet.
+                eventsHeroCalendarRow
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    if localEvents.isEmpty {
+                        Text(localizationManager.localized("family_cal_empty"))
                             .font(.subheadline)
-                            .foregroundColor(.textPrimary)
+                            .foregroundColor(.textSecondary)
+                    } else {
+                        ForEach(localEvents.prefix(3)) { event in
+                            Text("\(event.title) · \(event.place)")
+                                .font(.subheadline)
+                                .foregroundColor(.textPrimary)
+                        }
+                    }
+                    Text(localizationManager.localized("family_cal_local_only"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    actionButton("family_cal_add", id: "where_phone_add_event") {
+                        queueHubSheet(.familyCalendar)
                     }
                 }
-                Text(localizationManager.localized("family_cal_local_only"))
+                .padding(Spacing.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .aladdinProductCard(cornerRadius: CornerRadius.large)
+            }
+        }
+    }
+
+    /// JOB02 CapCut · UI 96×96 · transparent PNG · Events chip only (not Places).
+    private var eventsHeroCalendarRow: some View {
+        HStack(alignment: .center, spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localizationManager.localized("family_cal_title"))
+                    .font(AladdinFamilyType.title3())
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized("family_cal_empty"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
-                actionButton("family_cal_add", id: "where_phone_add_event") {
-                    queueHubSheet(.familyCalendar)
-                }
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(Spacing.m)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            Spacer(minLength: 8)
+            Image("ICON_ALIVE_HERO_H14_CalendarPencil")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 96, height: 96)
+                .accessibilityHidden(true)
         }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("where_phone_events_hero_calendar")
     }
 
     private var inviteBanner: some View {
@@ -1633,6 +1773,91 @@ struct WhereIsPhoneScreen: View {
         .accessibilityIdentifier("where_phone_tab_driving")
     }
 
+    /// JOB11–12 · CapCut heroes · UI ~280×200 · copy from Life360 H06/H13 adapted to ALADDIN (no competitor name).
+    private var safetySOSEducationCarousel: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("sos_edu_nav_title"))
+                .font(AladdinFamilyType.title3())
+                .foregroundColor(.textPrimary)
+
+            TabView(selection: $sosEduPage) {
+                sosEduIntroPage.tag(0)
+                sosEduReleasePage.tag(1)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .frame(height: 420)
+            .accessibilityIdentifier("where_phone_safety_sos_edu_pager")
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+    }
+
+    private var sosEduIntroPage: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Image("ICON_ALIVE_HERO_H06_SOSIntro")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .accessibilityHidden(true)
+            Text(localizationManager.localized("sos_edu_intro_title"))
+                .font(AladdinFamilyType.subheadline(weight: .semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            ForEach(
+                ["sos_edu_intro_bullet_1", "sos_edu_intro_bullet_2", "sos_edu_intro_bullet_3"],
+                id: \.self
+            ) { key in
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.secondaryGold)
+                        .font(.caption)
+                    Text(localizationManager.localized(key))
+                        .font(AladdinFamilyType.caption())
+                        .foregroundColor(.white.opacity(0.92))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Button {
+                HapticFeedback.selection()
+                withAnimation { sosEduPage = 1 }
+            } label: {
+                Text(localizationManager.localized("sos_edu_intro_cta"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondaryGold)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_sos_edu_intro_cta")
+            Spacer(minLength: 0)
+        }
+        .padding(.bottom, Spacing.s)
+        .accessibilityIdentifier("where_phone_safety_sos_intro_hero")
+    }
+
+    private var sosEduReleasePage: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Image("ICON_ALIVE_HERO_H13_SOSRelease")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .accessibilityHidden(true)
+            Text(localizationManager.localized("sos_edu_release_title"))
+                .font(AladdinFamilyType.subheadline(weight: .semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(localizationManager.localized("sos_edu_release_cta"))
+                .font(.caption.weight(.bold))
+                .foregroundColor(.secondaryGold)
+            Spacer(minLength: 0)
+        }
+        .padding(.bottom, Spacing.s)
+        .accessibilityIdentifier("where_phone_safety_sos_release_hero")
+    }
+
     /// §17 step 3 — Safety chrome: crash toggle + settings + contacts count (no fake dispatch).
     private var safetyTabPane: some View {
         ScrollView {
@@ -1679,6 +1904,9 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
 
+                /// JOB11–12 CapCut · H06 intro + H13 release · Safety SOS education (hold unchanged).
+                safetySOSEducationCarousel
+
                 Text(localizationManager.localized("map_hub_safety_sos_note"))
                     .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.92))
@@ -1686,6 +1914,7 @@ struct WhereIsPhoneScreen: View {
 
                 FamilySOSHoldButton()
                     .environmentObject(localizationManager)
+                    .id("where_phone_sos_hold_anchor")
 
                 actionButton("crash_confirm_preview_cta", id: "where_phone_crash_confirm") {
                     showCrashConfirm = true
@@ -1717,9 +1946,12 @@ struct WhereIsPhoneScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 HStack(spacing: Spacing.s) {
-                    Image(systemName: "crown.fill")
-                        .font(.title2.weight(.semibold))
-                        .foregroundColor(.secondaryGold)
+                    // A06 Premium — Золото/Значки; Классика = SF crown (P2 one-slot).
+                    AliveGlyph(id: .premium, size: 28) {
+                        Image(systemName: "crown.fill")
+                            .font(.title2.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                    }
                     Text(localizationManager.localized("map_hub_subscription_title"))
                         .font(AladdinFamilyType.title3())
                         .foregroundColor(.textPrimary)
@@ -1775,10 +2007,10 @@ struct WhereIsPhoneScreen: View {
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(MapFabPressStyle())
             .accessibilityIdentifier("where_phone_fab_map_type")
 
-            fabButton(systemImage: "location.fill", id: "where_phone_fab_locate") {
+            fabButton(systemImage: "location.fill", id: "where_phone_fab_locate", aliveIcon: .fabLocate) {
                 print("WHERE_PHONE FAB locate tap")
                 HapticFeedback.selection()
                 if let coordinate = mapCoordinate {
@@ -1788,6 +2020,7 @@ struct WhereIsPhoneScreen: View {
                     locatorHint = localizationManager.localized("map_live_no_signal")
                 }
             }
+            .accessibilityLabel(localizationManager.localized("map_live_locate_me"))
 
             fabButton(systemImage: "arrow.triangle.turn.up.right.diamond.fill", id: "where_phone_fab_routes") {
                 print("WHERE_PHONE FAB routes tap")
@@ -1806,19 +2039,46 @@ struct WhereIsPhoneScreen: View {
         .contentShape(Rectangle())
     }
 
-    private func fabButton(systemImage: String, id: String, action: @escaping () -> Void) -> some View {
+    private func fabButton(
+        systemImage: String,
+        id: String,
+        aliveIcon: AliveIconID? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.body.weight(.semibold))
-                .foregroundColor(.secondaryGold)
-                .frame(width: 48, height: 48)
-                .contentShape(Circle())
-                .background(Color.backgroundMedium.opacity(0.92))
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Color.secondaryGold.opacity(0.4), lineWidth: 1))
+            Group {
+                if let aliveIcon {
+                    AliveGlyph(id: aliveIcon, size: 34) {
+                        Image(systemName: systemImage)
+                            .font(.body.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                } else {
+                    Image(systemName: systemImage)
+                        .font(.body.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+            }
+            .frame(width: 48, height: 48)
+            .contentShape(Circle())
+            .background(Color.backgroundMedium.opacity(0.92))
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Color.secondaryGold.opacity(0.4), lineWidth: 1))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MapFabPressStyle())
         .accessibilityIdentifier(id)
+    }
+
+    /// P4.3: лёгкий spring на всех FAB при тапе (логика та же).
+    private struct MapFabPressStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
+                .animation(
+                    .spring(response: 0.25, dampingFraction: 0.55),
+                    value: configuration.isPressed
+                )
+        }
     }
 
     private var mapTypeSheet: some View {
@@ -1879,6 +2139,15 @@ struct WhereIsPhoneScreen: View {
     private var alwaysAllowSheet: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
+                /// JOB09 CapCut · H25 FamilyHug Stand · Always Allow · UI 320×220.
+                Image("ICON_ALIVE_HERO_H25_FamilyHugStand")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                    .accessibilityHidden(true)
+                    .accessibilityIdentifier("where_phone_always_hero_hug")
                 Text(localizationManager.localized("map_perm_always_title"))
                     .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
@@ -2373,17 +2642,14 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// S19a Life360 parity: open real weekly driving reports (Driving tab).
+    /// JOB03b CapCut · Red SUV · member sheet (не Driving hero) · UI 96×96.
     private var memberWeeklyTripsCard: some View {
         Button {
             SelectionHaptic.selection()
             selectedMember = nil
             hubTab = .driving
         } label: {
-            HStack(spacing: Spacing.m) {
-                Image(systemName: "car.fill")
-                    .font(.title2.weight(.semibold))
-                    .foregroundColor(.secondaryGold)
-                    .frame(width: 40, height: 40)
+            HStack(alignment: .center, spacing: Spacing.m) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localizationManager.localized("map_member_weekly_trips_title"))
                         .font(.subheadline.weight(.semibold))
@@ -2398,16 +2664,18 @@ struct WhereIsPhoneScreen: View {
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.92))
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: 8)
+                Image("ICON_ALIVE_HERO_H18_SUV_Red")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 96, height: 96)
+                    .accessibilityHidden(true)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.white.opacity(0.92))
             }
             .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.35))
-            )
+            .aladdinProductCard(cornerRadius: CornerRadius.medium)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("where_phone_member_weekly_trips")
@@ -2418,6 +2686,7 @@ struct WhereIsPhoneScreen: View {
         let entitled = FamilyMapLiveAccess.isEntitled
         return VStack(alignment: .leading, spacing: Spacing.s) {
             if !entitled {
+                /// JOB04 CapCut · H16 GoldLock · member drive unlock · UI 96×96 (второй слот).
                 Button {
                     SelectionHaptic.selection()
                     selectedMember = nil
@@ -2427,23 +2696,23 @@ struct WhereIsPhoneScreen: View {
                         navigationManager.navigateTo(.tariffs)
                     }
                 } label: {
-                    HStack {
-                        Image(systemName: "lock.fill")
-                            .foregroundColor(.secondaryGold)
+                    HStack(alignment: .center, spacing: Spacing.m) {
                         Text(localizationManager.localized("map_drive_unlock_cta"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.textPrimary)
                             .multilineTextAlignment(.leading)
-                        Spacer()
+                        Spacer(minLength: 8)
+                        Image("ICON_ALIVE_HERO_H16_GoldLock")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 96, height: 96)
+                            .accessibilityHidden(true)
                         Image(systemName: "chevron.right")
                             .font(.caption.weight(.semibold))
                             .foregroundColor(.textSecondary)
                     }
                     .padding(Spacing.m)
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(Color.backgroundMedium.opacity(0.35))
-                    )
+                    .aladdinProductCard(cornerRadius: CornerRadius.medium)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("where_phone_member_drive_unlock")
@@ -2540,6 +2809,14 @@ struct WhereIsPhoneScreen: View {
 
     private var softInviteSheet: some View {
         VStack(spacing: Spacing.m) {
+            /// JOB08a CapCut · H17 FamilyKneel · soft invite · UI ~320×220.
+            Image("ICON_ALIVE_HERO_H17_FamilyKneel")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .accessibilityHidden(true)
             Text(localizationManager.localized("family_invite_soft_title"))
                 .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
@@ -2570,7 +2847,7 @@ struct WhereIsPhoneScreen: View {
             .accessibilityIdentifier("where_phone_soft_invite_later")
         }
         .padding(Spacing.l)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
         .padding(Spacing.l)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black.opacity(0.55).ignoresSafeArea())
@@ -2870,6 +3147,16 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// Visual-only map hub icons (L15). Same taps / no QR / pin+chips unchanged.
+    private func hubAliveIcon(for tab: HubTab) -> AliveIconID {
+        switch tab {
+        case .location: return .whereFamily
+        case .driving: return .mapDriving
+        case .safety: return .protect
+        case .subscription: return .premium
+        }
+    }
+
     private var hubTabBar: some View {
         HStack(spacing: 0) {
             ForEach(HubTab.allCases) { tab in
@@ -2878,8 +3165,11 @@ struct WhereIsPhoneScreen: View {
                     hubTab = tab
                 } label: {
                     VStack(spacing: 4) {
-                        Image(systemName: tab.systemImage)
-                            .font(.system(size: 18, weight: .semibold))
+                        // L15 hub tabs · size 22 (план) · 3 стиля; чипы/пин не трогаем.
+                        AliveGlyph(id: hubAliveIcon(for: tab), size: 22) {
+                            Image(systemName: tab.systemImage)
+                                .font(.system(size: 18, weight: .semibold))
+                        }
                         Text(localizationManager.localized(tab.titleKey))
                             .font(AladdinFamilyType.caption(weight: .semibold))
                             .lineLimit(1)
@@ -3370,10 +3660,11 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// QA16 F2: never show raw `User` / MEM_* on the map caption.
+    /// P4: L = 56 (было 48) — пин с буквой/фото чуть крупнее на Life360-карте.
     private func pinDiameterForSize(_ raw: String) -> CGFloat {
         switch raw {
         case "S": return 28
-        case "L": return 48
+        case "L": return 56
         default: return 36
         }
     }

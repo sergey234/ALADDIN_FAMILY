@@ -811,6 +811,16 @@
 "driving_reports_open_settings_motion" = "Open iPhone Settings";
 "driving_reports_error_load_failed" = "Failed to load reports: %@";
 "driving_reports_unit_min" = "min";
+/* QA Device Round — short driving metric labels (2×2) */
+"driving_stat_trips_short" = "Trips";
+"driving_stat_score_short" = "Score";
+"driving_stat_risks_short" = "Risks";
+"driving_stat_km_short" = "km";
+"driving_stat_min_short" = "min";
+"driving_stat_max_kmh_short" = "max km/h";
+"map_refresh_my_place" = "Update my place";
+"map_refresh_my_place_toast" = "Updating place…";
+"map_accuracy_meters_format" = "Accuracy ±%d m";
 /* ═══════════════════════════════════════════════════════════════
  * AUTH
  * ═══════════════════════════════════════════════════════════════ */
@@ -1015,7 +1025,9 @@
  * ═══════════════════════════════════════════════════════════════ */
 
 /* Emergency Help */
-"component.crash_detection_agent.title" = "Crash Detection";
+"component.crash_detection_agent.title" = "Detection";
+"crash_sensitivity_saved_local" = "Saved";
+"motion_settings_hint_open_driving" = "If Motion & Fitness is missing in Settings, open the Driving tab once, then return to Settings.";
 "component.crash_detection_agent.desc" = "Automatic crash detection and emergency call";
 "component.roadside_assistance_agent.title" = "Roadside Assistance";
 "component.roadside_assistance_agent.desc" = "Quick help for car breakdowns";
@@ -1867,6 +1879,7 @@
 "family_content_block_card_status_on" = "Policy on";
 "family_content_block_card_status_off" = "Policy off";
 "main_family_tariff_label" = "Plan:";
+"main_family_tariff_checking" = "Checking plan…";
 "main_family_header_member_slots" = "%d of %d";
 "main_family_trial_days_left" = "Trial: %d days left";
 "main_family_trial_ended_banner" = "Trial ended · BASIC plan (1 member). You can choose Personal or Family.";
@@ -2183,7 +2196,8 @@
 
 "profile_edit_save" = "Save";
 
-"profile_edit_title" = "Edit profile";
+"profile_edit_title" = "Profile";
+"profile_edit_photo_saved" = "Profile photo saved";
 
 "profile_edit_photo_title" = "Profile photo";
 
@@ -3338,6 +3352,8 @@
 "geofence_notifications_permission_denied" = "Notifications are not enabled. Allow them in iPhone Settings.";
 "geofence_notifications_open_settings_hint" = "Opened iPhone Settings. Enable notifications for ALADDIN and return to the app.";
 "recovery_share_text_family_link" = "I’m inviting you to my ALADDIN family.\nCode: %@\nLink: %@\nOpen ALADDIN and choose “Enter code” if the link does not open automatically.";
+"recovery_copy" = "Copy";
+"recovery_share" = "Share";
 "invitation_paste_code_button" = "Paste";
 "family_invite_card_title" = "Invite family";
 "family_invite_card_body" = "QR, FAM code, or link for a parent, child, or close relative. This is not a device code.";
@@ -3663,6 +3679,14 @@
 "map_soon_driving_body" = "Coming soon. For now you can see speed on the map when GPS provides it.";
 
 /* sos / crash */
+"sos_edu_nav_title" = "SOS";
+"sos_edu_intro_title" = "The SOS button in ALADDIN helps when you’re in trouble";
+"sos_edu_intro_bullet_1" = "Walking alone on a dark street";
+"sos_edu_intro_bullet_2" = "You’re near danger";
+"sos_edu_intro_bullet_3" = "You urgently need medical help";
+"sos_edu_intro_cta" = "Go to SOS hold";
+"sos_edu_release_title" = "Release the button to silently notify family members and emergency contacts";
+"sos_edu_release_cta" = "Got it";
 "sos_hold_hint" = "Hold for SOS";
 "sos_countdown" = "Cancel · %d";
 "sos_sent_family" = "Family got the alert";
@@ -3720,6 +3744,14 @@
 "family_cal_end" = "Ends";
 "family_cal_pick" = "Select";
 "pet_add_title" = "Add a pet";
+"where_phone_family_hero_title" = "Your family on the map";
+"where_phone_family_hero_body" = "Invite loved ones — see who’s nearby, without the noise.";
+"pet_type_picker_title" = "Who’s your pet?";
+"pet_type_dog" = "Dog";
+"pet_type_cat" = "Cat";
+"pet_type_other" = "Other";
+"where_phone_pets_hero_title" = "Family pets";
+"where_phone_pets_hero_body" = "Profile and reminders on this iPhone. Live map pin comes later.";
 "pet_add_photo_title" = "Add a photo of your pet";
 "pet_add_photo_cta" = "Add photo";
 "pet_skip" = "Skip";

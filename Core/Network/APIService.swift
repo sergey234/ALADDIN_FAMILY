@@ -198,6 +198,39 @@ class APIService: ObservableObject {
         networkManager.post(endpoint: AppConfig.Endpoint.familyInviteCreate, body: request, requiresAuth: true, completion: completion)
     }
 
+    /// JOB13 — upload composed 1200×630 invite OG JPEG for social link previews.
+    func uploadFamilyInviteOG(
+        inviteCode: String,
+        jpegData: Data,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        guard let url = URL(string: AppConfig.apiBaseURL + "/api/family/invite/og.jpg") else {
+            completion?(false)
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 30
+        if let token = AppConfig.authToken, !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        var body = Data()
+        let codeField = "--\(boundary)\r\nContent-Disposition: form-data; name=\"code\"\r\n\r\n\(inviteCode)\r\n"
+        body.append(Data(codeField.utf8))
+        let fileHeader =
+            "--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"invite-og.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n"
+        body.append(Data(fileHeader.utf8))
+        body.append(jpegData)
+        body.append(Data("\r\n--\(boundary)--\r\n".utf8))
+        request.httpBody = body
+        URLSession.shared.dataTask(with: request) { _, response, _ in
+            let ok = (response as? HTTPURLResponse).map { (200..<300).contains($0.statusCode) } ?? false
+            DispatchQueue.main.async { completion?(ok) }
+        }.resume()
+    }
+
     func preflightFamilyInvite(
         request: FamilyInvitePreflightRequest,
         completion: @escaping (Result<FamilyInvitePreflightResponse, Error>) -> Void

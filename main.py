@@ -239,6 +239,12 @@ except ImportError:
     devices_router_available = False
 
 try:
+    from app.routers import promo as promo_router_module
+    promo_router_available = True
+except ImportError:
+    promo_router_available = False
+
+try:
     from app.routers import location_bubble_legacy_deprecation
     location_bubble_legacy_deprecation_available = True
 except ImportError:
@@ -973,6 +979,13 @@ if family_router_available:
             print("✅ Роутер Family API подключен (альтернативный импорт): /api/family/* доступен")
         except NameError:
             print("⚠️ Не удалось подключить роутер Family API")
+    # JOB13 — invite Open Graph JPEG (default or personal upload)
+    try:
+        from app.routers import family_invite_og
+        app.include_router(family_invite_og.router, tags=["family-invite-og"])
+        print("✅ Family invite OG: /api/family/invite/og.jpg")
+    except Exception as e:
+        print(f"⚠️ Family invite OG router not mounted: {e}")
 else:
     print("⚠️ Роутер Family API недоступен")
 
@@ -1067,6 +1080,15 @@ if devices_router_available:
         print(f"⚠️ Не удалось подключить devices router: {e}")
 else:
     print("⚠️ devices router недоступен")
+
+if promo_router_available:
+    try:
+        app.include_router(promo_router_module.router)
+        print("✅ Роутер Promo API подключен: /api/promo/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить promo router: {e}")
+else:
+    print("⚠️ promo router недоступен")
 
 if misc_other_compat_available:
     try:
@@ -1566,6 +1588,8 @@ async def wildcard_handler(request: Request, path: str):
         "phishing/",
         "iot/",
         "mobile/",
+        # Crash: never SFM mock for settings/update (explicit crash_detection_compat only).
+        "crash-detection/",
     )
     if normalized_path.startswith(critical_prefixes):
         return JSONResponse(

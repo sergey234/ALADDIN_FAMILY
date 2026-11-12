@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru" prefix="og: https://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Приглашение в семью ALADDIN</title>
+  <!-- Open Graph — required for Telegram / WhatsApp / iMessage / FB link previews (1200×630). -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ALADDIN">
+  <meta property="og:title" content="Приглашение в семью ALADDIN">
+  <meta property="og:description" content="Присоединяйтесь к семье на карте ALADDIN — видьте близких рядом и будьте спокойнее.">
+  <meta property="og:locale" content="ru_RU">
+  <!-- Default silhouette (B). When personal OG exists: /og/family-invite/{CODE}.jpg (API upload). -->
+  <meta property="og:image" content="https://aladdin-ai.ru/og/family-invite-default-1200x630.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Приглашение в семью ALADDIN">
+  <meta name="twitter:description" content="Присоединяйтесь к семье на карте ALADDIN — видьте близких рядом и будьте спокойнее.">
+  <meta name="twitter:image" content="https://aladdin-ai.ru/og/family-invite-default-1200x630.jpg">
+  <link rel="alternate" hreflang="en" href="https://aladdin-ai.ru/family/invite/">
+  <style>
+    body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0B1220,#1A2332 45%,#273d7a);color:#fff;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{max-width:560px;width:100%;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:32px;box-shadow:0 20px 50px rgba(0,0,0,.24)}
+    .hero{width:100%;border-radius:16px;display:block;margin:0 0 18px;aspect-ratio:1200/630;object-fit:cover;background:#10182f}
+    .muted{color:rgba(255,255,255,.78);line-height:1.55}.code{font-size:28px;font-weight:800;letter-spacing:2px;background:rgba(255,255,255,.16);border-radius:14px;padding:14px 18px;margin:18px 0;word-break:break-word}
+    .actions{display:grid;gap:12px;margin-top:22px}.btn{display:block;text-align:center;text-decoration:none;border-radius:999px;padding:15px 18px;font-weight:800}.primary{background:#F59E0B;color:#1d2438}.secondary{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.18)}
+    .small{font-size:13px;color:rgba(255,255,255,.66);margin-top:18px}
+  </style>
+  <script>
+    // Prefer personal OG when /og/family-invite/{CODE}.jpg exists (uploaded by app).
+    // Crawlers that execute little JS still get default meta above; nginx/API SSR is Phase 3 upgrade.
+    (function () {
+      try {
+        var params = new URLSearchParams(location.search);
+        var parts = location.pathname.split('/').filter(Boolean);
+        var maybe = params.get('code') || parts[parts.length - 1] || '';
+        if (!/^FAM/i.test(maybe)) return;
+        // Filenames on disk = compact (no dashes), same as family_invite_og.py
+        var compact = maybe.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        var personal = 'https://aladdin-ai.ru/og/family-invite/' + compact + '.jpg';
+        var img = new Image();
+        img.onload = function () {
+          var nodes = document.querySelectorAll('meta[property="og:image"], meta[name="twitter:image"]');
+          nodes.forEach(function (n) { n.setAttribute('content', personal); });
+          var hero = document.getElementById('ogHero');
+          if (hero) hero.src = personal;
+        };
+        img.src = personal;
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <main class="card">
+    <img id="ogHero" class="hero" src="https://aladdin-ai.ru/og/family-invite-default-1200x630.jpg" width="1200" height="630" alt="">
+    <h1>Вас пригласили в семью ALADDIN</h1>
+    <p class="muted">Откройте приложение ALADDIN. Если ссылка не открылась автоматически, скопируйте FAM-код и выберите «Ввести код».</p>
+    <div class="code" id="famCode">FAM-XXXX-XXXX-XXXX</div>
+    <div class="actions">
+      <a class="btn primary" id="openApp" href="#">Открыть в ALADDIN</a>
+      <button class="btn secondary" id="copyCode" type="button">Скопировать FAM-код</button>
+      <a class="btn secondary" href="/#download">Скачать приложение</a>
+    </div>
+    <p class="small">Этот код добавляет человека в семью. 6-значный PIN используется только для привязки устройства.</p>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const parts = location.pathname.split('/').filter(Boolean);
+    const maybeCode = params.get('code') || parts[parts.length - 1] || '';
+    const code = /^FAM/i.test(maybeCode) ? maybeCode.toUpperCase() : 'FAM-XXXX-XXXX-XXXX';
+    document.getElementById('famCode').textContent = code;
+    document.getElementById('openApp').href = `aladdin://family/invite?code=${encodeURIComponent(code)}`;
+    document.getElementById('copyCode').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(code);
+      document.getElementById('copyCode').textContent = 'Скопировано';
+    });
+  </script>
+</body>
+</html>

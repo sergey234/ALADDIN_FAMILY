@@ -305,6 +305,8 @@ struct FamilyInviteShareModal: View {
     @State private var errorMessage: String?
     @State private var showShareSheet = false
     @State private var copyFeedback: String?
+    /// JOB13 — inviter photo for OG pin (Life360-style).
+    @State private var inviterAvatar: UIImage? = ProfileImageManager.shared.loadProfileImage(for: .main)
 
     private var displayCode: String {
         guard let invite else { return "" }
@@ -396,6 +398,10 @@ struct FamilyInviteShareModal: View {
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.78))
                 .multilineTextAlignment(.center)
+
+            /// JOB13 H20 — in-app OG preview (C + photo / B fallback).
+            InviteOGPreviewCard(avatar: inviterAvatar, height: 168)
+                .aladdinProductCard(cornerRadius: CornerRadius.medium)
 
             if let qrImage = generateQRCode(from: inviteDeepLink) {
                 Image(uiImage: qrImage)
@@ -501,10 +507,23 @@ struct FamilyInviteShareModal: View {
                 switch result {
                 case .success(let response):
                     invite = response
+                    Self.uploadInviteOGIfPossible(
+                        code: FamilyInviteCodeParser.parse(response.invite_code)?.displayCode
+                            ?? response.invite_code,
+                        avatar: inviterAvatar
+                    )
                 case .failure(let error):
                     errorMessage = inviteCreateErrorMessage(for: error)
                 }
             }
+        }
+    }
+
+    /// Best-effort: push personal OG JPEG so aladdin-ai.ru link previews can use it after deploy.
+    private static func uploadInviteOGIfPossible(code: String, avatar: UIImage?) {
+        guard let jpeg = InviteOGComposer.jpegData(avatar: avatar) else { return }
+        APIService.shared.uploadFamilyInviteOG(inviteCode: code, jpegData: jpeg) { ok in
+            print("FAMILY_INVITE_OG upload ok=\(ok) code=\(code.prefix(12))")
         }
     }
 
@@ -530,6 +549,8 @@ struct FamilyInviteShareModal: View {
             inviteLink
         )
         var items: [Any] = [text]
+        // Personal OG JPEG — messengers that attach images show Life360-like card art.
+        items.append(InviteOGComposer.renderOGImage(avatar: inviterAvatar))
         if invite != nil, let qrImage = generateQRCode(from: inviteDeepLink) {
             items.append(qrImage)
         }
