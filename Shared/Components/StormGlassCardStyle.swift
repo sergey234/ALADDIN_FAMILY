@@ -66,6 +66,63 @@ struct StormGlassCardStyle: ViewModifier {
     }
 }
 
+/// P5: Классика — плотная плита без blur (не «стекло»).
+struct ClassicSolidCardStyle: ViewModifier {
+    var cornerRadius: CGFloat = 10
+    var accentStripColor: Color? = nil
+    var accentStripWidth: CGFloat = 3
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color.backgroundMedium.opacity(0.94))
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.14), lineWidth: 1)
+            }
+            .overlay(alignment: .leading) {
+                if let accentStripColor {
+                    RoundedRectangle(cornerRadius: accentStripWidth / 2)
+                        .fill(accentStripColor)
+                        .frame(width: accentStripWidth)
+                        .padding(.vertical, 6)
+                        .padding(.leading, 2)
+                }
+            }
+            .shadow(color: .black.opacity(0.28), radius: 4, x: 0, y: 2)
+    }
+}
+
+/// P5: карточка продукта следует стилю иконок Settings.
+/// Классика → solid · Золото/Значки → storm glass. Только визуал.
+struct AladdinProductCardStyle: ViewModifier {
+    var cornerRadius: CGFloat = 10
+    var accentStripColor: Color? = nil
+    @AppStorage(AliveIconDiscStyle.storageKey) private var styleRaw: String =
+        AliveIconDiscStyle.defaultStyle.rawValue
+
+    func body(content: Content) -> some View {
+        let style = AliveIconDiscStyle(rawValue: styleRaw) ?? AliveIconDiscStyle.defaultStyle
+        if style == .legacy {
+            content.modifier(
+                ClassicSolidCardStyle(
+                    cornerRadius: cornerRadius,
+                    accentStripColor: accentStripColor
+                )
+            )
+        } else {
+            content.modifier(
+                StormGlassCardStyle(
+                    cornerRadius: cornerRadius,
+                    accentStripColor: accentStripColor
+                )
+            )
+        }
+    }
+}
+
 extension View {
     /// Storm premium glass surface для карточек (Batch 6+).
     func stormGlassCard(
@@ -74,6 +131,19 @@ extension View {
     ) -> some View {
         modifier(
             StormGlassCardStyle(
+                cornerRadius: cornerRadius,
+                accentStripColor: accentStripColor
+            )
+        )
+    }
+
+    /// Единый язык карточек: стекло только вне Классики (P5).
+    func aladdinProductCard(
+        cornerRadius: CGFloat = 10,
+        accentStripColor: Color? = nil
+    ) -> some View {
+        modifier(
+            AladdinProductCardStyle(
                 cornerRadius: cornerRadius,
                 accentStripColor: accentStripColor
             )

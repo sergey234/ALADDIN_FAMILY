@@ -23,14 +23,23 @@ struct FamilyGroupsModal: View {
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
+                /// JOB09 CapCut · H25 FamilyHug Kneel · Groups hero · UI 320×220.
+                Image("ICON_ALIVE_HERO_H25_FamilyHugKneel")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                    .accessibilityHidden(true)
+                    .accessibilityIdentifier("family_groups_hero_hug")
+
                 if groups.isEmpty && !showEditor {
                     Text(localizationManager.localized("family_groups_empty"))
                         .font(.subheadline)
                         .foregroundColor(.textSecondary)
                         .padding(Spacing.m)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white.opacity(0.08))
-                        .cornerRadius(CornerRadius.medium)
+                        .aladdinProductCard(cornerRadius: CornerRadius.medium)
                 }
 
                 ForEach(groups) { group in

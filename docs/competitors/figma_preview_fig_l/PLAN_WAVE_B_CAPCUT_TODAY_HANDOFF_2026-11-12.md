@@ -1,8 +1,10 @@
 # Wave B CapCut → iOS — хэндофф за сессию 2026-11-11…12
 
-**Verified 2026-11-12 ~11:15 Asia/Dubai:** imagesets ×14 в `Assets.xcassets` · wire Swift совпадает · READY PNG на месте · ветка `master` · strings SOS/pets/family RU+EN OK.
+**Verified 2026-11-12 ~21:10 Asia/Dubai:** imagesets ×14 heroes + Wave A `ICON_G1_*` · tip+SOS mid wired · ASC H*+Draft fitted · ветка `master`.
 
-**Для другой ML-системы:** этот файл = SSOT «что сделали в той сессии». Не OB_*. Не bot. Не bump/push без GO владельца. Сборка Xcode — только после фразы владельца «GO на сборку».
+**Карта всего (пути/Figma/CapCut/антидубль):** `ARTIFACT_MAP_WAVE_ABC_NO_DUPES_2026-11-12.md` — читать **первой** другой ML.
+
+**Для другой ML-системы:** этот файл = SSOT Wave B session. Не OB_*. Не bot. Не bump/push без GO владельца. Сборка Xcode — только после фразы владельца «GO на сборку».
 
 | Поле | Значение |
 |------|----------|
@@ -183,18 +185,24 @@ Pets/Family hero keys: `where_phone_pets_hero_*` · `where_phone_family_hero_*` 
 
 ---
 
-## 7. Что осталось (следующей ML / владельцу)
+## 7. Что осталось (следующей ML / владельцу) — обновлено 2026-11-12 ~18:26
 
 | # | Задача | Статус |
 |---|--------|--------|
-| A | CapCut JOB13 Invite OG — см. **§11** ниже (C/B/A + фазы) | ⏳ план готов, wire по GO |
-| A2 | CapCut JOB14+ (speedometer, ASC, dog hero 17, …) | ⏳ не начинали |
-| B | Полный SOS carousel H07–H12 mid tips (сейчас только intro+release = 2 слайда) | ⏳ по GO |
-| C | Owner Device QA: Places / Events / Driving / Pets / People / Groups / Always Allow / Safety pager | ⏳ без agent xcodebuild |
-| D | Цвет **live** `FamilySOSHoldButton` (сейчас gold в коде) ↔ красный illust — согласовать с владельцем | ⏳ спросить |
-| E | Commit на `master` + bump — только явный GO | ⏳ |
-| F | OB-QA / DEV-88 / bump 20 | ⏳ старые open items Wave A |
-| G | Не коммитить `telegram_stars_shop_bot/` · `.env` · VPN secrets handoff | инвариант |
+| A | CapCut JOB13 Invite OG + site/API | ✅ DONE + deploy |
+| A2 | CapCut JOB14+ / ASC H01–H28 RU+EN + Draft A–D fitted | ✅ ASC pack; Draft extras в `07_FITTED` |
+| B | SOS carousel mid tips (intro + 4 mid text/SF + release) | ✅ wire 2026-11-12 · CapCut art later optional |
+| C | Owner Device QA: Places…Safety pager | ⏳ без agent xcodebuild · нужен **GO на сборку** |
+| D | Цвет live `FamilySOSHoldButton` gold ↔ красный illust | ⏳ спросить |
+| E | Commit на `master` Wave A+B tip/SOS/ASC/docs | ✅ этот коммит · bump — отдельно |
+| F | OB-QA / DEV-88 / bump 20 | ⏳ Wave A open |
+| G | Не коммитить bot / `.env` / VPN secrets | инвариант ✅ |
+| H | Tip wire Where→Езда→отчёты | ✅ `DrivingReportsModal` + dismiss AppStorage |
+| I | ASC upload: **H\* + Draft A–D** | ✅ решение 2026-11-12 · файлы fitted · upload когда скажете |
+| J | Gary — оставляем везде | ✅ канон |
+| K | **Wave C** иконки Ребёнок+Проверить | ⏳ **другой чат** · Variant A LOCKED · `ML_HANDOFF_WAVE_C_VARIANT_A_…` |
+| L | Artifact map no-dupes | ✅ `ARTIFACT_MAP_WAVE_ABC_NO_DUPES_2026-11-12.md` |
+| M | Server redeploy tip/SOS | ❌ не нужно · Invite OG уже live |
 
 ---
 
@@ -209,8 +217,9 @@ Pets/Family hero keys: `where_phone_pets_hero_*` · `where_phone_family_hero_*` 
 7. Soft invite → kneel family.  
 8. Always Allow → hug stand.  
 9. Groups → hug kneel.  
-10. Safety → pager 2 стр: intro (bullets) + release; SOS illust **красная**; hold 3с работает.  
-11. Reduce Motion / chips Classic — без регрессий.
+10. Safety → pager **6** стр: intro → mid1–4 → release; SOS illust **красная**; hold 3с работает.  
+11. Driving → отчёты: tip-карточка видна до dismiss.  
+12. Reduce Motion / chips Classic — без регрессий.
 
 ---
 
@@ -402,3 +411,32 @@ EN audit: H01–H26 already had EN overlays ✅ · H27–H28 EN added ✅.
 
 Paths: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/` · Downloads `~/Downloads/ALADDIN_ASC_H27_H28_DrivingReports/` · all `~/Downloads/ALADDIN_ASC_WaveB_All/`.
 
+### 11.13 Full EN in-phone localization (GO 2026-11-12)
+
+Problem: EN ASC headlines were English, but CapCut phone UI still showed RU (`км`, `Общий пробег`, …).
+
+Done:
+- **H25–H28 EN** in-phone units/labels patched (PIL)
+- **H01 EN** bubble «Mom is home» patched
+- H03/H21 CapCut EN re-export still preferred (prompts in ASC_LOCALIZATION_SSOT) → `docs/AppStore/asc_screenshots_wave_b_2026-11-12/`
+- SSOT: `ASC_LOCALIZATION_SSOT.md` (CapCut EN bubble prompts for H01/H03/H21)
+- Tip + CapCut-parity keys in `ru`/`en` Localizable.strings (`asc_tip_driving_reports_*`, `drive_total_mileage`, units)
+- In-app tip wire — ✅ `DrivingReportsModal` 2026-11-12
+- Downloads mirrored
+
+In-app path: **Where → Езда → отчёты** (`DrivingReportsModal`) — live UI already localized via strings.
+
+### 11.14 CapCut EN evening + Draft A–D fitted (2026-11-12 ~18:20)
+
+| Item | Status |
+|------|--------|
+| H03 / H21 CapCut EN → 1290×2796 + headline | ✅ replaced EN in repo |
+| H03 / H21 **RU** (earlier ASC) | ✅ untouched, still in pack |
+| Draft A–D CapCut EN fitted | ✅ `ALADDIN_ASC_Draft*_EN_*` |
+| Draft A–C (+D) CapCut **RU** fitted | ✅ `ALADDIN_ASC_Draft*_RU_*` |
+| Gary name | ✅ keep everywhere |
+| CapCut WM on DraftC | ✅ scrubbed |
+| Finder | `~/Downloads/…/07_FITTED_1290x2796/` |
+| Checklist SSOT | `docs/AppStore/asc_screenshots_wave_b_2026-11-12/CHECKLIST_WAVE_B_H20_23_AND_LOC.md` |
+
+**Осталось по Wave B ASC:** upload H*+Draft в App Store Connect · Device QA после **GO на сборку** · CapCut art mid SOS (optional).

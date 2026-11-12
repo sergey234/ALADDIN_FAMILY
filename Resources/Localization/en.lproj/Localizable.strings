@@ -3685,8 +3685,18 @@
 "sos_edu_intro_bullet_2" = "You’re near danger";
 "sos_edu_intro_bullet_3" = "You urgently need medical help";
 "sos_edu_intro_cta" = "Go to SOS hold";
+"sos_edu_mid_1_title" = "Hold the SOS button for about 3 seconds";
+"sos_edu_mid_1_body" = "A quick tap is not enough — that cuts accidental alerts. You can release anytime before it sends.";
+"sos_edu_mid_2_title" = "Who gets the alert";
+"sos_edu_mid_2_body" = "Your ALADDIN family members and the emergency contacts you added. It does not auto-call an ambulance.";
+"sos_edu_mid_3_title" = "It can stay silent";
+"sos_edu_mid_3_body" = "After you hold, the alert goes out quietly — you do not have to speak if it is unsafe nearby.";
+"sos_edu_mid_4_title" = "If you pressed by mistake";
+"sos_edu_mid_4_body" = "Release before the countdown ends to cancel. If it already sent, message your family right away that you are OK.";
+"sos_edu_mid_next" = "Next";
 "sos_edu_release_title" = "Release the button to silently notify family members and emergency contacts";
 "sos_edu_release_cta" = "Got it";
+"asc_tip_driving_reports_dismiss" = "Dismiss";
 "sos_hold_hint" = "Hold for SOS";
 "sos_countdown" = "Cancel · %d";
 "sos_sent_family" = "Family got the alert";
@@ -3947,6 +3957,15 @@
 "driving_reports_risk_events_many" = "%d risky events";
 "driving_reports_unit_kmh" = "km/h";
 "driving_reports_unit_km" = "km";
+
+/* ASC / Where→Driving→Reports tip + CapCut-parity labels */
+"asc_tip_driving_reports_title" = "Family driving reports";
+"asc_tip_driving_reports_body" = "Mileage, max speed, and trips for each family member — after a real drive.";
+"drive_total_mileage" = "Total mileage";
+"drive_total_trips" = "Total trips";
+"drive_stat_km_unit" = "km";
+"drive_stat_kmh_unit" = "km/h";
+"drive_stat_min_unit" = "min";
 
 /* WAVE TrialA+TariffsC+PlayA+Filter+BG — strings SSOT */
 "activation_code_instruction_title" = "How it works";

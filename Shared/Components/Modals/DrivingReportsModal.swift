@@ -40,6 +40,8 @@ struct DrivingReportsModal: View {
     @State private var showSharePDF = false
     /// Play A — real trip metrics playback (no invented GPS points).
     @State private var playbackReport: DrivingReport?
+    /// Wave B tip · Where→Езда→отчёты (strings `asc_tip_driving_reports_*`).
+    @AppStorage("asc_tip_driving_reports_dismissed") private var drivingReportsTipDismissed = false
     
     enum FilterType: String, CaseIterable {
         case all = "all"
@@ -194,6 +196,15 @@ struct DrivingReportsModal: View {
                         .padding(.top, Spacing.m)
                     }
 
+                    /// JOB03 CapCut · Gold SUV · UI 112×112 · Driving sheet hero (H18).
+                    drivingHeroSUVRow
+                        .padding(.horizontal, Spacing.screenPadding)
+
+                    if !drivingReportsTipDismissed {
+                        drivingReportsTipCard
+                            .padding(.horizontal, Spacing.screenPadding)
+                    }
+
                     positioningSystemSelector
                         .padding(.horizontal, Spacing.screenPadding)
 
@@ -331,24 +342,34 @@ struct DrivingReportsModal: View {
                 .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: Spacing.s) {
+
+            // QA-06 A: 2×2 grid, short labels; score shown in full (e.g. 4.0/10).
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: Spacing.s),
+                    GridItem(.flexible(), spacing: Spacing.s)
+                ],
+                spacing: Spacing.s
+            ) {
                 statCard(
                     icon: "🚗",
-                    title: localizationManager.localized("driving_reports_trips_count"),
+                    title: localizationManager.localized("driving_stat_trips_short"),
                     value: "\(stats.totalTrips)"
                 )
-                
                 statCard(
                     icon: "⭐",
-                    title: localizationManager.localized("driving_reports_safety_score"),
+                    title: localizationManager.localized("driving_stat_score_short"),
                     value: stats.formattedAverageSafetyScore
                 )
-                
                 statCard(
                     icon: "⚠️",
-                    title: localizationManager.localized("driving_reports_violations"),
+                    title: localizationManager.localized("driving_stat_risks_short"),
                     value: "\(stats.violationsCount)"
+                )
+                statCard(
+                    icon: "🛣",
+                    title: localizationManager.localized("driving_stat_km_short"),
+                    value: String(format: "%.0f", stats.totalDistance)
                 )
             }
         }
@@ -360,17 +381,21 @@ struct DrivingReportsModal: View {
     private func statCard(icon: String, title: String, value: String) -> some View {
         VStack(spacing: Spacing.xs) {
             Text(icon)
-                .font(.system(size: 24))
+                .font(.system(size: 22))
             
             Text(value)
-                .font(.title2)
+                .font(.title3)
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
             
             Text(title)
-                .font(.caption)
+                .font(.caption2.weight(.semibold))
                 .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
         }
         .frame(maxWidth: .infinity)
         .padding(Spacing.s)
@@ -518,26 +543,33 @@ struct DrivingReportsModal: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             
-            HStack(spacing: Spacing.m) {
-                Label(report.localizedFormattedDistance(localizationManager), systemImage: "ruler")
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                
-                Label("\(report.durationMinutes) \(localizationManager.localized("driving_reports_unit_min"))", systemImage: "clock")
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-
-                if let maxSpeed = report.localizedFormattedMaxSpeed(localizationManager) {
-                    Label(maxSpeed, systemImage: "speedometer")
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                }
-                
-                if let risk = report.localizedRiskEventsLine(localizationManager) {
-                    Label(risk, systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundColor(.dangerRed)
-                }
+            // QA-04 A: 2×2 short metrics (км / мин / макс. км/ч / риски).
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: Spacing.s),
+                    GridItem(.flexible(), spacing: Spacing.s)
+                ],
+                spacing: Spacing.xs
+            ) {
+                tripMetricChip(
+                    value: String(format: "%.1f", report.distance),
+                    label: localizationManager.localized("driving_stat_km_short")
+                )
+                tripMetricChip(
+                    value: "\(report.durationMinutes)",
+                    label: localizationManager.localized("driving_stat_min_short")
+                )
+                tripMetricChip(
+                    value: report.maxSpeed > 0
+                        ? String(format: "%.0f", min(report.maxSpeed, 140))
+                        : "—",
+                    label: localizationManager.localized("driving_stat_max_kmh_short")
+                )
+                tripMetricChip(
+                    value: "\(report.violations.count)",
+                    label: localizationManager.localized("driving_stat_risks_short"),
+                    emphasize: report.violations.count > 0
+                )
             }
 
             HStack(spacing: Spacing.xs) {
@@ -556,6 +588,27 @@ struct DrivingReportsModal: View {
         )
     }
     
+    private func tripMetricChip(value: String, label: String, emphasize: Bool = false) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.subheadline.weight(.bold))
+                .foregroundColor(emphasize ? .dangerRed : .textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.small)
+                .fill(Color.backgroundMedium.opacity(0.25))
+        )
+    }
+
     private func safetyScoreColor(_ score: Double) -> Color {
         if score >= 8 {
             return .successGreen
@@ -618,16 +671,68 @@ struct DrivingReportsModal: View {
 
     // MARK: - Empty State
     
+    /// JOB03a CapCut · Gold SUV · transparent PNG · Driving hero (not Places/Events).
+    private var drivingHeroSUVRow: some View {
+        HStack(alignment: .center, spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localizationManager.localized("component_driving_reports_title"))
+                    .font(AladdinFamilyType.title3())
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized("driving_reports_empty_lead"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Image("ICON_ALIVE_HERO_H18_SUV_Gold")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 112, height: 112)
+                .accessibilityHidden(true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("driving_reports_hero_suv_gold")
+    }
+
+    /// Tip under hero · dismiss once · keys already in Localizable.strings.
+    private var drivingReportsTipCard: some View {
+        HStack(alignment: .top, spacing: Spacing.m) {
+            Image(systemName: "lightbulb.fill")
+                .font(.title3.weight(.semibold))
+                .foregroundColor(.secondaryGold)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localizationManager.localized("asc_tip_driving_reports_title"))
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized("asc_tip_driving_reports_body"))
+                    .font(AladdinFamilyType.caption())
+                    .foregroundColor(.white.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            Button {
+                HapticFeedback.selection()
+                drivingReportsTipDismissed = true
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.55))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localizationManager.localized("asc_tip_driving_reports_dismiss"))
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("driving_reports_asc_tip")
+        .accessibilityElement(children: .contain)
+    }
+
     private var emptyStateView: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            HStack {
-                Spacer(minLength: 0)
-                Image(systemName: "car.fill")
-                    .font(.system(size: 44))
-                    .foregroundColor(.secondaryGold)
-                Spacer(minLength: 0)
-            }
-
             Text(localizationManager.localized("driving_reports_empty"))
                 .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
@@ -901,13 +1006,12 @@ struct DrivingReportsModal: View {
 
             if !entitled {
                 // S58 tariff gate — honest lock, no fake Life360 risk counts.
+                // JOB04 CapCut · H16 GoldLock · UI 140×140 · Driving soft-paywall.
                 Button {
                     HapticFeedback.selection()
                     navigationManager.navigateTo(.tariffs)
                 } label: {
-                    HStack(spacing: Spacing.m) {
-                        Image(systemName: "lock.fill")
-                            .foregroundColor(.secondaryGold)
+                    HStack(alignment: .center, spacing: Spacing.m) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(localizationManager.localized("drive_weekly_locked_title"))
                                 .font(AladdinFamilyType.subheadline(weight: .semibold))
@@ -916,14 +1020,20 @@ struct DrivingReportsModal: View {
                                 .font(AladdinFamilyType.caption())
                                 .foregroundColor(.white.opacity(0.92))
                                 .fixedSize(horizontal: false, vertical: true)
+                            Text(localizationManager.localized("drive_weekly_locked_cta"))
+                                .font(AladdinFamilyType.caption(weight: .bold))
+                                .foregroundColor(.secondaryGold)
+                                .padding(.top, 2)
                         }
-                        Spacer(minLength: 0)
-                        Text(localizationManager.localized("drive_weekly_locked_cta"))
-                            .font(AladdinFamilyType.caption(weight: .bold))
-                            .foregroundColor(.secondaryGold)
+                        Spacer(minLength: 8)
+                        Image("ICON_ALIVE_HERO_H16_GoldLock")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 140, height: 140)
+                            .accessibilityHidden(true)
                     }
                     .padding(Spacing.m)
-                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    .aladdinProductCard(cornerRadius: CornerRadius.medium)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("drive_weekly_tariff_gate")

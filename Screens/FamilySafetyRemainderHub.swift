@@ -20,6 +20,8 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     @Published var coordinate: CLLocationCoordinate2D?
     @Published var speedKmh: Int?
     @Published var updatedAt: Date?
+    /// QA-08: horizontal accuracy in meters (−1 = unknown).
+    @Published var accuracyMeters: Double = -1
     @Published var authStatus: CLAuthorizationStatus = .notDetermined
 
     private let manager = CLLocationManager()
@@ -64,6 +66,19 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         manager.stopUpdatingLocation()
     }
 
+    /// QA-08 A: one-shot refresh («Обновить моё место»).
+    func requestFreshFix() {
+        authStatus = manager.authorizationStatus
+        guard authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse else {
+            manager.requestWhenInUseAuthorization()
+            return
+        }
+        manager.requestLocation()
+        if FamilyMapLiveAccess.isEntitled, authStatus == .authorizedAlways {
+            manager.startUpdatingLocation()
+        }
+    }
+
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor in
             self.authStatus = manager.authorizationStatus
@@ -86,6 +101,7 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             guard FamilyMapLiveAccess.isEntitled else { return }
             self.coordinate = loc.coordinate
             self.updatedAt = loc.timestamp
+            self.accuracyMeters = loc.horizontalAccuracy
             // Real CL only; drop invalid / GPS spikes. UI also caps at 140 — 181 km/h was a spike.
             let kmh = loc.speed * 3.6
             let speedOK = loc.speedAccuracy < 0 || loc.speedAccuracy <= 8
@@ -315,8 +331,9 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         if let circle = overlay as? MKCircle {
             let r = MKCircleRenderer(circle: circle)
-            r.fillColor = UIColor(red: 0.45, green: 0.28, blue: 0.85, alpha: 0.18)
-            r.strokeColor = UIColor(red: 0.45, green: 0.28, blue: 0.85, alpha: 0.85)
+            // Quiet-zone: gold (не Life360 purple) — P0 2026-11-11
+            r.fillColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 0.18) // #F59E0B
+            r.strokeColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 0.85)
             r.lineWidth = 2
             return r
         }
@@ -494,6 +511,7 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
     private let bubble = UILabel()
     private let ring = UIView()
     private let photoView = UIImageView()
+    private static let breatheKey = "aladdin_pin_breathe"
 
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -513,12 +531,36 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
         bubble.textColor = UIColor(Color.secondaryGold)
         bubble.font = .systemFont(ofSize: 14, weight: .bold)
         ring.addSubview(bubble)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(reduceMotionChanged),
+            name: UIAccessibility.reduceMotionStatusDidChangeNotification,
+            object: nil
+        )
     }
 
     required init?(coder aDecoder: NSCoder) { nil }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil {
+            stopBreathe()
+        } else {
+            startBreatheIfNeeded()
+        }
+    }
+
+    @objc private func reduceMotionChanged() {
+        startBreatheIfNeeded()
+    }
+
     func apply(size: CGFloat, title: String?) {
-        let d = max(24, min(56, size))
+        // P4: L=56; cap 64 so breathe ±8% не обрезается layout-ом.
+        let d = max(24, min(64, size))
         frame = CGRect(x: 0, y: 0, width: d, height: d)
         centerOffset = CGPoint(x: 0, y: -d / 4)
         ring.frame = bounds
@@ -539,6 +581,29 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
             let letter = (title?.trimmingCharacters(in: .whitespacesAndNewlines).first).map(String.init) ?? "·"
             bubble.text = letter.uppercased()
         }
+        startBreatheIfNeeded()
+    }
+
+    /// P4.2: «дышит» ±8%, цикл 1.8 с. Не трогает GPS / quiet-zone meters.
+    private func startBreatheIfNeeded() {
+        if UIAccessibility.isReduceMotionEnabled || window == nil {
+            stopBreathe()
+            return
+        }
+        guard ring.layer.animation(forKey: Self.breatheKey) == nil else { return }
+        let anim = CABasicAnimation(keyPath: "transform.scale")
+        anim.fromValue = 1.0
+        anim.toValue = 1.08
+        anim.duration = 0.9
+        anim.autoreverses = true
+        anim.repeatCount = .infinity
+        anim.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        ring.layer.add(anim, forKey: Self.breatheKey)
+    }
+
+    private func stopBreathe() {
+        ring.layer.removeAnimation(forKey: Self.breatheKey)
+        ring.layer.transform = CATransform3DIdentity
     }
 }
 
@@ -575,6 +640,52 @@ struct FamilyPetProfile: Codable, Identifiable, Equatable {
     var walkReminder: Bool
     var feedReminder: Bool
     var medicineReminder: Bool
+    /// Wave B H15: `dog` | `cat` | `other` — optional for older local saves.
+    var kind: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, breed, notes, walkReminder, feedReminder, medicineReminder, kind
+    }
+
+    init(
+        id: UUID,
+        name: String,
+        breed: String,
+        notes: String,
+        walkReminder: Bool,
+        feedReminder: Bool,
+        medicineReminder: Bool,
+        kind: String = "dog"
+    ) {
+        self.id = id
+        self.name = name
+        self.breed = breed
+        self.notes = notes
+        self.walkReminder = walkReminder
+        self.feedReminder = feedReminder
+        self.medicineReminder = medicineReminder
+        self.kind = kind
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        breed = try c.decode(String.self, forKey: .breed)
+        notes = try c.decode(String.self, forKey: .notes)
+        walkReminder = try c.decode(Bool.self, forKey: .walkReminder)
+        feedReminder = try c.decode(Bool.self, forKey: .feedReminder)
+        medicineReminder = try c.decode(Bool.self, forKey: .medicineReminder)
+        kind = try c.decodeIfPresent(String.self, forKey: .kind) ?? "dog"
+    }
+
+    var heroAssetName: String {
+        switch kind {
+        case "cat": return "ICON_ALIVE_HERO_H15_PetCat"
+        case "other": return "ICON_ALIVE_HERO_H15_PetOther"
+        default: return "ICON_ALIVE_HERO_H15_PetDog"
+        }
+    }
 }
 
 enum FamilyPetProfileStore {
@@ -606,14 +717,14 @@ enum FamilyPetProfileStore {
 struct FamilyMapPinPreviewSheet: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @AppStorage("where_phone_pin_preview_done") private var previewDone = false
-    /// W2 Q18: S=28 · M=36 · L=48
-    @AppStorage("where_phone_pin_size") private var pinSizeRaw: String = "M"
+    @AppStorage("where_phone_pin_preview_done") private var previewDone = true
+    /// QA-15 / P4: default L (56pt). Sheet retired from hub onAppear.
+    @AppStorage("where_phone_pin_size") private var pinSizeRaw: String = "L"
 
     private var previewDiameter: CGFloat {
         switch pinSizeRaw {
         case "S": return 28
-        case "L": return 48
+        case "L": return 56
         default: return 36
         }
     }
@@ -758,6 +869,14 @@ struct FamilyPetWizardSheet: View {
     /// Q22: free-text reminder instead of fixed «medicine» toggle.
     @State private var customReminder = ""
     @State private var saved = false
+    /// JOB05–07 CapCut · H15 type picker · dog / cat / other.
+    @State private var selectedKind: String = "dog"
+
+    private let petKinds: [(id: String, titleKey: String, asset: String)] = [
+        ("dog", "pet_type_dog", "ICON_ALIVE_HERO_H15_PetDog"),
+        ("cat", "pet_type_cat", "ICON_ALIVE_HERO_H15_PetCat"),
+        ("other", "pet_type_other", "ICON_ALIVE_HERO_H15_PetOther")
+    ]
 
     var body: some View {
         NavigationView {
@@ -769,6 +888,48 @@ struct FamilyPetWizardSheet: View {
                     Text(localizationManager.localized("map_soon_pet_body"))
                         .font(AladdinFamilyType.caption())
                         .foregroundColor(.textSecondary)
+
+                    Text(localizationManager.localized("pet_type_picker_title"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    HStack(spacing: Spacing.m) {
+                        ForEach(petKinds, id: \.id) { kind in
+                            Button {
+                                SelectionHaptic.selection()
+                                selectedKind = kind.id
+                            } label: {
+                                VStack(spacing: 8) {
+                                    Image(kind.asset)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 88, height: 88)
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle()
+                                                .stroke(
+                                                    selectedKind == kind.id
+                                                        ? Color.secondaryGold
+                                                        : Color.clear,
+                                                    lineWidth: 3
+                                                )
+                                        )
+                                    Text(localizationManager.localized(kind.titleKey))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(
+                                            selectedKind == kind.id
+                                                ? .secondaryGold
+                                                : .textSecondary
+                                        )
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("pet_type_\(kind.id)")
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    .accessibilityIdentifier("pet_type_picker_h15")
+
                     TextField(localizationManager.localized("pet_name_ph"), text: $name)
                         .textFieldStyle(.roundedBorder)
                     TextField(localizationManager.localized("pet_breed_ph"), text: $breed)
@@ -840,7 +1001,8 @@ struct FamilyPetWizardSheet: View {
             notes: mergedNotes,
             walkReminder: walk,
             feedReminder: feed,
-            medicineReminder: false
+            medicineReminder: false,
+            kind: selectedKind
         )
         FamilyPetProfileStore.append(pet)
         var habits = UserDefaults.standard.stringArray(forKey: "family_pet_habit_flags_v1") ?? []
@@ -1273,6 +1435,7 @@ struct FamilySOSHoldButton: View {
     @State private var timer: Timer?
 
     private let holdSeconds: CGFloat = 3
+    private let diameter: CGFloat = 132
 
     var body: some View {
         VStack(spacing: Spacing.s) {
@@ -1281,21 +1444,40 @@ struct FamilySOSHoldButton: View {
                  : localizationManager.localized("sos_hold_hint"))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.secondaryGold)
+                .multilineTextAlignment(.center)
 
+            // P4.4: круг + кольцо прогресса (полоску убрали). Hold 3с / fireSOS без изменений.
             ZStack {
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.secondaryGold.opacity(0.15))
-                    .frame(height: 56)
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.secondaryGold.opacity(0.45))
-                    .frame(maxWidth: .infinity, maxHeight: 56, alignment: .leading)
-                    .scaleEffect(x: max(progress, 0.02), y: 1, anchor: .leading)
-                Text(holding
-                     ? String(format: localizationManager.localized("sos_countdown"), max(1, Int(ceil(holdSeconds * (1 - progress)))))
-                     : localizationManager.localized("sos_hold_hint"))
-                    .font(.subheadline.weight(.bold))
-                    .foregroundColor(.textPrimary)
+                Circle()
+                    .fill(Color.secondaryGold.opacity(holding ? 0.28 : 0.15))
+                    .frame(width: diameter, height: diameter)
+                Circle()
+                    .stroke(Color.secondaryGold.opacity(0.28), lineWidth: 4)
+                    .frame(width: diameter, height: diameter)
+                Circle()
+                    .trim(from: 0, to: max(progress, holding ? 0.02 : 0))
+                    .stroke(
+                        Color.secondaryGold,
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: diameter, height: diameter)
+                    .animation(holding ? .linear(duration: 0.05) : .easeOut(duration: 0.2), value: progress)
+                VStack(spacing: 4) {
+                    Text("SOS")
+                        .font(.title2.weight(.black))
+                        .foregroundColor(.secondaryGold)
+                    if holding {
+                        Text(String(
+                            format: localizationManager.localized("sos_countdown"),
+                            max(1, Int(ceil(holdSeconds * (1 - progress))))
+                        ))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    }
+                }
             }
+            .contentShape(Circle())
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in

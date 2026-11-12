@@ -3596,8 +3596,18 @@
 "sos_edu_intro_bullet_2" = "Оказались рядом с опасностью";
 "sos_edu_intro_bullet_3" = "Срочно нужна медицинская помощь";
 "sos_edu_intro_cta" = "К удержанию SOS";
+"sos_edu_mid_1_title" = "Удерживайте кнопку SOS около 3 секунд";
+"sos_edu_mid_1_body" = "Короткого нажатия мало — так мы снижаем случайные сигналы. Отпустить можно в любой момент до отправки.";
+"sos_edu_mid_2_title" = "Кому уйдёт сигнал";
+"sos_edu_mid_2_body" = "Членам вашей семьи в ALADDIN и экстренным контактам, которые вы указали. Это не вызов «скорой» автоматически.";
+"sos_edu_mid_3_title" = "Можно беззвучно";
+"sos_edu_mid_3_body" = "После удержания сигнал уходит тихо: вы не обязаны говорить вслух, если рядом небезопасно.";
+"sos_edu_mid_4_title" = "Если нажали по ошибке";
+"sos_edu_mid_4_body" = "Отпустите до конца отсчёта — отправка отменится. Если сигнал уже ушёл, сразу напишите семье, что всё в порядке.";
+"sos_edu_mid_next" = "Далее";
 "sos_edu_release_title" = "Отпустите кнопку, чтобы беззвучно оповестить членов семьи и экстренные контакты";
 "sos_edu_release_cta" = "Понятно";
+"asc_tip_driving_reports_dismiss" = "Скрыть";
 "sos_hold_hint" = "Удерживайте для SOS";
 "sos_countdown" = "Отмена · %d";
 "sos_sent_family" = "Семья получила сигнал";
@@ -3858,6 +3868,15 @@
 "driving_reports_risk_events_many" = "%d рискованных событий";
 "driving_reports_unit_kmh" = "км/ч";
 "driving_reports_unit_km" = "км";
+
+/* ASC / Where→Езда→отчёты tip + CapCut-parity labels */
+"asc_tip_driving_reports_title" = "Отчёты о поездках семьи";
+"asc_tip_driving_reports_body" = "Пробег, макс. скорость и число поездок по каждому — после реальной поездки.";
+"drive_total_mileage" = "Общий пробег";
+"drive_total_trips" = "Всего поездок";
+"drive_stat_km_unit" = "км";
+"drive_stat_kmh_unit" = "км/ч";
+"drive_stat_min_unit" = "мин";
 
 /* WAVE TrialA+TariffsC+PlayA+Filter+BG — strings SSOT */
 "activation_code_instruction_title" = "Как это работает";

@@ -87,6 +87,17 @@ struct TariffCard: Identifiable {
 // MARK: - Конфигурация карточек тарифов
 
 extension TariffType {
+    /// G1 иконка для Золото/Значки (Классика = `TariffCard.emoji`).
+    var aliveIconID: AliveIconID {
+        switch self {
+        case .free: return .tariffFree
+        case .personal: return .tariffPersonal
+        case .family: return .tariffFamily
+        case .trial: return .tariffTrial
+        case .premium: return .premium
+        }
+    }
+
     /// Создать карточку тарифа.
     /// - Parameter price: живая цена StoreKit (`displayPrice`). Если nil — Free/Trial = «Бесплатно», платные = «—».
     func createCard(localizationManager: LocalizationManager, price: String? = nil) -> TariffCard {

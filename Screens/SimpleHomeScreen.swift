@@ -99,6 +99,8 @@ struct SimpleHomeScreen: View {
                 .environmentObject(navigationManager)
         }
         .sheet(isPresented: $showWherePhone, onDismiss: {
+            // Sticky pending_open_map must die if sheet closed before consume.
+            FamilyPushDeepLink.clearMapPendingOnDismiss(reason: "simple_home_where_dismiss")
             if let pending = pendingWherePhoneNavigation {
                 pendingWherePhoneNavigation = nil
                 DispatchQueue.main.async { pending() }
@@ -127,6 +129,11 @@ struct SimpleHomeScreen: View {
                 .environmentObject(navigationManager)
         }
         .onChange(of: navigationManager.currentScreen) { screen in
+            // Leaving Convenient for Antifake: drop soft map intents (keep SOS/battery/ImOK).
+            if screen == .antifakeHub {
+                showWherePhone = false
+                FamilyPushDeepLink.clearSoftMapPending(reason: "simple_home_to_antifake")
+            }
             guard screen == .simpleHome, restorePayPainsMenuOnReturn else { return }
             restorePayPainsMenuOnReturn = false
             // После анимации goBack / dismiss sheet — снова «Все разделы».
@@ -141,12 +148,10 @@ struct SimpleHomeScreen: View {
             showVoiceNotes = true
         }
         .onReceive(NotificationCenter.default.publisher(for: FamilyPushDeepLink.navigateToFamilyMapName)) { _ in
-            showWherePhone = true
+            presentWherePhoneFromPendingIfNeeded(reason: "simple_home_notify")
         }
         .onAppear {
-            if UserDefaults.standard.bool(forKey: FamilyPushDeepLink.pendingOpenMapKey) {
-                showWherePhone = true
-            }
+            presentWherePhoneFromPendingIfNeeded(reason: "simple_home_appear")
         }
         .sheet(isPresented: $showMoreSheet, onDismiss: {
             if let pending = pendingMoreNavigation {
@@ -169,6 +174,12 @@ struct SimpleHomeScreen: View {
         showChildDoor = false
     }
 
+    /// SSOT: open family map only after atomic take (TTL + clear). Never raw UserDefaults bool.
+    private func presentWherePhoneFromPendingIfNeeded(reason: String) {
+        guard FamilyPushDeepLink.takeMapPresentationIfNeeded(reason: reason) != nil else { return }
+        showWherePhone = true
+    }
+
     // MARK: - Pay-pains home (F3 + лёгкий D1)
 
     private var payPainsHomeContent: some View {
@@ -178,6 +189,7 @@ struct SimpleHomeScreen: View {
                 titleKey: "pay_pains_door_check_title",
                 subtitleKey: "pay_pains_door_check_subtitle",
                 systemImage: "magnifyingglass",
+                aliveIcon: .check,
                 identifier: "pay_pains_door_check",
                 prominent: true
             ) {
@@ -188,6 +200,7 @@ struct SimpleHomeScreen: View {
                 titleKey: "pay_pains_door_child_title",
                 subtitleKey: "pay_pains_door_child_subtitle",
                 systemImage: "person.2.fill",
+                aliveIcon: .child,
                 identifier: "pay_pains_door_child",
                 prominent: false
             ) {
@@ -197,6 +210,7 @@ struct SimpleHomeScreen: View {
                 titleKey: "pay_pains_door_where_title",
                 subtitleKey: "pay_pains_door_where_subtitle",
                 systemImage: "map.fill",
+                aliveIcon: .whereFamily,
                 identifier: "pay_pains_door_where",
                 prominent: false,
                 subtitleOverride: whereDoorSubtitle()
@@ -208,8 +222,10 @@ struct SimpleHomeScreen: View {
                 navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
             } label: {
                 HStack {
-                    Image(systemName: "person.2.wave.2.fill")
-                        .font(.subheadline.weight(.semibold))
+                    AliveGlyph(id: .aiFriends, size: 28) {
+                        Image(systemName: "person.2.wave.2.fill")
+                            .font(.subheadline.weight(.semibold))
+                    }
                     Text(localizationManager.localized("pay_pains_ai_friends_row"))
                         .font(.subheadline.weight(.semibold))
                     Spacer()
@@ -229,8 +245,10 @@ struct SimpleHomeScreen: View {
                 showPayPainsMenu = true
             } label: {
                 HStack {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.title3)
+                    AliveGlyph(id: .menu, size: 28) {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.title3)
+                    }
                     Text(localizationManager.localized("pay_pains_menu_button"))
                         .font(.subheadline.weight(.bold))
                     Spacer()
@@ -241,7 +259,7 @@ struct SimpleHomeScreen: View {
                 .foregroundColor(.white)
                 .padding(Spacing.m)
                 .frame(maxWidth: .infinity)
-                .stormGlassCard(cornerRadius: CornerRadius.large)
+                .aladdinProductCard(cornerRadius: CornerRadius.large)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("pay_pains_menu")
@@ -307,7 +325,7 @@ struct SimpleHomeScreen: View {
             }
             .padding(Spacing.m)
             .frame(maxWidth: .infinity)
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
             // QA16 B1: пустая полоса = главный CTA «добавить семью» — золотой ободок.
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.large)
@@ -391,6 +409,7 @@ struct SimpleHomeScreen: View {
         titleKey: String,
         subtitleKey: String,
         systemImage: String,
+        aliveIcon: AliveIconID? = nil,
         identifier: String,
         prominent: Bool,
         subtitleOverride: String? = nil,
@@ -398,6 +417,7 @@ struct SimpleHomeScreen: View {
     ) -> some View {
         let title = localizationManager.localized(titleKey)
         let subtitle = subtitleOverride ?? localizationManager.localized(subtitleKey)
+        let glyphSize: CGFloat = prominent ? 36 : 32
         return Button {
             HapticFeedback.impact(reduceMotion ? .soft : .light)
             AnalyticsManager.shared.trackEvent(
@@ -407,11 +427,21 @@ struct SimpleHomeScreen: View {
             action()
         } label: {
             HStack(alignment: .center, spacing: Spacing.m) {
-                Image(systemName: systemImage)
-                    .font(prominent ? .title.weight(.semibold) : .title2.weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 36)
-                    .accessibilityHidden(true)
+                Group {
+                    if let aliveIcon {
+                        AliveGlyph(id: aliveIcon, size: glyphSize) {
+                            Image(systemName: systemImage)
+                                .font(prominent ? .title.weight(.semibold) : .title2.weight(.semibold))
+                                .foregroundColor(.white)
+                        }
+                    } else {
+                        Image(systemName: systemImage)
+                            .font(prominent ? .title.weight(.semibold) : .title2.weight(.semibold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .frame(width: 36)
+                .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) {
                     // W4 / D1.5: New York на заголовке и подписи двери (AladdinFamilyType).
                     Text(title)
@@ -431,7 +461,7 @@ struct SimpleHomeScreen: View {
             }
             .padding(Spacing.l)
             .frame(maxWidth: .infinity, minHeight: prominent ? 108 : 88, alignment: .leading)
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
@@ -541,7 +571,7 @@ struct SimpleHomeScreen: View {
         }
         .padding(Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
         .accessibilityElement(children: .contain)
     }
 
@@ -561,7 +591,7 @@ struct SimpleHomeScreen: View {
                         }
                         .padding(Spacing.m)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .stormGlassCard(cornerRadius: CornerRadius.large)
+                        .aladdinProductCard(cornerRadius: CornerRadius.large)
 
                         familyMapVisibilityCard
 
@@ -885,7 +915,7 @@ struct SimpleHomeScreen: View {
             .padding(Spacing.m)
             .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
             .contentShape(Rectangle())
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)
@@ -1029,7 +1059,7 @@ struct SimpleHomeScreen: View {
             }
             .padding(Spacing.m)
             .frame(maxWidth: .infinity, minHeight: tileMinHeight, alignment: .topLeading)
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
@@ -1058,7 +1088,7 @@ struct SimpleHomeScreen: View {
             .foregroundColor(.white)
             .padding(Spacing.m)
             .frame(maxWidth: .infinity)
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("simple_home_more")
@@ -1072,8 +1102,10 @@ struct SimpleHomeScreen: View {
             navigationManager.navigateToRoot(.main)
         } label: {
             HStack {
-                Image(systemName: "rectangle.split.2x1")
-                    .font(.title3)
+                AliveGlyph(id: .fullApp, size: 28) {
+                    Image(systemName: "rectangle.split.2x1")
+                        .font(.title3)
+                }
                 Text(localizationManager.localized("simple_home_open_full_main"))
                     .font(.subheadline.weight(.semibold))
                 Spacer()
@@ -1081,7 +1113,7 @@ struct SimpleHomeScreen: View {
             .foregroundColor(.white)
             .padding(Spacing.m)
             .frame(maxWidth: .infinity)
-            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("simple_home_open_full_main")
@@ -1100,7 +1132,7 @@ struct SimpleHomeScreen: View {
         }
         .tint(Color(hex: "C4B5FD"))
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
         .accessibilityIdentifier("simple_home_pref_toggle")
     }
 

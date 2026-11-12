@@ -2257,7 +2257,7 @@ struct FamilyScreen: View {
                             .accessibilityHint(localizationManager.localized("add_member_accessibility_hint"))
                         }
                         .padding(25)
-                        .stormGlassCard(cornerRadius: 20)
+                        .aladdinProductCard(cornerRadius: 20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
@@ -2267,11 +2267,13 @@ struct FamilyScreen: View {
                             navigateToAddOrCreateFamily()
                         }) {
                             HStack(alignment: .center, spacing: 14) {
-                                Image(systemName: "person.badge.plus")
-                                    .font(.system(size: 28, weight: .semibold))
-                                    .foregroundColor(.secondaryGold)
-                                    .frame(width: 48, height: 48)
-                                    .background(Circle().fill(Color.secondaryGold.opacity(0.16)))
+                                AliveGlyph(id: .famInvite, size: 32) {
+                                    Image(systemName: "person.badge.plus")
+                                        .font(.system(size: 28, weight: .semibold))
+                                        .foregroundColor(.secondaryGold)
+                                }
+                                .frame(width: 48, height: 48)
+                                .background(Circle().fill(Color.secondaryGold.opacity(0.16)))
 
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(localizationManager.localized("family_invite_card_title"))
@@ -2541,7 +2543,7 @@ struct FamilyScreen: View {
                             }
                         }
                         .padding(25)
-                        .stormGlassCard(cornerRadius: 20)
+                        .aladdinProductCard(cornerRadius: 20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
@@ -2593,8 +2595,10 @@ struct FamilyScreen: View {
                                     navigationManager.navigateTo(.familyList)
                                 } label: {
                                     HStack {
-                                        Image(systemName: "checklist")
-                                            .foregroundColor(.secondaryGold)
+                                        AliveGlyph(id: .famMembers, size: 28) {
+                                            Image(systemName: "checklist")
+                                                .foregroundColor(.secondaryGold)
+                                        }
                                         Text(localizationManager.localized("family_list_title"))
                                             .font(.subheadline.weight(.semibold))
                                             .foregroundColor(.white)
@@ -2604,7 +2608,7 @@ struct FamilyScreen: View {
                                             .foregroundColor(.white.opacity(0.55))
                                     }
                                     .padding()
-                                    .stormGlassCard(cornerRadius: 12)
+                                    .aladdinProductCard(cornerRadius: 12)
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("family_open_list")
@@ -2622,7 +2626,7 @@ struct FamilyScreen: View {
                                             .font(.caption)
                                     }
                                     .padding()
-                                    .stormGlassCard(cornerRadius: 12)
+                                    .aladdinProductCard(cornerRadius: 12)
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("family_where_phone")
@@ -2666,7 +2670,9 @@ struct FamilyScreen: View {
             FamilyLocationModal(isPresented: $showLocationModal, isEnabled: $isLocationEnabled)
                 .environmentObject(localizationManager)
         }
-        .sheet(isPresented: $showWherePhone) {
+        .sheet(isPresented: $showWherePhone, onDismiss: {
+            FamilyPushDeepLink.clearMapPendingOnDismiss(reason: "family_where_dismiss")
+        }) {
             WhereIsPhoneScreen(isPresented: $showWherePhone)
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
@@ -2676,7 +2682,9 @@ struct FamilyScreen: View {
                 .environmentObject(localizationManager)
         }
         .onReceive(NotificationCenter.default.publisher(for: FamilyPushDeepLink.navigateToFamilyMapName)) { _ in
-            showWherePhone = true
+            if FamilyPushDeepLink.takeMapPresentationIfNeeded(reason: "family_notify") != nil {
+                showWherePhone = true
+            }
         }
         .sheet(isPresented: $showReportsModal) {
             FamilyReportsModal(isPresented: $showReportsModal, isEnabled: $isReportsEnabled)
@@ -3199,7 +3207,7 @@ extension FamilyScreen {
             }
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
         .accessibilityIdentifier("pay_pains_family_master")
     }
 
@@ -3218,7 +3226,7 @@ extension FamilyScreen {
                 .environmentObject(navigationManager)
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
     }
 
     private var payPainsWhereSection: some View {
@@ -3251,7 +3259,7 @@ extension FamilyScreen {
             .accessibilityIdentifier("family_where_phone")
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
     }
 
     private var payPainsTogetherSection: some View {
@@ -3293,7 +3301,9 @@ extension FamilyScreen {
                     navigationManager.navigateTo(.familyList)
                 } label: {
                     HStack {
-                        Image(systemName: "checklist")
+                        AliveGlyph(id: .famMembers, size: 28) {
+                            Image(systemName: "checklist")
+                        }
                         Text(localizationManager.localized("family_list_title"))
                             .font(.subheadline.weight(.semibold))
                         Spacer()
@@ -3309,10 +3319,34 @@ extension FamilyScreen {
 
                 Button {
                     HapticFeedback.impact(.light)
+                    navigationManager.navigateTo(.familyChat)
+                } label: {
+                    HStack {
+                        AliveGlyph(id: .famChat, size: 28) {
+                            Image(systemName: "message.fill")
+                        }
+                        Text(localizationManager.localized("pay_pains_menu_family_chat"))
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.textPrimary)
+                    .padding()
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_open_chat")
+
+                Button {
+                    HapticFeedback.impact(.light)
                     showFamilyGroups = true
                 } label: {
                     HStack {
-                        Image(systemName: "person.3.fill")
+                        AliveGlyph(id: .famGroups, size: 28) {
+                            Image(systemName: "person.3.fill")
+                        }
                         Text(localizationManager.localized("family_groups_title"))
                             .font(.subheadline.weight(.semibold))
                         Spacer()
@@ -3355,7 +3389,7 @@ extension FamilyScreen {
             }
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
         .confirmationDialog(
             localizationManager.localized("family_leave_title"),
             isPresented: $showLeaveFamilyConfirm,
@@ -3715,7 +3749,7 @@ extension FamilyScreen {
                                 .foregroundColor(.textTertiary)
                         }
                         .padding(Spacing.m)
-                        .stormGlassCard(cornerRadius: CornerRadius.large)
+                        .aladdinProductCard(cornerRadius: CornerRadius.large)
                     }
                     .buttonStyle(PlainButtonStyle())
                     .padding(.bottom, Spacing.s)
@@ -3781,7 +3815,7 @@ extension FamilyScreen {
             .id("rewardsCard_\(currentUnicornBalance)") // Принудительное обновление при изменении баланса
         }
         .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
                 .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)

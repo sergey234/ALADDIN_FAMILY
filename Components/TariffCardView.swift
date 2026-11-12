@@ -44,15 +44,12 @@ struct TariffCardView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
+        // P5: Классика solid · Золото/Значки glass; цвет тарифа — только обводка.
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(card.color.opacity(0.3), lineWidth: 2)
-                )
+                .stroke(card.color.opacity(0.35), lineWidth: 2)
         )
-        .cardShadow()
     }
     
     // MARK: - Заголовок карточки
@@ -65,9 +62,11 @@ struct TariffCardView: View {
             HapticFeedback.selection()
         }) {
             HStack(spacing: Spacing.m) {
-                // Иконка тарифа
-                Text(card.emoji)
-                    .font(.system(size: 32))
+                // Иконка тарифа: Классика = emoji · Золото/Значки = G1 Glyph/Black
+                AliveGlyph(id: card.tariffType.aliveIconID, size: 32) {
+                    Text(card.emoji)
+                        .font(.system(size: 32))
+                }
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     // Название тарифа

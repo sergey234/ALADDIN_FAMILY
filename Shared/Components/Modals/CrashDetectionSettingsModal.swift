@@ -67,7 +67,12 @@ struct CrashDetectionSettingsModal: View {
                     Text(localizationManager.localized("crash_checklist_notifications"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.9))
+                    Text(localizationManager.localized("motion_settings_hint_open_driving"))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.75))
+                        .fixedSize(horizontal: false, vertical: true)
                     Button {
+                        Task { _ = await SensitivePermissionCoordinator.requestMotionIfNeeded() }
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
                         }
@@ -77,6 +82,10 @@ struct CrashDetectionSettingsModal: View {
                             .foregroundColor(.secondaryGold)
                     }
                     .accessibilityIdentifier("crash_checklist_open_settings")
+                }
+                .task {
+                    // QA-11/14: first real Motion query so iOS Settings shows the toggle.
+                    _ = await SensitivePermissionCoordinator.requestMotionIfNeeded()
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,7 +128,12 @@ struct CrashDetectionSettingsModal: View {
                                 isSelected: sensitivity == sensitivityOption,
                                 localizationManager: localizationManager,
                                 onSelect: {
+                                    // QA-07: radio → local save immediately; Save = cloud.
                                     sensitivity = sensitivityOption
+                                    crashDetectionManager.setSensitivity(sensitivityOption)
+                                    ToastManager.shared.showSuccess(
+                                        localizationManager.localized("crash_sensitivity_saved_local")
+                                    )
                                     componentAnalytics.trackSettingToggle(
                                         componentId: componentId,
                                         settingKey: "sensitivity",

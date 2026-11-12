@@ -146,9 +146,11 @@ struct MainScreen: View {
                                             .stroke(Color.secondaryGold, lineWidth: 3) // ✅ Золотой ободок (как у логотипа слева)
                                     )
                             } else {
-                                Text("👤")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
+                                AliveGlyph(id: .profile, size: 28) {
+                                    Text("👤")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
                             }
                         }
                     }
@@ -170,8 +172,10 @@ struct MainScreen: View {
                         navigationManager.navigateTo(.childRewards)
                     }) {
                         VStack(spacing: 4) {
-                            Text("🦄")
-                                .font(.system(size: 20))
+                            AliveGlyph(id: .unicorn, size: 28) {
+                                Text("🦄")
+                                    .font(.system(size: 20))
+                            }
                             Text(localizationManager.localized("main_tab_game"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white)
@@ -179,6 +183,8 @@ struct MainScreen: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
                     }
+                    .accessibilityIdentifier("main_tab_game")
+                    .accessibilityLabel(localizationManager.localized("main_tab_game"))
                     
                     // ✨ Аладдин Kids — полный детский интерфейс (маршрут .threatProtection не удалён, см. уведомления / расширенная защита)
                     Button(action: {
@@ -186,8 +192,10 @@ struct MainScreen: View {
                         navigationManager.navigateTo(.childInterface)
                     }) {
                         VStack(spacing: 4) {
-                            Text("✨")
-                                .font(.system(size: 20))
+                            AliveGlyph(id: .kids, size: 28) {
+                                Text("✨")
+                                    .font(.system(size: 20))
+                            }
                             Text(localizationManager.localized("main_tab_aladdin_kids"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white.opacity(0.7))
@@ -207,8 +215,10 @@ struct MainScreen: View {
                         navigationManager.navigateTo(.notifications)
                     }) {
                         VStack(spacing: 4) {
-                            Text("🔔")
-                                .font(.system(size: 20))
+                            AliveGlyph(id: .notif, size: 28) {
+                                Text("🔔")
+                                    .font(.system(size: 20))
+                            }
                             Text(localizationManager.localized("main_tab_notifications"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white.opacity(0.7))
@@ -224,8 +234,10 @@ struct MainScreen: View {
                         navigationManager.navigateTo(.profile)
                     }) {
                         VStack(spacing: 4) {
-                            Text("👤")
-                                .font(.system(size: 20))
+                            AliveGlyph(id: .profile, size: 28) {
+                                Text("👤")
+                                    .font(.system(size: 20))
+                            }
                             Text(localizationManager.localized("main_tab_profile"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white.opacity(0.7))
@@ -239,8 +251,10 @@ struct MainScreen: View {
                         navigationManager.navigateTo(.devices)
                     }) {
                         VStack(spacing: 4) {
-                            Text("📱")
-                                .font(.system(size: 20))
+                            AliveGlyph(id: .devices, size: 28) {
+                                Text("📱")
+                                    .font(.system(size: 20))
+                            }
                             Text(localizationManager.localized("main_tab_devices"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white.opacity(0.7))
@@ -251,7 +265,7 @@ struct MainScreen: View {
                 }
                 .padding(.vertical, 6)
                 .padding(.horizontal, 2)
-                .stormGlassCard(cornerRadius: 20)
+                .aladdinProductCard(cornerRadius: 20)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
@@ -486,9 +500,11 @@ struct MainScreen: View {
                             }) {
                                 VStack(spacing: 8) {
                                     HStack(spacing: 8) {
-                                        Text("🛡️")
-                                            .font(.system(size: 28))
-                                            .accessibilityLabel("Иконка защиты")
+                                        AliveGlyph(id: .protect, size: 40) {
+                                            Text("🛡️")
+                                                .font(.system(size: 28))
+                                        }
+                                        .accessibilityLabel("Иконка защиты")
                                         Text(antivirusEnabled ? "🟢" : "🔴")
                                             .font(.system(size: 22))
                                             .accessibilityLabel(antivirusEnabled ? "Статус: Активен" : "Статус: Отключен")
@@ -506,7 +522,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 100)
-                                .stormGlassCard(cornerRadius: 10)
+                                .aladdinProductCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_network_protection")
@@ -518,9 +534,11 @@ struct MainScreen: View {
                                 navigationManager.navigateTo(.tariffs)
                             }) {
                                 VStack(spacing: 8) {
-                                    Text("💎")
-                                        .font(.system(size: 28))
-                                        .accessibilityLabel("Иконка тарифов")
+                                    AliveGlyph(id: .tariff, size: 40) {
+                                        Text("💎")
+                                            .font(.system(size: 28))
+                                    }
+                                    .accessibilityLabel("Иконка тарифов")
                                     
                                     Text(localizationManager.localized("main_tariffs"))
                                         .font(.system(size: 13, weight: .semibold))
@@ -534,7 +552,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 100)
-                                .stormGlassCard(cornerRadius: 10)
+                                .aladdinProductCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_tariffs")
@@ -548,8 +566,10 @@ struct MainScreen: View {
                                 navigationManager.navigateToCompanionHome(returnTo: .main)
                             }) {
                                 VStack(spacing: 8) {
-                                    Text("🧓")
-                                        .font(.system(size: 28))
+                                    AliveGlyph(id: .senior60, size: 40) {
+                                        Text("🧓")
+                                            .font(.system(size: 28))
+                                    }
                                     Text(localizationManager.localized("main_senior_companion_title"))
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
@@ -561,7 +581,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 100)
-                                .stormGlassCard(cornerRadius: 10)
+                                .aladdinProductCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_senior_companion")
@@ -571,8 +591,10 @@ struct MainScreen: View {
                                 navigationManager.navigateTo(.analytics)
                             }) {
                                 VStack(spacing: 8) {
-                                    Text("📊")
-                                        .font(.system(size: 28))
+                                    AliveGlyph(id: .analytics, size: 40) {
+                                        Text("📊")
+                                            .font(.system(size: 28))
+                                    }
                                     
                                     Text(localizationManager.localized("main_analytics"))
                                         .font(.system(size: 13, weight: .semibold))
@@ -584,7 +606,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 100)
-                                .stormGlassCard(cornerRadius: 10)
+                                .aladdinProductCard(cornerRadius: 10)
                             }
                             
                             // Настройки — через NavigationManager (не NavigationLink: иначе «Назад» → dismiss → ложный онбординг).
@@ -592,8 +614,10 @@ struct MainScreen: View {
                                 navigationManager.navigateTo(.settings)
                             }) {
                                 VStack(spacing: 8) {
-                                    Text("⚙️")
-                                        .font(.system(size: 28))
+                                    AliveGlyph(id: .settings, size: 40) {
+                                        Text("⚙️")
+                                            .font(.system(size: 28))
+                                    }
                                     
                                     Text(localizationManager.localized("main_settings"))
                                         .font(.system(size: 13, weight: .semibold))
@@ -605,7 +629,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 100)
-                                .stormGlassCard(cornerRadius: 10)
+                                .aladdinProductCard(cornerRadius: 10)
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("main_nav_settings")
@@ -623,8 +647,10 @@ struct MainScreen: View {
                                         .padding(.vertical, 3)
                                         .background(Color.secondaryGold)
                                         .clipShape(Capsule())
-                                    Text("🏠")
-                                        .font(.system(size: 24))
+                                    AliveGlyph(id: .simpleHome, size: 32) {
+                                        Text("🏠")
+                                            .font(.system(size: 24))
+                                    }
                                     Text(localizationManager.localized("main_simple_version_title"))
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.secondaryGold)
@@ -643,7 +669,7 @@ struct MainScreen: View {
                                 .padding(.vertical, 8)
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: 112)
-                                .stormGlassCard(cornerRadius: 10)
+                                .aladdinProductCard(cornerRadius: 10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
                                         .stroke(Color.secondaryGold, lineWidth: 2)
@@ -797,20 +823,30 @@ struct MainScreen: View {
                                     .foregroundColor(.black)
 
                                 // Подпись тарифа (канон): цвет карточки + эта строка; слоты — чип в шапке.
-                                Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
+                                // QA-T01: pending → «Проверяем тариф…» — never paint Базовый as final.
+                                Text(
+                                    "\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)"
+                                )
                                     .font(.system(size: 10, weight: .bold))
                                     .foregroundColor(.black)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.8)
+                                    .accessibilityIdentifier(
+                                        subscriptionManager.isTariffDisplayPending
+                                            ? "main_family_tariff_pending"
+                                            : "main_family_tariff_label"
+                                    )
                                     .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
 
-                                if let days = familyDisplayBody.trialDaysRemaining {
+                                if !subscriptionManager.isTariffDisplayPending,
+                                   let days = familyDisplayBody.trialDaysRemaining {
                                     Text(localizationManager.localized("main_family_trial_days_left", days))
                                         .font(.system(size: 9, weight: .semibold))
                                         .foregroundColor(.black.opacity(0.85))
                                 }
 
-                                if subscriptionManager.shouldShowTrialEndedBanner {
+                                if !subscriptionManager.isTariffDisplayPending,
+                                   subscriptionManager.shouldShowTrialEndedBanner {
                                     HStack(alignment: .top, spacing: 6) {
                                         Text(localizationManager.localized("main_family_trial_ended_banner"))
                                             .font(.system(size: 9, weight: .semibold))
@@ -847,7 +883,8 @@ struct MainScreen: View {
                                     .accessibilityIdentifier("main_family_over_capacity_banner")
                                 }
 
-                                if subscriptionManager.canRestoreRecoverableTrial,
+                                if !subscriptionManager.isTariffDisplayPending,
+                                   subscriptionManager.canRestoreRecoverableTrial,
                                    let end = subscriptionManager.recoverableTrialEndDate {
                                     Button {
                                         Task { @MainActor in
@@ -1034,7 +1071,7 @@ struct MainScreen: View {
                                     )
                             }
                             .padding(10)
-                            .stormGlassCard(cornerRadius: 10)
+                            .aladdinProductCard(cornerRadius: 10)
                         }
                         }
                         .id("home_chat_segments_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
@@ -1062,6 +1099,17 @@ struct MainScreen: View {
                     // Один коалесцированный проход дашборда (внутри уже есть GET /api/devices).
                     mainViewModel.requestRefreshDebounced()
                 }
+                // QA-09 A: SSOT count from DevicesScreen / refresh — keep Main badge aligned.
+                .onReceive(NotificationCenter.default.publisher(for: FamilyDevicesCountStore.didChange)) { note in
+                    if let count = note.userInfo?["count"] as? Int, count >= 0 {
+                        mainViewModel.devicesProtected = count
+                    } else {
+                        mainViewModel.refreshDevicesCountFromAPI()
+                    }
+                }
+                .onAppear {
+                    mainViewModel.refreshDevicesCountFromAPI()
+                }
                 // ✅ NEW: React to tariff changes from TariffsScreen, SubscriptionManager, or forceSync
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SubscriptionUpdated"))) { notification in
                     if let level = notification.userInfo?["level"] as? String {
@@ -1086,8 +1134,9 @@ struct MainScreen: View {
     private var tariffRowViewIdentity: String {
         let level = subscriptionManager.getCurrentLevel()
         let trialOn = subscriptionManager.trialStatus?.isActive == true
+        let pending = subscriptionManager.isTariffDisplayPending
         let lang = localizationManager.currentLanguage.rawValue
-        return "\(level.rawValue)|trial:\(trialOn)|\(lang)"
+        return "\(level.rawValue)|trial:\(trialOn)|pending:\(pending)|\(lang)"
     }
 
     /// Лимит слотов для UI — только таблица тарифа через SSOT (не snapshot.max).
@@ -1096,6 +1145,12 @@ struct MainScreen: View {
     }
     
     private var currentTariffDisplayName: String {
+        // QA-T01: until server/cache truth — never show Базовый as the answer.
+        if subscriptionManager.isTariffDisplayPending {
+            let pending = localizationManager.localized("main_family_tariff_checking")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return pending.isEmpty ? "…" : pending
+        }
         // W-pre-A: тот же level, что и «N из M».
         let level = subscriptionManager.effectiveFamilyDisplay().level
         let key: String

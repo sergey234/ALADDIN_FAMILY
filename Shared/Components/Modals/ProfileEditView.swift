@@ -61,7 +61,8 @@ struct ProfileEditView: View {
                     Text(localizationManager.localized("profile_edit_title"))
                         .font(.headline)
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("profile_edit_cancel")) {
@@ -87,10 +88,15 @@ struct ProfileEditView: View {
                 AvatarCropEditor(
                     image: pendingCropImage,
                     onCommit: { cropped in
+                        // QA-01 A: persist photo immediately (same path as Hub), Save = name/email.
                         selectedImage = cropped
+                        _ = ProfileImageManager.shared.saveProfileImage(cropped, for: .main)
                         showAvatarCrop = false
                         self.pendingCropImage = nil
-                        HapticFeedback.selection()
+                        HapticFeedback.notification(.success)
+                        ToastManager.shared.showSuccess(
+                            localizationManager.localized("profile_edit_photo_saved")
+                        )
                     },
                     onCancel: {
                         showAvatarCrop = false

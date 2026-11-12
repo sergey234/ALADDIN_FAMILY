@@ -141,7 +141,7 @@ struct WhereIsPhoneScreen: View {
     @State private var showRoutes = false
     @State private var showInvisibleHatSheet = false
     @State private var showCrashConfirm = false
-    /// JOB11–12 · Safety SOS education pager (0 = intro, 1 = release).
+    /// JOB11–12 + mid tips · Safety SOS pager (0 intro · 1…4 mid · 5 release).
     @State private var sosEduPage: Int = 0
     @State private var shareDuration: FamilyMapShareDuration =
         FamilyMapShareDuration(rawValue: FamilyMapShareSessionStore.selectedHours) ?? .oneHour
@@ -1782,10 +1782,34 @@ struct WhereIsPhoneScreen: View {
 
             TabView(selection: $sosEduPage) {
                 sosEduIntroPage.tag(0)
-                sosEduReleasePage.tag(1)
+                sosEduMidPage(
+                    index: 1,
+                    systemImage: "hand.tap.fill",
+                    titleKey: "sos_edu_mid_1_title",
+                    bodyKey: "sos_edu_mid_1_body"
+                ).tag(1)
+                sosEduMidPage(
+                    index: 2,
+                    systemImage: "person.3.fill",
+                    titleKey: "sos_edu_mid_2_title",
+                    bodyKey: "sos_edu_mid_2_body"
+                ).tag(2)
+                sosEduMidPage(
+                    index: 3,
+                    systemImage: "speaker.slash.fill",
+                    titleKey: "sos_edu_mid_3_title",
+                    bodyKey: "sos_edu_mid_3_body"
+                ).tag(3)
+                sosEduMidPage(
+                    index: 4,
+                    systemImage: "arrow.uturn.backward.circle.fill",
+                    titleKey: "sos_edu_mid_4_title",
+                    bodyKey: "sos_edu_mid_4_body"
+                ).tag(4)
+                sosEduReleasePage.tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .automatic))
-            .frame(height: 420)
+            .frame(height: 440)
             .accessibilityIdentifier("where_phone_safety_sos_edu_pager")
         }
         .padding(Spacing.m)
@@ -1834,6 +1858,48 @@ struct WhereIsPhoneScreen: View {
         }
         .padding(.bottom, Spacing.s)
         .accessibilityIdentifier("where_phone_safety_sos_intro_hero")
+    }
+
+    /// Mid tips (H07–H12 sense) · text+SF until CapCut heroes exist — honest, no fake art.
+    private func sosEduMidPage(
+        index: Int,
+        systemImage: String,
+        titleKey: String,
+        bodyKey: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            ZStack {
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.secondaryGold.opacity(0.12))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 160)
+                Image(systemName: systemImage)
+                    .font(.system(size: 56, weight: .semibold))
+                    .foregroundColor(.secondaryGold)
+                    .accessibilityHidden(true)
+            }
+            Text(localizationManager.localized(titleKey))
+                .font(AladdinFamilyType.subheadline(weight: .semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(localizationManager.localized(bodyKey))
+                .font(AladdinFamilyType.caption())
+                .foregroundColor(.white.opacity(0.92))
+                .fixedSize(horizontal: false, vertical: true)
+            Button {
+                HapticFeedback.selection()
+                withAnimation { sosEduPage = min(index + 1, 5) }
+            } label: {
+                Text(localizationManager.localized("sos_edu_mid_next"))
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondaryGold)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_sos_edu_mid_\(index)_cta")
+            Spacer(minLength: 0)
+        }
+        .padding(.bottom, Spacing.s)
+        .accessibilityIdentifier("where_phone_safety_sos_mid_\(index)")
     }
 
     private var sosEduReleasePage: some View {

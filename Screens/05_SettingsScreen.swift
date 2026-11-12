@@ -45,6 +45,8 @@ struct SettingsScreen: View {
     @AppStorage(AppConfig.UserDefaultsKeys.aiDataSharingEnabled) private var aiDataSharingEnabled: Bool = false
     @AppStorage("personal_data_consent_accepted") private var consentAcceptedStorage: Bool = false
     @AppStorage("personal_data_consent_date") private var consentDateStorage: String = ""
+    /// Icons A/B preview: legacy | aliveBlue | aliveBlack (wave1 G1).
+    @AppStorage(AliveIconDiscStyle.storageKey) private var iconDiscStyleRaw: String = AliveIconDiscStyle.defaultStyle.rawValue
     @State private var showConsentRevokeAlert: Bool = false
 
     // ✅ BUILD 100: Убран testLogger из struct - логирование перемещено в .onAppear
@@ -352,6 +354,35 @@ struct SettingsScreen: View {
                     logger.buttonTap("Open Calls Hub", screen: "Settings")
                     showCallsHubScreen = true
                 }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    HStack(spacing: Spacing.s) {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.primaryBlue)
+                            .frame(width: 24, height: 24, alignment: .leading)
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text("Превью иконок G1")
+                                .font(.body.weight(.semibold))
+                                .foregroundColor(.textPrimary)
+                            Text("Золото = glyph без disc · Значки = чёрный disc · Классика = emoji/SF")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    Picker("Стиль иконок", selection: $iconDiscStyleRaw) {
+                        ForEach(AliveIconDiscStyle.allCases) { style in
+                            Text(style.titleRU).tag(style.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("settings_icon_disc_style_picker")
+                }
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, Spacing.s)
 
                 Divider()
 
