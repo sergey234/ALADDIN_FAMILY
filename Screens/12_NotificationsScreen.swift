@@ -4,7 +4,6 @@ import SwiftUI
 /// Экран уведомлений - список всех уведомлений
 /// Источник дизайна: /mobile/wireframes/08_notifications_screen.html
 struct NotificationsScreen: View {
-    
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
@@ -14,6 +13,8 @@ struct NotificationsScreen: View {
     @StateObject private var notificationManager = NotificationManager.shared
     @State private var selectedFilter: NotificationFilter = .all
     @State private var expandedFilter: NotificationFilter? = nil
+    /// QA-03 A: tap → full text sheet.
+    @State private var detailNotification: NotificationsViewModel.AppNotification?
     
     // MARK: - Body
     
@@ -53,6 +54,36 @@ struct NotificationsScreen: View {
         }
         .navigationBarHidden(true)
         .id("notifications_lang_\(localizationManager.currentLanguage.rawValue)")
+        .sheet(item: $detailNotification) { item in
+            NavigationView {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        Text(item.localizedTitle(localizationManager))
+                            .font(AladdinFamilyType.title3())
+                            .foregroundColor(.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(NotificationsViewModel.relativeTime(for: item.timestamp))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                        Text(item.localizedMessage(localizationManager))
+                            .font(.body)
+                            .foregroundColor(.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(Spacing.l)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(localizationManager.localized("common_done")) {
+                            detailNotification = nil
+                        }
+                    }
+                }
+            }
+        }
         .task {
             // Подключаем callback для push-уведомлений
             notificationManager.onNotificationReceived = { notification in
@@ -234,6 +265,7 @@ struct NotificationsScreen: View {
                         ForEach(Array(previewNotifications.prefix(3)), id: \.id) { appNotification in
                             Button(action: {
                                 viewModel.markAsRead(appNotification)
+                                detailNotification = appNotification
                             }) {
                                 HStack(spacing: 8) {
                                     Text(appNotification.icon)
@@ -243,11 +275,14 @@ struct NotificationsScreen: View {
                                         Text(appNotification.localizedTitle(localizationManager))
                                             .font(.body)
                                             .foregroundColor(.textPrimary)
+                                            .lineLimit(2)
+                                            .fixedSize(horizontal: false, vertical: true)
                                         
                                         Text(appNotification.localizedMessage(localizationManager))
                                             .font(.caption)
                                             .foregroundColor(.textSecondary)
-                                            .lineLimit(1)
+                                            .lineLimit(2)
+                                            .fixedSize(horizontal: false, vertical: true)
                                     }
                                     
                                     Spacer()
@@ -384,7 +419,7 @@ struct NotificationsScreen: View {
                         notification: appNotification.toNotification(localizationManager: localizationManager),
                         onTap: {
                             viewModel.markAsRead(appNotification)
-                            // ✅ ДОБАВЛЕНО: Навигация в зависимости от типа уведомления
+                            detailNotification = appNotification
                             handleNotificationTap(appNotification)
                         }
                     )

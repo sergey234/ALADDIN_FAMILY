@@ -266,8 +266,18 @@ struct ParentalControlScreen: View {
             .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showParentDashboardModal) {
-            ParentDashboardView(isPresented: $showParentDashboardModal)
-                .environmentObject(localizationManager)
+            Group {
+                if #available(iOS 16.4, *) {
+                    ParentDashboardView(isPresented: $showParentDashboardModal)
+                        .environmentObject(localizationManager)
+                        // QA-10: kill white sheet chrome — full-bleed dark canvas.
+                        .presentationBackground(AladdinSnowballPalette.canvasDeep)
+                } else {
+                    ParentDashboardView(isPresented: $showParentDashboardModal)
+                        .environmentObject(localizationManager)
+                        .background(AladdinSnowballPalette.canvasDeep.ignoresSafeArea())
+                }
+            }
         }
         .onAppear {
             // Роль приходит из подтверждённого server roster и не может повышаться

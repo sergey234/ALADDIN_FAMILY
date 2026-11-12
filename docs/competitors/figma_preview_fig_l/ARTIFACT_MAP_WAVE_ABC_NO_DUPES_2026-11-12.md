@@ -17,6 +17,17 @@
 
 **Сервер:** Invite OG (JOB13) уже на 🇷🇺 MAIN FirstVDS (`…180`):8002 + site `aladdin-ai.ru` — tip/SOS **не** требуют деплоя API.
 
+### ASC upload — простыми словами
+
+Не код. Руками в App Store Connect → ALADDIN → версия → **Скриншоты**.  
+PNG: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/` или `~/Downloads/ALADDIN_ASC_WaveB_All/`.  
+**H\*** = основные · **Draft A–D** = 4 бонусных · грузим **оба**. Пошагово: `CHECKLIST_WAVE_B_H20_23_AND_LOC.md` § «ASC upload — простыми словами».
+
+### QA-11 хвост (после build 20 `3604688c`)
+
+Не Wave A/B tip — отдельный Device QA 2026-11-11: Notifications full text · quiet hours · ПК dark sheet · Profile tariff pending · Devices count · Onboarding → `parent`.  
+Комитить **да** (после build 20). **Нет:** `*_BACKUP_*` · bot · `.env`.
+
 ---
 
 ## 1. Три волны — не смешивать

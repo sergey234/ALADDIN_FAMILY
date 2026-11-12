@@ -12,6 +12,8 @@ Folder: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/`
 
 **Решение владельца:** в App Store грузить **H\* + Draft A–D** (не только H*).
 
+**Как загрузить (просто):** App Store Connect → ALADDIN → версия → Скриншоты → эти PNG (1290×2796). Это не git и не сервер. Полный текст шагов: `CHECKLIST_WAVE_B_H20_23_AND_LOC.md` § «ASC upload — простыми словами».
+
 Copy: `ASC_TOP3_COPY_RU_EN.md` · `ASC_H22_H24_COPY_RU_EN.md` · `ASC_H25_H26_COPY_RU_EN.md` · `ASC_H27_H28_COPY_RU_EN.md` · `ASC_LOCALIZATION_SSOT.md` · `CHECKLIST_WAVE_B_H20_23_AND_LOC.md`
 
 **EN headlines:** H01–H26 = our overlay · H27–H28 RU = CapCut baked · H27–H28 EN = our overlay · Draft = CapCut fitted 1290×2796.

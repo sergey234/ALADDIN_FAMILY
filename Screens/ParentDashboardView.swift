@@ -25,7 +25,9 @@ struct ParentDashboardView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // S09 A + Snowball B: owner purple→magenta canvas + light StormMesh veil.
+                // QA-10 / S09: full-bleed dark canvas — no white side margins.
+                AladdinSnowballPalette.canvasDeep
+                    .ignoresSafeArea()
                 AladdinSnowballPalette.canvasGradient
                     .ignoresSafeArea()
                 StormMeshBackground(variant: .grow)
@@ -203,6 +205,7 @@ struct ParentDashboardView: View {
                     }
                 }
             }
+            .modifier(ParentDashboardNavChromeModifier())
             .onAppear {
                 Task { await reloadReports() }
                 pendingExtensionRequestCount = ChildTimeExtensionRequestStore.shared.pendingRequest() == nil ? 0 : 1
@@ -697,6 +700,19 @@ struct ParentDashboardView: View {
             "\(localizationManager.localized("parent_dashboard_perm_critical")): \(snapshot.canManageCriticalFamilySettings ? localizationManager.localized("parent_dashboard_perm_allowed") : localizationManager.localized("parent_dashboard_perm_blocked"))"
         ]
         return states.joined(separator: " • ")
+    }
+}
+
+/// QA-10: dark nav chrome without white bar (iOS 16+); no-op on 15.2.
+private struct ParentDashboardNavChromeModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content
+                .toolbarBackground(AladdinSnowballPalette.canvasDeep, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+        } else {
+            content
+        }
     }
 }
 

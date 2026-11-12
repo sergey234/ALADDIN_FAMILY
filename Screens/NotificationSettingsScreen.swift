@@ -392,39 +392,41 @@ struct NotificationSettingsScreen: View {
                 
                 if quietHoursEnabled {
                     VStack(spacing: 8) {
-                        HStack(alignment: .center) {
-                            Text(localizationManager.localized("notification_settings_quiet_hours_start"))
-                                .font(.system(size: 14))
-                                .foregroundColor(.white.opacity(0.8))
-                                .lineLimit(1)
-                            Spacer()
-                            Text(quietHoursStart)
-                                .font(.system(size: 14, design: .monospaced))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.white.opacity(0.2))
-                                )
-                        }
-                        
-                        HStack(alignment: .center) {
-                            Text(localizationManager.localized("notification_settings_quiet_hours_end"))
-                                .font(.system(size: 14))
-                                .foregroundColor(.white.opacity(0.8))
-                                .lineLimit(1)
-                            Spacer()
-                            Text(quietHoursEnd)
-                                .font(.system(size: 14, design: .monospaced))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.white.opacity(0.2))
-                                )
-                        }
+                        DatePicker(
+                            localizationManager.localized("notification_settings_quiet_hours_start"),
+                            selection: Binding(
+                                get: { Self.dateFromQuietTimeString(quietHoursStart) },
+                                set: { quietHoursStart = Self.quietTimeString(from: $0) }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .datePickerStyle(.compact)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.2))
+                        )
+                        .accessibilityIdentifier("notification_quiet_hours_start_picker")
+
+                        DatePicker(
+                            localizationManager.localized("notification_settings_quiet_hours_end"),
+                            selection: Binding(
+                                get: { Self.dateFromQuietTimeString(quietHoursEnd) },
+                                set: { quietHoursEnd = Self.quietTimeString(from: $0) }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .datePickerStyle(.compact)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.2))
+                        )
+                        .accessibilityIdentifier("notification_quiet_hours_end_picker")
                     }
                     .padding(.top, 8)
                 }
@@ -780,6 +782,22 @@ struct NotificationSettingsScreen: View {
         updatedSettings.maxNotificationsPerHour = maxNotificationsPerHourEnabled ? maxNotificationsPerHour : nil
         
         notificationManager.updateNotificationSettings(updatedSettings)
+    }
+
+    /// QA-02: DatePicker ↔ "HH:mm" storage.
+    private static func quietTimeString(from date: Date) -> String {
+        let cal = Calendar.current
+        let h = cal.component(.hour, from: date)
+        let m = cal.component(.minute, from: date)
+        return String(format: "%02d:%02d", h, m)
+    }
+
+    private static func dateFromQuietTimeString(_ raw: String) -> Date {
+        let parts = raw.split(separator: ":").compactMap { Int($0) }
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        comps.hour = parts.first ?? 22
+        comps.minute = parts.count > 1 ? parts[1] : 0
+        return Calendar.current.date(from: comps) ?? Date()
     }
     
 }

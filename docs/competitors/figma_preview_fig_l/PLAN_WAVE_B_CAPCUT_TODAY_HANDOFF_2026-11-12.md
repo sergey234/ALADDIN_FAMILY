@@ -198,11 +198,12 @@ Pets/Family hero keys: `where_phone_pets_hero_*` · `where_phone_family_hero_*` 
 | F | OB-QA / DEV-88 / bump 20 | ⏳ Wave A open |
 | G | Не коммитить bot / `.env` / VPN secrets | инвариант ✅ |
 | H | Tip wire Where→Езда→отчёты | ✅ `DrivingReportsModal` + dismiss AppStorage |
-| I | ASC upload: **H\* + Draft A–D** | ✅ решение 2026-11-12 · файлы fitted · upload когда скажете |
+| I | ASC upload: **H\* + Draft A–D** | ✅ решение · файлы ready · **ручной** upload в Connect — шаги в `CHECKLIST_WAVE_B_…` § «ASC upload — простыми словами» |
 | J | Gary — оставляем везде | ✅ канон |
 | K | **Wave C** иконки Ребёнок+Проверить | ⏳ **другой чат** · Variant A LOCKED · `ML_HANDOFF_WAVE_C_VARIANT_A_…` |
 | L | Artifact map no-dupes | ✅ `ARTIFACT_MAP_WAVE_ABC_NO_DUPES_2026-11-12.md` |
 | M | Server redeploy tip/SOS | ❌ не нужно · Invite OG уже live |
+| N | QA-11 хвост после build 20 (Notif/ПК/Profile/Devices/Onboarding role) | ✅ commit · не BACKUP/bot |
 
 ---
 

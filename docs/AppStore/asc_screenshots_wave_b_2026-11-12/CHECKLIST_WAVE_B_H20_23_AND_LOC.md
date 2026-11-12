@@ -46,10 +46,29 @@ Handoff: `docs/competitors/figma_preview_fig_l/PLAN_WAVE_B_CAPCUT_TODAY_HANDOFF_
 
 ---
 
+## ASC upload — простыми словами (не код)
+
+Это **загрузка готовых PNG** на витрину App Store (руками в браузере). Не `git`, не сервер, не Xcode.
+
+1. Открыть [App Store Connect](https://appstoreconnect.apple.com) → приложение **ALADDIN** → нужная **версия** → блок **Скриншоты** (iPhone).  
+2. Взять PNG из:
+   - репо: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/`
+   - или Finder: `~/Downloads/ALADDIN_ASC_WaveB_All/`
+3. **H\*** = основные кадры (карта, езда, отчёты…): `ALADDIN_ASC_H01_*` … `H28_*` (RU+EN где есть).  
+4. **Draft A–D** = 4 бонусных: статистика+Gary · lock-алерты · ВОЗ/Mercedes · два телефона (`ALADDIN_ASC_DraftA_*` … `DraftD_*`).  
+5. **Решение владельца 2026-11-12:** грузить **и H\*, и Draft** (не только H*).  
+6. Размер кадров: **1290×2796**. Gary на кадрах где уже есть — **не убирать**.
+
+Чеклист слотов / copy: этот файл · `README_ASC_INDEX.md` · `ASC_LOCALIZATION_SSOT.md`.  
+Полная карта путей: `docs/competitors/figma_preview_fig_l/ARTIFACT_MAP_WAVE_ABC_NO_DUPES_2026-11-12.md`.
+
+---
+
 ## ⏳ Осталось
 
 ### ASC / продукт (нужен ваш GO)
 - [x] **Слоты ASC:** владелец 2026-11-12 — **H\* + Draft A–D** (грузим всё) ✅ сделали решение; файлы fitted готовы
+- [ ] **Ручной upload** H\*+Draft в App Store Connect (шаги § выше) — когда скажете
 - [ ] OB_01 wordmark выше головы — отдельный GO (Figma↔iOS SYNC)
 - [x] Tip card **wire** Where → Езда → отчёты ✅
 - [x] SOS mid-tips (4 слайда text+SF между intro/release) ✅ CapCut art опц. позже
@@ -63,14 +82,31 @@ Handoff: `docs/competitors/figma_preview_fig_l/PLAN_WAVE_B_CAPCUT_TODAY_HANDOFF_
 - [ ] Не смешивать с Draft ASC
 
 ### Владелец / релиз
-- [ ] **«Сохраняй»** → commit на `master` (без bot / `.env`)
+- [x] Wave A+B tip/SOS/ASC/docs → commit `55fb5602` (без bot / `.env`)
+- [x] QA-11 хвост после build 20 → commit (см. § ниже) — **без** `*_BACKUP_*` / bot
 - [ ] Device / Simulator QA Wave B — **после GO на сборку**
-- [ ] OB-QA · DEV-88 · bump 20 · push — только ваши GO
+- [ ] OB-QA · DEV-88 · bump · push — только ваши GO
 
 ### Инварианты (всегда)
-- [x] Не коммитить `telegram_stars_shop_bot/` · `.env` · VPN secrets
+- [x] Не коммитить `telegram_stars_shop_bot/` · `.env` · VPN secrets · `*_BACKUP_*` экраны
 - [x] Не трогать OB_* Figma
 - [x] Нет agent `xcodebuild` без GO
+
+---
+
+## QA-11 хвост (после build 20) — в плане
+
+**Build 20:** `3604688c` · 2026-11-10 12:56.  
+**Правки на диске:** 2026-11-11 ~13:22–18:28 → **после** build 20 → **комитим** (отдельный QA-коммит).
+
+| Файл | Когда | Суть |
+|------|-------|------|
+| `12_NotificationsScreen` · `NotificationSettingsScreen` | ~13:22–13:24 | полный текст по тапу · quiet hours UI |
+| `07_ParentalControlScreen` · `ParentDashboardView` | ~13:29–13:34 | тёмный sheet без белых полей |
+| `11_ProfileScreen` · `20_DevicesScreen` | ~13:29–13:42 | тариф «проверяем…» · счётчик устройств |
+| `14_OnboardingScreen` | ~18:28 | взрослый онбординг → роль `parent` |
+
+**Не коммитить:** `01_MainScreen_BACKUP_*` · bot · `.env` · BACKUPS · `.DS_Store`.
 
 ---
 

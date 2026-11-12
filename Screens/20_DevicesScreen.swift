@@ -450,6 +450,8 @@ struct DevicesScreen: View {
                     devices = mapped.filter { seen.insert($0.id).inserted }
                     errorMessage = nil
                     reportHandsetModelIfNeeded(devices)
+                    // QA-09 A: publish SSOT count for Main / Profile.
+                    FamilyDevicesCountStore.publish(count: devices.count)
                 case .failure(let error):
                     devices = []
                     errorMessage = devicesLoadUserMessage(error)
@@ -471,6 +473,7 @@ struct DevicesScreen: View {
                         devices = mapped.filter { seen.insert($0.id).inserted }
                         errorMessage = nil
                         reportHandsetModelIfNeeded(devices)
+                        FamilyDevicesCountStore.publish(count: devices.count)
                     case .failure(let error):
                         devices = []
                         errorMessage = devicesLoadUserMessage(error)

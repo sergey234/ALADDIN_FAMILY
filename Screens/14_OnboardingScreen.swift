@@ -900,11 +900,14 @@ struct OnboardingScreen: View {
         dataConsentAccepted && termsConsentAccepted
     }
 
-    /// Без шага выбора роли `current_user_role` пуст — `FamilyAccessPolicy` блокирует ростер («только для родителя»).
+    /// Взрослый онбординг → роль parent (канон 2026-11-11).
+    /// Раньше «if empty» оставлял child/teen из старого UD → SimpleHome блокировался.
     private func markPrimaryUserRoleParentIfUnset() {
         let existing = (UserDefaults.standard.string(forKey: "current_user_role") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        guard existing.isEmpty else { return }
-        UserDefaults.standard.set("parent", forKey: "current_user_role")
+        if existing.lowercased() != "parent" {
+            UserDefaults.standard.set("parent", forKey: "current_user_role")
+            print("🏠 ONBOARDING_ROLE: set parent (was=\(existing.isEmpty ? "∅" : existing))")
+        }
     }
 
     // MARK: - Шаг 0: язык (без ожидания тяжёлого словаря)

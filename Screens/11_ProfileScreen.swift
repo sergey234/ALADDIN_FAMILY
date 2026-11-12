@@ -47,7 +47,13 @@ struct ProfileScreen: View {
     
     /// Название текущего тарифа для отображения
     private var currentTariffDisplayName: String {
-        switch tariffManager.currentTariff {
+        // QA-T01: same pending gate as Main — never flash Basic before server truth.
+        if subscriptionManager.isTariffDisplayPending {
+            let pending = localizationManager.localized("main_family_tariff_checking")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return pending.isEmpty ? "…" : pending
+        }
+        switch subscriptionManager.getCurrentLevel() {
         case .trial:
             return localizationManager.localized("tariffs_trial")
         case .free:
@@ -1134,6 +1140,9 @@ struct ActiveSessionsView: View {
                 case .success(let list):
                     // Real family devices only — never invent “iPhone 13” rows. No GPS fields shown.
                     familyDevices = list
+                    var seen = Set<String>()
+                    let deduped = list.filter { seen.insert($0.id).inserted }.count
+                    FamilyDevicesCountStore.publish(count: deduped)
                 case .failure:
                     familyDevices = []
                     softError = localizationManager.localized("active_sessions_load_failed")
