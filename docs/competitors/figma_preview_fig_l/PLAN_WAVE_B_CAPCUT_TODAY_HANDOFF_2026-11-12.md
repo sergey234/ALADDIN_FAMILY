@@ -391,3 +391,14 @@ In-app tip D/E — отдельно по GO (crop ~361×220). Не OB_* · не 
 - Finder Downloads: `~/Downloads/ALADDIN_ASC_H25_H26_DrivingHistory/` · полный пакет `~/Downloads/ALADDIN_ASC_WaveB_All/`
 - In-app feature: **Where → Езда → отчёты** (`DrivingReportsModal`). Tip crop — later GO.
 
+### 11.12 ASC H27–H28 — Driving Reports (GO 2026-11-12)
+
+| Shot | Смысл | RU | EN |
+|------|-------|----|----|
+| H27 | Дашборд отчётов семьи | CapCut baked title | Our layer |
+| H28 | Деталь поездки · таймлайн | CapCut baked title | Our layer |
+
+EN audit: H01–H26 already had EN overlays ✅ · H27–H28 EN added ✅.
+
+Paths: `docs/AppStore/asc_screenshots_wave_b_2026-11-12/` · Downloads `~/Downloads/ALADDIN_ASC_H27_H28_DrivingReports/` · all `~/Downloads/ALADDIN_ASC_WaveB_All/`.
+
