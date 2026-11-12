@@ -472,11 +472,13 @@ struct AntifakeVerdictCard: View {
                 HapticFeedback.impact(.light)
                 shareWithFamilyTapped()
             } label: {
-                Label(
-                    localizationManager.localized("antifake_share_family_button"),
-                    systemImage: "person.3.fill"
-                )
-                .font(.subheadline.weight(.semibold))
+                HStack(spacing: 8) {
+                    AliveGlyph(id: .afFamilyDB, size: 28) {
+                        Image(systemName: "person.3.fill")
+                    }
+                    Text(localizationManager.localized("antifake_share_family_button"))
+                        .font(.subheadline.weight(.semibold))
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)

@@ -86,6 +86,48 @@ enum AliveIconID: String {
     case famInvite = "F04_Invite"
     /// Карта · вкладка Езда (L15).
     case mapDriving = "W01_Driving"
+    /// Удобный · Ребёнок · дверь Пауза (Wave C C04).
+    case childPause = "C04_Pause"
+    /// Удобный · Ребёнок · дверь Сайты (Wave C C05).
+    case childSites = "C05_Sites"
+    /// Удобный · Ребёнок · дверь Лимит (Wave C C06).
+    case childLimit = "C06_Limit"
+    /// Удобный · Ребёнок · дверь Сон (Wave C C07).
+    case childBedtime = "C07_Bedtime"
+    /// Удобный · Ребёнок · дверь Награда (Wave C C08).
+    case childReward = "C08_Reward"
+    /// Удобный · Ребёнок · дверь Минуты (Wave C C09).
+    case childMinutes = "C09_Minutes"
+    /// Удобный · Ребёнок · дверь Экран ребёнка (Wave C C10).
+    case childScreen = "C10_ChildScreen"
+    /// Удобный · Ребёнок · «Кто виден на карте» (Wave C C01).
+    case mapVis = "C01_MapVis"
+    /// Удобный · Ребёнок · capsule «Только я» (Wave C C03). C02 → reuse `.famGroups`.
+    case mapMe = "C03_MapMe"
+    /// Семья · parental · блокировка контента (Wave C P01).
+    case parentalContentBlock = "P01_ContentBlock"
+    /// Семья · parental · время (Wave C P02).
+    case parentalTime = "P02_Time"
+    /// Семья · parental · мониторинг (Wave C P03).
+    case parentalMonitor = "P03_Monitor"
+    /// Семья · parental · гео (Wave C P04).
+    case parentalGeo = "P04_Geo"
+    /// Семья · parental · отчёты (Wave C P05).
+    case parentalReports = "P05_Reports"
+    /// Семья · parental · обход (Wave C P07). P06 → reuse `.settings`.
+    case parentalBypass = "P07_Bypass"
+    /// Antifake · tab Текст (Wave C AF01).
+    case afText = "AF01_Text"
+    /// Antifake · tab Документ (Wave C AF02).
+    case afDoc = "AF02_Doc"
+    /// Antifake · tab Голос (Wave C AF03).
+    case afAudio = "AF03_Audio"
+    /// Antifake · tab Видео (Wave C AF04).
+    case afVideo = "AF04_Video"
+    /// Antifake · tab Звонок (Wave C AF05).
+    case afCall = "AF05_Call"
+    /// Antifake · семейная база (Wave C AF08). AF07 → reuse `.aiFriends`.
+    case afFamilyDB = "AF08_FamilyDB"
 
     func assetName(for style: AliveIconDiscStyle) -> String? {
         switch style {

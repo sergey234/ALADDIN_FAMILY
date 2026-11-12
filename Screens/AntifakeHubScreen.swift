@@ -29,6 +29,10 @@ struct AntifakeHubScreen: View {
 
             VStack(spacing: 0) {
                 header
+                // Wave C hero · боль: мошенники / фейк / деньги + INTERPOL 442 млрд под картинкой
+                antifakeHeroCheckScam
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.bottom, Spacing.s)
                 trustBanner
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.s)
@@ -45,6 +49,8 @@ struct AntifakeHubScreen: View {
                     VStack(spacing: Spacing.l) {
                         tabContent
                         askAssistantHelpCard
+                        // Wave C hero · боль: семья вместе против фейка
+                        antifakeHeroCheckFamily
                         if hasPremiumAccess {
                             AntifakeFamilyReportsSection()
                                 .environmentObject(localizationManager)
@@ -169,6 +175,42 @@ struct AntifakeHubScreen: View {
         .accessibilityIdentifier("antifake_share_onboard_tip")
     }
 
+    private var antifakeHeroCheckScam: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Image("ICON_ALIVE_HERO_CheckScam")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .frame(height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .accessibilityHidden(true)
+            Text(localizationManager.localized("antifake_interpol_loss_2025"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .accessibilityIdentifier("antifake_hero_check_scam")
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(localizationManager.localized("antifake_interpol_loss_2025"))
+    }
+
+    private var antifakeHeroCheckFamily: some View {
+        Image("ICON_ALIVE_HERO_CheckFamily")
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity)
+            .frame(height: 220)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .accessibilityHidden(true)
+            .padding(Spacing.m)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .accessibilityIdentifier("antifake_hero_check_family")
+    }
+
     private var trustBanner: some View {
         Button {
             showAppleLimits = true
@@ -221,8 +263,10 @@ struct AntifakeHubScreen: View {
                     HapticFeedback.selection()
                 } label: {
                     VStack(spacing: 4) {
-                        Image(systemName: tab.iconName)
-                            .font(.body.weight(.semibold))
+                        AliveGlyph(id: tab.aliveIcon, size: 28) {
+                            Image(systemName: tab.iconName)
+                                .font(.body.weight(.semibold))
+                        }
                         Text(localizationManager.localized(tab.titleKey))
                             .font(.caption2.weight(.medium))
                             .lineLimit(1)
@@ -250,10 +294,12 @@ struct AntifakeHubScreen: View {
             UIApplication.shared.open(url)
         } label: {
             HStack(spacing: Spacing.m) {
-                Image(systemName: "sparkles")
-                    .font(.title3.weight(.semibold))
-                    .foregroundColor(.secondaryGold)
-                    .accessibilityHidden(true)
+                AliveGlyph(id: .aiFriends, size: 28) {
+                    Image(systemName: "sparkles")
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(localizationManager.localized("support_ask_assistant"))
                         .font(.subheadline.bold())
@@ -378,7 +424,9 @@ struct AntifakeHubScreen: View {
             HStack(spacing: Spacing.xs) {
                 ForEach(AntifakeHubTab.allCases) { tab in
                     VStack(spacing: 4) {
-                        Image(systemName: tab.iconName)
+                        AliveGlyph(id: tab.aliveIcon, size: 28) {
+                            Image(systemName: tab.iconName)
+                        }
                         Text(localizationManager.localized(tab.titleKey))
                             .font(.caption2)
                             .lineLimit(1)
@@ -429,6 +477,17 @@ enum AntifakeHubTab: String, CaseIterable, Identifiable {
         case .audio: return "waveform"
         case .video: return "video.fill"
         case .call: return "phone.fill"
+        }
+    }
+
+    /// Wave C Variant A — soft-clay AliveGlyph (Classic = `iconName`).
+    var aliveIcon: AliveIconID {
+        switch self {
+        case .text: return .afText
+        case .document: return .afDoc
+        case .audio: return .afAudio
+        case .video: return .afVideo
+        case .call: return .afCall
         }
     }
 }

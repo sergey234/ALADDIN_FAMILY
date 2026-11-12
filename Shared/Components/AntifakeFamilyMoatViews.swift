@@ -23,11 +23,13 @@ struct AntifakeFamilyReportsSection: View {
             } label: {
                 HStack(alignment: .top, spacing: Spacing.s) {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Label(
-                            localizationManager.localized("antifake_family_reports_title"),
-                            systemImage: "person.3.fill"
-                        )
-                        .font(.headline)
+                        HStack(spacing: 8) {
+                            AliveGlyph(id: .afFamilyDB, size: 28) {
+                                Image(systemName: "person.3.fill")
+                            }
+                            Text(localizationManager.localized("antifake_family_reports_title"))
+                                .font(.headline)
+                        }
                         .foregroundColor(.white)
 
                         Text(localizationManager.localized("antifake_family_reports_subtitle"))

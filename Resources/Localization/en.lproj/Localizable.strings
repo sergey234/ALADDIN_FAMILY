@@ -3609,6 +3609,7 @@
 "vk_connect_body" = "VK connect comes later via real OAuth. Empty for now — no fake API.";
 "child_overview_title" = "Child overview";
 "child_overview_body" = "Pause, sites, limits and bedtime are below. Full reports are in Parental.";
+"antifake_interpol_loss_2025" = "In 2025 alone, global losses from financial fraud are estimated at about USD 442 billion.";
 "map_live_speed_label" = "Speed";
 "family_access_section_title" = "Who appears on the map";
 "family_access_section_body" = "Only for the Where’s Family door. Pause and limits stay the same.";

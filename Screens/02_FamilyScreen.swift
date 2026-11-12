@@ -3560,6 +3560,7 @@ extension FamilyScreen {
                 // 1. Блокировка контента
                 FamilyParentalControlCard(
                     icon: "🔒",
+                    aliveIcon: .parentalContentBlock,
                     title: localizationManager.localized("parental_content_block"),
                     statusBadge: isContentBlockEnabled
                         ? localizationManager.localized("family_content_block_card_badge_on")
@@ -3585,6 +3586,7 @@ extension FamilyScreen {
                 // 2. Управление временем
                 FamilyParentalControlCard(
                     icon: "⏱️",
+                    aliveIcon: .parentalTime,
                     title: localizationManager.localized("parental_time_control"),
                     statusBadge: "⏳",
                     statusText: "⏳ \(timeRemaining)",
@@ -3606,6 +3608,7 @@ extension FamilyScreen {
                 // 3. Мониторинг
                 FamilyParentalControlCard(
                     icon: "👀",
+                    aliveIcon: .parentalMonitor,
                     title: localizationManager.localized("parental_monitoring"),
                     statusBadge: "4/5",
                     statusText: "📊 \(monitoringWebsites) \(localizationManager.localized("parental_sites"))",
@@ -3627,6 +3630,7 @@ extension FamilyScreen {
                 // 4. Геолокация
                 FamilyParentalControlCard(
                     icon: "📍",
+                    aliveIcon: .parentalGeo,
                     title: localizationManager.localized("parental_geofence"),
                     statusBadge: "🏠",
                     statusText: "🏠 \(locationStatus.isEmpty ? localizationManager.localized("parental_location_home") : locationStatus)",
@@ -3648,6 +3652,7 @@ extension FamilyScreen {
                 // 5. Отчёты
                 FamilyParentalControlCard(
                     icon: "📊",
+                    aliveIcon: .parentalReports,
                     title: localizationManager.localized("parental_reports"),
                     statusBadge: "⚠️ \(reportsAlerts)",
                     statusText: reportsToday ? "📅 \(localizationManager.localized("parental_reports_today"))" : "📅 \(localizationManager.localized("parental_reports_week"))",
@@ -3669,6 +3674,7 @@ extension FamilyScreen {
                 // 6. Дополнительно
                 FamilyParentalControlCard(
                     icon: "⚙️",
+                    aliveIcon: .settings,
                     title: localizationManager.localized("parental_additional"),
                     statusBadge: "✋ \(additionalRequests)",
                     statusText: "✋ \(additionalRequests) \(localizationManager.localized("parental_requests"))",
@@ -3690,6 +3696,7 @@ extension FamilyScreen {
                 if AppStoreBuildPolicy.allowsSmartDNS {
                     FamilyParentalControlCard(
                         icon: "🚨",
+                        aliveIcon: .parentalBypass,
                         title: localizationManager.localized("parental_bypass_protection"),
                         statusBadge: bypassAttemptsToday > 0
                             ? "🚨 \(bypassAttemptsToday)"
@@ -3827,6 +3834,7 @@ extension FamilyScreen {
 
 struct FamilyParentalControlCard: View {
     let icon: String
+    var aliveIcon: AliveIconID? = nil
     let title: String
     let statusBadge: String
     let statusText: String
@@ -3863,10 +3871,20 @@ struct FamilyParentalControlCard: View {
                 }
                 .frame(height: 20)
                 
-                // Иконка (уменьшена)
-                Text(icon)
-                    .font(.system(size: 28))
-                    .frame(height: 32)
+                // Иконка (уменьшена) — Wave C AliveGlyph / Classic emoji
+                Group {
+                    if let aliveIcon {
+                        AliveGlyph(id: aliveIcon, size: 28) {
+                            Text(icon)
+                                .font(.system(size: 28))
+                        }
+                    } else {
+                        Text(icon)
+                            .font(.system(size: 28))
+                    }
+                }
+                .frame(height: 32)
+                .accessibilityHidden(true)
                 
                 // Название (меньший шрифт, больше места)
                 Text(title)

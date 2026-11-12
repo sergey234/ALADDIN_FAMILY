@@ -491,13 +491,29 @@ struct SimpleHomeScreen: View {
         )
     }
 
+    /// Wave C CapCut hero · same slot size as Where Family (~320×220).
+    private func childHeroCard(assetName: String) -> some View {
+        Image(assetName)
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity)
+            .frame(height: 220)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .accessibilityHidden(true)
+            .padding(Spacing.m)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
+    }
+
     private var familyMapVisibilityCard: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             HStack(spacing: Spacing.s) {
-                Image(systemName: "map.fill")
-                    .font(.title3.weight(.semibold))
-                    .foregroundColor(.secondaryGold)
-                    .accessibilityHidden(true)
+                AliveGlyph(id: .mapVis, size: 28) {
+                    Image(systemName: "map.fill")
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .accessibilityHidden(true)
                 Text(localizationManager.localized("family_access_section_title"))
                     .font(AladdinFamilyType.title3())
                     .foregroundColor(.white)
@@ -519,8 +535,10 @@ struct SimpleHomeScreen: View {
                     HapticFeedback.selection()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "person.3.fill")
-                            .font(.caption.weight(.semibold))
+                        AliveGlyph(id: .famGroups, size: 18) {
+                            Image(systemName: "person.3.fill")
+                                .font(.caption.weight(.semibold))
+                        }
                         Text(localizationManager.localized("family_access_full"))
                             .font(.caption.weight(.semibold))
                             .lineLimit(1)
@@ -540,8 +558,10 @@ struct SimpleHomeScreen: View {
                     HapticFeedback.selection()
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "person.fill")
-                            .font(.caption.weight(.semibold))
+                        AliveGlyph(id: .mapMe, size: 18) {
+                            Image(systemName: "person.fill")
+                                .font(.caption.weight(.semibold))
+                        }
                         Text(localizationManager.localized("family_access_limited"))
                             .font(.caption.weight(.semibold))
                             .lineLimit(1)
@@ -581,6 +601,10 @@ struct SimpleHomeScreen: View {
                 StormMeshBackground(variant: .premium)
                 ScrollView {
                     VStack(spacing: Spacing.m) {
+                        // Wave C hero · боль: телефон без контроля
+                        childHeroCard(assetName: "ICON_ALIVE_HERO_ChildControl")
+                            .accessibilityIdentifier("pay_pains_child_hero_control")
+
                         VStack(alignment: .leading, spacing: Spacing.s) {
                             Text(localizationManager.localized("child_overview_title"))
                                 .font(AladdinFamilyType.title3())
@@ -599,6 +623,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_pause_title",
                             subtitleKey: "pay_pains_child_pause_subtitle",
                             systemImage: "pause.circle.fill",
+                            aliveIcon: .childPause,
                             identifier: "pay_pains_child_pause",
                             prominent: true
                         ) {
@@ -608,6 +633,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_sites_title",
                             subtitleKey: "pay_pains_child_sites_subtitle",
                             systemImage: "globe",
+                            aliveIcon: .childSites,
                             identifier: "pay_pains_child_sites",
                             prominent: false
                         ) {
@@ -617,6 +643,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_limit_title",
                             subtitleKey: "pay_pains_child_limit_subtitle",
                             systemImage: "hourglass",
+                            aliveIcon: .childLimit,
                             identifier: "pay_pains_child_limit",
                             prominent: false
                         ) {
@@ -628,6 +655,11 @@ struct SimpleHomeScreen: View {
                             .foregroundColor(.white.opacity(0.75))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, Spacing.xs)
+
+                        // Wave C hero · боль: ребёнка атакуют в сети
+                        childHeroCard(assetName: "ICON_ALIVE_HERO_ChildThreats")
+                            .accessibilityIdentifier("pay_pains_child_hero_threats")
+
                         Text(localizationManager.localized("pay_pains_child_more_heading"))
                             .font(.headline)
                             .foregroundColor(.white)
@@ -639,6 +671,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_bedtime_title",
                             subtitleKey: "pay_pains_child_bedtime_subtitle",
                             systemImage: "moon.zzz.fill",
+                            aliveIcon: .childBedtime,
                             identifier: "pay_pains_child_bedtime",
                             prominent: false
                         ) {
@@ -648,6 +681,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_reward_title",
                             subtitleKey: "pay_pains_child_reward_subtitle",
                             systemImage: "gift.fill",
+                            aliveIcon: .childReward,
                             identifier: "pay_pains_child_reward",
                             prominent: false
                         ) {
@@ -657,6 +691,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_minutes_title",
                             subtitleKey: "pay_pains_child_minutes_subtitle",
                             systemImage: "clock.fill",
+                            aliveIcon: .childMinutes,
                             identifier: "pay_pains_child_minutes",
                             prominent: false,
                             subtitleOverride: minutesDoorSubtitle()
@@ -667,6 +702,7 @@ struct SimpleHomeScreen: View {
                             titleKey: "pay_pains_child_screen_title",
                             subtitleKey: "pay_pains_child_screen_subtitle",
                             systemImage: "gamecontroller.fill",
+                            aliveIcon: .childScreen,
                             identifier: "pay_pains_child_screen",
                             prominent: false
                         ) {
