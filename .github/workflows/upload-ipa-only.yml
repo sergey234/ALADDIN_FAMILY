@@ -39,11 +39,47 @@ jobs:
         echo "✅ Found IPA: $IPA_FILE"
         echo "ipa_path=$IPA_FILE" >> $GITHUB_OUTPUT
         
-    - name: Upload to App Store Connect
-      uses: apple-actions/upload-testflight-build@v1
-      with:
-        app-path: ${{ steps.find-ipa.outputs.ipa_path }}
-        api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-        issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-        api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+    # Hard-fail altool (apple-actions can exit 0 on ASC 403 agreement missing — see check-secrets.yml).
+    - name: Upload to App Store Connect (altool hard-fail)
+      env:
+        ASC_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        IPA: ${{ steps.find-ipa.outputs.ipa_path }}
+      run: |
+        set -euo pipefail
+        if [ -z "${ASC_API_KEY:-}" ] || [ -z "${ASC_ISSUER_ID:-}" ] || [ -z "${ASC_KEY_ID:-}" ]; then
+          echo "❌ Missing ASC API secrets"
+          exit 1
+        fi
+        if [ ! -f "$IPA" ]; then
+          echo "❌ IPA missing: $IPA"
+          exit 1
+        fi
+        KEY_DIR="$HOME/.appstoreconnect/private_keys"
+        mkdir -p "$KEY_DIR"
+        printf '%s\n' "$ASC_API_KEY" > "$KEY_DIR/AuthKey_${ASC_KEY_ID}.p8"
+        chmod 600 "$KEY_DIR/AuthKey_${ASC_KEY_ID}.p8"
+        echo "Uploading $IPA via altool…"
+        set +e
+        OUT=$(xcrun altool --upload-app \
+          --file "$IPA" \
+          --type ios \
+          --apiKey "$ASC_KEY_ID" \
+          --apiIssuer "$ASC_ISSUER_ID" \
+          --output-format xml 2>&1)
+        EC=$?
+        set -e
+        echo "$OUT"
+        if echo "$OUT" | grep -qiE 'ERROR:|agreement is missing|has expired|\(403\)|Failed to determine the Apple ID'; then
+          echo "❌ ASC rejected upload. Accept agreements:"
+          echo "  https://appstoreconnect.apple.com/agreements"
+          echo "  https://developer.apple.com/account"
+          exit 1
+        fi
+        if [ "$EC" -ne 0 ]; then
+          echo "❌ altool exited $EC"
+          exit 1
+        fi
+        echo "✅ Upload to App Store Connect succeeded"
 
