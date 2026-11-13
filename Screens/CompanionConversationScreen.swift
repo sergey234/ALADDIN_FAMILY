@@ -206,8 +206,12 @@ struct CompanionConversationScreen: View {
                         wellnessRecapLine: embeddedInHome ? nil : wellnessRecapLine,
                         memoryChipsEnabled: !embeddedInHome && memoryChipsEnabled,
                         memoryChipCount: memoryChips.count,
-                        onMemoryChipTap: { showFullChatHistory = true },
+                        onMemoryChipTap: {
+                            HapticFeedback.selection()
+                            showFullChatHistory = true
+                        },
                         onCheckinTap: {
+                            HapticFeedback.selection()
                             navigationManager.navigateToWellnessScreen(
                                 .wellnessCheckin,
                                 returnTo: navigationManager.currentScreen
@@ -215,6 +219,7 @@ struct CompanionConversationScreen: View {
                         },
                         essentialOnly: embeddedInHome,
                         onOpenMore: {
+                            HapticFeedback.selection()
                             if let onOpenWellnessTab {
                                 onOpenWellnessTab()
                             } else {
@@ -265,6 +270,7 @@ struct CompanionConversationScreen: View {
                             .font(.caption)
                             .foregroundStyle(.orange)
                         Button(localizationManager.localized("companion_mic_assistant_busy_action")) {
+                            HapticFeedback.selection()
                             navigationManager.navigateTo(.aiAssistant)
                         }
                         .font(.caption.weight(.semibold))
@@ -276,6 +282,7 @@ struct CompanionConversationScreen: View {
                             .fixedSize(horizontal: false, vertical: true)
                         if let pending = retrySendText, !pending.isEmpty {
                             Button(localizationManager.localized("companion_error_retry")) {
+                                HapticFeedback.impact(.light)
                                 self.errorText = nil
                                 self.retrySendText = nil
                                 self.input = pending
@@ -286,6 +293,7 @@ struct CompanionConversationScreen: View {
                             .accessibilityIdentifier("companion_error_retry_send")
                         } else if shouldOfferCompanionLoadRetry(errorText) {
                             Button(localizationManager.localized("companion_error_retry")) {
+                                HapticFeedback.impact(.light)
                                 self.errorText = nil
                                 Task { await loadState() }
                             }
@@ -754,7 +762,10 @@ struct CompanionConversationScreen: View {
         }
         .overlay(alignment: .top) {
             if layout.presence == .immersive {
-                Button(action: pinChromeFromImmersive) {
+                Button(action: {
+                    HapticFeedback.selection()
+                    pinChromeFromImmersive()
+                }) {
                     Color.clear
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
@@ -823,6 +834,7 @@ struct CompanionConversationScreen: View {
             }
             Spacer(minLength: 0)
             Button {
+                HapticFeedback.selection()
                 wellnessGuideStore.dismissSessionSoftNudge()
                 showWellnessSessionClose = true
             } label: {
@@ -832,6 +844,7 @@ struct CompanionConversationScreen: View {
             .buttonStyle(.borderedProminent)
             .tint(Color(hex: "8B5CF6"))
             Button {
+                HapticFeedback.selection()
                 wellnessGuideStore.dismissSessionSoftNudge()
             } label: {
                 Text(localizationManager.localized("wellness_session_soft_nudge_no"))
@@ -854,6 +867,7 @@ struct CompanionConversationScreen: View {
                         ForEach(availableCharacters) { hero in
                             let isSelected = hero.id == characterId
                             Button {
+                                HapticFeedback.selection()
                                 CompanionHeroRouter.markUserOverride(characterId: hero.id)
                                 characterId = hero.id
                                 activeThreadId = ""
@@ -1041,6 +1055,7 @@ struct CompanionConversationScreen: View {
             HStack(spacing: 16) {
                 if WellnessGuideSessionStore.shared.guideModesEnabled {
                     Button {
+                        HapticFeedback.selection()
                         showWellnessSessionClose = true
                     } label: {
                         Image(systemName: "checkmark.circle")
@@ -1049,6 +1064,7 @@ struct CompanionConversationScreen: View {
                     .accessibilityIdentifier("companion_end_wellness_session")
                 }
                 Button {
+                    HapticFeedback.selection()
                     breakStepsGoal = input.trimmingCharacters(in: .whitespacesAndNewlines)
                     breakStepsError = nil
                     showBreakStepsPrompt = true
@@ -1059,13 +1075,22 @@ struct CompanionConversationScreen: View {
                 .accessibilityIdentifier("companion_break_steps_button")
                 if !isChildProfile {
                     Menu {
-                        Button { chatMode = "fast" } label: {
+                        Button {
+                            HapticFeedback.selection()
+                            chatMode = "fast"
+                        } label: {
                             Label(localizationManager.localized("companion_mode_fast"), systemImage: chatMode == "fast" ? "checkmark" : "bolt")
                         }
-                        Button { chatMode = "reasoning" } label: {
+                        Button {
+                            HapticFeedback.selection()
+                            chatMode = "reasoning"
+                        } label: {
                             Label(localizationManager.localized("companion_mode_reasoning"), systemImage: chatMode == "reasoning" ? "checkmark" : "brain")
                         }
-                        Button { chatMode = "think" } label: {
+                        Button {
+                            HapticFeedback.selection()
+                            chatMode = "think"
+                        } label: {
                             Label(localizationManager.localized("companion_mode_think"), systemImage: chatMode == "think" ? "checkmark" : "sparkles")
                         }
                     } label: {
@@ -1075,6 +1100,7 @@ struct CompanionConversationScreen: View {
                 }
                 if embeddedInHome {
                     Button {
+                        HapticFeedback.selection()
                         onOpenMineTab?()
                     } label: {
                         Image(systemName: "slider.horizontal.3")
@@ -1082,12 +1108,14 @@ struct CompanionConversationScreen: View {
                     .accessibilityLabel(localizationManager.localized("companion_conversation_mine_tab"))
                 } else {
                     Button {
+                        HapticFeedback.selection()
                         showLegal = true
                     } label: {
                         Image(systemName: "doc.text")
                     }
                     .accessibilityLabel(localizationManager.localized("companion_conversation_rules"))
                     Button {
+                        HapticFeedback.selection()
                         showCosmetics = true
                     } label: {
                         Image(systemName: "sparkles")
@@ -1145,6 +1173,7 @@ struct CompanionConversationScreen: View {
                 .foregroundStyle(.primary)
             Spacer(minLength: 8)
             Button(localizationManager.localized("ai_consent_banner_action")) {
+                HapticFeedback.selection()
                 navigationManager.navigateTo(.settings)
             }
             .font(.caption.weight(.semibold))
@@ -1214,6 +1243,7 @@ struct CompanionConversationScreen: View {
                 .font(.body)
                 Spacer()
                 Button {
+                    HapticFeedback.impact(.light)
                     micCoachSeen = true
                     showMicCoach = false
                 } label: {
@@ -1243,6 +1273,7 @@ struct CompanionConversationScreen: View {
                 HStack(spacing: 8) {
                     ForEach(lifeDomains) { domain in
                         Button {
+                            HapticFeedback.selection()
                             input = domain.starterPrompt
                             isInputFocused = true
                         } label: {
@@ -1277,6 +1308,7 @@ struct CompanionConversationScreen: View {
                 .foregroundStyle(.secondary)
             HStack(spacing: Spacing.s) {
                 Button {
+                    HapticFeedback.selection()
                     navigationManager.navigateTo(.family)
                     showSocialBridgeBanner = false
                 } label: {
@@ -1285,6 +1317,7 @@ struct CompanionConversationScreen: View {
                 }
                 .buttonStyle(.bordered)
                 Button {
+                    HapticFeedback.selection()
                     showSocialBridgeBanner = false
                 } label: {
                     Text(localizationManager.localized("companion_social_bridge_dismiss"))
@@ -1341,7 +1374,10 @@ struct CompanionConversationScreen: View {
                 focused: $isInputFocused,
                 fieldAccessibilityIdentifier: "companion_message_input",
                 sendAccessibilityIdentifier: "companion_send_button",
-                onSend: { Task { await sendText() } },
+                onSend: {
+                    HapticFeedback.impact(.medium)
+                    Task { await sendText() }
+                },
                 leading: {
                     if !isChildProfile {
                         attachmentPickerMenu
@@ -1387,6 +1423,7 @@ struct CompanionConversationScreen: View {
         Menu {
             Text(localizationManager.localized("companion_attach_hint"))
             Button {
+                HapticFeedback.selection()
                 showPhotoPicker = true
             } label: {
                 Label(
@@ -1395,6 +1432,7 @@ struct CompanionConversationScreen: View {
                 )
             }
             Button {
+                HapticFeedback.selection()
                 showPdfImporter = true
             } label: {
                 Label(
@@ -1403,6 +1441,7 @@ struct CompanionConversationScreen: View {
                 )
             }
             Button {
+                HapticFeedback.selection()
                 Task { await toggleFamilyPdfOnly() }
             } label: {
                 Label(

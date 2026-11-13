@@ -1100,7 +1100,7 @@ struct WhereIsPhoneScreen: View {
                 HapticFeedback.selection()
                 liveLocation.requestFreshFix()
                 ToastManager.shared.showSuccess(
-                    localizationManager.localized("map_refresh_my_place_toast")
+                    localizationManager.localized("map_location_refining_toast")
                 )
             } label: {
                 HStack(spacing: 6) {

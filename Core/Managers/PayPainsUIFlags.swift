@@ -46,20 +46,12 @@ enum PayPainsUIFlags {
         usesNewPayPainsHome = true
     }
 
-    /// Стартовый вход: SimpleHome с тремя дверями (§10 / F3).
-    /// При новом UI — по умолчанию для родителя/взрослого.
-    /// При откате X4 — только если включён старый opt-in `aladdin.simpleHomePreferred`.
-    /// Child / teen / elderly — не подменяем их вход.
+    /// Стартовый вход: SimpleHome (Удобный режим) — канон 2026-11-11.
+    /// Все роли: после онбординга / cold-start → SimpleHome при новом UI.
+    /// Откат X4 (`newUIEnabled=false`): только opt-in `aladdin.simpleHomePreferred`.
     static func shouldOpenSimpleHomeAtLaunch(
         defaults: UserDefaults = .standard
     ) -> Bool {
-        let role = (defaults.string(forKey: "current_user_role") ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-        let blocked: Set<String> = ["child", "teenager", "teen", "elderly", "senior"]
-        if blocked.contains(role) {
-            return false
-        }
         if isNewUIEnabled(defaults: defaults) {
             return true
         }

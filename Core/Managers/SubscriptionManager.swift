@@ -789,10 +789,17 @@ final class SubscriptionManager: ObservableObject {
     /// SSOT `trial_end` from server (epoch seconds). Survives lag / reinstall restore path.
     private static let recoverableTrialEndEpochKey = "recoverable_trial_end_epoch"
 
-    /// SSOT для UI: level = `getCurrentLevel()`, M = таблица тарифа (не чужой snapshot.max).
+    /// SSOT для UI: level = `getCurrentLevel()`, M = тот же кап, что `canAddFamilyMember` / FamilyScreen.
+    /// Нельзя показывать «1 из 3» на Main при gate «1 из 1» на Семье (Hybrid-B drift).
     func effectiveFamilyDisplay(localRosterCount: Int? = nil) -> EffectiveFamilyDisplay {
         let level = getCurrentLevel()
-        let slotsMax = Self.familyMemberLimitStatic(for: level)
+        let tariffMax = Self.familyMemberLimitStatic(for: level)
+        // Prefer live quota snapshot (serverStats / tariffFallback) so Main Y == Family Y.
+        let slotsMax: Int = {
+            let snap = familyQuotaSnapshot.max
+            if snap > 0 { return snap }
+            return tariffMax
+        }()
         let localCount = max(0, localRosterCount ?? FamilyLocalStore.persistedLocalRosterCount())
         let quotaUsed: Int
         if familyQuotaSnapshot.source == .persistedCache {
@@ -811,6 +818,18 @@ final class SubscriptionManager: ObservableObject {
             isOverCapacity: slotsMax > 0 && quotaUsed > slotsMax,
             trialDaysRemaining: trialDays
         )
+    }
+
+    /// Real trial from server/status — not DEBUG QA peacock paint.
+    private var isRealServerBackedTrialActiveForRosterCap: Bool {
+#if DEBUG
+        if isDebugQALocalTrialOverrideActive { return false }
+#endif
+        if trialStatus?.isActive == true { return true }
+        if let t = currentSubscription?.trialInfo, t.isActive { return true }
+        if currentSubscription?.level == .trial { return true }
+        if let end = ssotTrialEndDate, end > Date() { return true }
+        return false
     }
 
     var shouldShowTrialEndedBanner: Bool {
@@ -931,22 +950,41 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// Hybrid-B authority: `GET /api/family/stats.familyRosterMax` = owner DB cap (same as POST /add gate).
-    /// Chip + `canAddFamilyMember` must follow this; tariffFallback must not inflate above it.
+    /// Chip + `canAddFamilyMember` must follow this. Stale free=1 during real trial → optimistic trial=3.
     func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
         guard let cap = stats.familyRosterMax, cap > 0 else { return }
         let used = stats.familyRosterUsed ?? stats.totalMembers
         let trimmedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
-        publishFamilyQuotaSnapshot(used: used, maxSlots: cap, source: .serverStats, familyId: familyId)
+        let tier = (stats.ownerSubscriptionTier ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let trialCap = Self.familyMemberLimitStatic(for: .trial)
+        var effectiveCap = cap
+        var source: FamilyQuotaSource = .serverStats
+        // Drift guard: stats say free/1 while client has real active trial → show trial slots.
+        if isRealServerBackedTrialActiveForRosterCap,
+           cap < trialCap,
+           tier == "free" || tier.isEmpty || tier == "trial" {
+            effectiveCap = trialCap
+            source = .tariffFallback
+            VisualLogger.shared.log(
+                "⚠️ FAMILY STATS stale free cap=\(cap) tier=\(tier.isEmpty ? "?" : tier) → optimistic trial=\(trialCap)",
+                level: .warning,
+                category: "FAMILY"
+            )
+            logger.business(
+                "⚠️ Hybrid-B heal: stale serverStats max=\(cap) while real trial active → tariffFallback \(trialCap)"
+            )
+        }
+        publishFamilyQuotaSnapshot(used: used, maxSlots: effectiveCap, source: source, familyId: familyId)
         bumpSubscriptionDisplayEpoch()
         VisualLogger.shared.log(
-            "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")",
+            "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(effectiveCap) tier=\(stats.ownerSubscriptionTier ?? "?") src=\(source.rawValue)",
             level: .info,
             category: "FAMILY"
         )
         logger.business(
-            "🔒 Hybrid-B serverStats applied rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")"
+            "🔒 Hybrid-B serverStats applied rosterUsed=\(used) rosterMax=\(effectiveCap) tier=\(stats.ownerSubscriptionTier ?? "?") src=\(source.rawValue)"
         )
     }
 
@@ -1718,7 +1756,8 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// Hybrid-B lock: `GET /api/family/stats` → `.serverStats` не затирается tariffFallback
-    /// (кроме paid upgrade и смены familyId). Не даёт DEBUG/local trial поднять max выше сервера.
+    /// (кроме paid upgrade, **real** server trial, и смены familyId).
+    /// DEBUG QA local trial по-прежнему не поднимает max выше server free=1.
     private func shouldPreserveServerRosterQuota(
         status: SubscriptionStatus,
         familyId: String?,
@@ -1734,6 +1773,14 @@ final class SubscriptionManager: ObservableObject {
         case .free, .trial:
             break
         }
+        // Real trial (JWT/status/trial_end) may optimistically raise free=1 → trial=3,
+        // same class as paid upgrade. Stale users.subscription_level=free must not block UI.
+        if isRealServerBackedTrialActiveForRosterCap, tariffBasedLimit > familyQuotaSnapshot.max {
+            logger.business(
+                "🔓 Hybrid-B: allow trial inflate serverMax=\(familyQuotaSnapshot.max) → tariff=\(tariffBasedLimit)"
+            )
+            return false
+        }
         let snapFid = (familyQuotaSnapshot.familyId ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let incoming = (familyId ?? "")
@@ -1742,7 +1789,7 @@ final class SubscriptionManager: ObservableObject {
         if snapFid != incoming {
             return false
         }
-        // Block inflate (e.g. local trial 3 > server free 1). Allow deflate after cancel.
+        // Block inflate (e.g. DEBUG local trial 3 > server free 1). Allow deflate after cancel.
         if tariffBasedLimit > familyQuotaSnapshot.max {
             return true
         }

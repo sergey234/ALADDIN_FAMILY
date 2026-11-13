@@ -820,6 +820,7 @@
 "driving_stat_max_kmh_short" = "max km/h";
 "map_refresh_my_place" = "Update my place";
 "map_refresh_my_place_toast" = "Updating place…";
+"map_location_refining_toast" = "Improving location…";
 "map_accuracy_meters_format" = "Accuracy ±%d m";
 /* ═══════════════════════════════════════════════════════════════
  * AUTH
@@ -2511,6 +2512,13 @@
 "calls_safety_prompt_toggle" = "Phone scam protection";
 "calls_safety_prompt_toggle_subtitle" = "Red and green buttons after Phone calls";
 "calls_safety_prompt_toggle_a11y_hint" = "After Phone or FaceTime. iOS cannot see WhatsApp or Telegram — open Calls manually.";
+"settings_icon_style_preview_title" = "Icon style";
+"settings_icon_style_preview_subtitle" = "Home icon style";
+"settings_icon_style_classic" = "Classic";
+"settings_icon_style_gold" = "Gold";
+"settings_icon_style_icons" = "Icons";
+"settings_home_chat_default_title" = "Default chat";
+"settings_home_chat_default_subtitle" = "Which chat opens first on the home screen";
 
 /* ux36-w1 */
 "wellness_guide_talk_gently" = "Talk calmly";
@@ -3066,6 +3074,7 @@
 "pay_pains_family_strip_count" = "Family · %d people";
 "pay_pains_family_strip_count_many" = "Family · %d people";
 "pay_pains_family_strip_add" = "Add";
+"pay_pains_family_strip_add_to_family" = "Add to family";
 "pay_pains_door_check_title" = "Check";
 "pay_pains_door_check_subtitle" = "We'll check a call, message, video, or text";
 "pay_pains_door_child_title" = "Child";
@@ -3672,7 +3681,7 @@
 "map_soon_pet_title" = "Pets nearby";
 "map_soon_pet_body" = "Coming soon. No pet map until a partner is live.";
 "map_soon_tile_title" = "Tags";
-"map_soon_tile_body" = "Coming soon. Tags will connect for real — no fake pins.";
+"map_soon_tile_body" = "Coming soon: item and pet tags on the map.";
 "map_soon_evac_title" = "Roadside help";
 "map_soon_evac_body" = "Coming soon. For now: emergency services and your contacts.";
 "map_soon_ok" = "Got it";

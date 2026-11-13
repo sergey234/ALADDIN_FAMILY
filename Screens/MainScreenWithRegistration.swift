@@ -157,6 +157,7 @@ struct MainScreenWithRegistration: View {
 
     /// D2: стеклянная панель как Snowball — Apple + «или» + Добавить семью (§25).
     /// Показывается при pay-pains flag, пока нет тяжёлых модалок регистрации поверх.
+    /// P0: также скрывать на QR recovery / success — иначе glass перекрывает «Готово».
     @ViewBuilder
     private var payPainsAuthGlassOverlay: some View {
         if PayPainsUIFlags.usesNewPayPainsHome,
@@ -164,12 +165,14 @@ struct MainScreenWithRegistration: View {
            !registrationVM.showRoleModal,
            !registrationVM.showAgeGroupModal,
            !registrationVM.showLetterModal,
+           !registrationVM.showFamilyCreatedModal,
+           !registrationVM.showSuccessModal,
            !registrationVM.isLoading {
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 VStack(spacing: Spacing.m) {
                     Text(localizationManager.localized("pay_pains_auth_headline"))
-                        .font(.title2.weight(.bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -340,7 +343,7 @@ struct MainScreenWithRegistration: View {
     private var ageGroupSelectionView: some View {
                 VStack(spacing: 30) {
                     Text(localizationManager.localized("registration_select_age"))
-                        .font(.system(size: 28, weight: .bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.white)
                     
                     if let role = registrationVM.selectedRole {
@@ -374,7 +377,7 @@ struct MainScreenWithRegistration: View {
     private var letterSelectionView: some View {
                 VStack(spacing: 30) {
                     Text(localizationManager.localized("registration_select_letter"))
-                        .font(.system(size: 28, weight: .bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.white)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
@@ -446,7 +449,7 @@ struct MainScreenWithRegistration: View {
                         .foregroundColor(.green)
 
                     Text(localizationManager.localized("registration_success_title"))
-                        .font(.title2.weight(.bold))
+                        .font(AladdinFamilyType.title2())
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
 
@@ -505,7 +508,7 @@ struct MainScreenWithRegistration: View {
                 .foregroundColor(.red)
             
             Text(localizationManager.localized("registration_error_title"))
-                .font(.system(size: 20, weight: .bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.white)
             
             Text(errorMessage)

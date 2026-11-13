@@ -484,12 +484,15 @@ struct FamilyChatScreen: View {
                 isPresented: $showComposerActions
             ) {
                 Button(localizationManager.localized("family_chat_action_emoji")) {
+                    HapticFeedback.selection()
                     showQuickReactionPicker = true
                 }
                 Button(localizationManager.localized("family_chat_action_quick_reply")) {
+                    HapticFeedback.selection()
                     applyQuickReplyFromMenu()
                 }
                 Button(localizationManager.localized("family_chat_voice_button")) {
+                    HapticFeedback.impact(.light)
                     if isRecordingVoice {
                         if let url = voiceRecorder.stopRecording() {
                             recordingURL = url
@@ -501,24 +504,31 @@ struct FamilyChatScreen: View {
                     }
                 }
                 Button(localizationManager.localized("family_chat_action_camera")) {
+                    HapticFeedback.selection()
                     showCamera = true
                 }
                 Button(localizationManager.localized("family_chat_action_gallery")) {
+                    HapticFeedback.selection()
                     showMediaPicker = true
                 }
                 Button(localizationManager.localized("family_chat_action_file")) {
+                    HapticFeedback.selection()
                     showFileImporter = true
                 }
                 Button(localizationManager.localized("family_chat_action_location")) {
+                    HapticFeedback.selection()
                     shareCurrentLocation()
                 }
                 Button(localizationManager.localized("family_chat_action_contact")) {
+                    HapticFeedback.selection()
                     showContactPicker = true
                 }
                 Button(localizationManager.localized("family_chat_action_feedback")) {
+                    HapticFeedback.selection()
                     showFeedbackSheet = true
                 }
                 Button(localizationManager.localized(isSearching ? "family_chat_action_hide_search" : "family_chat_action_search")) {
+                    HapticFeedback.selection()
                     isSearching.toggle()
                     if !isSearching {
                         searchText = ""
@@ -1387,6 +1397,7 @@ struct FamilyChatScreen: View {
                 onSend: { sendMessage() },
                 leading: {
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         showComposerActions = true
                     }) {
                         Image(systemName: isRecordingVoice ? "stop.circle.fill" : "plus.circle.fill")
@@ -2725,19 +2736,28 @@ struct MessageContextMenu: View {
     var body: some View {
         Group {
             if !message.isCurrentUser {
-                Button(action: onReply) {
+                Button(action: {
+                    HapticFeedback.selection()
+                    onReply()
+                }) {
                     Label(localizationManager.localized("family_chat_message_reply"), systemImage: "arrowshape.turn.up.left")
                 }
             }
             
             if message.text != nil {
-                Button(action: onCopy) {
+                Button(action: {
+                    HapticFeedback.selection()
+                    onCopy()
+                }) {
                     Label(localizationManager.localized("family_chat_message_copy"), systemImage: "doc.on.doc")
                 }
             }
 
             if canCheckSafety {
-                Button(action: onCheckSafety) {
+                Button(action: {
+                    HapticFeedback.impact(.light)
+                    onCheckSafety()
+                }) {
                     Label(
                         localizationManager.localized("family_chat_check_safety"),
                         systemImage: "shield.lefthalf.filled"
@@ -2746,12 +2766,18 @@ struct MessageContextMenu: View {
                 .accessibilityIdentifier("family_chat_check_safety_action")
             }
             
-            Button(action: onAddReaction) {
+            Button(action: {
+                HapticFeedback.selection()
+                onAddReaction()
+            }) {
                 Label(localizationManager.localized("family_chat_reaction_add"), systemImage: "face.smiling")
             }
 
             if !message.isCurrentUser {
-                Button(role: .destructive, action: onReport) {
+                Button(role: .destructive, action: {
+                    HapticFeedback.notification(.warning)
+                    onReport()
+                }) {
                     Label(
                         localizationManager.localized("family_chat_report"),
                         systemImage: "exclamationmark.bubble"
@@ -2760,7 +2786,10 @@ struct MessageContextMenu: View {
                 .accessibilityIdentifier("family_chat_report_action")
 
                 if canRestrictSender {
-                    Button(role: .destructive, action: onRestrictSender) {
+                    Button(role: .destructive, action: {
+                        HapticFeedback.notification(.warning)
+                        onRestrictSender()
+                    }) {
                         Label(
                             localizationManager.localized("family_chat_restrict_sender"),
                             systemImage: "person.crop.circle.badge.xmark"
@@ -2771,18 +2800,27 @@ struct MessageContextMenu: View {
             }
             
             if FamilyChatE2EULegacyPolicy.canEdit(message: message) {
-                Button(action: onEdit) {
+                Button(action: {
+                    HapticFeedback.selection()
+                    onEdit()
+                }) {
                     Label(localizationManager.localized("family_chat_message_edit"), systemImage: "pencil")
                 }
             }
             
             if message.isCurrentUser {
-                Button(role: .destructive, action: onDeleteForMe) {
+                Button(role: .destructive, action: {
+                    HapticFeedback.notification(.warning)
+                    onDeleteForMe()
+                }) {
                     Label(localizationManager.localized("family_chat_message_delete_for_me"), systemImage: "eye.slash")
                 }
                 .accessibilityIdentifier("family_chat_delete_for_me_action")
                 if canDeleteForEveryone {
-                    Button(role: .destructive, action: onDeleteForEveryone) {
+                    Button(role: .destructive, action: {
+                        HapticFeedback.notification(.warning)
+                        onDeleteForEveryone()
+                    }) {
                         Label(localizationManager.localized("family_chat_message_delete_for_everyone"), systemImage: "trash")
                     }
                     .accessibilityIdentifier("family_chat_delete_for_everyone_action")

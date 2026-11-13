@@ -41,7 +41,7 @@ struct RecoveryCodeModal: View {
                     // Заголовок
                     VStack(spacing: 8) {
                         Text(localizationManager.localized("recovery_family_created"))
-                            .font(.system(size: 28, weight: .bold))
+                            .font(AladdinFamilyType.title2())
                             .foregroundColor(.primary)
                         
                         Text(localizationManager.localized("recovery_save_code"))
@@ -71,9 +71,7 @@ struct RecoveryCodeModal: View {
                         HStack(spacing: 12) {
                             Button(action: {
                                 UIPasteboard.general.string = recoveryCode
-                                // Haptic feedback
-                                let generator = UINotificationFeedbackGenerator()
-                                generator.notificationOccurred(.success)
+                                HapticFeedback.notification(.success)
                             }) {
                                 HStack {
                                     Image(systemName: "doc.on.doc")

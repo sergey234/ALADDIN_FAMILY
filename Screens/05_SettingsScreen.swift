@@ -98,8 +98,7 @@ struct SettingsScreen: View {
     private var profileSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(viewModel.localizedStrings.profileSection)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
                 .accessibilityAddTraits(.isHeader)
@@ -179,8 +178,7 @@ struct SettingsScreen: View {
     private var securitySection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(viewModel.localizedStrings.securitySection)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
                 .accessibilityAddTraits(.isHeader)
@@ -263,8 +261,7 @@ struct SettingsScreen: View {
     private var notificationsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(viewModel.localizedStrings.notificationsSection)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
                 .accessibilityAddTraits(.isHeader)
@@ -306,8 +303,7 @@ struct SettingsScreen: View {
     private var appSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(viewModel.localizedStrings.appSection)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
                 .accessibilityAddTraits(.isHeader)
@@ -364,21 +360,40 @@ struct SettingsScreen: View {
                             .foregroundColor(.primaryBlue)
                             .frame(width: 24, height: 24, alignment: .leading)
                         VStack(alignment: .leading, spacing: Spacing.xxs) {
-                            Text("Превью иконок G1")
+                            Text(localizationManager.localized("settings_icon_style_preview_title"))
                                 .font(.body.weight(.semibold))
                                 .foregroundColor(.textPrimary)
-                            Text("Золото = glyph без disc · Значки = чёрный disc · Классика = emoji/SF")
+                            Text(localizationManager.localized("settings_icon_style_preview_subtitle"))
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
                         Spacer(minLength: 0)
                     }
-                    Picker("Стиль иконок", selection: $iconDiscStyleRaw) {
+                    // P3: custom chips — system segmented unreadable on storm glass.
+                    HStack(spacing: Spacing.xs) {
                         ForEach(AliveIconDiscStyle.allCases) { style in
-                            Text(style.titleRU).tag(style.rawValue)
+                            let selected = iconDiscStyleRaw == style.rawValue
+                            Button {
+                                HapticFeedback.selection()
+                                iconDiscStyleRaw = style.rawValue
+                            } label: {
+                                Text(localizationManager.localized(style.titleKey))
+                                    .font(.caption.weight(.semibold))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .foregroundColor(selected ? .black : .white.opacity(0.92))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: CornerRadius.small)
+                                            .fill(selected ? Color.secondaryGold.opacity(0.95) : Color.white.opacity(0.12))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(localizationManager.localized(style.titleKey))
+                            .accessibilityAddTraits(selected ? .isSelected : [])
                         }
                     }
-                    .pickerStyle(.segmented)
                     .accessibilityIdentifier("settings_icon_disc_style_picker")
                 }
                 .padding(.horizontal, Spacing.m)
@@ -425,20 +440,34 @@ struct SettingsScreen: View {
                     .padding(.horizontal, Spacing.m)
                     .padding(.top, Spacing.s)
 
-                    Picker(
-                        localizationManager.localized("settings_home_chat_default_title"),
-                        selection: Binding<HomeChatDefaultMode>(
-                            get: { HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last },
-                            set: { homeChatDefaultModeRaw = $0.rawValue }
-                        )
-                    ) {
+                    // P3: same light-on-dark chips as icon style (system segmented unreadable here).
+                    HStack(spacing: Spacing.xs) {
                         ForEach(HomeChatDefaultMode.allCases, id: \.rawValue) { mode in
-                            Text(mode.localizedTitle(localizationManager)).tag(mode)
+                            let selected = (HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last) == mode
+                            Button {
+                                HapticFeedback.selection()
+                                homeChatDefaultModeRaw = mode.rawValue
+                            } label: {
+                                Text(mode.localizedTitle(localizationManager))
+                                    .font(.caption.weight(.semibold))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.75)
+                                    .foregroundColor(selected ? .black : .white.opacity(0.92))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: CornerRadius.small)
+                                            .fill(selected ? Color.secondaryGold.opacity(0.95) : Color.white.opacity(0.12))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(mode.localizedTitle(localizationManager))
+                            .accessibilityAddTraits(selected ? .isSelected : [])
                         }
                     }
-                    .pickerStyle(.segmented)
                     .padding(.horizontal, Spacing.m)
                     .padding(.bottom, Spacing.s)
+                    .accessibilityIdentifier("settings_home_chat_default_picker")
                 }
 
                 Divider()
@@ -475,8 +504,7 @@ struct SettingsScreen: View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
                 Text(viewModel.localizedStrings.systemComponentsTitle)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
@@ -543,8 +571,7 @@ struct SettingsScreen: View {
     private var additionalSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(viewModel.localizedStrings.additionalSection)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .accessibilityAddTraits(.isHeader)
                 .padding(.bottom, Spacing.xs)
@@ -822,7 +849,10 @@ struct SettingsScreen: View {
         subtitle: String,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.impact(.light)
+            action()
+        }) {
             HStack(spacing: Spacing.s) {
                 Image(systemName: icon)
                     .font(.system(size: 16))

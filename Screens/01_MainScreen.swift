@@ -128,6 +128,7 @@ struct MainScreen: View {
                     
                     // Кнопка профиля - ПРАВЫЙ УГОЛ (через NavigationManager)
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         navigationManager.navigateTo(.profile)
                     }) {
                         ZStack {
@@ -168,6 +169,7 @@ struct MainScreen: View {
                 HStack(spacing: 0) {
                     // 🎮 Игра (быстрый переход в геймификацию)
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         logger.buttonTap("Game Tab", screen: "Main")
                         navigationManager.navigateTo(.childRewards)
                     }) {
@@ -188,6 +190,7 @@ struct MainScreen: View {
                     
                     // ✨ Аладдин Kids — полный детский интерфейс (маршрут .threatProtection не удалён, см. уведомления / расширенная защита)
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         logger.buttonTap("Aladdin Kids Tab", screen: "Main")
                         navigationManager.navigateTo(.childInterface)
                     }) {
@@ -212,6 +215,7 @@ struct MainScreen: View {
                     
                     // 🔔 Уведомления
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         navigationManager.navigateTo(.notifications)
                     }) {
                         VStack(spacing: 4) {
@@ -231,6 +235,7 @@ struct MainScreen: View {
                     
                     // 👤 Профиль
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         navigationManager.navigateTo(.profile)
                     }) {
                         VStack(spacing: 4) {
@@ -248,6 +253,7 @@ struct MainScreen: View {
                     
                     // 📱 Устройства
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         navigationManager.navigateTo(.devices)
                     }) {
                         VStack(spacing: 4) {
@@ -496,6 +502,7 @@ struct MainScreen: View {
                         ], spacing: 15) {
                             // Защита Aladdin карточка (вместо VPN)
                             Button(action: {
+                                HapticFeedback.impact(.light)
                                 navigationManager.navigateTo(.networkProtection)
                             }) {
                                 VStack(spacing: 8) {
@@ -531,6 +538,7 @@ struct MainScreen: View {
                             
                             // Тарифы карточка
                             Button(action: {
+                                HapticFeedback.impact(.light)
                                 navigationManager.navigateTo(.tariffs)
                             }) {
                                 VStack(spacing: 8) {
@@ -561,6 +569,7 @@ struct MainScreen: View {
 
                             // P2-14 — Senior 60+: тёплый вход в Companion (Аладдин, calm).
                             Button(action: {
+                                HapticFeedback.impact(.light)
                                 UserDefaults.standard.set(true, forKey: "companion_senior_entry")
                                 CompanionHeroRouter.markUserOverride(characterId: "aladdin")
                                 navigationManager.navigateToCompanionHome(returnTo: .main)
@@ -588,6 +597,7 @@ struct MainScreen: View {
 
                             // Аналитика карточка (через NavigationManager)
                             Button(action: {
+                                HapticFeedback.impact(.light)
                                 navigationManager.navigateTo(.analytics)
                             }) {
                                 VStack(spacing: 8) {
@@ -611,6 +621,7 @@ struct MainScreen: View {
                             
                             // Настройки — через NavigationManager (не NavigationLink: иначе «Назад» → dismiss → ложный онбординг).
                             Button(action: {
+                                HapticFeedback.impact(.light)
                                 navigationManager.navigateTo(.settings)
                             }) {
                                 VStack(spacing: 8) {
@@ -637,6 +648,7 @@ struct MainScreen: View {
                             // Удобный режим — прямой вход (не «Ещё»; «Защитить родителей» — внутри Удобного → Ещё).
                             // QA16 B2: лёгкий золотой акцент, чтобы карточка выделялась в сетке.
                             Button(action: {
+                                HapticFeedback.impact(.light)
                                 navigationManager.navigateToSimpleHome()
                             }) {
                                 VStack(spacing: 4) {
@@ -933,6 +945,7 @@ struct MainScreen: View {
                             // Кнопки действий
                             HStack(spacing: 8) {
                                 Button(action: {
+                                    HapticFeedback.impact(.light)
                                     navigationManager.navigateTo(.family)
                                 }) {
                                     Text(localizationManager.localized("main_family_manage"))
@@ -948,6 +961,7 @@ struct MainScreen: View {
                                 .accessibilityIdentifier("main_nav_family_manage")
                                 
                                 Button(action: {
+                                    HapticFeedback.impact(.light)
                                     // Та же семья: помечаем admin-add, чтобы createFamily() вызвал addFamilyMember, а не family/create
                                     let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "")
                                         .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -999,6 +1013,7 @@ struct MainScreen: View {
                                 ForEach(HomeChatDestination.allCases, id: \.rawValue) { destination in
                                     let isSelected = (HomeChatDestination(rawValue: homeChatDestinationRaw) ?? .family) == destination
                                     Button(action: {
+                                        HapticFeedback.selection()
                                         homeChatDestinationRaw = destination.rawValue
                                     }) {
                                         Text(

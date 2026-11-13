@@ -29,24 +29,19 @@ struct AntifakeHubScreen: View {
 
             VStack(spacing: 0) {
                 header
-                // Wave C hero · боль: мошенники / фейк / деньги + INTERPOL 442 млрд под картинкой
-                antifakeHeroCheckScam
-                    .padding(.horizontal, Spacing.screenPadding)
-                    .padding(.bottom, Spacing.s)
-                trustBanner
-                    .padding(.horizontal, Spacing.screenPadding)
-                    .padding(.bottom, Spacing.s)
-                if !shareTipDismissed {
-                    shareOnboardTip
-                        .padding(.horizontal, Spacing.screenPadding)
-                        .padding(.bottom, Spacing.s)
-                }
+                // P1: sticky tabs (как chips на «Где семья») — hero/trust уходят в ScrollView.
                 tabPicker
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.s)
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
+                        // Wave C hero · боль: мошенники / фейк / деньги + INTERPOL 442 млрд под картинкой
+                        antifakeHeroCheckScam
+                        trustBanner
+                        if !shareTipDismissed {
+                            shareOnboardTip
+                        }
                         tabContent
                         askAssistantHelpCard
                         // Wave C hero · боль: семья вместе против фейка

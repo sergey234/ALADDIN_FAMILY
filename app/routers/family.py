@@ -533,19 +533,68 @@ def _latest_family_invite(db, family_id: str) -> Optional[Dict[str, str]]:
     }
 
 
+_PAID_SUBSCRIPTION_LEVELS = frozenset({"personal", "family", "premium"})
+
+
+def _heal_users_subscription_level(db, user_id: int, level: str) -> None:
+    """Best-effort: keep users.subscription_level aligned with roster gate (trial↔free drift)."""
+    lvl = (level or "free").strip().lower() or "free"
+    try:
+        db.execute(
+            text("UPDATE users SET subscription_level = :lvl WHERE id = :uid"),
+            {"lvl": lvl, "uid": int(user_id)},
+        )
+        db.commit()
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+
+
+def _effective_level_from_user_and_subscription(
+    user_level: Optional[str],
+    sub_level: Optional[str],
+    trial_end,
+) -> str:
+    """
+    Roster cap tier: paid > active trial window > users/subscriptions level > free.
+    Fixes drift where JWT/status show trial but users.subscription_level stayed free → familyRosterMax=1.
+    """
+    u = (user_level or "").strip().lower()
+    s = (sub_level or "").strip().lower()
+    if u in _PAID_SUBSCRIPTION_LEVELS:
+        return u
+    if s in _PAID_SUBSCRIPTION_LEVELS:
+        return s
+    trial_active = False
+    if trial_end is not None:
+        try:
+            trial_active = trial_end > datetime.utcnow()
+        except Exception:
+            trial_active = False
+    if trial_active and (u in ("", "free", "trial") or s in ("", "free", "trial")):
+        return "trial"
+    if s:
+        return s
+    if u:
+        return u
+    return "free"
+
+
 def _owner_subscription_level_for_family(db, family_id: str) -> str:
     row = db.execute(
         text(
             """
-            SELECT COALESCE(
+            SELECT
+                f.owner_user_id,
                 NULLIF(lower(trim(u.subscription_level)), ''),
                 NULLIF(lower(trim(s.level)), ''),
-                'free'
-            )
+                s.trial_end_date
             FROM families f
             LEFT JOIN users u ON u.id = f.owner_user_id
             LEFT JOIN LATERAL (
-                SELECT level
+                SELECT level, trial_end_date
                 FROM subscriptions
                 WHERE user_id = f.owner_user_id::text
                 ORDER BY updated_at DESC NULLS LAST, id DESC
@@ -557,24 +606,45 @@ def _owner_subscription_level_for_family(db, family_id: str) -> str:
         ),
         {"fid": str(family_id)},
     ).fetchone()
-    return str(row[0]) if row and row[0] is not None else "free"
+    if not row:
+        return "free"
+    owner_uid, user_level, sub_level, trial_end = row[0], row[1], row[2], row[3]
+    effective = _effective_level_from_user_and_subscription(user_level, sub_level, trial_end)
+    # Self-heal: active trial must not leave users.subscription_level=free (add/stats gate).
+    if owner_uid is not None and effective == "trial" and (user_level or "free") == "free":
+        _heal_users_subscription_level(db, int(owner_uid), "trial")
+    return effective
 
 
 def _actor_subscription_level(db, user_id: int) -> str:
     row = db.execute(
         text(
             """
-            SELECT COALESCE(subscription_level, 'free')
-            FROM users
-            WHERE id = :uid
+            SELECT
+                NULLIF(lower(trim(u.subscription_level)), ''),
+                NULLIF(lower(trim(s.level)), ''),
+                s.trial_end_date
+            FROM users u
+            LEFT JOIN LATERAL (
+                SELECT level, trial_end_date
+                FROM subscriptions
+                WHERE user_id = :uid_text
+                ORDER BY updated_at DESC NULLS LAST, id DESC
+                LIMIT 1
+            ) s ON TRUE
+            WHERE u.id = :uid
             LIMIT 1
             """
         ),
-        {"uid": int(user_id)},
+        {"uid": int(user_id), "uid_text": str(int(user_id))},
     ).fetchone()
-    if not row or row[0] is None:
+    if not row:
         return "free"
-    return str(row[0]).strip().lower() or "free"
+    user_level, sub_level, trial_end = row[0], row[1], row[2]
+    effective = _effective_level_from_user_and_subscription(user_level, sub_level, trial_end)
+    if effective == "trial" and (user_level or "free") == "free":
+        _heal_users_subscription_level(db, int(user_id), "trial")
+    return effective
 
 
 def _count_family_members(db, family_id: str) -> int:

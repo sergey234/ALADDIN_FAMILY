@@ -6,9 +6,12 @@ import SwiftUI
 struct SimpleHomeScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var subscriptionManager: SubscriptionManager
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.sizeCategory) private var sizeCategory
 
+    /// HYBRID orbit UI (glass doors). Off → classic pay-pains list. Accessibility large type always list.
+    @AppStorage("aladdin.simpleHomeHybridOrbit") private var hybridOrbitEnabled = true
     @AppStorage("aladdin.simpleHomePreferred") private var simpleHomePreferred = false
     @State private var showMoreSheet = false
     @State private var showVoiceNotes = false
@@ -31,9 +34,15 @@ struct SimpleHomeScreen: View {
     @AppStorage("parental_internet_paused") private var internetPaused = false
     @State private var pauseBusy = false
     @State private var pauseError: String?
+    /// G: soft breathing on orbit doors (off when Reduce Motion).
+    @State private var hybridDoorPulse = false
 
     private let tileMinHeight: CGFloat = 120
     private var usesPayPainsHome: Bool { PayPainsUIFlags.usesNewPayPainsHome }
+    /// Orbit only when pay-pains home + flag + not accessibility Dynamic Type (list fallback).
+    private var usesHybridOrbit: Bool {
+        usesPayPainsHome && hybridOrbitEnabled && !sizeCategory.isAccessibilityCategory
+    }
 
     var body: some View {
         ZStack {
@@ -136,8 +145,9 @@ struct SimpleHomeScreen: View {
             }
             guard screen == .simpleHome, restorePayPainsMenuOnReturn else { return }
             restorePayPainsMenuOnReturn = false
-            // После анимации goBack / dismiss sheet — снова «Все разделы».
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            // После fade goBack — снова «Все разделы» (Меню). Не раньше конца root transition.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+                guard navigationManager.currentScreen == .simpleHome else { return }
                 showPayPainsMenu = true
             }
         }
@@ -180,11 +190,23 @@ struct SimpleHomeScreen: View {
         showWherePhone = true
     }
 
-    // MARK: - Pay-pains home (F3 + лёгкий D1)
+    // MARK: - Pay-pains home (F3 + HYBRID orbit MAX)
 
     private var payPainsHomeContent: some View {
         VStack(spacing: Spacing.l) {
             payPainsFamilyStrip
+            if usesHybridOrbit {
+                payPainsHybridOrbitBlock
+            } else {
+                payPainsListDoorsBlock
+            }
+            openFullMainButton
+        }
+    }
+
+    /// Classic list doors + AI + Menu (fallback / Dynamic Type / hybrid flag off).
+    private var payPainsListDoorsBlock: some View {
+        VStack(spacing: Spacing.l) {
             payPainsDoor(
                 titleKey: "pay_pains_door_check_title",
                 subtitleKey: "pay_pains_door_check_subtitle",
@@ -193,7 +215,6 @@ struct SimpleHomeScreen: View {
                 identifier: "pay_pains_door_check",
                 prominent: true
             ) {
-                // Product: Проверить → сразу Antifake Hub (Wave A extras живут внутри хаба).
                 navigationManager.navigateToAntifakeHub(tab: .text)
             }
             payPainsDoor(
@@ -217,130 +238,375 @@ struct SimpleHomeScreen: View {
             ) {
                 showWherePhone = true
             }
-            Button {
-                HapticFeedback.impact(.light)
+            payPainsAIFriendsRow
+            payPainsMenuRow
+        }
+    }
+
+    /// HYBRID: hero 5811 + 3 glass doors + chips (same nav as list).
+    /// C: hero smaller/lower; Check above faces; G: soft pulse (no carousel).
+    private var payPainsHybridOrbitBlock: some View {
+        VStack(spacing: Spacing.l) {
+            ZStack {
+                Circle()
+                    .stroke(
+                        reduceMotion
+                            ? Color.white.opacity(0.14)
+                            : Color.secondaryGold.opacity(0.28),
+                        lineWidth: reduceMotion ? 1 : 1.5
+                    )
+                    .frame(width: 318, height: 318)
+                    .allowsHitTesting(false)
+
+                Image("SimpleHome_Hero_5811")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 168, height: 196)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.35), radius: 14, y: 8)
+                    .offset(y: 36)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+
+                hybridGlassDoor(
+                    titleKey: "pay_pains_door_check_title",
+                    subtitleKey: "pay_pains_door_check_subtitle",
+                    imageName: "SimpleHome_Door_Check",
+                    identifier: "pay_pains_door_check",
+                    offset: CGSize(width: 0, height: -168),
+                    pulsePhase: 0
+                ) {
+                    navigationManager.navigateToAntifakeHub(tab: .text)
+                }
+                hybridGlassDoor(
+                    titleKey: "pay_pains_door_child_title",
+                    subtitleKey: "pay_pains_door_child_subtitle",
+                    imageName: "SimpleHome_Door_Child",
+                    identifier: "pay_pains_door_child",
+                    offset: CGSize(width: -128, height: 78),
+                    pulsePhase: 0.35
+                ) {
+                    showChildDoor = true
+                }
+                hybridGlassDoor(
+                    titleKey: "pay_pains_door_where_title",
+                    subtitleKey: "pay_pains_door_where_subtitle",
+                    imageName: "SimpleHome_Door_Where",
+                    identifier: "pay_pains_door_where",
+                    offset: CGSize(width: 128, height: 78),
+                    pulsePhase: 0.7
+                ) {
+                    showWherePhone = true
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 420)
+            .padding(.top, Spacing.s)
+            .accessibilityElement(children: .contain)
+            .onAppear { startHybridDoorPulseIfNeeded() }
+
+            hybridChipsRow
+        }
+        .accessibilityIdentifier("pay_pains_hybrid_orbit")
+    }
+
+    private func startHybridDoorPulseIfNeeded() {
+        guard !reduceMotion else {
+            hybridDoorPulse = false
+            return
+        }
+        hybridDoorPulse = false
+        withAnimation(.easeInOut(duration: 1.85).repeatForever(autoreverses: true)) {
+            hybridDoorPulse = true
+        }
+    }
+
+    private func hybridGlassDoor(
+        titleKey: String,
+        subtitleKey: String,
+        imageName: String,
+        identifier: String,
+        offset: CGSize,
+        pulsePhase: Double,
+        action: @escaping () -> Void
+    ) -> some View {
+        let title = localizationManager.localized(titleKey)
+        let hint = localizationManager.localized(subtitleKey)
+        let size: CGFloat = 88
+        return Button {
+            HapticFeedback.impact(reduceMotion ? .soft : .light)
+            AnalyticsManager.shared.trackEvent(
+                "pay_pains_door_tap",
+                parameters: ["door": identifier, "ui": "hybrid_orbit"]
+            )
+            action()
+        } label: {
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: size, height: size)
+                    Circle()
+                        .fill(Color.white.opacity(0.10))
+                        .frame(width: size, height: size)
+                    Circle()
+                        .stroke(Color.white.opacity(0.28), lineWidth: 1.5)
+                        .frame(width: size, height: size)
+                    Image(imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: size * 0.72, height: size * 0.72)
+                        .clipShape(Circle())
+                        .accessibilityHidden(true)
+                }
+                .frame(width: size, height: size)
+                .contentShape(Circle())
+                .shadow(color: Color.black.opacity(0.25), radius: 8, y: 4)
+                .scaleEffect(reduceMotion ? 1.0 : (hybridDoorPulse ? 1.055 : 1.0))
+                .animation(
+                    reduceMotion
+                        ? nil
+                        : .easeInOut(duration: 1.85)
+                            .repeatForever(autoreverses: true)
+                            .delay(pulsePhase),
+                    value: hybridDoorPulse
+                )
+
+                Text(title)
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(minWidth: size + 24, minHeight: size + 36)
+        }
+        .buttonStyle(.plain)
+        .offset(offset)
+        .accessibilityIdentifier(identifier)
+        .accessibilityLabel(title)
+        .accessibilityHint(hint)
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private var hybridChipsRow: some View {
+        HStack(spacing: 12) {
+            hybridChip(
+                titleKey: "pay_pains_ai_friends_row",
+                systemImage: "person.2.wave.2.fill",
+                aliveIcon: .aiFriends,
+                identifier: "pay_pains_ai_friends"
+            ) {
                 navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
-            } label: {
-                HStack {
-                    AliveGlyph(id: .aiFriends, size: 28) {
-                        Image(systemName: "person.2.wave.2.fill")
+            }
+            hybridChip(
+                titleKey: "pay_pains_menu_button",
+                systemImage: "line.3.horizontal",
+                aliveIcon: .menu,
+                identifier: "pay_pains_menu"
+            ) {
+                showPayPainsMenu = true
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func hybridChip(
+        titleKey: String,
+        systemImage: String,
+        aliveIcon: AliveIconID?,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        let title = localizationManager.localized(titleKey)
+        return Button {
+            HapticFeedback.impact(reduceMotion ? .soft : .light)
+            AnalyticsManager.shared.trackEvent(
+                "pay_pains_chip_tap",
+                parameters: ["chip": identifier]
+            )
+            action()
+        } label: {
+            HStack(spacing: 8) {
+                Group {
+                    if let aliveIcon {
+                        AliveGlyph(id: aliveIcon, size: 20) {
+                            Image(systemName: systemImage)
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    } else {
+                        Image(systemName: systemImage)
                             .font(.subheadline.weight(.semibold))
                     }
-                    Text(localizationManager.localized("pay_pains_ai_friends_row"))
-                        .font(.subheadline.weight(.semibold))
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .opacity(0.7)
                 }
-                .foregroundColor(.white.opacity(0.92))
-                .padding(.horizontal, Spacing.m)
-                .padding(.vertical, Spacing.s)
+                .accessibilityHidden(true)
+                Text(title)
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("pay_pains_ai_friends")
-
-            Button {
-                HapticFeedback.impact(.light)
-                showPayPainsMenu = true
-            } label: {
-                HStack {
-                    AliveGlyph(id: .menu, size: 28) {
-                        Image(systemName: "line.3.horizontal")
-                            .font(.title3)
-                    }
-                    Text(localizationManager.localized("pay_pains_menu_button"))
-                        .font(.subheadline.weight(.bold))
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .opacity(0.7)
-                }
-                .foregroundColor(.white)
-                .padding(Spacing.m)
-                .frame(maxWidth: .infinity)
-                .aladdinProductCard(cornerRadius: CornerRadius.large)
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("pay_pains_menu")
-
-            // Main = «Расширенный экран» из плана (§18 Меню).
-            openFullMainButton
+            .foregroundColor(.white.opacity(0.95))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+                    .overlay(Capsule().fill(Color.white.opacity(0.08)))
+                    .overlay(Capsule().stroke(Color.white.opacity(0.22), lineWidth: 1))
+            )
         }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier)
+        .accessibilityLabel(title)
+    }
+
+    private var payPainsAIFriendsRow: some View {
+        Button {
+            HapticFeedback.impact(.light)
+            navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+        } label: {
+            HStack {
+                AliveGlyph(id: .aiFriends, size: 28) {
+                    Image(systemName: "person.2.wave.2.fill")
+                        .font(.subheadline.weight(.semibold))
+                }
+                Text(localizationManager.localized("pay_pains_ai_friends_row"))
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .opacity(0.7)
+            }
+            .foregroundColor(.white.opacity(0.92))
+            .padding(.horizontal, Spacing.m)
+            .padding(.vertical, Spacing.s)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("pay_pains_ai_friends")
+    }
+
+    private var payPainsMenuRow: some View {
+        Button {
+            HapticFeedback.impact(.light)
+            showPayPainsMenu = true
+        } label: {
+            HStack {
+                AliveGlyph(id: .menu, size: 28) {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.title3)
+                }
+                Text(localizationManager.localized("pay_pains_menu_button"))
+                    .font(AladdinFamilyType.subheadline(weight: .bold))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .opacity(0.7)
+            }
+            .foregroundColor(.white)
+            .padding(Spacing.m)
+            .frame(maxWidth: .infinity)
+            .aladdinProductCard(cornerRadius: CornerRadius.large)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("pay_pains_menu")
     }
 
     private var payPainsFamilyStrip: some View {
         let members = FamilyLocalStore.loadPersistedMembers()
         let count = members.count
-        return Button {
-            HapticFeedback.impact(.light)
-            AnalyticsManager.shared.trackEvent("pay_pains_family_strip_tap")
-            navigationManager.navigateTo(.family)
-        } label: {
-            HStack(spacing: Spacing.m) {
-                if count == 0 {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.12))
-                            .frame(width: 44, height: 44)
-                        Image(systemName: "person.badge.plus")
-                            .foregroundColor(.white)
-                    }
-                } else {
-                    // D3.1: круги инициалов (не 3D) — до 4 человек
-                    HStack(spacing: -8) {
-                        ForEach(Array(members.prefix(4).enumerated()), id: \.offset) { _, member in
-                            Text(PayPainsMemberInitials.from(name: member.name))
-                                .font(.caption.weight(.bold))
+        return HStack(spacing: Spacing.m) {
+            Button {
+                HapticFeedback.impact(.light)
+                AnalyticsManager.shared.trackEvent("pay_pains_family_strip_tap")
+                navigationManager.navigateTo(.family)
+            } label: {
+                HStack(spacing: Spacing.m) {
+                    if count == 0 {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.12))
+                                .frame(width: 44, height: 44)
+                            Image(systemName: "person.badge.plus")
                                 .foregroundColor(.white)
-                                .frame(width: 36, height: 36)
-                                .background(Circle().fill(Color.secondaryGold.opacity(0.35)))
-                                .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
-                                .accessibilityHidden(true)
+                        }
+                    } else {
+                        HStack(spacing: -8) {
+                            ForEach(Array(members.prefix(4).enumerated()), id: \.offset) { _, member in
+                                Text(PayPainsMemberInitials.from(name: member.name))
+                                    .font(AladdinFamilyType.caption(weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 36, height: 36)
+                                    .background(Circle().fill(Color.secondaryGold.opacity(0.35)))
+                                    .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
+                                    .accessibilityHidden(true)
+                            }
                         }
                     }
+                    Text(
+                        count == 0
+                            ? localizationManager.localized("pay_pains_family_strip_empty")
+                            : payPainsFamilyStripCountLabel(count)
+                    )
+                    .font(AladdinFamilyType.title3(weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    Spacer(minLength: 0)
                 }
-                VStack(alignment: .leading, spacing: 4) {
-                    if count == 0 {
-                        Text(localizationManager.localized("pay_pains_family_strip_empty"))
-                            .font(.headline.weight(.semibold))
-                            .foregroundColor(.white)
-                    } else {
-                        Text(payPainsFamilyStripCountLabel(count))
-                            .font(.headline.weight(.semibold))
-                            .foregroundColor(.white)
-                    }
-                }
-                Spacer()
-                Text(localizationManager.localized("pay_pains_family_strip_add"))
-                    .font(.subheadline.weight(.semibold))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("pay_pains_family_strip")
+            .accessibilityLabel(
+                count == 0
+                    ? localizationManager.localized("pay_pains_family_strip_empty")
+                    : payPainsFamilyStripCountLabel(count)
+            )
+
+            Button {
+                HapticFeedback.impact(.light)
+                AnalyticsManager.shared.trackEvent(
+                    "pay_pains_chip_tap",
+                    parameters: ["chip": "pay_pains_family_strip_add_to_family"]
+                )
+                _ = subscriptionManager.canAddFamilyMember(
+                    currentCount: FamilyLocalStore.persistedLocalRosterCount()
+                )
+                navigationManager.navigateTo(.addMemberOptions)
+            } label: {
+                Text(localizationManager.localized("pay_pains_family_strip_add_to_family"))
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
                     .foregroundColor(Color.secondaryGold)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.center)
                     .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
+                    .padding(.vertical, 8)
+                    .frame(minHeight: 44)
                     .background(
                         Capsule()
                             .fill(Color.secondaryGold.opacity(0.18))
                             .overlay(Capsule().stroke(Color.secondaryGold.opacity(0.75), lineWidth: 1))
                     )
             }
-            .padding(Spacing.m)
-            .frame(maxWidth: .infinity)
-            .aladdinProductCard(cornerRadius: CornerRadius.large)
-            // QA16 B1: пустая полоса = главный CTA «добавить семью» — золотой ободок.
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(
-                        count == 0 ? Color.secondaryGold.opacity(0.85) : Color.clear,
-                        lineWidth: 1.5
-                    )
-            )
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("pay_pains_family_strip_add_to_family")
+            .accessibilityLabel(localizationManager.localized("pay_pains_family_strip_add_to_family"))
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("pay_pains_family_strip")
-        .accessibilityLabel(
-            count == 0
-                ? localizationManager.localized("pay_pains_family_strip_empty")
-                : payPainsFamilyStripCountLabel(count)
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity)
+        .aladdinProductCard(cornerRadius: CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(
+                    count == 0 ? Color.secondaryGold.opacity(0.85) : Color.clear,
+                    lineWidth: 1.5
+                )
         )
     }
 
@@ -974,27 +1240,34 @@ struct SimpleHomeScreen: View {
     // MARK: - Header
 
     private var headerBar: some View {
-        HStack {
-            Button {
-                // Q13: SimpleHome is often the launch root — goBack is a no-op. Always land on Main (full grid).
-                navigationManager.navigateToRoot(.main)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-                    .background(Circle().fill(Color.orange.opacity(0.2)))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(localizationManager.localized("simple_home_a11y_back"))
-            .accessibilityIdentifier("simple_home_back")
-
+        ZStack {
             Text(localizationManager.localized("simple_home_title"))
-                .font(.headline.bold())
-            Spacer()
+                .font(AladdinFamilyType.title2())
+                .foregroundColor(Color.secondaryGold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("simple_home_title")
+
+            HStack {
+                Button {
+                    // Q13: SimpleHome is often the launch root — goBack is a no-op. Always land on Main (full grid).
+                    navigationManager.navigateToRoot(.main)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Circle())
+                        .background(Circle().fill(Color.orange.opacity(0.2)))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(localizationManager.localized("simple_home_a11y_back"))
+                .accessibilityIdentifier("simple_home_back")
+                Spacer()
+            }
         }
-        .foregroundColor(.white)
         .padding(.horizontal, Spacing.l)
         .padding(.vertical, Spacing.m)
     }
@@ -1143,12 +1416,13 @@ struct SimpleHomeScreen: View {
                         .font(.title3)
                 }
                 Text(localizationManager.localized("simple_home_open_full_main"))
-                    .font(.subheadline.weight(.semibold))
+                    .font(AladdinFamilyType.body(weight: .semibold))
                 Spacer()
             }
             .foregroundColor(.white)
             .padding(Spacing.m)
             .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
             .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
         .buttonStyle(.plain)

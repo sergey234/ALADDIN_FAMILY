@@ -26,10 +26,10 @@ enum AppScreenTransition: String, CaseIterable, Identifiable {
         switch self {
         case .fade:
             return .opacity
-        case .slideLeading:
-            return .move(edge: .trailing).combined(with: .opacity)
-        case .slideTrailing:
-            return .move(edge: .leading).combined(with: .opacity)
+        case .slideLeading, .slideTrailing:
+            // Root swaps `AnyView` + `.id(screen)` — sliding the *outgoing* screen
+            // leaves a white gap (Settings → SimpleHome «уезжает влево»). Fade out only.
+            return .opacity
         case .scale:
             return .scale(scale: 1.02).combined(with: .opacity)
         }

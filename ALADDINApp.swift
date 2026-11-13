@@ -935,6 +935,7 @@ struct ALADDINApp: App {
                                 .id("simpleHome")
                                 .environmentObject(navigationManager)
                                 .environmentObject(localizationManager)
+                                .environmentObject(SubscriptionManager.shared)
                                 .accessibilityIdentifier("aladdin_root_simple_home")
                         )
                     case .family:
@@ -1380,7 +1381,8 @@ struct ALADDINApp: App {
                         )
                     }
                 }
-                .appContentTransition(reduceMotion ? .fade : .slideTrailing, value: navigationManager.currentScreen)
+                // Fade at root: slide + remount left a white slab on goBack (SimpleHome from Menu/Settings).
+                .appContentTransition(.fade, value: navigationManager.currentScreen)
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)
                 // Visual logger: только `applyRootChrome` → `visualLoggerOverlay()` (без дубля `.withVisualLogger()`, иначе два виджета и перехват касаний).

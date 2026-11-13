@@ -364,11 +364,10 @@ struct AddMemberOptionsScreen: View {
     ) -> some View {
         Button(action: {
             guard enabled else {
-                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                HapticFeedback.notification(.warning)
                 return
             }
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
+            HapticFeedback.impact(.medium)
             action()
         }) {
             HStack(spacing: 16) {

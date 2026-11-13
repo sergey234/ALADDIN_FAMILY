@@ -921,8 +921,8 @@
 "driving_stat_max_kmh_short" = "макс. км/ч";
 "map_refresh_my_place" = "Обновить моё место";
 "map_refresh_my_place_toast" = "Обновляем место…";
-"map_accuracy_meters_format" = "Точность ±%d м";
-/* ═══════════════════════════════════════════════════════════════
+"map_location_refining_toast" = "Уточняем место…";
+"map_accuracy_meters_format" = "Точность ±%d м";/* ═══════════════════════════════════════════════════════════════
  * АВТОРИЗАЦИЯ
  * ═══════════════════════════════════════════════════════════════ */
 
@@ -2422,6 +2422,13 @@
 "calls_safety_prompt_toggle" = "Защита от телефонных мошенников";
 "calls_safety_prompt_toggle_subtitle" = "Красная и зелёная кнопки после звонка по телефону";
 "calls_safety_prompt_toggle_a11y_hint" = "После звонка Phone или FaceTime. WhatsApp и Telegram iOS не видит — откройте раздел Звонки вручную.";
+"settings_icon_style_preview_title" = "Стиль иконок";
+"settings_icon_style_preview_subtitle" = "Стиль иконок на главной";
+"settings_icon_style_classic" = "Классика";
+"settings_icon_style_gold" = "Золото";
+"settings_icon_style_icons" = "Иконки";
+"settings_home_chat_default_title" = "Чат по умолчанию";
+"settings_home_chat_default_subtitle" = "Какой чат открывать первым на главном экране";
 
 /* ux36-w1 */
 "wellness_guide_talk_gently" = "Поговорить спокойно";
@@ -2977,6 +2984,7 @@
 "pay_pains_family_strip_count" = "Семья · %d человека";
 "pay_pains_family_strip_count_many" = "Семья · %d человек";
 "pay_pains_family_strip_add" = "Добавить";
+"pay_pains_family_strip_add_to_family" = "Добавить в семью";
 "pay_pains_door_check_title" = "Проверить";
 "pay_pains_door_check_subtitle" = "Проверим звонок, сообщение, видео или текст";
 "pay_pains_door_child_title" = "Ребёнок";
@@ -3583,7 +3591,7 @@
 "map_soon_pet_title" = "Питомцы рядом";
 "map_soon_pet_body" = "В скором времени. Без карты питомцев, пока нет партнёра.";
 "map_soon_tile_title" = "Метки";
-"map_soon_tile_body" = "В скором времени. Подключим метки честно — без фейковых точек.";
+"map_soon_tile_body" = "Скоро: метки вещей и питомцев на карте.";
 "map_soon_evac_title" = "Помощь на дороге";
 "map_soon_evac_body" = "В скором времени. Сейчас: 112 и ваши контакты.";
 "map_soon_ok" = "Понятно";

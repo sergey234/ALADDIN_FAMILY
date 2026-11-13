@@ -212,10 +212,12 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         XCTAssertEqual(UserDefaults.standard.string(forKey: "trial_status"), "trial-keep")
     }
 
-    // MARK: - Hybrid-B lock (serverStats > local/DEBUG inflate)
+    // MARK: - Hybrid-B lock (serverStats > DEBUG inflate; real trial may raise)
 
-    func testServerStatsBlocksLocalTrialInflate() {
+#if DEBUG
+    func testServerStatsBlocksDebugQALocalTrialInflate() {
         UserDefaults.standard.set("FAM_HYBRID_B", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.set(true, forKey: "debug_qa_local_trial_override_v1")
         UserDefaults.standard.synchronize()
 
         let stats = FamilyStatsResponse(
@@ -249,13 +251,57 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         )
         subscriptionManager.updateSubscriptionStatus(status)
 
-        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 1, "Hybrid-B: server free=1 must win over local trial inflate to 3")
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 1, "Hybrid-B: DEBUG QA trial must not inflate server free=1 → 3")
         XCTAssertEqual(subscriptionManager.familyQuotaSnapshot.source, .serverStats)
         let (allowed, message, upgrade) = subscriptionManager.canAddFamilyMember(currentCount: 1)
         XCTAssertFalse(allowed)
         XCTAssertTrue(upgrade)
         XCTAssertNotNil(message)
         XCTAssertTrue(message!.contains("1/1"), "Limit message must show server capacity, got: \(message!)")
+    }
+#endif
+
+    /// Real active trial + stale stats free=1 → optimistic trial=3 (Main/Family SSOT, add allowed).
+    func testRealTrialHealsStaleServerFreeCapToThree() {
+        UserDefaults.standard.set("FAM_HYBRID_TRIAL", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.removeObject(forKey: "debug_qa_local_trial_override_v1")
+        UserDefaults.standard.synchronize()
+
+        let trial = TrialInfo(
+            startDate: Date().addingTimeInterval(-86_400),
+            endDate: Date().addingTimeInterval(86_400 * 9),
+            durationDays: 14
+        )
+        let status = SubscriptionStatus(
+            level: .trial,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: trial,
+            limits: SubscriptionLimits.trialLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(status)
+
+        let stats = FamilyStatsResponse(
+            totalMembers: 1,
+            totalDevices: 0,
+            totalThreats: 0,
+            protectionLevel: 80,
+            familyStatus: "protected",
+            familyStatusMessage: nil,
+            familyRosterUsed: 1,
+            familyRosterMax: 1,
+            ownerSubscriptionTier: "free"
+        )
+        subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
+
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 3)
+        let display = subscriptionManager.effectiveFamilyDisplay(localRosterCount: 1)
+        XCTAssertEqual(display.slotsMax, 3)
+        XCTAssertEqual(display.level, .trial)
+        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 1)
+        XCTAssertTrue(allowed, "Real trial must allow add when only 1 of 3 used")
     }
 
     func testPaidUpgradeMayOverwriteServerStatsOptimistically() {

@@ -147,7 +147,20 @@ class SubscriptionService:
         if existing and existing.trial_end_date:
             # Trial is still active -> idempotent: do not extend/re-issue.
             if now < existing.trial_end_date:
-                SubscriptionService._sync_user_subscription_level(db, existing.user_id, existing.level)
+                # Heal drift: trial_end in the future but level left at free → roster gate stays 1 slot.
+                active_level = (existing.level or "").strip().lower() or "free"
+                if active_level in ("", "free"):
+                    existing = repo.update_subscription(
+                        existing,
+                        {
+                            "level": SubscriptionLevel.TRIAL.value,
+                            "status": "trial",
+                            "limits": SubscriptionLimits.trial_limits().dict(),
+                        },
+                    )
+                SubscriptionService._sync_user_subscription_level(
+                    db, existing.user_id, existing.level or SubscriptionLevel.TRIAL.value
+                )
                 return SubscriptionService._map_to_payload(existing)
 
             # Trial has expired -> downgrade to free, but KEEP trial_end_date as history to prevent re-issuing.

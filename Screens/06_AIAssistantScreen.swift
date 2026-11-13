@@ -122,6 +122,7 @@ struct AIAssistantScreen: View {
                 // Заголовок с кнопкой назад
                 HStack(spacing: 16) {
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         navigationManager.goBackToPreviousScreen(reason: "AIAssistant.onBack")
                     }) {
                         Image(systemName: "chevron.left")
@@ -311,19 +312,26 @@ struct AIAssistantScreen: View {
         }
         .alert(localizationManager.localized("voice_notes_mic_permission_title"), isPresented: $showMicrophonePermissionAlert) {
             Button(localizationManager.localized("common_cancel"), role: .cancel) {}
-            Button(localizationManager.localized("voice_open_settings")) { openSettings() }
+            Button(localizationManager.localized("voice_open_settings")) {
+                HapticFeedback.selection()
+                openSettings()
+            }
         } message: {
             Text(localizationManager.localized("ai_assistant_mic_permission_denied"))
         }
         .alert(localizationManager.localized("ai_assistant_speech_permission_title"), isPresented: $showSpeechPermissionAlert) {
             Button(localizationManager.localized("common_cancel"), role: .cancel) {}
-            Button(localizationManager.localized("voice_open_settings")) { openSettings() }
+            Button(localizationManager.localized("voice_open_settings")) {
+                HapticFeedback.selection()
+                openSettings()
+            }
         } message: {
             Text(localizationManager.localized("ai_assistant_speech_permission_denied"))
         }
         .alert(localizationManager.localized("common_error"), isPresented: $showVoiceServiceUnavailableAlert) {
             Button(localizationManager.localized("common_cancel"), role: .cancel) {}
             Button(localizationManager.localized("voice_open_settings")) {
+                HapticFeedback.selection()
                 openSettings()
             }
         } message: {
@@ -394,6 +402,7 @@ struct AIAssistantScreen: View {
                 .foregroundColor(.white)
             Spacer()
             Button(localizationManager.localized("ai_consent_banner_action")) {
+                HapticFeedback.selection()
                 navigationManager.navigateTo(.settings)
             }
             .font(.system(size: 13, weight: .semibold))
@@ -566,7 +575,10 @@ struct AIAssistantScreen: View {
                         .accessibilityHint(localizationManager.localized("ai_assistant_voice_hold_hint"))
                 },
                 extraTrailing: {
-                    Button(action: { showFeedbackSheet = true }) {
+                    Button(action: {
+                        HapticFeedback.selection()
+                        showFeedbackSheet = true
+                    }) {
                         Image(systemName: "star.fill")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.orange)
@@ -654,8 +666,7 @@ struct AIAssistantScreen: View {
 
         logger.business("🤖 AI Assistant: Sending message (length: \(messageText.count) chars)")
 
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        HapticFeedback.impact(.medium)
 
         let rawMessage = messageText
         messageText = ""
@@ -1357,6 +1368,7 @@ struct QuickActionsView: View {
             HStack(spacing: 8) {
                 ForEach(actions) { action in
                     Button(action: {
+                        HapticFeedback.selection()
                         onActionSelected(action.type)
                     }) {
                         VStack(spacing: 4) {

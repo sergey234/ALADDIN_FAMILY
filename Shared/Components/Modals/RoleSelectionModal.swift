@@ -18,7 +18,7 @@ struct RoleSelectionModal: View {
         VStack(spacing: 20) {
             VStack(spacing: 12) {
                 Text(localizationManager.localized("role_selection_title"))
-                    .font(.system(size: 24, weight: .bold))
+                    .font(AladdinFamilyType.title2())
                     .foregroundColor(Self.peachInk)
                 
                 Text(localizationManager.localized("role_selection_subtitle"))

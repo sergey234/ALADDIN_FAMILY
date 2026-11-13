@@ -26,8 +26,7 @@ struct RecoveryOptionsModal: View {
                     .font(.system(size: 64))
                 
                 Text(localizationManager.localized("recovery_access_title"))
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(AladdinFamilyType.title2())
                 
                 Text(localizationManager.localized("recovery_access_subtitle"))
                     .font(.body)

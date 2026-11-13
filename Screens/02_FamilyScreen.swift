@@ -1695,6 +1695,7 @@ struct FamilyScreen: View {
     }
 
     private func navigateToAddOrCreateFamily() {
+        HapticFeedback.impact(.medium)
         if needsCreateFamilyOnServer {
             FamilyLocalStore.prepareCreateFamilyFlow()
             navigationManager.navigateTo(.mainWithRegistration)
@@ -2021,7 +2022,7 @@ struct FamilyScreen: View {
                         Button(action: {
                             logger.buttonTap("Add Member", screen: "Family")
                             guard canManageFamilyRoster || needsCreateFamilyOnServer else {
-                                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                                HapticFeedback.notification(.warning)
                                 VisualLogger.shared.log("🚫 FAMILY ADD toolbar: canManageFamilyRoster=false", level: .warning, category: "FAMILY")
                                 return
                             }
@@ -2123,10 +2124,10 @@ struct FamilyScreen: View {
                                 .accessibilityLabel(localizationManager.localized("family_protection_accessibility"))
                                 .accessibilityAddTraits(.isHeader)
                             
-                            // Improved stats: capacity "X of Y (Plan)" + progress. Single source from SubscriptionManager.
-                            let quotaUsed2 = subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
-                            let currentCount2 = quotaUsed2
-                            let limit2 = subscriptionManager.familyQuotaSnapshot.max
+                            // Improved stats: capacity "X of Y (Plan)" + progress — same SSOT as Main (`effectiveFamilyDisplay`).
+                            let display2 = subscriptionManager.effectiveFamilyDisplay(localRosterCount: familyMembers.count)
+                            let currentCount2 = display2.slotsUsed
+                            let limit2 = display2.slotsMax
                             let capacityText2 = localizationManager.localized(
                                 "family_member_capacity_with_plan_fmt",
                                 currentCount2,
@@ -2168,11 +2169,10 @@ struct FamilyScreen: View {
                             .accessibilityElement(children: .contain)
                             .accessibilityLabel(localizationManager.localized("family_statistics_accessibility"))
                             
-                            // Updated: Uses single source SubscriptionManager.canAddFamilyMember + capacity display
-                            // Shows "X of Y members (Plan)" with progress. Consistent across all add paths.
-                            let quotaUsed3 = subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
-                            let currentCount3 = quotaUsed3
-                            let limit3 = subscriptionManager.familyQuotaSnapshot.max
+                            // Same SSOT as Main chip — never show 1/1 while Main shows 1/3 (or vice versa).
+                            let display3 = subscriptionManager.effectiveFamilyDisplay(localRosterCount: familyMembers.count)
+                            let currentCount3 = display3.slotsUsed
+                            let limit3 = display3.slotsMax
                             let capacityText3 = localizationManager.localized(
                                 "family_member_capacity_with_plan_fmt",
                                 currentCount3,
@@ -2715,31 +2715,36 @@ struct FamilyScreen: View {
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showPostRegistrationDeviceGuide) {
-            PostRegistrationDeviceGuideModal(
-                onAddDevice: {
-                    let now = Date().timeIntervalSince1970
-                    UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
-                    UserDefaults.standard.synchronize()
-                    VisualLogger.shared.log(
-                        "👉 DEVICE_NUDGE CTA open devices tapped",
-                        level: .info,
-                        category: "ONBOARDING"
-                    )
-                    showPostRegistrationDeviceGuide = false
-                    routePostRegistrationDeviceGuideCTA()
-                },
-                onLater: {
-                    let now = Date().timeIntervalSince1970
-                    UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
-                    UserDefaults.standard.synchronize()
-                    VisualLogger.shared.log(
-                        "⏰ DEVICE_NUDGE later tapped",
-                        level: .info,
-                        category: "ONBOARDING"
-                    )
-                    showPostRegistrationDeviceGuide = false
-                }
-            )
+            // P6: no white system sheet void — StormMesh + glass card (Удобный режим).
+            ZStack {
+                StormMeshBackground(variant: .neutral)
+                PostRegistrationDeviceGuideModal(
+                    onAddDevice: {
+                        let now = Date().timeIntervalSince1970
+                        UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
+                        UserDefaults.standard.synchronize()
+                        VisualLogger.shared.log(
+                            "👉 DEVICE_NUDGE CTA open devices tapped",
+                            level: .info,
+                            category: "ONBOARDING"
+                        )
+                        showPostRegistrationDeviceGuide = false
+                        routePostRegistrationDeviceGuideCTA()
+                    },
+                    onLater: {
+                        let now = Date().timeIntervalSince1970
+                        UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
+                        UserDefaults.standard.synchronize()
+                        VisualLogger.shared.log(
+                            "⏰ DEVICE_NUDGE later tapped",
+                            level: .info,
+                            category: "ONBOARDING"
+                        )
+                        showPostRegistrationDeviceGuide = false
+                    }
+                )
+                .padding(.horizontal, Spacing.l)
+            }
             .environmentObject(localizationManager)
         }
         .sheet(item: $postAdminDevicePending, onDismiss: {
@@ -3081,13 +3086,13 @@ private struct PostRegistrationDeviceGuideModal: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(localizationManager.localized("post_reg_device_title"))
-                .font(.h3)
+                .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Text(localizationManager.localized("post_reg_device_subtitle"))
-                .font(.body)
-                .foregroundColor(.textSecondary)
+                .font(AladdinFamilyType.subheadline())
+                .foregroundColor(.white.opacity(0.82))
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: Spacing.s) {
@@ -3095,13 +3100,16 @@ private struct PostRegistrationDeviceGuideModal: View {
                 Text("2. \(localizationManager.localized("post_reg_device_step_2"))")
                 Text("3. \(localizationManager.localized("post_reg_device_step_3"))")
             }
-            .font(.body)
+            .font(AladdinFamilyType.body())
             .foregroundColor(.textPrimary)
 
             HStack(spacing: Spacing.s) {
-                Button(action: onLater) {
+                Button {
+                    HapticFeedback.impact(.light)
+                    onLater()
+                } label: {
                     Text(localizationManager.localized("post_reg_device_later"))
-                        .font(.bodyBold)
+                        .font(AladdinFamilyType.body(weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(Color.secondaryGold.opacity(0.18))
@@ -3112,11 +3120,15 @@ private struct PostRegistrationDeviceGuideModal: View {
                         )
                         .cornerRadius(CornerRadius.medium)
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel(localizationManager.localized("post_reg_device_later"))
 
-                Button(action: onAddDevice) {
+                Button {
+                    HapticFeedback.impact(.light)
+                    onAddDevice()
+                } label: {
                     Text(localizationManager.localized("post_reg_device_add_now"))
-                        .font(.bodyBold)
+                        .font(AladdinFamilyType.body(weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
@@ -3129,24 +3141,12 @@ private struct PostRegistrationDeviceGuideModal: View {
                         .foregroundColor(.white)
                         .cornerRadius(CornerRadius.medium)
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel(localizationManager.localized("post_reg_device_add_now"))
             }
         }
         .padding(Spacing.l)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.backgroundDark, Color.primaryBlue.opacity(0.12)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                )
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(localizationManager.localized("post_reg_device_title"))
     }
@@ -3183,7 +3183,6 @@ extension FamilyScreen {
 
             HStack(spacing: Spacing.m) {
                 Button {
-                    HapticFeedback.impact(.medium)
                     navigateToAddOrCreateFamily()
                 } label: {
                     Text(localizationManager.localized("pay_pains_family_master_cta"))
