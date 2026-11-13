@@ -1,12 +1,25 @@
 import Foundation
 
 /// R10 — family push → map / member sheet (never silent-drop to SimpleHome).
+///
+/// Map-pending SSOT (anti sticky «Проверить → карта»):
+/// - `enqueue` stores focus + open flag + timestamp
+/// - UI opens map only via `takeMapPresentationIfNeeded()` (atomic clear)
+/// - soft intents TTL; urgent (SOS / battery / ImOK) longer TTL
+/// - sheet dismiss / intentional Antifake → `clearSoftMapPending` / `clearMapPendingOnDismiss`
 enum FamilyPushDeepLink {
     static let navigateToFamilyMapName = Notification.Name("NavigateToFamilyMap")
     static let pendingMemberIdKey = "aladdin.family_push.pending_member_id"
     static let pendingDisplayNameKey = "aladdin.family_push.pending_display_name"
     static let pendingFocusKey = "aladdin.family_push.pending_focus"
     static let pendingOpenMapKey = "aladdin.family_push.pending_open_map"
+    /// Epoch seconds when `pendingOpenMapKey` was set (TTL gate).
+    static let pendingOpenMapAtKey = "aladdin.family_push.pending_open_map_at"
+
+    /// Soft map intents expire quickly so they cannot hijack Antifake return.
+    private static let softMapTTL: TimeInterval = 5 * 60
+    /// Urgent (Need Help / battery / ImOK) may wait longer while user finishes another screen.
+    private static let urgentMapTTL: TimeInterval = 30 * 60
 
     enum Focus: String {
         case sos
@@ -17,6 +30,13 @@ enum FamilyPushDeepLink {
         case habits
         case limits
         case map
+
+        var isUrgentMapFocus: Bool {
+            switch self {
+            case .sos, .battery, .imOk: return true
+            case .location, .trips, .habits, .limits, .map: return false
+            }
+        }
     }
 
     /// `aladdin://family/map?member=&focus=`
@@ -50,6 +70,12 @@ enum FamilyPushDeepLink {
         }
         defaults.set(focus.rawValue, forKey: pendingFocusKey)
         defaults.set(openMap, forKey: pendingOpenMapKey)
+        if openMap {
+            defaults.set(Date().timeIntervalSince1970, forKey: pendingOpenMapAtKey)
+            print("WHERE_PHONE pending enqueue focus=\(focus.rawValue) urgent=\(focus.isUrgentMapFocus) openMap=1")
+        } else {
+            defaults.removeObject(forKey: pendingOpenMapAtKey)
+        }
     }
 
     @discardableResult
@@ -158,7 +184,46 @@ enum FamilyPushDeepLink {
     }
 
     static func postOpenMap() {
+        print("WHERE_PHONE NavigateToFamilyMap post focus=\(pendingFocus().rawValue)")
         NotificationCenter.default.post(name: navigateToFamilyMapName, object: nil)
+    }
+
+    /// Atomic: if a still-valid map intent exists, clear the open flag and return focus.
+    /// Call from SimpleHome / Family `onAppear` / `onReceive` — never read raw `pendingOpenMapKey` alone.
+    @discardableResult
+    static func takeMapPresentationIfNeeded(reason: String) -> Focus? {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: pendingOpenMapKey) else {
+            return nil
+        }
+        let focus = pendingFocus()
+        if isPendingMapExpired(focus: focus) {
+            print("WHERE_PHONE map pending TTL expired reason=\(reason) focus=\(focus.rawValue) → clear")
+            clearMapOpenFlagOnly()
+            return nil
+        }
+        clearMapOpenFlagOnly()
+        print("WHERE_PHONE map take reason=\(reason) focus=\(focus.rawValue) urgent=\(focus.isUrgentMapFocus)")
+        return focus
+    }
+
+    /// Soft intents only — keep SOS / battery / ImOK so Need Help survives Antifake.
+    static func clearSoftMapPending(reason: String) {
+        let focus = pendingFocus()
+        guard UserDefaults.standard.bool(forKey: pendingOpenMapKey) else { return }
+        if focus.isUrgentMapFocus {
+            print("WHERE_PHONE map soft-clear skipped urgent focus=\(focus.rawValue) reason=\(reason)")
+            return
+        }
+        clearMapOpenFlagOnly()
+        print("WHERE_PHONE map soft-clear reason=\(reason) focus=\(focus.rawValue)")
+    }
+
+    /// Sheet dismissed before / without consume — never leave sticky open flag.
+    static func clearMapPendingOnDismiss(reason: String) {
+        guard UserDefaults.standard.bool(forKey: pendingOpenMapKey) else { return }
+        clearMapOpenFlagOnly()
+        print("WHERE_PHONE map dismiss-clear reason=\(reason)")
     }
 
     /// Consume pending member for sheet focus. Clears member/name; keeps focus until map dismiss if needed.
@@ -168,15 +233,17 @@ enum FamilyPushDeepLink {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let name = (defaults.string(forKey: pendingDisplayNameKey) ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        let focusRaw = defaults.string(forKey: pendingFocusKey) ?? Focus.map.rawValue
-        let focus = Focus(rawValue: focusRaw) ?? .map
-        guard defaults.bool(forKey: pendingOpenMapKey) || !id.isEmpty || focus == .sos else {
+        let focus = pendingFocus()
+        let openFlag = defaults.bool(forKey: pendingOpenMapKey)
+        // After `takeMapPresentationIfNeeded`, open flag is already false — still apply member chrome.
+        guard openFlag || !id.isEmpty || focus == .sos || focus == .battery || focus == .imOk else {
             return nil
         }
-        defaults.set(false, forKey: pendingOpenMapKey)
+        if openFlag {
+            clearMapOpenFlagOnly()
+        }
         defaults.removeObject(forKey: pendingMemberIdKey)
         defaults.removeObject(forKey: pendingDisplayNameKey)
-        // Keep focus key briefly for UI chrome (SOS).
         let resolvedName = name.isEmpty ? id : name
         if id.isEmpty && name.isEmpty && focus != .sos && focus != .battery && focus != .imOk {
             defaults.removeObject(forKey: pendingFocusKey)
@@ -187,5 +254,29 @@ enum FamilyPushDeepLink {
 
     static func clearFocus() {
         UserDefaults.standard.removeObject(forKey: pendingFocusKey)
+    }
+
+    // MARK: - Private
+
+    private static func pendingFocus() -> Focus {
+        let raw = UserDefaults.standard.string(forKey: pendingFocusKey) ?? Focus.map.rawValue
+        return Focus(rawValue: raw) ?? .map
+    }
+
+    private static func isPendingMapExpired(focus: Focus) -> Bool {
+        let at = UserDefaults.standard.double(forKey: pendingOpenMapAtKey)
+        // Legacy flags without timestamp: treat as expired soft (avoid eternal hijack).
+        if at <= 0 {
+            return !focus.isUrgentMapFocus
+        }
+        let age = Date().timeIntervalSince1970 - at
+        let ttl = focus.isUrgentMapFocus ? urgentMapTTL : softMapTTL
+        return age > ttl
+    }
+
+    private static func clearMapOpenFlagOnly() {
+        let defaults = UserDefaults.standard
+        defaults.set(false, forKey: pendingOpenMapKey)
+        defaults.removeObject(forKey: pendingOpenMapAtKey)
     }
 }

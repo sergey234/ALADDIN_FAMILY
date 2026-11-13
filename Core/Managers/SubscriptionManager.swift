@@ -176,6 +176,10 @@ final class SubscriptionManager: ObservableObject {
     /// Монотонно растёт при любых изменениях уровня/триала/токена — чтобы SwiftUI гарантированно перерисовал строку тарифа на главной (в т.ч. после возврата с экрана тарифов на устройстве).
     @Published private(set) var subscriptionDisplayEpoch: UInt64 = 0
 
+    /// QA-T01: true after at least one successful `/subscription/status` (or register-trial) this process.
+    /// Until then, Main must not paint «Базовый» as the final answer.
+    @Published private(set) var hasResolvedSubscriptionFromServer: Bool = false
+
     /// Throttle для повторных синков при каждом показе главной / `scenePhase` (избегаем лишних GET).
     private var lastVisibilitySubscriptionSyncAt: Date?
     private let minVisibilitySubscriptionSyncInterval: TimeInterval = 1.2
@@ -679,10 +683,18 @@ final class SubscriptionManager: ObservableObject {
         if let trial = trialStatus, trial.isActive {
             return .trial
         }
+        // QA-T01: SSOT trial_end in the future → never effective free/Basic.
+        if let end = ssotTrialEndDate, end > Date() {
+            return .trial
+        }
         // После `/api/subscription/cancel` снимок `currentSubscription` уже `free`, а JWT может ещё
         // содержать старый `subscription_level` (trial) до перевыпуска токена — иначе UI показывает
         // «Пробный» и зелёный градиент при выборе «Базовый» (см. TRIAL_TARIFF_PIPELINE: plan=free, effective=trial).
         if currentSubscription?.level == .free, trialStatus?.isActive != true {
+            // Soft hold: no trusted trial_end yet and status sync not finished → not Basic.
+            if isTariffDisplayPending {
+                return .trial
+            }
             return .free
         }
         // Апгрейд: JWT обновился раньше Keychain `subscription_status` — доверяем токену, если триал не активен.
@@ -691,9 +703,34 @@ final class SubscriptionManager: ObservableObject {
             if s != .free && t == .free { return s }
             return s
         }
+        if let s = subLevel, s != .free { return s }
+        if let t = tokenLevel, t != .free { return t }
+        // Soft hold before first server truth: never settle on Basic as the answer.
+        if isTariffDisplayPending {
+            return .trial
+        }
         if let s = subLevel { return s }
         if let t = tokenLevel { return t }
         return .free
+    }
+
+    /// Server `trial_end` cache (epoch). Present ⇒ we know Trial vs expired Free without guessing.
+    var ssotTrialEndDate: Date? {
+        let epoch = UserDefaults.standard.double(forKey: Self.recoverableTrialEndEpochKey)
+        guard epoch > 0 else { return nil }
+        return Date(timeIntervalSince1970: epoch)
+    }
+
+    /// Main label: while true → «Проверяем тариф…» (never paint Базовый as final).
+    var isTariffDisplayPending: Bool {
+        let paid: Set<SubscriptionLevel> = [.personal, .family, .premium]
+        if let s = currentSubscription?.level, paid.contains(s) { return false }
+        if let t = currentToken?.subscriptionLevel, paid.contains(t) { return false }
+        if trialStatus?.isActive == true { return false }
+        // Know the answer from cached trial_end (active or expired).
+        if ssotTrialEndDate != nil { return false }
+        if hasResolvedSubscriptionFromServer { return false }
+        return true
     }
 
     /// Повторный синк при возврате на главную / из фона. `.task` на MainScreen выполняется только один раз (`hasAppeared`).
@@ -749,6 +786,7 @@ final class SubscriptionManager: ObservableObject {
     }
 
     private static let pendingTrialEndedBannerKey = "pending_trial_ended_banner"
+    /// SSOT `trial_end` from server (epoch seconds). Survives lag / reinstall restore path.
     private static let recoverableTrialEndEpochKey = "recoverable_trial_end_epoch"
 
     /// SSOT для UI: level = `getCurrentLevel()`, M = таблица тарифа (не чужой snapshot.max).
@@ -785,27 +823,45 @@ final class SubscriptionManager: ObservableObject {
         bumpSubscriptionDisplayEpoch()
     }
 
-    /// После случайного `downgradeToFree`, пока серверный `trial_end` ещё в будущем.
+    /// Future `trial_end` only (restore CTA). Full SSOT date is `ssotTrialEndDate`.
+    /// Не вызывает `getCurrentLevel()` — иначе взаимная рекурсия с QA-T01 restore.
     var recoverableTrialEndDate: Date? {
-        guard getCurrentLevel() == .free else { return nil }
-        let epoch = UserDefaults.standard.double(forKey: Self.recoverableTrialEndEpochKey)
-        guard epoch > 0 else { return nil }
-        let end = Date(timeIntervalSince1970: epoch)
-        guard end > Date() else { return nil }
+        guard let end = ssotTrialEndDate, end > Date() else { return nil }
         return end
     }
 
     var canRestoreRecoverableTrial: Bool {
-        recoverableTrialEndDate != nil
+        let paid: Set<SubscriptionLevel> = [.personal, .family, .premium]
+        if let s = currentSubscription?.level, paid.contains(s) { return false }
+        if trialStatus?.isActive == true { return false }
+        // Show restore only when we have future trial_end but local trialStatus is missing/inactive.
+        return recoverableTrialEndDate != nil
     }
 
     func clearRecoverableTrialMarker() {
-        UserDefaults.standard.removeObject(forKey: Self.recoverableTrialEndEpochKey)
+        // Do NOT wipe SSOT trial_end after successful restore — keep history for expiry.
+        // Marker for restore CTA is simply «end > now && !trialStatus.active».
+    }
+
+    /// Persist server `trial_end` always (active or expired). This is the anti-flash SSOT.
+    private func ingestServerTrialEnd(_ trial: TrialInfo?) {
+        guard let trial else { return }
+        UserDefaults.standard.set(
+            trial.endDate.timeIntervalSince1970,
+            forKey: Self.recoverableTrialEndEpochKey
+        )
+    }
+
+    private func markSubscriptionResolvedFromServer(reason: String) {
+        if !hasResolvedSubscriptionFromServer {
+            hasResolvedSubscriptionFromServer = true
+            logger.business("📊 TRIAL_TARIFF_PIPELINE resolved reason=\(reason)")
+            bumpSubscriptionDisplayEpoch()
+        }
     }
 
     private func markRecoverableTrialIfNeeded(from trial: TrialInfo?) {
-        guard let trial, trial.endDate > Date() else { return }
-        UserDefaults.standard.set(trial.endDate.timeIntervalSince1970, forKey: Self.recoverableTrialEndEpochKey)
+        ingestServerTrialEnd(trial)
     }
 
     private func markTrialEndedBannerPending() {
@@ -1822,10 +1878,11 @@ final class SubscriptionManager: ObservableObject {
             logger.business("❌ Trial notifications cancelled - trial no longer active")
         }
 
+        ingestServerTrialEnd(trial)
         if trial.isActive {
-            clearRecoverableTrialMarker()
             UserDefaults.standard.set(false, forKey: Self.pendingTrialEndedBannerKey)
         }
+        markSubscriptionResolvedFromServer(reason: "updateTrialStatus")
 
         trialStatus = trial
         persistTrialStatus(trial)
@@ -2018,6 +2075,8 @@ final class SubscriptionManager: ObservableObject {
         if let trialData = loadFromKeychain(key: trialKey),
            let trial = try? JSONDecoder().decode(TrialInfo.self, from: trialData) {
             trialStatus = trial
+            // Warm SSOT trial_end from Keychain so Main never flashes Basic before first sync.
+            ingestServerTrialEnd(trial)
         }
 
         #if DEBUG
@@ -2551,8 +2610,15 @@ extension SubscriptionManager {
         // Persist updated data
         persistSubscriptionStatus(subscriptionStatus)
         if let trial = serverStatus.trialInfo {
+            let wasActive = trialStatus?.isActive == true
+            ingestServerTrialEnd(trial)
             persistTrialStatus(trial)
+            // One-shot banner only on active → expired transition (not every sync).
+            if wasActive, !trial.isActive, trial.endDate <= Date() {
+                markTrialEndedBannerPending()
+            }
         }
+        markSubscriptionResolvedFromServer(reason: "updateFromServerStatus")
 
         logger.business("📥 Updated subscription from server: \(subscriptionLevel.rawValue)")
         reconcileTariffManagerWithSubscription(reason: "updateFromServerStatus")

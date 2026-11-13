@@ -172,10 +172,13 @@ class MainViewModel: ObservableObject {
             Task { @MainActor in
                 guard let self = self else { return }
                 if case .success(let list) = result {
+                    let deduped = Self.deduplicatedDeviceCount(list)
                     self.devicesProtected = Self.reconcileDevicesProtectedCount(
-                        apiCount: Self.deduplicatedDeviceCount(list),
+                        apiCount: deduped,
                         familyMembers: self.familyMembers
                     )
+                    // QA-09 A: same SSOT count DevicesScreen publishes.
+                    FamilyDevicesCountStore.publish(count: self.devicesProtected)
                 }
                 UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
