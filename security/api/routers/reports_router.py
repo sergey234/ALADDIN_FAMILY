@@ -14,7 +14,7 @@ FastAPI endpoints для получения статистики по разли
 ✅ ВАРИАНТ 5: Гибридный подход - создание единого роутера для всех stats endpoints
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 
 from fastapi import APIRouter, HTTPException, Query, Depends
@@ -709,9 +709,114 @@ async def get_ai_categories_stats(
 # Compatibility endpoints for non-stats reports paths (mock-free production contract)
 # =============================================================================
 
-@router.get("/driving", response_model=ReportCompatBoolResponse)
-async def reports_driving_root() -> ReportCompatBoolResponse:
-    return ReportCompatBoolResponse(success=True, data=True, message="Driving reports available")
+def _driving_period_start(period: str) -> datetime:
+    """Map iOS period query → UTC window start (today ≈ last 1 day)."""
+    now = datetime.utcnow()
+    key = (period or "week").strip().lower()
+    if key == "today":
+        return now - timedelta(days=1)
+    if key == "month":
+        return now - timedelta(days=30)
+    if key == "year":
+        return now - timedelta(days=365)
+    return now - timedelta(days=7)
+
+
+def _parse_json_list_field(raw: Any) -> List[Any]:
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, (bytes, bytearray)):
+        raw = raw.decode("utf-8", errors="ignore")
+    if isinstance(raw, str):
+        text_val = raw.strip()
+        if not text_val:
+            return []
+        try:
+            parsed = json.loads(text_val)
+            return parsed if isinstance(parsed, list) else []
+        except Exception:
+            return []
+    return []
+
+
+@router.get("/driving", response_model=List[Dict[str, Any]])
+async def reports_driving_root(
+    userId: Optional[str] = Query(None),
+    period: str = Query("week"),
+) -> List[Dict[str, Any]]:
+    """
+    Real trip list for iOS `getDrivingReports` (Array<DrivingReport>).
+
+    Replaces the old ReportCompatBool stub `{success,data:true}` that broke
+    client JSONDecoder (expected array, got dictionary).
+    Missing table / DB errors → [] (honest empty; local ledger still works).
+    """
+    start_date = _driving_period_start(period)
+    params: Dict[str, Any] = {"start_date": start_date}
+    user_filter = ""
+    if userId and str(userId).strip() and str(userId).strip().lower() not in {"current", "me"}:
+        user_filter = " AND user_id = :user_id"
+        params["user_id"] = str(userId).strip()
+
+    sql = f"""
+        SELECT
+            id::text AS id,
+            user_id::text AS user_id,
+            COALESCE(user_name, '') AS user_name,
+            start_time,
+            end_time,
+            COALESCE(start_location, '') AS start_location,
+            COALESCE(end_location, '') AS end_location,
+            COALESCE(distance, 0)::float AS distance,
+            COALESCE(duration, 0)::float AS duration,
+            COALESCE(average_speed, 0)::float AS average_speed,
+            COALESCE(max_speed, 0)::float AS max_speed,
+            COALESCE(safety_score, 0)::float AS safety_score,
+            events,
+            violations,
+            positioning_system
+        FROM driving_reports
+        WHERE start_time >= :start_date
+        {user_filter}
+        ORDER BY start_time DESC
+        LIMIT 200
+    """
+    try:
+        rows, _ = _fetch_list_from_db(sql, params)
+    except Exception as e:
+        logger.error(f"driving reports list failed: {e}")
+        return []
+
+    reports: List[Dict[str, Any]] = []
+    for row in rows:
+        start_time = row.get("start_time")
+        end_time = row.get("end_time")
+        reports.append(
+            {
+                "id": str(row.get("id") or ""),
+                "userId": str(row.get("user_id") or ""),
+                "userName": str(row.get("user_name") or "Unknown"),
+                "startTime": start_time.isoformat() if hasattr(start_time, "isoformat") else start_time,
+                "endTime": end_time.isoformat() if hasattr(end_time, "isoformat") else end_time,
+                "startLocation": str(row.get("start_location") or ""),
+                "endLocation": str(row.get("end_location") or ""),
+                "distance": float(row.get("distance") or 0),
+                "duration": float(row.get("duration") or 0),
+                "averageSpeed": float(row.get("average_speed") or 0),
+                "maxSpeed": float(row.get("max_speed") or 0),
+                "safetyScore": float(row.get("safety_score") or 0),
+                "events": _parse_json_list_field(row.get("events")),
+                "violations": _parse_json_list_field(row.get("violations")),
+                "positioningSystem": (
+                    str(row.get("positioning_system"))
+                    if row.get("positioning_system") is not None
+                    else None
+                ),
+            }
+        )
+    return reports
 
 
 @router.get("/driving/start", response_model=ReportCompatBoolResponse)

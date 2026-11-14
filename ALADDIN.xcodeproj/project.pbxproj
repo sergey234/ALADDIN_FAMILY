@@ -415,6 +415,7 @@
 		B5001214 /* ParentActivityDailyAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001114 /* ParentActivityDailyAggregatorTests.swift */; };
 		B5001215 /* AudioInterruptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001115 /* AudioInterruptionTests.swift */; };
 		B5001216 /* NotificationsViewModelPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001116 /* NotificationsViewModelPipelineTests.swift */; };
+		B5001219 /* DrivingReportsDecodeNormalizeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001119 /* DrivingReportsDecodeNormalizeTests.swift */; };
 		B5001217 /* SpeechPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001117 /* SpeechPathTests.swift */; };
 		B5001218 /* WellnessModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001118 /* WellnessModelsTests.swift */; };
 		B5002200 /* ALADDINUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002100 /* ALADDINUITests.swift */; };
@@ -1366,6 +1367,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		B5001114 /* ParentActivityDailyAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentActivityDailyAggregatorTests.swift; sourceTree = "<group>"; };
 		B5001115 /* AudioInterruptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInterruptionTests.swift; sourceTree = "<group>"; };
 		B5001116 /* NotificationsViewModelPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsViewModelPipelineTests.swift; sourceTree = "<group>"; };
+		B5001119 /* DrivingReportsDecodeNormalizeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrivingReportsDecodeNormalizeTests.swift; sourceTree = "<group>"; };
 		B5001117 /* SpeechPathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechPathTests.swift; sourceTree = "<group>"; };
 		B5001118 /* WellnessModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellnessModelsTests.swift; sourceTree = "<group>"; };
 		B5002010 /* ALADDINUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALADDINUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2698,6 +2700,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				B5001109 /* SharedDataManagerTests.swift */,
 				B5001110 /* MockAPIServiceTests.swift */,
 				B5001116 /* NotificationsViewModelPipelineTests.swift */,
+				B5001119 /* DrivingReportsDecodeNormalizeTests.swift */,
 				B5001111 /* ChildRosterReconcilePolicyTests.swift */,
 				E7F8B0032FA12A050065BDC4 /* FamilyRosterSyncMergePolicyTests.swift */,
 				E7F8B0122FA13000065BDCD /* DeleteAccountResponseParserTests.swift */,
@@ -3955,6 +3958,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				B5001209 /* SharedDataManagerTests.swift in Sources */,
 				B5001210 /* MockAPIServiceTests.swift in Sources */,
 				B5001216 /* NotificationsViewModelPipelineTests.swift in Sources */,
+				B5001219 /* DrivingReportsDecodeNormalizeTests.swift in Sources */,
 				B5001211 /* ChildRosterReconcilePolicyTests.swift in Sources */,
 				E7F8B0042FA12A050065BDC4 /* FamilyRosterSyncMergePolicyTests.swift in Sources */,
 				E7F8B0132FA13000065BDCD /* DeleteAccountResponseParserTests.swift in Sources */,

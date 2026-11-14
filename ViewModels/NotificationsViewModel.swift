@@ -261,18 +261,8 @@ class NotificationsViewModel: ObservableObject {
             await MainActor.run {
                 applyNotifications(merged, unread: mergedUnread)
                 lastSuccessfulSyncAt = Date()
-                if remoteMapped.isEmpty {
-                    MetricsService.shared.trackUserAction(
-                        action: "security_notifications_anomaly",
-                        parameters: [
-                            "anomaly_code": "notifications_empty_payload",
-                            "message": "Notifications API returned empty payload",
-                            "severity": "warning",
-                            "include_read": includeRead,
-                            "unread_count": envelope.unreadCount
-                        ]
-                    )
-                }
+                // Empty remote list is a valid inbox (no unread tips/offers) — not an anomaly.
+                // Only API failure / contract violation should emit metrics (see catch below).
             }
         } catch {
             await MainActor.run {

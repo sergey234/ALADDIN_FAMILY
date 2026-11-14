@@ -1372,7 +1372,11 @@ struct TripRouteMapRepresentable: UIViewRepresentable {
         map.isZoomEnabled = false
         map.isRotateEnabled = false
         map.isPitchEnabled = false
+        map.showsTraffic = false
         map.pointOfInterestFilter = .excludingAll
+        #if targetEnvironment(simulator)
+        map.showsBuildings = false
+        #endif
         context.coordinator.apply(report: report, progress: progress, on: map)
         return map
     }

@@ -140,7 +140,11 @@ private let logger = MasterLogger.shared
     }
 
     /// Шлюз `aladdin-ai.ru` иногда отдаёт `{ "function", "result", ... }` вместо тела контракта; вытаскиваем JSON для декодера.
+    /// Driving: legacy stub `{success,data:true}` → `[]` so `[DrivingReport]` decode does not fail.
     private static func dataPreparingForJSONDecode<T>(path: String, original data: Data, decodeType: T.Type) -> Data {
+        if let normalized = Self.normalizeDrivingReportsListPayload(path: path, data: data) {
+            return normalized
+        }
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return data
         }
@@ -161,6 +165,37 @@ private let logger = MasterLogger.shared
             }
         }
         return data
+    }
+
+    /// `GET /api/reports/driving` must decode as `[DrivingReport]`.
+    /// Accepts raw array, `{data:[...]}` envelope, or bool stub → empty array.
+    static func normalizeDrivingReportsListPayload(path: String, data: Data) -> Data? {
+        let isDrivingList =
+            path.contains("/api/reports/driving")
+            && !path.contains("/stats")
+            && !path.contains("/export")
+            && !path.contains("/start")
+            && !path.contains("/end")
+            && !path.contains("/events")
+        guard isDrivingList else { return nil }
+
+        guard let root = try? JSONSerialization.jsonObject(with: data) else {
+            return Data("[]".utf8)
+        }
+        if root is [Any] {
+            return data
+        }
+        guard let json = root as? [String: Any] else {
+            return Data("[]".utf8)
+        }
+        if let list = json["data"] as? [Any] {
+            return (try? JSONSerialization.data(withJSONObject: list)) ?? Data("[]".utf8)
+        }
+        // Legacy stub: {"success":true,"data":true,"message":"..."} — honest empty remote list.
+        if json["data"] is Bool || json["success"] != nil {
+            return Data("[]".utf8)
+        }
+        return Data("[]".utf8)
     }
 
     // ✅ ЗАДАЧА 62: Rate Limiting

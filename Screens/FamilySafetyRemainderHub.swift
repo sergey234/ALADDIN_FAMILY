@@ -315,7 +315,14 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         mapView.isRotateEnabled = false
         mapView.isPitchEnabled = false
         mapView.showsCompass = false
+        // Traffic + buildings Metal tiles spam "Compiler error: Invalid library file" on Simulator
+        // (Apple MapKit bug when rendererFor overlay is implemented). Keep off always.
+        mapView.showsTraffic = false
         mapView.pointOfInterestFilter = .includingAll
+        #if targetEnvironment(simulator)
+        mapView.showsBuildings = false
+        mapView.showsScale = false
+        #endif
     }
 
     private var lastQuietRadius: CLLocationDistance = -1
