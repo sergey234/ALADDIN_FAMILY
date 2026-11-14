@@ -28,6 +28,11 @@ struct MainScreenWithRegistration: View {
     @State private var appleAuthErrorMessage: String? = nil
     @State private var magicLinkEmail: String = ""
     @State private var magicLinkStatusMessage: String? = nil
+    /// W11-A / Device QA: hide «Семья под защитой» glass — go straight to consent/role.
+    @State private var suppressPayPainsAuthGlass: Bool = {
+        UserDefaults.standard.bool(forKey: "family_registration_auto_start")
+            || PayPainsUIFlags.usesNewPayPainsHome
+    }()
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
     private let apiService = APIService.shared
@@ -99,12 +104,18 @@ struct MainScreenWithRegistration: View {
             }
             .task {
                 print("🚨 MainScreenWithRegistration загружен!")
-                try? await Task.sleep(nanoseconds: 500_000_000)
-                // D2: при новом входе ждём «+ Добавить семью» (SIWA скрыт до capability), не авто-модалки.
-                if PayPainsUIFlags.usesNewPayPainsHome {
-                    print("ℹ️ Pay-pains auth glass: ждём «+ Добавить семью» (без auto startRegistration)")
+                // Device QA GO: never show second «+ Добавить семью» under pay-pains /
+                // strip auto-start — open consent/role immediately (no 0.5s glass flash).
+                let flagged = UserDefaults.standard.bool(forKey: "family_registration_auto_start")
+                if flagged || PayPainsUIFlags.usesNewPayPainsHome {
+                    UserDefaults.standard.set(false, forKey: "family_registration_auto_start")
+                    UserDefaults.standard.synchronize()
+                    suppressPayPainsAuthGlass = true
+                    print("✅ W11-A: auto startRegistration (skip pay-pains auth glass)")
+                    registrationVM.startRegistration()
                     return
                 }
+                try? await Task.sleep(nanoseconds: 500_000_000)
                 print("🚨 Вызываю startRegistration()...")
                 registrationVM.startRegistration()
                 print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
@@ -155,12 +166,12 @@ struct MainScreenWithRegistration: View {
         #endif
     }
 
-    /// D2: стеклянная панель как Snowball — Apple + «или» + Добавить семью (§25).
-    /// Показывается при pay-pains flag, пока нет тяжёлых модалок регистрации поверх.
-    /// P0: также скрывать на QR recovery / success — иначе glass перекрывает «Готово».
+    /// D2: стеклянная панель — legacy cold entry only.
+    /// Pay-pains / strip «Добавить в семью» → suppressPayPainsAuthGlass (прямое согласие/роль).
     @ViewBuilder
     private var payPainsAuthGlassOverlay: some View {
-        if PayPainsUIFlags.usesNewPayPainsHome,
+        if !suppressPayPainsAuthGlass,
+           PayPainsUIFlags.usesNewPayPainsHome,
            !registrationVM.showConsentModal,
            !registrationVM.showRoleModal,
            !registrationVM.showAgeGroupModal,
