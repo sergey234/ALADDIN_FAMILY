@@ -10,11 +10,20 @@ final class GeofenceGeocodingService {
     /// Separate instance — Apple allows one in-flight request per CLGeocoder.
     private let reverseGeocoder = CLGeocoder()
     private let storageKey = "geofences_with_coordinates_v1"
+    /// Same key as `storageKey` — static so `nonisolated` readers need no MainActor hop.
+    nonisolated private static let coordinatesStorageKey = "geofences_with_coordinates_v1"
 
     private init() {}
 
-    func loadStoredCoordinates() -> [UUID: CLLocationCoordinate2D] {
-        guard let data = UserDefaults.standard.data(forKey: storageKey),
+    /// Pure UserDefaults read — safe from sync geofence enter/exit paths (not MainActor).
+    /// Prefer `loadStoredCoordinatesMap()` from nonisolated callers (avoids hopping via `shared`).
+    nonisolated func loadStoredCoordinates() -> [UUID: CLLocationCoordinate2D] {
+        Self.loadStoredCoordinatesMap()
+    }
+
+    /// Static UD read — callable from `GeofenceEventStore` without MainActor / `shared`.
+    nonisolated static func loadStoredCoordinatesMap() -> [UUID: CLLocationCoordinate2D] {
+        guard let data = UserDefaults.standard.data(forKey: coordinatesStorageKey),
               let decoded = try? JSONDecoder().decode([GeofenceWithCoordinatesCodable].self, from: data) else {
             return [:]
         }

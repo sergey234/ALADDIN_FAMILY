@@ -227,7 +227,7 @@ enum GeofenceEventStore {
         localization: LocalizationManager
     ) -> ResolvedPlaceName {
         let generic = localization.localized("family_geofence")
-        let coords = GeofenceGeocodingService.shared.loadStoredCoordinates()
+        let coords = GeofenceGeocodingService.loadStoredCoordinatesMap()
         let geofencesKey = "geofences_settings"
         if let data = UserDefaults.standard.data(forKey: geofencesKey),
            let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data),
