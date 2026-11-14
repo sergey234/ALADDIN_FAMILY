@@ -370,8 +370,9 @@ struct SettingsScreen: View {
                         Spacer(minLength: 0)
                     }
                     // P3: custom chips — system segmented unreadable on storm glass.
+                    // Explicit id: CI/Xcode ForEach otherwise binds Binding<C> and fails compile.
                     HStack(spacing: Spacing.xs) {
-                        ForEach(AliveIconDiscStyle.allCases) { style in
+                        ForEach(AliveIconDiscStyle.allCases, id: \.rawValue) { style in
                             let selected = iconDiscStyleRaw == style.rawValue
                             Button {
                                 HapticFeedback.selection()
