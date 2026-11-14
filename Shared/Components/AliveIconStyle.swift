@@ -29,11 +29,21 @@ enum AliveIconDiscStyle: String, CaseIterable, Identifiable {
         return AliveIconDiscStyle(rawValue: raw) ?? defaultStyle
     }
 
+    /// Loc keys — RU/EN in Localizable.strings (P3: «Значки» → «Иконки»).
+    var titleKey: String {
+        switch self {
+        case .legacy: return "settings_icon_style_classic"
+        case .aliveBlue: return "settings_icon_style_gold"
+        case .aliveBlack: return "settings_icon_style_icons"
+        }
+    }
+
+    /// Fallback RU if strings missing (should not show raw keys).
     var titleRU: String {
         switch self {
         case .legacy: return "Классика"
         case .aliveBlue: return "Золото"
-        case .aliveBlack: return "Значки"
+        case .aliveBlack: return "Иконки"
         }
     }
 }
