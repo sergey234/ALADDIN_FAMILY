@@ -10,15 +10,25 @@ enum FamilyMapAutoTripTracker {
     private static let movingHitsToStart = 2
     private static let stopHitsToEnd = 4
     private static let minSampleGapMeters: CLLocationDistance = 40
+    /// P0.4 RCA: SLC/cell fixes are often ±100–500 m; still reject ±kilometre coarse.
+    private static let maxSampleAccuracyMeters: CLLocationAccuracy = 150
 
     private static var movingHits = 0
     private static var stopHits = 0
     private static var lastSample: CLLocation?
 
     static func note(location: CLLocation) {
-        guard location.horizontalAccuracy >= 0, location.horizontalAccuracy < 80 else { return }
+        let auth = LocationManager.shared.authorizationStatus
+        if location.horizontalAccuracy < 0 || location.horizontalAccuracy > maxSampleAccuracyMeters {
+            print(
+                "TRIP_AUTO drop accuracy=±\(Int(location.horizontalAccuracy))m " +
+                "auth=\(auth.rawValue) active=\(DrivingTripTrackStore.activeTripId ?? "nil")"
+            )
+            return
+        }
         guard FamilyMapQuietZoneStore.allowsFamilyShare(location) else {
             // In quiet zone: pause sampling, keep trip open until leave + stop.
+            print("TRIP_AUTO quiet-zone pause active=\(DrivingTripTrackStore.activeTripId ?? "nil")")
             return
         }
 
@@ -46,6 +56,11 @@ enum FamilyMapAutoTripTracker {
                     memberId: member.id,
                     memberName: member.name
                 )
+                LocationManager.shared.boostAccuracyForActiveTrip()
+                print(
+                    "TRIP_AUTO start id=\(tripId) member=\(member.id)/\(member.name) " +
+                    "speed=\(Int(speedKmh)) auth=\(auth.rawValue)"
+                )
             } else if let tripId = DrivingTripTrackStore.activeTripId {
                 maybeAppend(tripId: tripId, location: location)
             }
@@ -53,7 +68,7 @@ enum FamilyMapAutoTripTracker {
             stopHits += 1
             movingHits = 0
             if let tripId = DrivingTripTrackStore.activeTripId, stopHits >= stopHitsToEnd {
-                // Persist real trip into per-member ledger (no mock stats).
+                print("TRIP_AUTO finalize id=\(tripId) speed=\(Int(speedKmh)) hits=\(stopHits)")
                 _ = FamilyDrivingTripLedger.finalizeActiveTrip(
                     tripId: tripId,
                     end: location.coordinate
@@ -75,5 +90,9 @@ enum FamilyMapAutoTripTracker {
             return
         }
         DrivingTripTrackStore.append(tripId: tripId, coordinate: location.coordinate)
+        let n = DrivingTripTrackStore.load(tripId: tripId).count
+        if n == 2 || n % 10 == 0 {
+            print("TRIP_AUTO append id=\(tripId) points=\(n)")
+        }
     }
 }

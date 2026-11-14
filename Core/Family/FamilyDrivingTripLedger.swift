@@ -43,15 +43,21 @@ enum FamilyDrivingTripLedger {
     }
 
     /// Текущий member на этом устройстве (для auto-trip).
+    /// Display name empty → UI shows localized `where_phone_you` («Вы» / You).
     static func currentDeviceMember() -> (id: String, name: String) {
         let id = (UserDefaults.standard.string(forKey: "your_member_id") ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        let name = (UserDefaults.standard.string(forKey: "your_member_name") ?? "")
+        let storedName = (UserDefaults.standard.string(forKey: "your_member_name") ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        let fallbackName = (UserDefaults.standard.string(forKey: "user_display_name")
+            ?? UserDefaults.standard.string(forKey: "user_name")
+            ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = storedName.isEmpty ? fallbackName : storedName
         if !id.isEmpty {
-            return (id, name.isEmpty ? "Me" : name)
+            return (id, name)
         }
-        return ("current", name.isEmpty ? "Me" : name)
+        return ("current", name)
     }
 
     // MARK: - Finish → ledger
@@ -69,6 +75,7 @@ enum FamilyDrivingTripLedger {
         }
         let points = DrivingTripTrackStore.load(tripId: tripId)
         guard points.count >= 2 else {
+            print("TRIP_AUTO finalize FAIL id=\(tripId) points=\(points.count) (need ≥2) — honest empty, no fake track")
             DrivingTripTrackStore.finish(tripId: tripId, end: nil)
             clearMeta(tripId: tripId)
             return nil
@@ -82,16 +89,19 @@ enum FamilyDrivingTripLedger {
         let endedAt = Date()
 
         var distanceM: Double = 0
-        var maxSpeedKmh: Double = 0
+        var sampleSpeeds: [Double] = []
         for i in 1..<points.count {
             let a = CLLocation(latitude: points[i - 1].latitude, longitude: points[i - 1].longitude)
             let b = CLLocation(latitude: points[i].latitude, longitude: points[i].longitude)
             let d = a.distance(from: b)
             distanceM += d
-            // ~30s sample gap from tracker — rough speed only from real spacing.
+            // ~30s sample gap — drop GPS spikes before UI cap ~140.
             let speed = (d / 30.0) * 3.6
-            if speed.isFinite { maxSpeedKmh = max(maxSpeedKmh, min(speed, 180)) }
+            if speed.isFinite, speed > 0, speed <= 160 {
+                sampleSpeeds.append(speed)
+            }
         }
+        let maxSpeedKmh = Self.cappedPeakSpeedKmh(sampleSpeeds)
         let duration = max(endedAt.timeIntervalSince(startedAt), 60)
         let distanceKm = distanceM / 1000.0
         let avgSpeed = duration > 0 ? (distanceKm / (duration / 3600.0)) : 0
@@ -133,11 +143,63 @@ enum FamilyDrivingTripLedger {
         upsert(report)
         DrivingTripTrackStore.finish(tripId: tripId, end: nil)
         clearMeta(tripId: tripId)
-        // HUB-P1.6/7 — replace lat/lon labels with street names when geocoder answers.
+        print(
+            "TRIP_AUTO finalize OK id=\(tripId) member=\(uid)/\(uname) " +
+            "km=\(String(format: "%.1f", distanceKm)) vmax=\(Int(maxSpeedKmh)) points=\(points.count)"
+        )
+        // H1: local push + deep link (RU/EN via LocalizationManager on MainActor).
         Task { @MainActor in
+            Self.notifyTripEnded(report)
             await enrichStreetLabels(for: report)
         }
         return report
+    }
+
+    /// P0.4 H1 — Life360-style trip completed push → map + polyline.
+    @MainActor
+    private static func notifyTripEnded(_ report: DrivingReport) {
+        let loc = LocalizationManager.shared
+        let displayName: String = {
+            let raw = report.userName.trimmingCharacters(in: .whitespacesAndNewlines)
+            if raw.isEmpty || raw.lowercased() == "me" || report.userId == currentDeviceMember().id
+                || report.userId == "current" {
+                return loc.localized("where_phone_you")
+            }
+            return raw
+        }()
+        let title = loc.localized("family_trip_ended_push_title")
+        let body = String(
+            format: loc.localized("family_trip_ended_push_body"),
+            displayName,
+            report.distance,
+            Int(report.maxSpeed.rounded())
+        )
+        let deepLink = FamilyPushDeepLink.mapURL(
+            memberId: report.userId,
+            focus: .trips,
+            tripId: report.id
+        )
+        NotificationManager.shared.sendLocalNotification(
+            title: title,
+            body: body,
+            category: .family,
+            userInfo: [
+                "type": "family_trip_ended",
+                "member_id": report.userId,
+                "display_name": displayName,
+                "trip_id": report.id,
+                "deepLink": deepLink
+            ],
+            delay: 0.2,
+            identifier: "family_trip_ended_\(report.id)"
+        )
+        FamilyPushDeepLink.enqueue(
+            memberId: report.userId,
+            displayName: displayName,
+            focus: .trips,
+            openMap: false,
+            tripId: report.id
+        )
     }
 
     /// Reverse-geocode start/end when labels still look like coordinates.
@@ -214,6 +276,22 @@ enum FamilyDrivingTripLedger {
         if maxSpeedKmh >= 120 { return 6.0 }
         if maxSpeedKmh >= 100 { return 7.5 }
         return 9.0
+    }
+
+    /// QA-04 A: median-of-window filter + hard UI/ledger cap ~140 (drops GPS 180 spikes).
+    private static func cappedPeakSpeedKmh(_ samples: [Double], uiCap: Double = 140) -> Double {
+        guard !samples.isEmpty else { return 0 }
+        let sorted = samples.sorted()
+        let median: Double
+        if sorted.count % 2 == 0 {
+            median = (sorted[sorted.count / 2 - 1] + sorted[sorted.count / 2]) / 2
+        } else {
+            median = sorted[sorted.count / 2]
+        }
+        // Keep samples within ~1.6× median (or absolute 160) before taking peak.
+        let filtered = samples.filter { $0 <= max(median * 1.6, median + 25) }
+        let peak = (filtered.isEmpty ? samples : filtered).max() ?? 0
+        return min(peak, uiCap)
     }
 
     // MARK: - Index

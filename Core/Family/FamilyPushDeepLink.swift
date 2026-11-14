@@ -15,6 +15,8 @@ enum FamilyPushDeepLink {
     static let pendingOpenMapKey = "aladdin.family_push.pending_open_map"
     /// Epoch seconds when `pendingOpenMapKey` was set (TTL gate).
     static let pendingOpenMapAtKey = "aladdin.family_push.pending_open_map_at"
+    /// P0.4 H1 — trip track to draw after push tap.
+    static let pendingTripIdKey = "aladdin.family_push.pending_trip_id"
 
     /// Soft map intents expire quickly so they cannot hijack Antifake return.
     private static let softMapTTL: TimeInterval = 5 * 60
@@ -39,13 +41,16 @@ enum FamilyPushDeepLink {
         }
     }
 
-    /// `aladdin://family/map?member=&focus=`
-    static func mapURL(memberId: String?, focus: Focus) -> String {
+    /// `aladdin://family/map?member=&focus=&trip=`
+    static func mapURL(memberId: String?, focus: Focus, tripId: String? = nil) -> String {
         var items: [URLQueryItem] = [
             URLQueryItem(name: "focus", value: focus.rawValue)
         ]
         if let memberId, !memberId.isEmpty {
             items.append(URLQueryItem(name: "member", value: memberId))
+        }
+        if let tripId, !tripId.isEmpty {
+            items.append(URLQueryItem(name: "trip", value: tripId))
         }
         var components = URLComponents()
         components.scheme = "aladdin"
@@ -59,7 +64,8 @@ enum FamilyPushDeepLink {
         memberId: String? = nil,
         displayName: String? = nil,
         focus: Focus,
-        openMap: Bool = true
+        openMap: Bool = true,
+        tripId: String? = nil
     ) {
         let defaults = UserDefaults.standard
         if let memberId, !memberId.isEmpty {
@@ -68,14 +74,25 @@ enum FamilyPushDeepLink {
         if let displayName, !displayName.isEmpty {
             defaults.set(displayName, forKey: pendingDisplayNameKey)
         }
+        if let tripId, !tripId.isEmpty {
+            defaults.set(tripId, forKey: pendingTripIdKey)
+        }
         defaults.set(focus.rawValue, forKey: pendingFocusKey)
         defaults.set(openMap, forKey: pendingOpenMapKey)
         if openMap {
             defaults.set(Date().timeIntervalSince1970, forKey: pendingOpenMapAtKey)
-            print("WHERE_PHONE pending enqueue focus=\(focus.rawValue) urgent=\(focus.isUrgentMapFocus) openMap=1")
+            print("WHERE_PHONE pending enqueue focus=\(focus.rawValue) urgent=\(focus.isUrgentMapFocus) openMap=1 trip=\(tripId ?? "")")
         } else {
             defaults.removeObject(forKey: pendingOpenMapAtKey)
         }
+    }
+
+    static func consumePendingTripId() -> String? {
+        let defaults = UserDefaults.standard
+        let id = (defaults.string(forKey: pendingTripIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        defaults.removeObject(forKey: pendingTripIdKey)
+        return id.isEmpty ? nil : id
     }
 
     @discardableResult
@@ -85,6 +102,8 @@ enum FamilyPushDeepLink {
             ?? (userInfo["memberId"] as? String)
         let displayName = (userInfo["display_name"] as? String)
             ?? (userInfo["displayName"] as? String)
+        let tripId = (userInfo["trip_id"] as? String)
+            ?? (userInfo["tripId"] as? String)
 
         if let deepLink = userInfo["deepLink"] as? String,
            let url = URL(string: deepLink),
@@ -109,8 +128,8 @@ enum FamilyPushDeepLink {
             enqueue(memberId: memberId, displayName: displayName, focus: .location)
             postOpenMap()
             return true
-        case "family_shield_week_digest", "trip_week", "trips":
-            enqueue(memberId: memberId, displayName: displayName, focus: .trips)
+        case "family_trip_ended", "family_shield_week_digest", "trip_week", "trips":
+            enqueue(memberId: memberId, displayName: displayName, focus: .trips, tripId: tripId)
             postOpenMap()
             return true
         case "family_habit_reminder", "family_habit_due_ping":
@@ -152,13 +171,14 @@ enum FamilyPushDeepLink {
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let memberQ = query.first(where: { $0.name.lowercased() == "member" })?.value
         let focusQ = query.first(where: { $0.name.lowercased() == "focus" })?.value
+        let tripQ = query.first(where: { $0.name.lowercased() == "trip" })?.value
         let memberId = memberQ ?? memberIdFallback
         let displayName = displayNameFallback
 
         switch first {
         case "", "map":
             let focus = Focus(rawValue: focusQ ?? Focus.map.rawValue) ?? .map
-            enqueue(memberId: memberId, displayName: displayName, focus: focus)
+            enqueue(memberId: memberId, displayName: displayName, focus: focus, tripId: tripQ)
             postOpenMap()
             return true
         case "location":

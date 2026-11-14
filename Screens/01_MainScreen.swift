@@ -895,6 +895,8 @@ struct MainScreen: View {
                                     .accessibilityIdentifier("main_family_over_capacity_banner")
                                 }
 
+                                // P0.7 TR: W-pre-D restore CTA — honest date from recoverableTrialEndDate
+                                // («Вернуть пробный до {date}»). NOT family seats strip. Prefer date over «ещё N дней».
                                 if !subscriptionManager.isTariffDisplayPending,
                                    subscriptionManager.canRestoreRecoverableTrial,
                                    let end = subscriptionManager.recoverableTrialEndDate {
@@ -910,24 +912,22 @@ struct MainScreen: View {
                                             "main_family_restore_trial_cta",
                                             dateFormatterService.formatDisplayDate(end)
                                         ))
-                                        .font(.system(size: 9, weight: .bold))
+                                        .font(.system(size: 10, weight: .bold))
                                         .foregroundColor(.secondaryGold)
                                         .frame(maxWidth: .infinity, alignment: .leading)
+                                        .accessibilityLabel(
+                                            localizationManager.localized(
+                                                "main_family_restore_trial_cta",
+                                                dateFormatterService.formatDisplayDate(end)
+                                            )
+                                        )
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                     .accessibilityIdentifier("main_family_restore_trial_cta")
                                 }
 
-#if DEBUG
-                                // Hybrid-B: DEBUG QA local trial — цвет peacock, слоты по SSOT display.
-                                if subscriptionManager.showsDebugQALocalTrialBanner {
-                                    Text("QA: цвет trial · slots SSOT (\(familyDisplayBody.slotsMax))")
-                                        .font(.system(size: 8, weight: .semibold))
-                                        .foregroundColor(.black.opacity(0.7))
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.75)
-                                }
-#endif
+                                // Device QA 2026-11-15: removed visible «QA: цвет trial · slots SSOT» —
+                                // debug-only noise on green family card (slots still via SSOT internally).
 
                                 if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")

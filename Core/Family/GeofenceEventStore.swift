@@ -49,35 +49,20 @@ enum GeofenceEventStore {
         localization: LocalizationManager = .shared
     ) {
         purgeOlderThanRetention()
-        let name = resolveGeofenceName(regionId: regionIdentifier, localization: localization)
+        let resolved = resolveGeofenceName(regionId: regionIdentifier, localization: localization)
+        let name = resolved.displayName
         let formatter = DateFormatter()
         formatter.locale = localization.locale
         formatter.dateFormat = "HH:mm"
         let time = formatter.string(from: Date())
+        let eventId = UUID().uuidString
 
-        let action: String
-        if isArrival {
-            if isSchoolName(name, localization: localization) {
-                action = localization.localized("location_arrived_school")
-            } else if isHomeName(name, localization: localization) {
-                action = localization.localized("location_returned_home")
-            } else {
-                action = String(format: localization.localized("location_arrived_named"), name)
-            }
-        } else {
-            if isSchoolName(name, localization: localization) {
-                action = localization.localized("location_left_school")
-            } else if isHomeName(name, localization: localization) {
-                action = localization.localized("location_left_home")
-            } else {
-                action = String(format: localization.localized("location_left_named"), name)
-            }
-        }
+        let action = actionLine(name: name, isArrival: isArrival, localization: localization)
 
         var events = load()
         events.append(
             GeofenceDayEvent(
-                id: UUID().uuidString,
+                id: eventId,
                 time: time,
                 action: action,
                 isArrival: isArrival,
@@ -89,6 +74,17 @@ enum GeofenceEventStore {
             events = Array(events.suffix(maxEvents))
         }
         save(events)
+
+        // QA-05 A: if settings had no place name — reverse-geocode street and rewrite event.
+        if resolved.needsStreetFallback, let coord = resolved.coordinate {
+            Task { @MainActor in
+                let loc = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+                if let street = await GeofenceGeocodingService.shared.reverseGeocodeAddressLine(for: loc),
+                   !street.isEmpty {
+                    rewriteEventName(eventId: eventId, name: street, isArrival: isArrival, localization: localization)
+                }
+            }
+        }
 
         if isArrival, isSchoolName(name, localization: localization) {
             FamilyShieldWeekDigestStore.recordSchoolArrival()
@@ -175,14 +171,98 @@ enum GeofenceEventStore {
         return n.contains(home) || n.contains("дом") || n.contains("home")
     }
 
-    private static func resolveGeofenceName(regionId: String, localization: LocalizationManager) -> String {
+    private struct ResolvedPlaceName {
+        let displayName: String
+        let needsStreetFallback: Bool
+        let coordinate: CLLocationCoordinate2D?
+    }
+
+    private static func actionLine(
+        name: String,
+        isArrival: Bool,
+        localization: LocalizationManager
+    ) -> String {
+        if isArrival {
+            if isSchoolName(name, localization: localization) {
+                return localization.localized("location_arrived_school")
+            }
+            if isHomeName(name, localization: localization) {
+                return localization.localized("location_returned_home")
+            }
+            return String(format: localization.localized("location_arrived_named"), name)
+        }
+        if isSchoolName(name, localization: localization) {
+            return localization.localized("location_left_school")
+        }
+        if isHomeName(name, localization: localization) {
+            return localization.localized("location_left_home")
+        }
+        return String(format: localization.localized("location_left_named"), name)
+    }
+
+    private static func rewriteEventName(
+        eventId: String,
+        name: String,
+        isArrival: Bool,
+        localization: LocalizationManager
+    ) {
+        var events = load()
+        guard let idx = events.firstIndex(where: { $0.id == eventId }) else { return }
+        let old = events[idx]
+        events[idx] = GeofenceDayEvent(
+            id: old.id,
+            time: old.time,
+            action: actionLine(name: name, isArrival: isArrival, localization: localization),
+            isArrival: old.isArrival,
+            regionName: name,
+            createdAt: old.createdAt
+        )
+        save(events)
+        NotificationCenter.default.post(name: .geofenceDayEventsDidChange, object: nil)
+    }
+
+    /// QA-05 A: place name from settings → address → reverse-geocode street (async).
+    private static func resolveGeofenceName(
+        regionId: String,
+        localization: LocalizationManager
+    ) -> ResolvedPlaceName {
+        let generic = localization.localized("family_geofence")
+        let coords = GeofenceGeocodingService.shared.loadStoredCoordinates()
         let geofencesKey = "geofences_settings"
         if let data = UserDefaults.standard.data(forKey: geofencesKey),
            let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data),
-           let match = decoded.first(where: { $0.id.uuidString == regionId }) {
-            return match.name
+           let match = decoded.first(where: {
+               $0.id.uuidString.caseInsensitiveCompare(regionId) == .orderedSame
+           }) {
+            let trimmedName = match.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedName.isEmpty, trimmedName.caseInsensitiveCompare(generic) != .orderedSame {
+                return ResolvedPlaceName(
+                    displayName: trimmedName,
+                    needsStreetFallback: false,
+                    coordinate: coords[match.id]
+                )
+            }
+            let trimmedAddress = match.address.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedAddress.isEmpty {
+                return ResolvedPlaceName(
+                    displayName: trimmedAddress,
+                    needsStreetFallback: false,
+                    coordinate: coords[match.id]
+                )
+            }
+            return ResolvedPlaceName(
+                displayName: generic,
+                needsStreetFallback: coords[match.id] != nil,
+                coordinate: coords[match.id]
+            )
         }
-        return localization.localized("family_geofence")
+        // Region id may already be a human label from older builds.
+        if !regionId.isEmpty,
+           UUID(uuidString: regionId) == nil,
+           regionId.caseInsensitiveCompare(generic) != .orderedSame {
+            return ResolvedPlaceName(displayName: regionId, needsStreetFallback: false, coordinate: nil)
+        }
+        return ResolvedPlaceName(displayName: generic, needsStreetFallback: false, coordinate: nil)
     }
 
     private static func purgeOlderThanRetention() {

@@ -1382,6 +1382,7 @@ struct ALADDINApp: App {
                     }
                 }
                 // Fade at root: slide + remount left a white slab on goBack (SimpleHome from Menu/Settings).
+                // Fade only — slideTrailing made SimpleHome appear from the right then vanish (Device QA).
                 .appContentTransition(.fade, value: navigationManager.currentScreen)
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)

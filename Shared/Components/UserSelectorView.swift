@@ -2,92 +2,156 @@ import SwiftUI
 
 /**
  * 👤 User Selector View
- * Компонент для выбора пользователя/ребенка для просмотра отчетов
- * Используется в модальных окнах отчетов (DrivingReportsModal, AICategoriesModal)
+ * Accordion (DisclosureGroup) single-select — no horizontal overflow pills (P1 S15).
+ * Driving reports are per-member; multi-select Set not required for this modal.
  */
 
 struct UserSelectorView: View {
-    
-    // MARK: - Properties
-    
+
     @Binding var selectedUserId: String?
     let users: [UserOption]
     let currentUserId: String
-    let showCurrentUser: Bool // Показывать ли "Я" (текущий пользователь)
-    
+    let showCurrentUser: Bool
+    /// P1.2c: apply + collapse after Готово.
+    var onDone: (() -> Void)? = nil
+
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
+    @State private var isExpanded = true
+    @State private var draftSelection: String?
+
     struct UserOption: Identifiable {
         let id: String
         let name: String
         let role: String
         let avatar: String?
-        
-        var displayName: String {
-            name
-        }
-        
+
+        var displayName: String { name }
+
         var icon: String {
             avatar ?? defaultIcon
         }
-        
+
         private var defaultIcon: String {
             switch role.lowercased() {
             case "parent": return "person.2.fill"
             case "child": return "person.fill"
             case "teenager": return "person.3.fill"
             case "elderly": return "heart.circle.fill"
+            case "self": return "person.crop.circle"
             default: return "person.fill"
             }
         }
     }
-    
-    // MARK: - Body
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(localizationManager.localized("reports_select_user"))
-                .font(.body)
-                .foregroundColor(.textSecondary)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.s) {
-                    // "Я" (текущий пользователь)
-                    if showCurrentUser {
-                        UserChip(
-                            id: currentUserId,
-                            name: localizationManager.localized("reports_current_user"),
-                            icon: "person.fill",
-                            isSelected: selectedUserId == currentUserId || selectedUserId == nil,
-                            onTap: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    selectedUserId = currentUserId
-                                }
+            DisclosureGroup(
+                isExpanded: $isExpanded,
+                content: {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        if showCurrentUser {
+                            memberRow(
+                                id: currentUserId,
+                                title: localizationManager.localized("where_phone_you"),
+                                icon: "person.crop.circle"
+                            )
+                        }
+                        ForEach(users) { user in
+                            if !(showCurrentUser && user.id == currentUserId) {
+                                memberRow(
+                                    id: user.id,
+                                    title: localizedDisplayName(for: user),
+                                    icon: user.icon
+                                )
                             }
-                        )
+                        }
+                        Button {
+                            HapticFeedback.selection()
+                            selectedUserId = draftSelection ?? currentUserId
+                            isExpanded = false
+                            onDone?()
+                        } label: {
+                            Text(localizationManager.localized("driving_reports_done"))
+                                .font(.subheadline.weight(.bold))
+                                .foregroundColor(.backgroundDark)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.s)
+                                .background(Color.secondaryGold)
+                                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, Spacing.s)
+                        .accessibilityIdentifier("driving_reports_user_done")
                     }
-                    
-                    // Другие пользователи
-                    ForEach(users) { user in
-                        UserChip(
-                            id: user.id,
-                            name: localizedDisplayName(for: user),
-                            icon: user.icon,
-                            isSelected: selectedUserId == user.id,
-                            onTap: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    selectedUserId = user.id
-                                }
-                            }
-                        )
+                    .padding(.top, Spacing.s)
+                },
+                label: {
+                    HStack {
+                        Text(localizationManager.localized("driving_reports_select_members"))
+                            .font(.body.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                        Spacer()
+                        Text(selectedLabel)
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                            .lineLimit(1)
                     }
                 }
-                .padding(.horizontal, Spacing.screenPadding)
+            )
+            .tint(Color.secondaryGold)
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.45))
+            )
+            .accessibilityIdentifier("driving_reports_user_accordion")
+            .onAppear {
+                draftSelection = selectedUserId ?? currentUserId
+            }
+            .onChange(of: selectedUserId) { newValue in
+                draftSelection = newValue ?? currentUserId
             }
         }
     }
 
+    private var selectedLabel: String {
+        let id = selectedUserId ?? currentUserId
+        if id == currentUserId || id == "current" {
+            return localizationManager.localized("where_phone_you")
+        }
+        if let u = users.first(where: { $0.id == id }) {
+            return localizedDisplayName(for: u)
+        }
+        return localizationManager.localized("where_phone_you")
+    }
+
+    private func memberRow(id: String, title: String, icon: String) -> some View {
+        let selected = (draftSelection ?? selectedUserId) == id
+        return Button {
+            HapticFeedback.selection()
+            draftSelection = id
+        } label: {
+            HStack(spacing: Spacing.s) {
+                Image(systemName: icon.hasPrefix("person") || icon.hasPrefix("heart") ? icon : "person.fill")
+                    .foregroundColor(selected ? .secondaryGold : .textSecondary)
+                Text(title)
+                    .font(.subheadline.weight(selected ? .semibold : .regular))
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(selected ? .secondaryGold : .textSecondary)
+            }
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
     private func localizedDisplayName(for user: UserOption) -> String {
+        if user.role.lowercased() == "self" || user.id == currentUserId {
+            return localizationManager.localized("where_phone_you")
+        }
         let role: FamilyMemberCard.FamilyRole?
         switch user.role.lowercased() {
         case "parent": role = .parent
@@ -104,84 +168,24 @@ struct UserSelectorView: View {
     }
 }
 
-// MARK: - User Chip
-
-struct UserChip: View {
-    let id: String
-    let name: String
-    let icon: String
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: Spacing.xs) {
-                // Иконка
-                if icon.hasPrefix("person.") || icon.hasPrefix("figure.") || icon.hasPrefix("heart.") {
-                    Image(systemName: icon)
-                        .font(.caption)
-                } else {
-                    Text(icon)
-                        .font(.caption)
-                }
-                
-                Text(name)
-                    .font(.body)
-            }
-            .foregroundColor(isSelected ? .white : .textPrimary)
-            .padding(.horizontal, Spacing.m)
-            .padding(.vertical, Spacing.s)
-            .background(
-                Capsule()
-                    .fill(isSelected ? Color.primaryBlue : Color.backgroundMedium)
-            )
-            .overlay(
-                Capsule()
-                    .stroke(isSelected ? Color.primaryBlue.opacity(0.5) : Color.clear, lineWidth: 2)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(name), \(isSelected ? "выбран" : "не выбран")")
-        .accessibilityHint("Нажмите для выбора")
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
-// MARK: - Preview
-
 #if DEBUG
 struct UserSelectorView_Previews: PreviewProvider {
     static var previews: some View {
-    ZStack {
-        LinearGradient.backgroundGradient
-            .ignoresSafeArea()
-        
-        VStack(spacing: Spacing.l) {
+        ZStack {
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
             UserSelectorView(
                 selectedUserId: .constant(nil),
                 users: [
-                    UserSelectorView.UserOption(
-                        id: "1",
-                        name: "Маша",
-                        role: "child",
-                        avatar: nil
-                    ),
-                    UserSelectorView.UserOption(
-                        id: "2",
-                        name: "Сергей",
-                        role: "teenager",
-                        avatar: nil
-                    )
+                    UserSelectorView.UserOption(id: "1", name: "Маша", role: "child", avatar: nil),
+                    UserSelectorView.UserOption(id: "2", name: "Сергей", role: "teenager", avatar: nil)
                 ],
                 currentUserId: "current",
                 showCurrentUser: true
             )
             .padding()
         }
-    }
-    .environmentObject(LocalizationManager())
+        .environmentObject(LocalizationManager())
     }
 }
 #endif
-

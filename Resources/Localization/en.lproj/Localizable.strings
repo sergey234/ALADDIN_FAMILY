@@ -803,7 +803,28 @@
 "driving_reports_violations" = "Violations";
 "driving_reports_history_title" = "Trip History";
 "driving_reports_empty" = "No trip data yet";
-"driving_reports_empty_lead" = "Counters appear after a real drive. We never invent numbers.";
+"driving_reports_empty_lead" = "A report appears after a real trip.";
+"driving_reports_report_cta" = "Real trip report";
+"driving_reports_done" = "Done";
+"driving_reports_select_members" = "Choose family members";
+"family_day_journal_from_date_fmt" = "From %@";
+"family_day_journal_period_today" = "Today";
+"family_day_journal_period_week" = "This week";
+"family_day_journal_period_custom" = "Custom range";
+"family_crash_tip_title" = "Crash detection";
+"family_crash_tip_body" = "Needs: Always location, Motion & Fitness, and notifications — or background protection won’t work.";
+"inbox_filter_tips" = "Tips";
+"inbox_filter_offers" = "Offers";
+"inbox_filter_notifications" = "Notifications";
+"inbox_filter_all" = "All";
+"family_map_inbox_a11y" = "Inbox";
+"family_map_settings_a11y" = "Family settings";
+"family_circle_settings_title" = "Family";
+"family_circle_settings_roles" = "Roles & members";
+"family_circle_settings_privacy" = "Privacy";
+"family_circle_settings_notifications" = "Family notifications";
+"family_circle_settings_open_family" = "Open Family";
+"family_circle_settings_places" = "Places";
 "driving_reports_why_motion" = "1. Allow Motion & Fitness for ALADDIN so the phone can detect driving.";
 "driving_reports_why_location" = "2. Turn on Location Always (and Precise) so trips can record in the background.";
 "driving_reports_why_trip" = "3. Take a drive with ALADDIN open or in the background, then open Driving again.";
@@ -822,6 +843,14 @@
 "map_refresh_my_place_toast" = "Updating place…";
 "map_location_refining_toast" = "Improving location…";
 "map_accuracy_meters_format" = "Accuracy ±%d m";
+"where_phone_refresh_location_a11y" = "Refresh my location";
+"where_phone_accuracy_coarse_cta" = "Turn on Precise Location";
+"where_phone_accuracy_stale_hint" = "Location may be outdated. Refresh the pin.";
+"where_phone_accuracy_coarse_hint" = "Approximate location (±%d m). Turn on Precise Location for ALADDIN.";
+"family_trip_ended_push_title" = "Trip completed";
+"family_trip_ended_push_body" = "%@ · %.1f km · up to %d km/h";
+"family_trip_map_track_a11y" = "Trip route";
+"family_trip_empty_honest" = "Track wasn’t saved. Check Always location and Motion & Fitness.";
 /* ═══════════════════════════════════════════════════════════════
  * AUTH
  * ═══════════════════════════════════════════════════════════════ */
@@ -1849,6 +1878,7 @@
 "content_block_guide_step_5" = "Return to ALADDIN and tap \"I enabled it, check\".";
 "common_back" = "Back";
 "common_close" = "Close";
+"common_delete" = "Delete";
 "main_aladdin_title" = "ALADDIN";
 "main_ai_protection" = "AI family protection";
 "main_antivirus_title" = "ALADDIN Protection";
@@ -3045,7 +3075,7 @@
 "main_protect_parents_subtitle" = "Second hand for 60+: calls and family trust";
 "main_more_title" = "More";
 "main_more_subtitle" = "Comfortable mode and other sections";
-"main_simple_version_title" = "Comfortable mode";
+"main_simple_version_title" = "Aladdin start";
 "main_simple_version_subtitle" = "Everything important on one screen";
 "family_safe_word_show_phrase" = "Show phrase";
 "family_safe_word_hide_phrase" = "Hide phrase";
@@ -3073,8 +3103,11 @@
 "pay_pains_family_strip_people_many" = "people";
 "pay_pains_family_strip_count" = "Family · %d people";
 "pay_pains_family_strip_count_many" = "Family · %d people";
+"pay_pains_family_strip_slots_fmt" = "Family · %d of %d seats";
 "pay_pains_family_strip_add" = "Add";
 "pay_pains_family_strip_add_to_family" = "Add to family";
+"simple_home_open_full_main" = "Start Aladdin";
+"simple_home_title" = "Aladdin start";
 "pay_pains_door_check_title" = "Check";
 "pay_pains_door_check_subtitle" = "We'll check a call, message, video, or text";
 "pay_pains_door_child_title" = "Child";
@@ -3668,6 +3701,7 @@
 "map_share_duration" = "Expires";
 "map_privacy_zone_title" = "Quiet zone";
 "map_privacy_zone_hint" = "Location is hidden from family in this zone";
+"map_quiet_zone_toggle" = "Quiet zone on";
 
 /* family_cal_* */
 "family_cal_title" = "Family calendar";

@@ -36,6 +36,26 @@ struct SimpleHomeScreen: View {
     @State private var pauseError: String?
     /// G: soft breathing on orbit doors (off when Reduce Motion).
     @State private var hybridDoorPulse = false
+    /// Entry-only: doors spin clockwise once around orbit, then rest (0 = done).
+    @State private var hybridDoorIntroSpinDegrees: Double = 0
+    @State private var hybridDoorIntroPlayed = false
+    /// CapCut hero carousel (R01=5811 + R02…R06 transparent). Off when Reduce Motion.
+    @State private var hybridHeroIndex = 0
+    @State private var hybridHeroRotationTask: Task<Void, Never>?
+    /// Nudge hero art slightly up inside the circle (optical center).
+    private static let hybridHeroYNudge: CGFloat = -14
+
+    /// Orbit hero set: current 5811 + 5 CapCut cutouts (PNG alpha).
+    private static let hybridHeroAssetNames: [String] = [
+        "SimpleHome_Hero_5811",
+        "SimpleHome_Hero_R02_FamilyWalk",
+        "SimpleHome_Hero_R03_ShieldFirewall",
+        "SimpleHome_Hero_R04_FamilyMapPhone",
+        "SimpleHome_Hero_R05_ShieldVerify",
+        "SimpleHome_Hero_R06_GlobePin"
+    ]
+    private static let hybridHeroRotationSeconds: UInt64 = 5_500_000_000
+    private static let hybridHeroCrossfade: Double = 0.55
 
     private let tileMinHeight: CGFloat = 120
     private var usesPayPainsHome: Bool { PayPainsUIFlags.usesNewPayPainsHome }
@@ -126,6 +146,8 @@ struct SimpleHomeScreen: View {
             )
             .environmentObject(localizationManager)
             .environmentObject(navigationManager)
+            // P0.6 S14: map pan/swipe must NOT dismiss the hub sheet (X / isPresented only).
+            .interactiveDismissDisabled(true)
         }
         .sheet(isPresented: $showPayPainsMenu, onDismiss: {
             if let pending = pendingMoreNavigation {
@@ -244,7 +266,7 @@ struct SimpleHomeScreen: View {
     }
 
     /// HYBRID: hero 5811 + 3 glass doors + chips (same nav as list).
-    /// C: hero smaller/lower; Check above faces; G: soft pulse (no carousel).
+    /// W1: hero raised + X-centered; top sits just under «Проверить»; G: soft pulse.
     private var payPainsHybridOrbitBlock: some View {
         VStack(spacing: Spacing.l) {
             ZStack {
@@ -258,26 +280,14 @@ struct SimpleHomeScreen: View {
                     .frame(width: 318, height: 318)
                     .allowsHitTesting(false)
 
-                Image("SimpleHome_Hero_5811")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 168, height: 196)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                    )
-                    .shadow(color: Color.black.opacity(0.35), radius: 14, y: 8)
-                    .offset(y: 36)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
+                hybridOrbitHeroView
 
                 hybridGlassDoor(
                     titleKey: "pay_pains_door_check_title",
                     subtitleKey: "pay_pains_door_check_subtitle",
                     imageName: "SimpleHome_Door_Check",
                     identifier: "pay_pains_door_check",
-                    offset: CGSize(width: 0, height: -168),
+                    restOffset: CGSize(width: 0, height: -168),
                     pulsePhase: 0
                 ) {
                     navigationManager.navigateToAntifakeHub(tab: .text)
@@ -287,7 +297,7 @@ struct SimpleHomeScreen: View {
                     subtitleKey: "pay_pains_door_child_subtitle",
                     imageName: "SimpleHome_Door_Child",
                     identifier: "pay_pains_door_child",
-                    offset: CGSize(width: -128, height: 78),
+                    restOffset: CGSize(width: -128, height: 78),
                     pulsePhase: 0.35
                 ) {
                     showChildDoor = true
@@ -297,7 +307,7 @@ struct SimpleHomeScreen: View {
                     subtitleKey: "pay_pains_door_where_subtitle",
                     imageName: "SimpleHome_Door_Where",
                     identifier: "pay_pains_door_where",
-                    offset: CGSize(width: 128, height: 78),
+                    restOffset: CGSize(width: 128, height: 78),
                     pulsePhase: 0.7
                 ) {
                     showWherePhone = true
@@ -307,11 +317,74 @@ struct SimpleHomeScreen: View {
             .frame(height: 420)
             .padding(.top, Spacing.s)
             .accessibilityElement(children: .contain)
-            .onAppear { startHybridDoorPulseIfNeeded() }
+            .onAppear {
+                startHybridDoorIntroSpinIfNeeded()
+                startHybridDoorPulseIfNeeded()
+                startHybridHeroRotationIfNeeded()
+            }
+            .onDisappear {
+                hybridHeroRotationTask?.cancel()
+                hybridHeroRotationTask = nil
+                // Allow clockwise intro again next time user opens Aladdin start orbit.
+                hybridDoorIntroPlayed = false
+                hybridDoorIntroSpinDegrees = 0
+            }
 
             hybridChipsRow
         }
         .accessibilityIdentifier("pay_pains_hybrid_orbit")
+    }
+
+    /// P0.1+P0.2: one circular slot for all 6 heroes (~80% of orbit 318 → 254).
+    /// No 5811 rounded chrome (S05 double-layer). CapCut assets untouched — scale is Swift only.
+    private static let hybridHeroCircleDiameter: CGFloat = 254
+
+    private var hybridOrbitHeroView: some View {
+        let names = Self.hybridHeroAssetNames
+        let name = names[hybridHeroIndex % names.count]
+        let d = Self.hybridHeroCircleDiameter
+        return Image(name)
+            .resizable()
+            .scaledToFit()
+            .frame(width: d, height: d)
+            .offset(y: Self.hybridHeroYNudge)
+            .frame(width: d, height: d)
+            .clipShape(Circle())
+            .shadow(color: Color.black.opacity(0.35), radius: 14, y: 8)
+            .id(name)
+            .transition(.opacity)
+            .animation(.easeInOut(duration: Self.hybridHeroCrossfade), value: hybridHeroIndex)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .accessibilityIdentifier("pay_pains_hybrid_hero")
+    }
+
+    /// One clockwise lap on first enter only (Reduce Motion → skip).
+    private func startHybridDoorIntroSpinIfNeeded() {
+        guard !reduceMotion else {
+            hybridDoorIntroSpinDegrees = 0
+            hybridDoorIntroPlayed = true
+            return
+        }
+        guard !hybridDoorIntroPlayed else { return }
+        hybridDoorIntroPlayed = true
+        // Start one full turn behind rest; animate to 0 = parked positions.
+        hybridDoorIntroSpinDegrees = 360
+        withAnimation(.easeOut(duration: 1.15)) {
+            hybridDoorIntroSpinDegrees = 0
+        }
+    }
+
+    /// Rest offset rotated by `hybridDoorIntroSpinDegrees` around orbit center.
+    private func doorOrbitOffset(rest: CGSize) -> CGSize {
+        let extra = hybridDoorIntroSpinDegrees * .pi / 180
+        guard abs(extra) > 0.0001 else { return rest }
+        let radius = hypot(rest.width, rest.height)
+        guard radius > 1 else { return rest }
+        // Rest angle from top, clockwise (x right, y down).
+        let base = atan2(rest.width, -rest.height)
+        let a = base + extra
+        return CGSize(width: radius * sin(a), height: -radius * cos(a))
     }
 
     private func startHybridDoorPulseIfNeeded() {
@@ -325,18 +398,35 @@ struct SimpleHomeScreen: View {
         }
     }
 
+    private func startHybridHeroRotationIfNeeded() {
+        hybridHeroRotationTask?.cancel()
+        hybridHeroRotationTask = nil
+        guard !reduceMotion else { return }
+        guard Self.hybridHeroAssetNames.count > 1 else { return }
+        hybridHeroRotationTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: Self.hybridHeroRotationSeconds)
+                if Task.isCancelled { break }
+                withAnimation(.easeInOut(duration: Self.hybridHeroCrossfade)) {
+                    hybridHeroIndex = (hybridHeroIndex + 1) % Self.hybridHeroAssetNames.count
+                }
+            }
+        }
+    }
+
     private func hybridGlassDoor(
         titleKey: String,
         subtitleKey: String,
         imageName: String,
         identifier: String,
-        offset: CGSize,
+        restOffset: CGSize,
         pulsePhase: Double,
         action: @escaping () -> Void
     ) -> some View {
         let title = localizationManager.localized(titleKey)
         let hint = localizationManager.localized(subtitleKey)
         let size: CGFloat = 88
+        let offset = doorOrbitOffset(rest: restOffset)
         return Button {
             HapticFeedback.impact(reduceMotion ? .soft : .light)
             AnalyticsManager.shared.trackEvent(
@@ -359,7 +449,8 @@ struct SimpleHomeScreen: View {
                     Image(imageName)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: size * 0.72, height: size * 0.72)
+                        // P0.1b: door icon fill 0.86–0.92 (was 0.72 — looked tiny vs hero).
+                        .frame(width: size * 0.88, height: size * 0.88)
                         .clipShape(Circle())
                         .accessibilityHidden(true)
                 }
@@ -517,56 +608,63 @@ struct SimpleHomeScreen: View {
     }
 
     private var payPainsFamilyStrip: some View {
+        // Same SSOT as Main tariff card (`effectiveFamilyDisplay`) — never local roster alone.
+        let familyDisplay = subscriptionManager.effectiveFamilyDisplay()
         let members = FamilyLocalStore.loadPersistedMembers()
-        let count = members.count
-        return HStack(spacing: Spacing.m) {
+        let slotsUsed = familyDisplay.slotsUsed
+        let slotsMax = familyDisplay.slotsMax
+        let isEmpty = slotsUsed == 0 && members.isEmpty
+        // Compact «Семья · N из M» — same numbers as Main; never truncate with «…человек».
+        // LOCKED A★: always «Семья · N из M мест» — never naked «1 из 1» on iOS 15.
+        let slotsFull = String(
+            format: localizationManager.localized("pay_pains_family_strip_slots_fmt"),
+            slotsUsed,
+            slotsMax
+        )
+        let countLabel = isEmpty
+            ? localizationManager.localized("pay_pains_family_strip_empty")
+            : slotsFull
+        let addFull = localizationManager.localized("pay_pains_family_strip_add_to_family")
+        return HStack(spacing: 6) {
             Button {
                 HapticFeedback.impact(.light)
                 AnalyticsManager.shared.trackEvent("pay_pains_family_strip_tap")
                 navigationManager.navigateTo(.family)
             } label: {
-                HStack(spacing: Spacing.m) {
-                    if count == 0 {
+                HStack(spacing: 6) {
+                    if isEmpty {
                         ZStack {
                             Circle()
                                 .fill(Color.white.opacity(0.12))
-                                .frame(width: 44, height: 44)
+                                .frame(width: 28, height: 28)
                             Image(systemName: "person.badge.plus")
+                                .font(.caption2.weight(.semibold))
                                 .foregroundColor(.white)
                         }
                     } else {
-                        HStack(spacing: -8) {
-                            ForEach(Array(members.prefix(4).enumerated()), id: \.offset) { _, member in
-                                Text(PayPainsMemberInitials.from(name: member.name))
-                                    .font(AladdinFamilyType.caption(weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 36, height: 36)
-                                    .background(Circle().fill(Color.secondaryGold.opacity(0.35)))
-                                    .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
-                                    .accessibilityHidden(true)
-                            }
-                        }
+                        let name = members.first?.name ?? "A"
+                        Text(PayPainsMemberInitials.from(name: name))
+                            .font(AladdinFamilyType.caption2(weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(Color.secondaryGold.opacity(0.35)))
+                            .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
+                            .accessibilityHidden(true)
                     }
-                    Text(
-                        count == 0
-                            ? localizationManager.localized("pay_pains_family_strip_empty")
-                            : payPainsFamilyStripCountLabel(count)
-                    )
-                    .font(AladdinFamilyType.title3(weight: .semibold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    Spacer(minLength: 0)
+                    Text(countLabel)
+                        .font(AladdinFamilyType.caption(weight: .semibold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                        .allowsTightening(true)
+                        .multilineTextAlignment(.leading)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("pay_pains_family_strip")
-            .accessibilityLabel(
-                count == 0
-                    ? localizationManager.localized("pay_pains_family_strip_empty")
-                    : payPainsFamilyStripCountLabel(count)
-            )
+            .accessibilityLabel(countLabel)
 
             Button {
                 HapticFeedback.impact(.light)
@@ -574,20 +672,20 @@ struct SimpleHomeScreen: View {
                     "pay_pains_chip_tap",
                     parameters: ["chip": "pay_pains_family_strip_add_to_family"]
                 )
-                _ = subscriptionManager.canAddFamilyMember(
-                    currentCount: FamilyLocalStore.persistedLocalRosterCount()
-                )
-                navigationManager.navigateTo(.addMemberOptions)
+                _ = subscriptionManager.canAddFamilyMember(currentCount: slotsUsed)
+                startFamilyAddOrCreateDirectly()
             } label: {
-                Text(localizationManager.localized("pay_pains_family_strip_add_to_family"))
-                    .font(AladdinFamilyType.subheadline(weight: .semibold))
+                Text(addFull)
+                    .font(AladdinFamilyType.caption2(weight: .semibold))
                     .foregroundColor(Color.secondaryGold)
                     .lineLimit(2)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.75)
+                    .allowsTightening(true)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .frame(minHeight: 44)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .frame(minHeight: 28)
+                    .frame(maxWidth: 150)
                     .background(
                         Capsule()
                             .fill(Color.secondaryGold.opacity(0.18))
@@ -595,46 +693,47 @@ struct SimpleHomeScreen: View {
                     )
             }
             .buttonStyle(.plain)
+            .layoutPriority(1)
             .accessibilityIdentifier("pay_pains_family_strip_add_to_family")
-            .accessibilityLabel(localizationManager.localized("pay_pains_family_strip_add_to_family"))
+            .accessibilityLabel(addFull)
         }
-        .padding(Spacing.m)
+        .padding(.horizontal, Spacing.s)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity)
         .aladdinProductCard(cornerRadius: CornerRadius.large)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
                 .stroke(
-                    count == 0 ? Color.secondaryGold.opacity(0.85) : Color.clear,
+                    isEmpty ? Color.secondaryGold.opacity(0.85) : Color.clear,
                     lineWidth: 1.5
                 )
         )
     }
 
-    /// RU: 1 человек / 2 человека / 5 человек. EN: 1 person / N people.
-    private func payPainsFamilyStripCountLabel(_ count: Int) -> String {
-        let n = abs(count) % 100
-        let n1 = n % 10
-        let peopleKey: String
-        if localizationManager.currentLanguage == .russian {
-            if n > 10 && n < 20 {
-                peopleKey = "pay_pains_family_strip_people_many"
-            } else if n1 == 1 {
-                peopleKey = "pay_pains_family_strip_people_one"
-            } else if (2...4).contains(n1) {
-                peopleKey = "pay_pains_family_strip_people_few"
-            } else {
-                peopleKey = "pay_pains_family_strip_people_many"
-            }
-        } else {
-            peopleKey = count == 1
-                ? "pay_pains_family_strip_people_one"
-                : "pay_pains_family_strip_people_many"
-        }
-        return String(
-            format: localizationManager.localized("pay_pains_family_strip_count_fmt"),
-            count,
-            localizationManager.localized(peopleKey)
+    /// W11-A: skip AddMember hub + «Семья под защитой» when we can add/create directly.
+    private func startFamilyAddOrCreateDirectly() {
+        let members = FamilyLocalStore.loadPersistedMembers()
+        let needsCreate = FamilyLocalStore.needsServerFamilyCreation(members: members)
+        let canManage = FamilyRosterAccess.canManageRoster(
+            members: members,
+            myMemberId: UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey),
+            currentUserRoleFallback: UserDefaults.standard.string(forKey: "current_user_role")
         )
+        if !needsCreate && canManage {
+            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+            UserDefaults.standard.set(true, forKey: "family_registration_auto_start")
+            UserDefaults.standard.synchronize()
+            navigationManager.navigateTo(.mainWithRegistration)
+            return
+        }
+        if needsCreate {
+            FamilyLocalStore.prepareCreateFamilyFlow()
+            UserDefaults.standard.set(true, forKey: "family_registration_auto_start")
+            UserDefaults.standard.synchronize()
+            navigationManager.navigateTo(.mainWithRegistration)
+            return
+        }
+        navigationManager.navigateTo(.addMemberOptions)
     }
 
     /// F6: only real Screen Time report minutes — never invent.
@@ -1178,6 +1277,7 @@ struct SimpleHomeScreen: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(localizationManager.localized("wellness_done")) {
+                        HapticFeedback.selection()
                         pendingMoreNavigation = nil
                         restorePayPainsMenuOnReturn = false
                         showPayPainsMenu = false
@@ -1196,8 +1296,12 @@ struct SimpleHomeScreen: View {
         action: @escaping () -> Void
     ) -> some View {
         Button {
+            HapticFeedback.impact(.light)
             restorePayPainsMenuOnReturn = restoreMenuOnBack
-            pendingMoreNavigation = action
+            // Device QA: navigate FIRST, then dismiss sheet.
+            // Old path: dismiss → flash SimpleHome → then navigate (Aladdin start blink).
+            pendingMoreNavigation = nil
+            action()
             showPayPainsMenu = false
             showMoreSheet = false
         } label: {
@@ -1252,6 +1356,7 @@ struct SimpleHomeScreen: View {
 
             HStack {
                 Button {
+                    HapticFeedback.impact(.light)
                     // Q13: SimpleHome is often the launch root — goBack is a no-op. Always land on Main (full grid).
                     navigationManager.navigateToRoot(.main)
                 } label: {
@@ -1560,7 +1665,9 @@ struct SimpleHomeScreen: View {
         action: @escaping () -> Void
     ) -> some View {
         Button {
-            pendingMoreNavigation = action
+            // Same as payPainsMenuGlassRow: navigate first — avoid SimpleHome flash.
+            pendingMoreNavigation = nil
+            action()
             showMoreSheet = false
             showPayPainsMenu = false
         } label: {

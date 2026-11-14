@@ -137,10 +137,15 @@ struct DrivingReportsModal: View {
     }
 
     private var selectedMemberName: String {
+        let device = FamilyDrivingTripLedger.currentDeviceMember()
+        if resolvedMemberId == device.id || resolvedMemberId == "current" || resolvedMemberId.isEmpty {
+            return localizationManager.localized("where_phone_you")
+        }
         if let u = users.first(where: { $0.id == resolvedMemberId }) {
             return u.name
         }
-        return FamilyDrivingTripLedger.currentDeviceMember().name
+        let raw = device.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return raw.isEmpty ? localizationManager.localized("where_phone_you") : raw
     }
 
     private var filteredReports: [DrivingReport] {
@@ -190,7 +195,10 @@ struct DrivingReportsModal: View {
                             selectedUserId: selectedUserBinding,
                             users: users,
                             currentUserId: currentUserId,
-                            showCurrentUser: true
+                            showCurrentUser: true,
+                            onDone: {
+                                Task { await reloadDrivingData() }
+                            }
                         )
                         .padding(.horizontal, Spacing.screenPadding)
                         .padding(.top, Spacing.m)
@@ -678,7 +686,7 @@ struct DrivingReportsModal: View {
                 Text(localizationManager.localized("component_driving_reports_title"))
                     .font(AladdinFamilyType.title3())
                     .foregroundColor(.textPrimary)
-                Text(localizationManager.localized("driving_reports_empty_lead"))
+                Text(localizationManager.localized("driving_reports_report_cta"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -849,18 +857,31 @@ struct DrivingReportsModal: View {
             
             print("✅ DrivingReportsModal: Создано \(users.count) опций пользователей")
             
-            // Устанавливаем текущего пользователя (первый родитель или текущий пользователь)
-            if let currentUser = familyMembers.first(where: { $0.role == "parent" }) {
-                currentUserId = currentUser.id
-                print("✅ DrivingReportsModal: Текущий пользователь установлен: \(currentUser.name) (ID: \(currentUser.id))")
+            // P0.4f / J38: default = this device («Вы»), NOT first parent («Родитель В»).
+            let device = FamilyDrivingTripLedger.currentDeviceMember()
+            if let match = familyMembers.first(where: { $0.id == device.id }) {
+                currentUserId = match.id
+                print("✅ DrivingReportsModal: device member \(match.name) id=\(match.id)")
+            } else if !device.id.isEmpty {
+                currentUserId = device.id
+                if !users.contains(where: { $0.id == device.id }) {
+                    users.insert(
+                        UserSelectorView.UserOption(
+                            id: device.id,
+                            name: localizationManager.localized("where_phone_you"),
+                            role: "self",
+                            avatar: nil
+                        ),
+                        at: 0
+                    )
+                }
+                print("✅ DrivingReportsModal: device id=\(device.id) labeled Вы")
             } else if let firstMember = familyMembers.first {
-                // Если нет родителя, используем первого члена семьи
                 currentUserId = firstMember.id
-                print("✅ DrivingReportsModal: Текущий пользователь установлен (первый член): \(firstMember.name) (ID: \(firstMember.id))")
+                print("⚠️ DrivingReportsModal: fallback first member \(firstMember.name)")
             } else {
-                // Если список пуст, используем "current"
                 currentUserId = "current"
-                print("⚠️ DrivingReportsModal: Список членов семьи пуст, используем 'current'")
+                print("⚠️ DrivingReportsModal: empty roster → current")
             }
             
             // ✅ ИСПРАВЛЕНИЕ: Всегда пробуем загрузить из UserDefaults для синхронизации
@@ -897,10 +918,12 @@ struct DrivingReportsModal: View {
         
         print("✅ DrivingReportsModal: Загрузка пользователей завершена. Всего: \(users.count), текущий: \(currentUserId)")
         
-        // ✅ ИСПРАВЛЕНИЕ 3: Синхронизируем selectedUserId с currentUserId если он пустой (один раз в конце)
-        if selectedUserId.isEmpty && !currentUserId.isEmpty {
-            selectedUserId = currentUserId
-            print("✅ DrivingReportsModal: selectedUserId синхронизирован с currentUserId: \(currentUserId)")
+        // P0.4f: default empty/invalid → this device («Вы»). Keep explicit user picks.
+        let deviceId = FamilyDrivingTripLedger.currentDeviceMember().id
+        let selectedStillValid = !selectedUserId.isEmpty && users.contains(where: { $0.id == selectedUserId })
+        if !selectedStillValid {
+            selectedUserId = (!currentUserId.isEmpty ? currentUserId : deviceId)
+            print("✅ DrivingReportsModal: selectedUserId → \(selectedUserId) (device default)")
         }
     }
     

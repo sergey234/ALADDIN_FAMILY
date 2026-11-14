@@ -13,8 +13,33 @@ struct NotificationsScreen: View {
     @StateObject private var notificationManager = NotificationManager.shared
     @State private var selectedFilter: NotificationFilter = .all
     @State private var expandedFilter: NotificationFilter? = nil
+    /// P1.4 S17 Life360-parity chrome: Советы / Предложения / Уведомления / Все
+    @State private var inboxChrome: InboxChromeFilter = .all
     /// QA-03 A: tap → full text sheet.
     @State private var detailNotification: NotificationsViewModel.AppNotification?
+    /// When presented as map envelope sheet — close sheet (stay on map). Nil = root stack goBack.
+    var onClose: (() -> Void)? = nil
+
+    private enum InboxChromeFilter: String, CaseIterable, Identifiable {
+        case tips, offers, notifications, all
+        var id: String { rawValue }
+        var titleKey: String {
+            switch self {
+            case .tips: return "inbox_filter_tips"
+            case .offers: return "inbox_filter_offers"
+            case .notifications: return "inbox_filter_notifications"
+            case .all: return "inbox_filter_all"
+            }
+        }
+        var mappedFilter: NotificationFilter {
+            switch self {
+            case .tips: return .info
+            case .offers: return .success
+            case .notifications: return .unread
+            case .all: return .all
+            }
+        }
+    }
     
     // MARK: - Body
     
@@ -34,6 +59,19 @@ struct NotificationsScreen: View {
                     VStack(spacing: 16) {
                         // Статистика уведомлений
                         notificationStats
+
+                        // P1.4 S17: Tips / Offers / Notifications / All
+                        Picker("", selection: $inboxChrome) {
+                            ForEach(InboxChromeFilter.allCases) { chrome in
+                                Text(localizationManager.localized(chrome.titleKey)).tag(chrome)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("notifications_inbox_chrome")
+                        .onChange(of: inboxChrome) { chrome in
+                            selectedFilter = chrome.mappedFilter
+                            expandedFilter = chrome.mappedFilter
+                        }
                         
                         // Фильтры
                         notificationFilters
@@ -78,6 +116,7 @@ struct NotificationsScreen: View {
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(localizationManager.localized("common_done")) {
+                            HapticFeedback.selection()
                             detailNotification = nil
                         }
                     }
@@ -113,7 +152,11 @@ struct NotificationsScreen: View {
                 }
             ],
             onBack: {
-                navigationManager.goBackToPreviousScreen(reason: "Notifications.onBack")
+                if let onClose {
+                    onClose()
+                } else {
+                    navigationManager.goBackToPreviousScreen(reason: "Notifications.onBack")
+                }
             }
         )
         .accessibilityElement(children: .combine)
@@ -264,6 +307,7 @@ struct NotificationsScreen: View {
                     } else {
                         ForEach(Array(previewNotifications.prefix(3)), id: \.id) { appNotification in
                             Button(action: {
+                                HapticFeedback.selection()
                                 viewModel.markAsRead(appNotification)
                                 detailNotification = appNotification
                             }) {
@@ -309,6 +353,7 @@ struct NotificationsScreen: View {
                         
                         if filterCount(for: filter) > 3 {
                             Button(action: {
+                                HapticFeedback.selection()
                                 // Уже фильтруем - список внизу обновится автоматически
                             }) {
                                 HStack {
@@ -376,6 +421,7 @@ struct NotificationsScreen: View {
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.9))
                     Button(localizationManager.localized("notifications_retry")) {
+                        HapticFeedback.impact(.light)
                         Task { await viewModel.loadNotifications() }
                     }
                     .font(.caption)
@@ -487,6 +533,7 @@ struct NotificationsScreen: View {
             healthRow("Last error", viewModel.errorMessage ?? "none")
 
             Button("Refresh health snapshot") {
+                HapticFeedback.selection()
                 notificationManager.refreshRuntimeDiagnostics()
             }
             .font(.caption)
@@ -562,7 +609,10 @@ struct NotificationCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        Button(action: onTap) {
+        Button(action: {
+            HapticFeedback.selection()
+            onTap()
+        }) {
             HStack(spacing: 12) {
                 // Иконка уведомления
                 Text(notification.icon)

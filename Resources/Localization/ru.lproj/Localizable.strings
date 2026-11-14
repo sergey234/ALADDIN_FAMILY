@@ -904,7 +904,28 @@
 "driving_reports_violations" = "Нарушения";
 "driving_reports_history_title" = "История поездок";
 "driving_reports_empty" = "Пока нет данных о поездках";
-"driving_reports_empty_lead" = "Счётчики появятся после реальной поездки. Ничего не выдумываем.";
+"driving_reports_empty_lead" = "Отчёт появится после реальной поездки.";
+"driving_reports_report_cta" = "Отчёт о реальной поездке";
+"driving_reports_done" = "Готово";
+"driving_reports_select_members" = "Выбрать членов семьи";
+"family_day_journal_from_date_fmt" = "С %@";
+"family_day_journal_period_today" = "Сегодня";
+"family_day_journal_period_week" = "Неделя";
+"family_day_journal_period_custom" = "Свой период";
+"family_crash_tip_title" = "Обнаружение аварий";
+"family_crash_tip_body" = "Нужны: геолокация «Всегда», «Движение и фитнес» и уведомления — иначе защита в фоне не сработает.";
+"inbox_filter_tips" = "Советы";
+"inbox_filter_offers" = "Предложения";
+"inbox_filter_notifications" = "Уведомления";
+"inbox_filter_all" = "Все";
+"family_map_inbox_a11y" = "Входящие";
+"family_map_settings_a11y" = "Настройки семьи";
+"family_circle_settings_title" = "Семья";
+"family_circle_settings_roles" = "Роли и участники";
+"family_circle_settings_privacy" = "Конфиденциальность";
+"family_circle_settings_notifications" = "Уведомления семьи";
+"family_circle_settings_open_family" = "Открыть раздел Семья";
+"family_circle_settings_places" = "Места";
 "driving_reports_why_motion" = "1. Разрешите «Движение и фитнес» для ALADDIN — так телефон понимает поездку.";
 "driving_reports_why_location" = "2. Включите геолокацию «Всегда» (и точное место) — иначе поездки в фоне не пишутся.";
 "driving_reports_why_trip" = "3. Проедьте за рулём с открытым или в фоне ALADDIN — затем откройте «Вождение» снова.";
@@ -922,7 +943,16 @@
 "map_refresh_my_place" = "Обновить моё место";
 "map_refresh_my_place_toast" = "Обновляем место…";
 "map_location_refining_toast" = "Уточняем место…";
-"map_accuracy_meters_format" = "Точность ±%d м";/* ═══════════════════════════════════════════════════════════════
+"map_accuracy_meters_format" = "Точность ±%d м";
+"where_phone_refresh_location_a11y" = "Обновить моё место";
+"where_phone_accuracy_coarse_cta" = "Включить точную геолокацию";
+"where_phone_accuracy_stale_hint" = "Место могло устареть. Обновите точку.";
+"where_phone_accuracy_coarse_hint" = "Сейчас приблизительное место (±%d м). Включите «Точные» для ALADDIN.";
+"family_trip_ended_push_title" = "Поездка завершена";
+"family_trip_ended_push_body" = "%@ · %.1f км · до %d км/ч";
+"family_trip_map_track_a11y" = "Маршрут поездки";
+"family_trip_empty_honest" = "Трек не записался. Проверьте геолокацию «Всегда» и «Движение и фитнес».";
+/* ═══════════════════════════════════════════════════════════════
  * АВТОРИЗАЦИЯ
  * ═══════════════════════════════════════════════════════════════ */
 
@@ -1732,6 +1762,7 @@
 "content_block_guide_step_5" = "Вернитесь в ALADDIN и нажмите «Я включил, проверить».";
 "common_back" = "Назад";
 "common_close" = "Закрыть";
+"common_delete" = "Удалить";
 "common_done" = "Готово";
 "main_aladdin_title" = "ALADDIN";
 "main_ai_protection" = "AI защита семьи";
@@ -2955,7 +2986,7 @@
 "main_protect_parents_subtitle" = "Вторая рука для 60+: звонки и доверие в семье";
 "main_more_title" = "Ещё";
 "main_more_subtitle" = "Удобный режим и другие разделы";
-"main_simple_version_title" = "Удобный режим";
+"main_simple_version_title" = "Aladdin start";
 "main_simple_version_subtitle" = "Всё важное на одном экране";
 "family_safe_word_show_phrase" = "Показать фразу";
 "family_safe_word_hide_phrase" = "Скрыть фразу";
@@ -2983,8 +3014,11 @@
 "pay_pains_family_strip_people_many" = "человек";
 "pay_pains_family_strip_count" = "Семья · %d человека";
 "pay_pains_family_strip_count_many" = "Семья · %d человек";
+"pay_pains_family_strip_slots_fmt" = "Семья · %d из %d мест";
 "pay_pains_family_strip_add" = "Добавить";
 "pay_pains_family_strip_add_to_family" = "Добавить в семью";
+"simple_home_open_full_main" = "Start Aladdin";
+"simple_home_title" = "Aladdin start";
 "pay_pains_door_check_title" = "Проверить";
 "pay_pains_door_check_subtitle" = "Проверим звонок, сообщение, видео или текст";
 "pay_pains_door_child_title" = "Ребёнок";
@@ -3578,6 +3612,7 @@
 "map_share_duration" = "Действует";
 "map_privacy_zone_title" = "Тихая зона";
 "map_privacy_zone_hint" = "В этой зоне место семье не показывается";
+"map_quiet_zone_toggle" = "Тихая зона включена";
 
 /* family_cal_* */
 "family_cal_title" = "Семейный календарь";

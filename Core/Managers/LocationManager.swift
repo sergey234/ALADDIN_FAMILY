@@ -464,9 +464,12 @@ class LocationManager: NSObject, ObservableObject {
     
     /// Отправить текущую локацию на сервер с поддержкой офлайн-буфера
     func reportCurrentLocation(_ location: CLLocation) {
+        // P0.4: trip sampling must run even when quiet-zone blocks family share/server.
+        FamilyMapAutoTripTracker.note(location: location)
+
         // Канон B: в тихой зоне точку семье / на сервер не шлём.
         if FamilyMapQuietZoneStore.contains(location) {
-            print("ℹ️ LocationManager: тихая зона — report пропущен")
+            print("ℹ️ LocationManager: тихая зона — report пропущен (trip note already ran)")
             return
         }
 
@@ -482,9 +485,11 @@ class LocationManager: NSObject, ObservableObject {
         
         // Пытаемся отправить весь буфер
         sendBuffer()
+    }
 
-        // Авто-сегмент поездки по движению (кнопка Start не обязательна).
-        FamilyMapAutoTripTracker.note(location: location)
+    /// P0.4: while an auto-trip is open, prefer GPS over SLC coarse fixes.
+    func boostAccuracyForActiveTrip() {
+        activateHighAccuracyMode()
     }
     
     private func saveToBuffer(_ report: LocationReport) {

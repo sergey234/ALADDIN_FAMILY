@@ -29,6 +29,8 @@ enum AppScreenTransition: String, CaseIterable, Identifiable {
         case .slideLeading, .slideTrailing:
             // Root swaps `AnyView` + `.id(screen)` — sliding the *outgoing* screen
             // leaves a white gap (Settings → SimpleHome «уезжает влево»). Fade out only.
+            // Device QA 2026-11-15: Aladdin start «из правого верхнего угла» = slideTrailing
+            // insertion on root — prefer `.fade` in ALADDINApp for screen swaps.
             return .opacity
         case .scale:
             return .scale(scale: 1.02).combined(with: .opacity)

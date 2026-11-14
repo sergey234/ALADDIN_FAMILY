@@ -147,12 +147,33 @@ struct WhereIsPhoneScreen: View {
         FamilyMapShareDuration(rawValue: FamilyMapShareSessionStore.selectedHours) ?? .oneHour
     @State private var journalIndex: Double = 0
     @State private var quietMeters: Double = FamilyMapQuietZoneStore.meters
+    @State private var quietZoneEnabled: Bool = FamilyMapQuietZoneStore.isEnabled
     @State private var selectedMember: HubMemberCard?
     /// P0-5: member avatar crop pipeline (reuse AvatarCropEditor + ImagePicker).
     @State private var memberAvatarImage: UIImage?
     @State private var memberAvatarEpoch: Int = 0
     @State private var showMemberImagePicker = false
     @State private var memberCropSource: UIImage?
+    /// P1.4 / C19 gap hub from map gear.
+    @State private var showFamilyCircleSettings = false
+    /// Envelope → inbox as sheet on map (do NOT leave hub → Stats/Main).
+    @State private var showMapInboxSheet = false
+    @State private var showFamilyNotifSettingsFromHub = false
+    /// P1.1 journal period (filters trips + geofence trail — not cosmetic-only).
+    @State private var journalPeriod: JournalPeriod = .today
+    @State private var journalCustomDate: Date = Date()
+
+    private enum JournalPeriod: String, CaseIterable, Identifiable {
+        case today, week, custom
+        var id: String { rawValue }
+        var titleKey: String {
+            switch self {
+            case .today: return "family_day_journal_period_today"
+            case .week: return "family_day_journal_period_week"
+            case .custom: return "family_day_journal_period_custom"
+            }
+        }
+    }
     @State private var savedPets: [FamilyPetProfile] = FamilyPetProfileStore.load()
     @StateObject private var liveLocation = FamilyMapLiveLocationController.shared
     @AppStorage("where_phone_pin_preview_done") private var pinPreviewDone = true
@@ -174,6 +195,8 @@ struct WhereIsPhoneScreen: View {
     /// Seeded by locale: RU→Yandex, EN→Apple. User can always switch.
     @AppStorage("where_phone_preferred_maps") private var preferredMaps = "yandex"
     @State private var mapCoordinate: CLLocationCoordinate2D?
+    /// P0.4 H1 — trip polyline after push / deep link.
+    @State private var highlightedTripRoute: [CLLocationCoordinate2D] = []
     @State private var mapPointName: String?
     @State private var mapPointAt: Date?
     @State private var mapPinSource: MapPinSource = .none
@@ -385,9 +408,20 @@ struct WhereIsPhoneScreen: View {
                 flushPendingHubSheetIfNeeded(reason: "memberDismiss")
             }) { member in
                 memberDetailSheet(member)
+                    // P1.5 S37: nest picker under member sheet — root nested-sheet broke PH/UIImage pick.
+                    .sheet(isPresented: $showMemberImagePicker) {
+                        ImagePicker(selectedImage: $memberCropSource)
+                    }
             }
-            .sheet(isPresented: $showMemberImagePicker) {
-                ImagePicker(selectedImage: $memberCropSource)
+            .sheet(isPresented: $showFamilyCircleSettings) {
+                familyCircleSettingsSheet
+                    .environmentObject(localizationManager)
+                    .environmentObject(navigationManager)
+            }
+            .sheet(isPresented: $showMapInboxSheet) {
+                NotificationsScreen(onClose: { showMapInboxSheet = false })
+                    .environmentObject(localizationManager)
+                    .environmentObject(navigationManager)
             }
             .sheet(isPresented: Binding(
                 get: { memberCropSource != nil },
@@ -421,20 +455,35 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized("map_privacy_zone_hint"))
                     .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.white.opacity(0.85))
-                Slider(value: $quietMeters, in: 50...500, step: 25)
-                    .tint(Color.secondaryGold)
-                    .onChange(of: quietMeters) { value in
-                        FamilyMapQuietZoneStore.meters = value
-                        print("WHERE_PHONE quiet meters=\(Int(value))")
-                    }
-                Text(
-                    String(
-                        format: localizationManager.localized("map_unit_meters"),
-                        Int(quietMeters)
+
+                Toggle(isOn: $quietZoneEnabled) {
+                    Text(localizationManager.localized("map_quiet_zone_toggle"))
+                        .font(AladdinFamilyType.subheadline(weight: .semibold))
+                        .foregroundColor(.textPrimary)
+                }
+                .tint(Color.secondaryGold)
+                .onChange(of: quietZoneEnabled) { value in
+                    FamilyMapQuietZoneStore.isEnabled = value
+                    print("WHERE_PHONE quiet enabled=\(value)")
+                }
+                .accessibilityIdentifier("where_phone_quiet_zone_toggle")
+
+                if quietZoneEnabled {
+                    Slider(value: $quietMeters, in: 50...500, step: 25)
+                        .tint(Color.secondaryGold)
+                        .onChange(of: quietMeters) { value in
+                            FamilyMapQuietZoneStore.meters = value
+                            print("WHERE_PHONE quiet meters=\(Int(value))")
+                        }
+                    Text(
+                        String(
+                            format: localizationManager.localized("map_unit_meters"),
+                            Int(quietMeters)
+                        )
                     )
-                )
                     .font(AladdinFamilyType.caption())
                     .foregroundColor(.white.opacity(0.75))
+                }
                 Spacer()
             }
             .padding(Spacing.l)
@@ -457,7 +506,7 @@ struct WhereIsPhoneScreen: View {
                 preferredMaps = FamilyMapsPreference.resolved(language: localizationManager.currentLanguage)
                 reload()
                 liveLocation.startIfNeeded()
-                savedPets = FamilyPetProfileStore.load()
+                savedPets = FamilyPetProfileStore.dedupeByNameBreed()
                 maybeOfferAlwaysAllow()
                 maybeOfferSoftPaywall()
                 // QA-15: never auto-present pin size sheet; force L.
@@ -547,6 +596,7 @@ struct WhereIsPhoneScreen: View {
         selectedMember = nil
         showMemberImagePicker = false
         memberCropSource = nil
+        showFamilyCircleSettings = false
         if tab != .location {
             showLocationSystemSheet = false
         } else if preferLocationSystemSheetS2 {
@@ -624,14 +674,41 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// X закрывает хаб → Удобный (`isPresented = false`), не «стек Назад».
+    /// P1.4 S18: envelope → inbox · gear → family settings (gap hub).
     private var hubHeader: some View {
-        HStack {
-            // Title follows active tab (not always «Карта» on Subscription/Safety).
+        HStack(spacing: Spacing.s) {
+            Button {
+                HapticFeedback.selection()
+                showFamilyCircleSettings = true
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundColor(.secondaryGold)
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_hub_settings")
+            .accessibilityLabel(localizationManager.localized("family_map_settings_a11y"))
+
             Text(localizationManager.localized(hubTab.titleKey))
                 .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
 
             Spacer()
+
+            Button {
+                HapticFeedback.selection()
+                // Inbox stays on map: sheet with Tips/Offers/Notifs/All — not root navigate (was Stats + lost map).
+                showMapInboxSheet = true
+            } label: {
+                Image(systemName: "envelope.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.secondaryGold)
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_hub_inbox")
+            .accessibilityLabel(localizationManager.localized("family_map_inbox_a11y"))
 
             Button {
                 HapticFeedback.impact(.light)
@@ -829,6 +906,7 @@ struct WhereIsPhoneScreen: View {
                 interactionEnabled: mapInteractionEnabled,
                 cameraToken: mapCameraToken,
                 quietRadiusMeters: quietMeters,
+                tripRoute: highlightedTripRoute,
                 onPinSelected: {
                     openMemberFromMapPin()
                 }
@@ -836,6 +914,11 @@ struct WhereIsPhoneScreen: View {
             .ignoresSafeArea()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .accessibilityIdentifier("where_phone_map_pane")
+            .accessibilityLabel(
+                highlightedTripRoute.count >= 2
+                    ? localizationManager.localized("family_trip_map_track_a11y")
+                    : localizationManager.localized("where_phone_map_card_title")
+            )
 
             Color.black.opacity(locationSheetIsFull ? 0.42 : 0.18)
                 .ignoresSafeArea()
@@ -853,11 +936,10 @@ struct WhereIsPhoneScreen: View {
                             endPoint: .bottom
                         )
                     )
-                    // Header only — do not let empty VStack steal FAB/map hits.
                     .zIndex(2)
 
                 HStack {
-                    Spacer()
+                    Spacer().allowsHitTesting(false)
                     mapStatusBadges
                 }
                 .padding(.horizontal, Spacing.m)
@@ -868,7 +950,7 @@ struct WhereIsPhoneScreen: View {
                     .allowsHitTesting(false)
 
                 HStack {
-                    Spacer()
+                    Spacer().allowsHitTesting(false)
                     mapFabStack
                 }
                 .padding(.trailing, Spacing.m)
@@ -964,6 +1046,7 @@ struct WhereIsPhoneScreen: View {
                     interactionEnabled: mapInteractionEnabled,
                     cameraToken: mapCameraToken,
                     quietRadiusMeters: quietMeters,
+                    tripRoute: highlightedTripRoute,
                     onPinSelected: {
                         openMemberFromMapPin()
                     }
@@ -971,11 +1054,18 @@ struct WhereIsPhoneScreen: View {
                 .frame(width: geo.size.width, height: mapStripH)
                 .clipped()
                 .accessibilityIdentifier("where_phone_map_pane")
+                .accessibilityLabel(
+                    highlightedTripRoute.count >= 2
+                        ? localizationManager.localized("family_trip_map_track_a11y")
+                        : localizationManager.localized("where_phone_map_card_title")
+                )
 
                 Color.black.opacity(0.08 + 0.35 * sheetExpansion)
                     .frame(width: geo.size.width, height: mapStripH)
                     .allowsHitTesting(false)
 
+                // P0.6: Spacer pass-through so map pan/tap works; chrome stays tappable.
+                // (Parent allowsHitTesting(false) would also kill child buttons — don't.)
                 VStack(spacing: 0) {
                     hubHeader
                         .background(
@@ -990,21 +1080,21 @@ struct WhereIsPhoneScreen: View {
                         )
 
                     HStack {
-                        Spacer()
+                        Spacer().allowsHitTesting(false)
                         mapStatusBadges
                     }
                     .padding(.horizontal, Spacing.m)
                     .padding(.top, 4)
 
                     Spacer(minLength: 0)
+                        .allowsHitTesting(false)
 
                     HStack {
-                        Spacer()
+                        Spacer().allowsHitTesting(false)
                         mapFabStack
                     }
                     .padding(.trailing, Spacing.m)
                     .padding(.bottom, Spacing.s)
-                    // Keep FABs tappable until sheet is nearly full (was 0.55 → dead controls).
                     .opacity(sheetExpansion > 0.88 ? 0.25 : 1)
                     .allowsHitTesting(sheetExpansion < 0.92)
                     .zIndex(5)
@@ -1095,43 +1185,88 @@ struct WhereIsPhoneScreen: View {
 
     private var mapStatusBadges: some View {
         VStack(alignment: .trailing, spacing: 6) {
-            // QA-08 A: refresh my place + accuracy ±m · time.
+            // P0.5c: refresh = compact icon (not huge «Обновить моё место» capsule).
             Button {
                 HapticFeedback.selection()
-                liveLocation.requestFreshFix()
-                ToastManager.shared.showSuccess(
-                    localizationManager.localized("map_location_refining_toast")
-                )
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "location.north.line.fill")
-                        .font(.caption.weight(.bold))
-                    Text(localizationManager.localized("map_refresh_my_place"))
-                        .font(.caption.weight(.bold))
+                if liveLocation.isCoarseAccuracy, !liveLocation.isPreciseLocationEnabled {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                    return
                 }
-                .foregroundColor(.backgroundDark)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.secondaryGold.opacity(0.95))
-                .clipShape(Capsule())
+                liveLocation.requestFreshFix()
+                if liveLocation.isRefiningFix {
+                    ToastManager.shared.showSuccess(
+                        localizationManager.localized("map_location_refining_toast")
+                    )
+                }
+            } label: {
+                Image(systemName: liveLocation.isRefiningFix ? "arrow.clockwise" : "location.north.line.fill")
+                    .font(.body.weight(.semibold))
+                    .foregroundColor(.backgroundDark)
+                    .frame(width: 40, height: 40)
+                    .background(Color.secondaryGold.opacity(0.95))
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white.opacity(0.35), lineWidth: 1))
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("where_phone_refresh_my_place")
+            .accessibilityLabel(localizationManager.localized("where_phone_refresh_location_a11y"))
 
-            if liveLocation.accuracyMeters >= 0, mapCoordinate != nil {
+            if liveLocation.isCoarseAccuracy {
+                Button {
+                    HapticFeedback.selection()
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Text(localizationManager.localized("where_phone_accuracy_coarse_cta"))
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.backgroundDark)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.orange.opacity(0.92))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("where_phone_accuracy_coarse_cta")
+            }
+
+            if liveLocation.accuracyMeters >= 0, mapCoordinate != nil || liveLocation.isCoarseAccuracy {
+                let meters = Int(liveLocation.accuracyMeters.rounded())
                 Text(
                     String(
-                        format: localizationManager.localized("map_accuracy_meters_format"),
-                        Int(liveLocation.accuracyMeters.rounded())
+                        format: localizationManager.localized(
+                            liveLocation.isCoarseAccuracy
+                                ? "where_phone_accuracy_coarse_hint"
+                                : "map_accuracy_meters_format"
+                        ),
+                        meters
                     )
                 )
                 .font(.caption2.weight(.bold))
                 .foregroundColor(.backgroundDark)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(Color.white.opacity(0.88))
+                .background(
+                    (liveLocation.isCoarseAccuracy ? Color.orange : Color.white).opacity(0.88)
+                )
                 .clipShape(Capsule())
                 .accessibilityIdentifier("where_phone_accuracy_badge")
+            }
+
+            // P0.5b: stale fix tip (key was in strings but unwired).
+            if !liveLocation.isCoarseAccuracy,
+               let at = liveLocation.updatedAt ?? mapPointAt,
+               Date().timeIntervalSince(at) > 5 * 60 {
+                Text(localizationManager.localized("where_phone_accuracy_stale_hint"))
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.backgroundDark)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.secondaryGold.opacity(0.92))
+                    .clipShape(Capsule())
+                    .accessibilityIdentifier("where_phone_accuracy_stale_hint")
             }
 
             if mapCoordinate == nil || mapPinSource == .none {
@@ -1365,7 +1500,20 @@ struct WhereIsPhoneScreen: View {
                                             .foregroundColor(.textSecondary)
                                     }
                                 }
-                                Spacer()
+                                Spacer(minLength: 0)
+                                Button {
+                                    HapticFeedback.impact(.light)
+                                    savedPets = FamilyPetProfileStore.remove(id: pet.id)
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .font(.body.weight(.semibold))
+                                        .foregroundColor(.red.opacity(0.9))
+                                        .frame(width: 36, height: 36)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(localizationManager.localized("common_delete"))
+                                .accessibilityIdentifier("where_phone_pet_delete_\(pet.id.uuidString)")
                             }
                             .padding(Spacing.m)
                             .aladdinProductCard(cornerRadius: CornerRadius.medium)
@@ -1942,6 +2090,21 @@ struct WhereIsPhoneScreen: View {
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
 
+                // P1.3 S16: crash tip — Always / Motion / Push (ALADDIN copy, not Life360 clone).
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("family_crash_tip_title"))
+                        .font(AladdinFamilyType.subheadline(weight: .semibold))
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("family_crash_tip_body"))
+                        .font(AladdinFamilyType.caption())
+                        .foregroundColor(.white.opacity(0.92))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(Spacing.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .aladdinProductCard(cornerRadius: CornerRadius.medium)
+                .accessibilityIdentifier("where_phone_crash_tip")
+
                 Toggle(isOn: $crashConsentAccepted) {
                     Text(localizationManager.localized("crash_consent_accept"))
                         .font(AladdinFamilyType.subheadline(weight: .semibold))
@@ -2202,6 +2365,188 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// P1.7 C19 gap-only hub — ALADDIN dark + New York; NavigationLink back → this list → map.
+    private var familyCircleSettingsSheet: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(localizationManager.localized("family_circle_settings_title"))
+                        .font(AladdinFamilyType.title2())
+                        .foregroundColor(.secondaryGold)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, Spacing.s)
+
+                    VStack(spacing: 0) {
+                        NavigationLink {
+                            familyCircleRolesDestination
+                        } label: {
+                            familyCircleSettingsRow(
+                                title: localizationManager.localized("family_circle_settings_roles"),
+                                systemImage: "person.3.fill"
+                            )
+                        }
+                        .accessibilityIdentifier("family_circle_settings_roles")
+
+                        Divider().background(Color.white.opacity(0.12))
+
+                        Button {
+                            showFamilyCircleSettings = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                queueHubSheet(.places(preferredNameKey: nil))
+                            }
+                        } label: {
+                            familyCircleSettingsRow(
+                                title: localizationManager.localized("family_circle_settings_places"),
+                                systemImage: "mappin.and.ellipse"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("family_circle_settings_places")
+
+                        Divider().background(Color.white.opacity(0.12))
+
+                        NavigationLink {
+                            PrivacyPolicyScreen()
+                                .environmentObject(localizationManager)
+                                .environmentObject(navigationManager)
+                                .navigationBarHidden(true)
+                        } label: {
+                            familyCircleSettingsRow(
+                                title: localizationManager.localized("family_circle_settings_privacy"),
+                                systemImage: "hand.raised.fill"
+                            )
+                        }
+                        .accessibilityIdentifier("family_circle_settings_privacy")
+
+                        Divider().background(Color.white.opacity(0.12))
+
+                        Button {
+                            showFamilyNotifSettingsFromHub = true
+                        } label: {
+                            familyCircleSettingsRow(
+                                title: localizationManager.localized("family_circle_settings_notifications"),
+                                systemImage: "bell.badge.fill"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("family_circle_settings_notifications")
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                            .fill(Color.backgroundMedium.opacity(0.45))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.large)
+                                    .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                            )
+                    )
+                }
+                .padding(Spacing.l)
+            }
+            .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(localizationManager.localized("common_close")) {
+                        showFamilyCircleSettings = false
+                    }
+                    .font(AladdinFamilyType.subheadline(weight: .semibold))
+                    .foregroundColor(.secondaryGold)
+                }
+            }
+            .sheet(isPresented: $showFamilyNotifSettingsFromHub) {
+                FamilyNotificationSettingsModal()
+                    .environmentObject(localizationManager)
+            }
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .accessibilityIdentifier("family_circle_settings_sheet")
+    }
+
+    private func familyCircleSettingsRow(title: String, systemImage: String) -> some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: systemImage)
+                .font(.body.weight(.semibold))
+                .foregroundColor(.secondaryGold)
+                .frame(width: 28)
+            Text(title)
+                .font(AladdinFamilyType.body(weight: .semibold))
+                .foregroundColor(.textPrimary)
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textSecondary)
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.m)
+        .contentShape(Rectangle())
+    }
+
+    /// Roles: roster on this stack (Back → settings). Full Family = optional deep link.
+    private var familyCircleRolesDestination: some View {
+        let members = FamilyLocalStore.loadPersistedMembers()
+        return ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                Text(localizationManager.localized("family_circle_settings_roles"))
+                    .font(AladdinFamilyType.title3())
+                    .foregroundColor(.secondaryGold)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                if members.isEmpty {
+                    Text(localizationManager.localized("pay_pains_family_strip_empty"))
+                        .font(AladdinFamilyType.subheadline())
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    ForEach(members, id: \.id) { member in
+                        HStack(spacing: Spacing.m) {
+                            Text(String(member.name.prefix(1)).uppercased())
+                                .font(AladdinFamilyType.caption(weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 36, height: 36)
+                                .background(Circle().fill(Color.secondaryGold.opacity(0.45)))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(member.name)
+                                    .font(AladdinFamilyType.body(weight: .semibold))
+                                    .foregroundColor(.textPrimary)
+                                Text(member.role.label)
+                                    .font(AladdinFamilyType.caption())
+                                    .foregroundColor(.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(Spacing.m)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .fill(Color.backgroundMedium.opacity(0.4))
+                        )
+                    }
+                }
+
+                Button {
+                    showFamilyCircleSettings = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        leaveHubThenNavigate(to: .family)
+                    }
+                } label: {
+                    Text(localizationManager.localized("family_circle_settings_open_family"))
+                        .font(AladdinFamilyType.subheadline(weight: .semibold))
+                        .foregroundColor(.backgroundDark)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.secondaryGold)
+                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                }
+                .buttonStyle(.plain)
+                .padding(.top, Spacing.s)
+                .accessibilityIdentifier("family_circle_settings_open_family")
+            }
+            .padding(Spacing.l)
+        }
+        .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
     private var alwaysAllowSheet: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: Spacing.m) {
@@ -2346,7 +2691,14 @@ struct WhereIsPhoneScreen: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, Spacing.s)
 
-                    Text(Self.dayJournalDateLabel())
+                    Text(
+                        String(
+                            format: localizationManager.localized("family_day_journal_from_date_fmt"),
+                            Self.dayJournalDateLabel(
+                                date: journalPeriod == .custom ? journalCustomDate : Date()
+                            )
+                        )
+                    )
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.textSecondary)
                         .padding(.horizontal, Spacing.m)
@@ -2354,6 +2706,26 @@ struct WhereIsPhoneScreen: View {
                         .background(Capsule().fill(Color.backgroundMedium.opacity(0.45)))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .accessibilityIdentifier("where_phone_day_journal_date")
+
+                    Picker("", selection: $journalPeriod) {
+                        ForEach(JournalPeriod.allCases) { period in
+                            Text(localizationManager.localized(period.titleKey)).tag(period)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, Spacing.m)
+                    .accessibilityIdentifier("where_phone_day_journal_period")
+
+                    if journalPeriod == .custom {
+                        DatePicker(
+                            "",
+                            selection: $journalCustomDate,
+                            displayedComponents: [.date]
+                        )
+                        .labelsHidden()
+                        .padding(.horizontal, Spacing.m)
+                        .accessibilityIdentifier("where_phone_day_journal_custom_date")
+                    }
 
                     memberAvatarHeader(member)
 
@@ -2486,37 +2858,71 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// P1.1b: trail filtered by journal period (today / 7d / custom day).
+    private func journalTrailForPeriod() -> [GeofenceDayEvent] {
+        switch journalPeriod {
+        case .today:
+            return GeofenceEventStore.todayEvents().sorted { $0.createdAt < $1.createdAt }
+        case .week:
+            return GeofenceEventStore.events(lastDays: 7).sorted { $0.createdAt < $1.createdAt }
+        case .custom:
+            let cal = Calendar.current
+            let start = cal.startOfDay(for: journalCustomDate)
+            guard let end = cal.date(byAdding: .day, value: 1, to: start) else { return [] }
+            return GeofenceEventStore.events(lastDays: 7)
+                .filter { $0.createdAt >= start && $0.createdAt < end }
+                .sorted { $0.createdAt < $1.createdAt }
+        }
+    }
+
+    /// P1.1b: trips filtered by the same period as the date chip.
+    private func journalTripsForPeriod(memberId: String) -> [DrivingReport] {
+        switch journalPeriod {
+        case .today:
+            return FamilyDrivingTripLedger.reports(memberId: memberId, period: "today")
+        case .week:
+            return FamilyDrivingTripLedger.reports(memberId: memberId, period: "week")
+        case .custom:
+            let cal = Calendar.current
+            let start = cal.startOfDay(for: journalCustomDate)
+            guard let end = cal.date(byAdding: .day, value: 1, to: start) else { return [] }
+            return FamilyDrivingTripLedger.reports(memberId: memberId, period: "week")
+                .filter { $0.startTime >= start && $0.startTime < end }
+        }
+    }
+
     /// HUB-P1.5 — chronological day trail (places + trips), real data only.
     private func memberDayJournalCard(memberId: String) -> some View {
-        let trips = FamilyDrivingTripLedger.reports(memberId: memberId, period: "today")
+        let trail = journalTrailForPeriod()
+        let trips = journalTripsForPeriod(memberId: memberId)
         return VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("map_journal_title"))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.textPrimary)
-            if todayTrail.isEmpty && trips.isEmpty {
+            if trail.isEmpty && trips.isEmpty {
                 Text(localizationManager.localized("family_day_journal_empty"))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                if todayTrail.count > 1 {
+                if trail.count > 1 {
                     Text(localizationManager.localized("map_journal_scrub_hint"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
-                    let idx = min(max(0, Int(journalIndex.rounded())), todayTrail.count - 1)
-                    Text(trailLine(todayTrail[idx]))
+                    let idx = min(max(0, Int(journalIndex.rounded())), trail.count - 1)
+                    Text(trailLine(trail[idx]))
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.secondaryGold)
                         .fixedSize(horizontal: false, vertical: true)
                     Slider(
                         value: $journalIndex,
-                        in: 0...Double(todayTrail.count - 1),
+                        in: 0...Double(trail.count - 1),
                         step: 1
                     )
                     .tint(Color.secondaryGold)
                     .accessibilityIdentifier("where_phone_day_journal_scrub")
                 }
-                ForEach(todayTrail) { event in
+                ForEach(trail) { event in
                     Text(trailLine(event))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
@@ -2556,11 +2962,39 @@ struct WhereIsPhoneScreen: View {
         .accessibilityIdentifier("where_phone_day_journal")
     }
 
-    private static func dayJournalDateLabel() -> String {
+    /// P1.1a: «понедельника, 9 ноября» (RU genitive weekday) — prefix «С » via loc fmt.
+    private static func dayJournalDateLabel(date: Date = Date()) -> String {
+        let locale = Locale.autoupdatingCurrent
         let f = DateFormatter()
-        f.locale = .current
+        f.locale = locale
         f.setLocalizedDateFormatFromTemplate("EEEEdMMMM")
-        return f.string(from: Date())
+        var s = f.string(from: date)
+        s = s.replacingOccurrences(of: ".,", with: ",")
+        if s.contains(".") && !s.contains(",") {
+            if let dot = s.firstIndex(of: ".") {
+                s.replaceSubrange(dot...dot, with: ",")
+            }
+        }
+        // RU: DateFormatter gives nominative weekday; «С %@» needs genitive («с понедельника»).
+        if locale.languageCode == "ru" {
+            let nominativeToGenitive: [String: String] = [
+                "понедельник": "понедельника",
+                "вторник": "вторника",
+                "среда": "среды",
+                "четверг": "четверга",
+                "пятница": "пятницы",
+                "суббота": "субботы",
+                "воскресенье": "воскресенья"
+            ]
+            for (nom, gen) in nominativeToGenitive {
+                if s.lowercased().hasPrefix(nom) {
+                    let rest = s.dropFirst(nom.count)
+                    s = gen + rest
+                    break
+                }
+            }
+        }
+        return s
     }
 
     /// P0-5: Life360-style overlapping avatar — tap opens crop/pan.
@@ -3680,13 +4114,29 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// R10: open member sheet from push (SOS / ImOK / battery).
+    /// P0.4 H1: focus=.trips + tripId → gold polyline on map.
     private func applyPendingFamilyPushFocusIfNeeded() {
-        guard let pending = FamilyPushDeepLink.consumePendingMember() else { return }
+        let tripId = FamilyPushDeepLink.consumePendingTripId()
+        if let tripId {
+            applyHighlightedTrip(tripId: tripId)
+        }
+        guard let pending = FamilyPushDeepLink.consumePendingMember() else {
+            if tripId != nil {
+                sheetExpansion = 0.42
+                hubTab = .location
+            }
+            return
+        }
         sheetExpansion = 0.55
         hubTab = .location
         activeChip = .people
         let focus = pending.focus
-        if focus == .sos || focus == .battery || focus == .imOk {
+        if focus == .trips {
+            sheetExpansion = 0.42
+            if let tripId {
+                applyHighlightedTrip(tripId: tripId)
+            }
+        } else if focus == .sos || focus == .battery || focus == .imOk {
             let id = pending.id.isEmpty ? "push_focus" : pending.id
             let name = pending.name.isEmpty
                 ? localizationManager.localized("battery_critical_member_fallback")
@@ -3694,6 +4144,28 @@ struct WhereIsPhoneScreen: View {
             selectedMember = HubMemberCard(id: id, name: name, at: Date())
         }
         FamilyPushDeepLink.clearFocus()
+    }
+
+    private func applyHighlightedTrip(tripId: String) {
+        let pts = DrivingTripTrackStore.load(tripId: tripId)
+        guard pts.count >= 2 else {
+            print("WHERE_PHONE trip highlight empty id=\(tripId) — \(localizationManager.localized("family_trip_empty_honest"))")
+            ToastManager.shared.showError(localizationManager.localized("family_trip_empty_honest"))
+            highlightedTripRoute = []
+            return
+        }
+        highlightedTripRoute = pts.map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        }
+        if let first = highlightedTripRoute.first, let last = highlightedTripRoute.last {
+            let mid = CLLocationCoordinate2D(
+                latitude: (first.latitude + last.latitude) / 2,
+                longitude: (first.longitude + last.longitude) / 2
+            )
+            mapRegion.center = mid
+            mapCameraToken += 1
+        }
+        print("WHERE_PHONE trip highlight id=\(tripId) points=\(pts.count)")
     }
 
     private func signalText(_ line: WherePhoneFamilySignal) -> String {

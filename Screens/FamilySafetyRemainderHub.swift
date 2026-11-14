@@ -23,9 +23,19 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     /// QA-08: horizontal accuracy in meters (−1 = unknown).
     @Published var accuracyMeters: Double = -1
     @Published var authStatus: CLAuthorizationStatus = .notDetermined
+    /// UX QA 38 / P0.5: iOS Precise Location off → city-grade ±~5000 m (S13).
+    @Published var isPreciseLocationEnabled: Bool = true
+    /// P5: true while waiting for a usable GPS fix after «Обновить моё место».
+    @Published var isRefiningFix = false
+
+    /// Reject cell-tower-grade fixes for the map pin (Samara device: ±5155 m).
+    static let maxPinAccuracyMeters: CLLocationAccuracy = 80
+    /// Above this → honest coarse UI (do not pretend pin is fresh/precise).
+    static let coarseAccuracyThresholdMeters: CLLocationAccuracy = 200
 
     private let manager = CLLocationManager()
     private var active = false
+    private var refineDeadline: Date?
 
     override init() {
         super.init()
@@ -33,6 +43,22 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.distanceFilter = 15
         authStatus = manager.authorizationStatus
+        refreshPreciseFlag()
+    }
+
+    /// Honest coarse: reduced Precise Location **or** last fix worse than threshold.
+    var isCoarseAccuracy: Bool {
+        if !isPreciseLocationEnabled { return true }
+        guard accuracyMeters >= 0 else { return false }
+        return accuracyMeters > Self.coarseAccuracyThresholdMeters
+    }
+
+    private func refreshPreciseFlag() {
+        if #available(iOS 14.0, *) {
+            isPreciseLocationEnabled = (manager.accuracyAuthorization == .fullAccuracy)
+        } else {
+            isPreciseLocationEnabled = true
+        }
     }
 
     /// Continuous live GPS: Always Allow **and** Family+ / trial / premium (not Free/Personal).
@@ -66,22 +92,50 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         manager.stopUpdatingLocation()
     }
 
-    /// QA-08 A: one-shot refresh («Обновить моё место»).
+    /// QA-08 A / P5: refresh — крутим updates до accuracy ≤ 80 м или timeout.
+    /// P0.5 RCA: без Precise Location iOS отдаёт ±~kilometres; не подменяем pin coarse-фиксом.
     func requestFreshFix() {
         authStatus = manager.authorizationStatus
+        refreshPreciseFlag()
         guard authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse else {
             manager.requestWhenInUseAuthorization()
             return
         }
+        print(
+            "WHERE_PHONE refreshFreshFix auth=\(authStatus.rawValue) precise=\(isPreciseLocationEnabled) " +
+            "lastAcc=\(Int(accuracyMeters))"
+        )
+        if #available(iOS 14.0, *), manager.accuracyAuthorization == .reducedAccuracy {
+            // Temporary full accuracy needs Info.plist purpose key — open Settings via UI CTA.
+            isRefiningFix = false
+            return
+        }
+        isRefiningFix = true
+        refineDeadline = Date().addingTimeInterval(20)
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.distanceFilter = kCLDistanceFilterNone
         manager.requestLocation()
-        if FamilyMapLiveAccess.isEntitled, authStatus == .authorizedAlways {
-            manager.startUpdatingLocation()
+        manager.startUpdatingLocation()
+    }
+
+    private func finishRefiningIfNeeded() {
+        guard isRefiningFix else { return }
+        isRefiningFix = false
+        refineDeadline = nil
+        manager.distanceFilter = 15
+        if !(FamilyMapLiveAccess.isEntitled && authStatus == .authorizedAlways && active) {
+            manager.stopUpdatingLocation()
         }
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor in
             self.authStatus = manager.authorizationStatus
+            self.refreshPreciseFlag()
+            print(
+                "WHERE_PHONE liveAuthChange auth=\(manager.authorizationStatus.rawValue) " +
+                "precise=\(self.isPreciseLocationEnabled)"
+            )
             guard self.active, FamilyMapLiveAccess.isEntitled else {
                 manager.stopUpdatingLocation()
                 return
@@ -99,31 +153,52 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         guard let loc = locations.last else { return }
         Task { @MainActor in
             guard FamilyMapLiveAccess.isEntitled else { return }
-            self.coordinate = loc.coordinate
-            self.updatedAt = loc.timestamp
+            self.refreshPreciseFlag()
+            // Always publish accuracy for the ±m badge (honest even when pin held).
             self.accuracyMeters = loc.horizontalAccuracy
+            if loc.horizontalAccuracy > Self.coarseAccuracyThresholdMeters {
+                print(
+                    "WHERE_PHONE coarseFix ±\(Int(loc.horizontalAccuracy))m precise=\(self.isPreciseLocationEnabled) " +
+                    "— pin NOT updated (RCA S13)"
+                )
+            }
+
+            let usablePin = loc.horizontalAccuracy >= 0
+                && loc.horizontalAccuracy <= Self.maxPinAccuracyMeters
+            if usablePin {
+                self.coordinate = loc.coordinate
+                self.updatedAt = loc.timestamp
+                self.finishRefiningIfNeeded()
+            } else if self.isRefiningFix,
+                      let deadline = self.refineDeadline,
+                      Date() >= deadline {
+                // Timeout: keep previous pin; never adopt ±kilometre cell fix as “my place”.
+                self.finishRefiningIfNeeded()
+            }
+
             // Real CL only; drop invalid / GPS spikes. UI also caps at 140 — 181 km/h was a spike.
             let kmh = loc.speed * 3.6
             let speedOK = loc.speedAccuracy < 0 || loc.speedAccuracy <= 8
             if loc.speed >= 0,
-               loc.horizontalAccuracy >= 0,
+               usablePin,
                loc.horizontalAccuracy < 40,
                speedOK,
                kmh <= 140 {
                 self.speedKmh = Int(kmh.rounded())
-            } else {
+            } else if !usablePin {
                 self.speedKmh = nil
             }
-            // Тихая зона + авто-поездка + серверный last-point (единый путь).
-            if FamilyMapQuietZoneStore.allowsFamilyShare(loc) {
+            // Тихая зона + авто-поездка + серверный last-point — только usable pin.
+            if usablePin, FamilyMapQuietZoneStore.allowsFamilyShare(loc) {
                 LocationManager.shared.reportCurrentLocation(loc)
-            } else {
-                // Не шлём; локальный pin на карте всё равно может показать «тихая зона».
             }
         }
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor in
+            self.finishRefiningIfNeeded()
+        }
         print("FamilyMapLiveLocation: \(error.localizedDescription)")
     }
 }
@@ -222,6 +297,8 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
     private var lastAppliedPinDiameter: CGFloat = -1
     private var lastMapTypeRaw = ""
     private var isProgrammaticRegionChange = false
+    /// P0.4 H1 — highlighted trip polyline (ALADDIN gold).
+    private var lastTripRouteSignature = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -252,7 +329,8 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         pinDiameter: CGFloat,
         interactionEnabled: Bool,
         forceCamera: Bool,
-        quietRadiusMeters: CLLocationDistance = 0
+        quietRadiusMeters: CLLocationDistance = 0,
+        tripRoute: [CLLocationCoordinate2D] = []
     ) {
         self.pinDiameter = pinDiameter
         mapView.isScrollEnabled = interactionEnabled
@@ -316,6 +394,25 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
                 mapView.addOverlay(circle)
             }
         }
+
+        // P0.4 H1 — trip polyline (keep circles; replace only polylines).
+        let tripSig = tripRoute.map { "\($0.latitude),\($0.longitude)" }.joined(separator: "|")
+        if tripSig != lastTripRouteSignature {
+            lastTripRouteSignature = tripSig
+            mapView.removeOverlays(mapView.overlays.filter { $0 is MKPolyline })
+            if tripRoute.count >= 2 {
+                var coords = tripRoute
+                let line = MKPolyline(coordinates: &coords, count: coords.count)
+                mapView.addOverlay(line)
+                if !forceCamera {
+                    let rect = line.boundingMapRect
+                    mapView.setVisibleMapRect(
+                        rect.insetBy(dx: -rect.size.width * 0.2, dy: -rect.size.height * 0.2),
+                        animated: true
+                    )
+                }
+            }
+        }
     }
 
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -335,6 +432,15 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
             r.fillColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 0.18) // #F59E0B
             r.strokeColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 0.85)
             r.lineWidth = 2
+            return r
+        }
+        if let line = overlay as? MKPolyline {
+            let r = MKPolylineRenderer(polyline: line)
+            // Trip track: ALADDIN brand gold (не Life360 purple).
+            r.strokeColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 0.95)
+            r.lineWidth = 4
+            r.lineCap = .round
+            r.lineJoin = .round
             return r
         }
         return MKOverlayRenderer(overlay: overlay)
@@ -368,6 +474,8 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
     var cameraToken: Int = 0
     /// HUB-P1.8 — quiet-zone radius in meters (0 = hide circle).
     var quietRadiusMeters: CLLocationDistance = 0
+    /// P0.4 H1 — trip track polyline coordinates.
+    var tripRoute: [CLLocationCoordinate2D] = []
     var onPinSelected: (() -> Void)? = nil
 
     func makeUIViewController(context: Context) -> FamilyHubLiveMapViewController {
@@ -401,7 +509,8 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
             pinDiameter: pinDiameter,
             interactionEnabled: interactionEnabled,
             forceCamera: force,
-            quietRadiusMeters: quietRadiusMeters
+            quietRadiusMeters: quietRadiusMeters,
+            tripRoute: tripRoute
         )
     }
 
@@ -710,6 +819,29 @@ enum FamilyPetProfileStore {
         rows.append(pet)
         save(rows)
     }
+
+    /// Delete by id (local only — pets are not on ALADDIN server).
+    @discardableResult
+    static func remove(id: UUID) -> [FamilyPetProfile] {
+        var rows = load().filter { $0.id != id }
+        save(rows)
+        return rows
+    }
+
+    /// Collapse exact same name+breed duplicates (keep first). Safe cleanup after double-tap Add.
+    @discardableResult
+    static func dedupeByNameBreed() -> [FamilyPetProfile] {
+        var seen = Set<String>()
+        var out: [FamilyPetProfile] = []
+        for pet in load() {
+            let key = "\(pet.name.lowercased())|\(pet.breed.lowercased())"
+            if seen.contains(key) { continue }
+            seen.insert(key)
+            out.append(pet)
+        }
+        save(out)
+        return out
+    }
 }
 
 // MARK: - Pin preview (B-depth)
@@ -756,6 +888,7 @@ struct FamilyMapPinPreviewSheet: View {
                 HStack(spacing: Spacing.s) {
                     ForEach(["S", "M", "L"], id: \.self) { size in
                         Button {
+                            HapticFeedback.selection()
                             pinSizeRaw = size
                         } label: {
                             Text(localizationManager.localized("map_pin_size_\(size.lowercased())"))
@@ -771,6 +904,7 @@ struct FamilyMapPinPreviewSheet: View {
                     }
                 }
                 Button {
+                    HapticFeedback.impact(.light)
                     previewDone = true
                     isPresented = false
                 } label: {
@@ -820,6 +954,7 @@ struct FamilyMapInviteRoleSheet: View {
                     .foregroundColor(.textSecondary)
                 ForEach(roles, id: \.id) { role in
                     Button {
+                        HapticFeedback.selection()
                         onPicked(role.id)
                         isPresented = false
                         navigationManager.navigateTo(.family)
@@ -834,6 +969,7 @@ struct FamilyMapInviteRoleSheet: View {
                     .buttonStyle(.plain)
                 }
                 Button {
+                    HapticFeedback.selection()
                     isPresented = false
                     navigationManager.navigateTo(.family)
                 } label: {
@@ -994,10 +1130,21 @@ struct FamilyPetWizardSheet: View {
                 mergedNotes = "\(mergedNotes)\n\(custom)"
             }
         }
+        let breedTrimmed = breed.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Avoid silent double-add of the same name+breed (Device QA: «Гав» ×2).
+        let existing = FamilyPetProfileStore.load()
+        let key = "\(trimmed.lowercased())|\(breedTrimmed.lowercased())"
+        if existing.contains(where: {
+            "\($0.name.lowercased())|\($0.breed.lowercased())" == key
+        }) {
+            HapticFeedback.notification(.warning)
+            saved = true
+            return
+        }
         let pet = FamilyPetProfile(
             id: UUID(),
             name: trimmed,
-            breed: breed.trimmingCharacters(in: .whitespacesAndNewlines),
+            breed: breedTrimmed,
             notes: mergedNotes,
             walkReminder: walk,
             feedReminder: feed,
@@ -1205,6 +1352,7 @@ struct FamilyMapRoutesSheet: View {
 
     private func routeRow(titleKey: String, systemImage: String, modeKey: String) -> some View {
         Button {
+            HapticFeedback.impact(.light)
             openDirections(modeKey: modeKey)
         } label: {
             HStack(spacing: Spacing.m) {
