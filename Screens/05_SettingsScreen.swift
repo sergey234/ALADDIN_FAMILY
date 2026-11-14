@@ -370,30 +370,11 @@ struct SettingsScreen: View {
                         Spacer(minLength: 0)
                     }
                     // P3: custom chips — system segmented unreadable on storm glass.
-                    // Explicit id: CI/Xcode ForEach otherwise binds Binding<C> and fails compile.
+                    // Unrolled (no ForEach): CI Archive resolves ForEach(allCases) to Binding<C> and fails.
                     HStack(spacing: Spacing.xs) {
-                        ForEach(AliveIconDiscStyle.allCases, id: \.rawValue) { style in
-                            let selected = iconDiscStyleRaw == style.rawValue
-                            Button {
-                                HapticFeedback.selection()
-                                iconDiscStyleRaw = style.rawValue
-                            } label: {
-                                Text(localizationManager.localized(style.titleKey))
-                                    .font(.caption.weight(.semibold))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.8)
-                                    .foregroundColor(selected ? .black : .white.opacity(0.92))
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: CornerRadius.small)
-                                            .fill(selected ? Color.secondaryGold.opacity(0.95) : Color.white.opacity(0.12))
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(localizationManager.localized(style.titleKey))
-                            .accessibilityAddTraits(selected ? .isSelected : [])
-                        }
+                        iconDiscStyleChip(.legacy)
+                        iconDiscStyleChip(.aliveBlue)
+                        iconDiscStyleChip(.aliveBlack)
                     }
                     .accessibilityIdentifier("settings_icon_disc_style_picker")
                 }
@@ -842,6 +823,30 @@ struct SettingsScreen: View {
 
     private func percentText(_ value: Int) -> String {
         "\(value)%"
+    }
+
+    /// Icon style chip (Классика / Золото / Иконки). No ForEach(allCases) — CI Archive picks Binding overload.
+    private func iconDiscStyleChip(_ style: AliveIconDiscStyle) -> some View {
+        let selected = iconDiscStyleRaw == style.rawValue
+        return Button {
+            HapticFeedback.selection()
+            iconDiscStyleRaw = style.rawValue
+        } label: {
+            Text(localizationManager.localized(style.titleKey))
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .foregroundColor(selected ? .black : .white.opacity(0.92))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.small)
+                        .fill(selected ? Color.secondaryGold.opacity(0.95) : Color.white.opacity(0.12))
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localizationManager.localized(style.titleKey))
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private func appNavigationRow(
