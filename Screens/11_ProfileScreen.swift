@@ -101,6 +101,7 @@ struct ProfileScreen: View {
                     subtitle: localizationManager.localized("profile_subtitle"),
                     showBackButton: true,
                     onBack: {
+                        // Haptic: ALADDINNavigationBar back (no double-fire).
                         logger.buttonTap("Back", screen: "Profile")
                         navigationManager.goBackToPreviousScreen(reason: "Profile.onBack")
                     }
@@ -122,6 +123,7 @@ struct ProfileScreen: View {
                                     .fill(Color.blue.opacity(0.2))
                             )
                     }
+                    .aladdinTapFeedback(.light)
                     .padding(.trailing)
                 }
                 
@@ -247,6 +249,7 @@ struct ProfileScreen: View {
         VStack(spacing: Spacing.l) {
             // Большой аватар
             Button(action: {
+                HapticFeedback.impact(.light)
                 showImagePicker = true
             }) {
                 ZStack {
@@ -345,6 +348,13 @@ struct ProfileScreen: View {
                             .stroke(profileTariffAccent.opacity(0.55), lineWidth: 1)
                     )
             )
+            .contentShape(RoundedRectangle(cornerRadius: 20))
+            .onTapGesture {
+                HapticFeedback.impact(.light)
+                navigationManager.navigateTo(.tariffs)
+            }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("profile_tariff_capsule")
             .id("profile_tariff_capsule_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffManager.currentTariff.rawValue)")
         }
     }
@@ -353,9 +363,29 @@ struct ProfileScreen: View {
     
     private var profileStats: some View {
         HStack(spacing: Spacing.m) {
-            statCard(icon: "🛡️", value: profileStatString(for: mainViewModel.threatsBlocked), label: localizationManager.localized("profile_threats_blocked"))
-            statCard(icon: "👥", value: profileStatString(for: mainViewModel.familyMembers), label: localizationManager.localized("profile_family_members"))
-            statCard(icon: "📱", value: profileStatString(for: mainViewModel.devicesProtected), label: localizationManager.localized("profile_devices"))
+            Button {
+                navigationManager.navigateTo(.analytics)
+            } label: {
+                statCard(icon: "🛡️", value: profileStatString(for: mainViewModel.threatsBlocked), label: localizationManager.localized("profile_threats_blocked"))
+            }
+            .aladdinTapFeedback(.light)
+            .accessibilityIdentifier("profile_stat_threats")
+
+            Button {
+                navigationManager.navigateTo(.family)
+            } label: {
+                statCard(icon: "👥", value: profileStatString(for: mainViewModel.familyMembers), label: localizationManager.localized("profile_family_members"))
+            }
+            .aladdinTapFeedback(.light)
+            .accessibilityIdentifier("profile_stat_family")
+
+            Button {
+                navigationManager.navigateTo(.devices)
+            } label: {
+                statCard(icon: "📱", value: profileStatString(for: mainViewModel.devicesProtected), label: localizationManager.localized("profile_devices"))
+            }
+            .aladdinTapFeedback(.light)
+            .accessibilityIdentifier("profile_stat_devices")
         }
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -369,6 +399,7 @@ struct ProfileScreen: View {
     }
     
     private func statCard(icon: String, value: String, label: String) -> some View {
+        // W8: one-line labels, scale instead of mid-word cut («Устройст ва» / «Угроз…»).
         VStack(spacing: Spacing.s) {
             Text(icon)
                 .font(.system(size: 28))
@@ -378,10 +409,12 @@ struct ProfileScreen: View {
                 .foregroundColor(.primaryBlue)
             
             Text(label)
-                .font(.caption)
-                .foregroundColor(.textSecondary)
+                .font(.caption2.weight(.medium))
+                .foregroundColor(.white.opacity(0.82))
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .allowsTightening(true)
         }
         .frame(maxWidth: .infinity)
         .padding(Spacing.m)
@@ -402,8 +435,7 @@ struct ProfileScreen: View {
                 if let memberId = UserDefaults.standard.string(forKey: "your_member_id"), !memberId.isEmpty {
                     Button(action: {
                         UIPasteboard.general.string = memberId
-                        let generator = UINotificationFeedbackGenerator()
-                        generator.notificationOccurred(.success)
+                        HapticFeedback.notification(.success)
                     }) {
                         HStack(spacing: Spacing.m) {
                             Image(systemName: "number")
@@ -457,7 +489,10 @@ struct ProfileScreen: View {
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    Button(action: runFamilyIdentityRepairFromProfile) {
+                    Button(action: {
+                        HapticFeedback.impact(.medium)
+                        runFamilyIdentityRepairFromProfile()
+                    }) {
                         HStack(spacing: Spacing.m) {
                             Image(systemName: "arrow.triangle.2.circlepath")
                                 .font(.system(size: 18))
@@ -548,6 +583,7 @@ struct ProfileScreen: View {
                 if consentAccepted {
                     // Просмотр документов
                     Button(action: {
+                        HapticFeedback.selection()
                         URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/consent.html", tariffId: nil)
                     }) {
                         HStack(spacing: Spacing.m) {
@@ -570,6 +606,7 @@ struct ProfileScreen: View {
                     }
                     
                     Button(action: {
+                        HapticFeedback.selection()
                         URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/privacy.html", tariffId: nil)
                     }) {
                         HStack(spacing: Spacing.m) {
@@ -593,6 +630,7 @@ struct ProfileScreen: View {
                     
                     // Отзыв согласия
                     Button(action: {
+                        HapticFeedback.notification(.warning)
                         showConsentRevokeAlert = true
                     }) {
                         HStack(spacing: Spacing.m) {
@@ -623,8 +661,11 @@ struct ProfileScreen: View {
             .padding(.horizontal, Spacing.screenPadding)
         }
         .alert(localizationManager.localized("profile_consent_revoke_title"), isPresented: $showConsentRevokeAlert) {
-            Button(localizationManager.localized("profile_consent_revoke_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("profile_consent_revoke_cancel"), role: .cancel) {
+                HapticFeedback.selection()
+            }
             Button(localizationManager.localized("profile_consent_revoke_confirm"), role: .destructive) {
+                HapticFeedback.notification(.warning)
                 consentAccepted = false
                 consentDate = ""
                 // TODO: Отправить запрос на сервер об отзыве согласия
@@ -676,6 +717,7 @@ struct ProfileScreen: View {
                 sectionTitle(localizationManager.localized("profile_family_invite_section_title"))
 
                 Button(action: {
+                    HapticFeedback.impact(.medium)
                     FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_family_top"])
                     navigationManager.navigateTo(.addMemberOptions)
                 }) {
@@ -697,6 +739,7 @@ struct ProfileScreen: View {
             VStack(spacing: Spacing.s) {
                 if FamilyAccessPolicy.isCaregiver() {
                         Button(action: {
+                            HapticFeedback.selection()
                             FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_referral"])
                             showReferralScreen = true
                         }) {
@@ -709,6 +752,7 @@ struct ProfileScreen: View {
                 }
 
                 Button(action: {
+                    HapticFeedback.impact(.light)
                     navigationManager.navigateTo(.promoActivation)
                 }) {
                     profileActionCard(
@@ -788,7 +832,10 @@ struct ProfileScreen: View {
     }
     
     private func securityButton(icon: String, title: String, color: Color = .textPrimary, action: @escaping () -> Void = {}) -> some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.impact(.light)
+            action()
+        }) {
             HStack(spacing: Spacing.m) {
                 Text(icon)
                     .font(.system(size: 24))
@@ -923,7 +970,10 @@ struct TwoFactorAuthView: View {
             .navigationTitle(localizationManager.localized("profile_2fa_title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("profile_2fa_done")) { isPresented = false }
+                    Button(localizationManager.localized("profile_2fa_done")) {
+            HapticFeedback.selection()
+            isPresented = false
+        }
                 }
             }
             .id("2fa_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -974,6 +1024,7 @@ struct ActiveSessionsView: View {
                                 .font(.caption)
                                 .foregroundColor(.orange)
                             Button(localizationManager.localized("active_sessions_retry")) {
+                                HapticFeedback.impact(.light)
                                 loadFamilyDevices()
                             }
                             .font(.caption.weight(.semibold))
@@ -1030,7 +1081,10 @@ struct ActiveSessionsView: View {
             .navigationTitle(localizationManager.localized("active_sessions_title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("active_sessions_done")) { isPresented = false }
+                    Button(localizationManager.localized("active_sessions_done")) {
+            HapticFeedback.selection()
+            isPresented = false
+        }
                 }
             }
             .id("active_sessions_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -1044,11 +1098,13 @@ struct ActiveSessionsView: View {
                 )
             ) {
                 Button(localizationManager.localized("active_sessions_logout"), role: .destructive) {
+                    HapticFeedback.notification(.warning)
                     if let device = devicePendingRemove {
                         confirmSignOut(device)
                     }
                 }
                 Button(localizationManager.localized("active_sessions_done"), role: .cancel) {
+                    HapticFeedback.selection()
                     devicePendingRemove = nil
                 }
             } message: {
@@ -1075,6 +1131,7 @@ struct ActiveSessionsView: View {
             }
             Spacer()
             Button(localizationManager.localized("active_sessions_logout")) {
+                HapticFeedback.notification(.warning)
                 devicePendingRemove = device
             }
             .font(.caption.weight(.semibold))
@@ -1250,6 +1307,7 @@ struct DeleteAccountView: View {
 
                 Section {
                     Button(role: .destructive) {
+                        HapticFeedback.notification(.warning)
                         isConfirmFieldFocused = false
                         showFinalConfirm = true
                     } label: {
@@ -1276,6 +1334,7 @@ struct DeleteAccountView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("delete_account_cancel")) {
+                        HapticFeedback.selection()
                         isPresented = false
                     }
                     .disabled(isDeleting)
@@ -1283,6 +1342,7 @@ struct DeleteAccountView: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button(localizationManager.localized("delete_account_keyboard_done")) {
+                        HapticFeedback.selection()
                         isConfirmFieldFocused = false
                     }
                 }
@@ -1302,14 +1362,18 @@ struct DeleteAccountView: View {
                 titleVisibility: .visible
             ) {
                 Button(localizationManager.localized("delete_account_final_confirm"), role: .destructive) {
+                    HapticFeedback.notification(.error)
                     deleteAccount()
                 }
-                Button(localizationManager.localized("delete_account_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("delete_account_cancel"), role: .cancel) {
+                    HapticFeedback.selection()
+                }
             } message: {
                 Text(localizationManager.localized("delete_account_final_message"))
             }
             .alert(localizationManager.localized("delete_account_success_title"), isPresented: $showSuccessAlert) {
                 Button("OK") {
+                    HapticFeedback.notification(.success)
                     handleAccountDeleted()
                 }
             } message: {
@@ -1417,6 +1481,7 @@ struct EditProfileView: View {
             Form {
                 Section(header: Text(localizationManager.localized("edit_profile_photo"))) {
                     Button(action: {
+                        HapticFeedback.selection()
                         // TODO: Реализовать выбор фото
                     }) {
                         HStack {
@@ -1438,6 +1503,7 @@ struct EditProfileView: View {
                 
                 Section {
                     Button(localizationManager.localized("edit_profile_reset_password")) {
+                        HapticFeedback.impact(.light)
                         showPasswordResetSheet = true
                     }
                     .foregroundColor(.blue)
@@ -1445,6 +1511,7 @@ struct EditProfileView: View {
                 
                 Section {
                     Button(localizationManager.localized("edit_profile_save")) {
+                        HapticFeedback.impact(.medium)
                         saveProfile()
                     }
                     .buttonStyle(.borderedProminent)
@@ -1456,10 +1523,14 @@ struct EditProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("edit_profile_cancel")) { isPresented = false }
+                    Button(localizationManager.localized("edit_profile_cancel")) {
+                        HapticFeedback.selection()
+                        isPresented = false
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("edit_profile_save")) {
+                        HapticFeedback.impact(.medium)
                         saveProfile()
                     }
                 }
@@ -1618,6 +1689,7 @@ struct AdultSafetyInstructionsModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("profile_safety_done")) {
+                        HapticFeedback.selection()
                         isPresented = false
                     }
                 }

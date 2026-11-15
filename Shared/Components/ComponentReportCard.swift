@@ -24,7 +24,6 @@ struct ComponentReportCard: View {
     
     var body: some View {
         Button(action: {
-            // Анимация нажатия
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 onTap()
             }
@@ -37,23 +36,25 @@ struct ComponentReportCard: View {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(title)
                         .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
+                        .foregroundColor(.white)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.7)  // ✅ Исправление: Улучшенное масштабирование для длинных заголовков (Безопасность, Мониторинг Дарк Веб, Защита кражи личности, Пузырь местоположения, Блокировка трекеров)
+                        .minimumScaleFactor(0.65)
+                        .allowsTightening(true)
                     
                     // Метрики (максимум 2)
                     ForEach(Array(metrics.prefix(2)), id: \.0) { key, value in
                         HStack(spacing: Spacing.xs) {
                             Text(key)
                                 .font(.caption)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.7))
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.8)  // ✅ Исправление: Масштабирование для метрик (Безопасность, Освобождено)
+                                .minimumScaleFactor(0.7)
+                                .allowsTightening(true)
                             Text(value)
                                 .font(.captionBold)
-                                .foregroundColor(.textPrimary)
+                                .foregroundColor(.white.opacity(0.95))
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.8)  // ✅ Исправление: Масштабирование для значений метрик
+                                .minimumScaleFactor(0.75)
                         }
                     }
                 }
@@ -72,7 +73,7 @@ struct ComponentReportCard: View {
                     .fill(Color.backgroundMedium.opacity(0.3))
             )
         }
-        .buttonStyle(PlainButtonStyle())
+        .aladdinTapFeedback(.light)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(accessibilityHint)

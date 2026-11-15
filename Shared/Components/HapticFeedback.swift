@@ -49,6 +49,7 @@ struct HapticFeedback {
         lastImpact = now
         lock.unlock()
         let generator = UIImpactFeedbackGenerator(style: style)
+        generator.prepare()
         generator.impactOccurred()
     }
 }

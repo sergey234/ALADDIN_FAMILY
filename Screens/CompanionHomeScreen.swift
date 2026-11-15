@@ -100,6 +100,7 @@ struct CompanionHomeScreen: View {
     private var headerBar: some View {
         HStack {
             Button {
+                HapticFeedback.impact(.light)
                 navigationManager.goBackFromCompanionHome()
             } label: {
                 Image(systemName: "chevron.left")
@@ -191,7 +192,7 @@ struct CompanionHomeScreen: View {
                     .padding(.vertical, 8)
                     .foregroundColor(tab == item ? tabActiveColor : tabInactiveColor)
                 }
-                .buttonStyle(.plain)
+                .aladdinTapFeedback(.light)
                 .accessibilityIdentifier("companion_home_tab_\(item.rawValue)")
             }
         }

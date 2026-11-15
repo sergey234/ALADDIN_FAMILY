@@ -114,6 +114,7 @@ struct DevicesScreen: View {
         }
         .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
             Button(localizationManager.localized("common_ok")) {
+                HapticFeedback.selection()
                 errorMessage = nil
             }
         } message: {
@@ -245,6 +246,7 @@ struct DevicesScreen: View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             // Заголовок фильтра (раздвигается)
             Button(action: {
+                HapticFeedback.selection()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     if expandedFilters.contains(filter) {
                         expandedFilters.remove(filter)
@@ -295,13 +297,11 @@ struct DevicesScreen: View {
                     
                     // Кнопка применения фильтра
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         withAnimation {
                             selectedFilter = filter
                             expandedFilters.remove(filter)
                         }
-                        // Haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .light)
-                        generator.impactOccurred()
                     }) {
                         HStack {
                             Spacer()
@@ -944,9 +944,6 @@ struct AddDeviceView: View {
                         
                         // Кнопка добавления
                         Button(action: {
-                            // Haptic feedback
-                            let generator = UIImpactFeedbackGenerator(style: .medium)
-                            generator.impactOccurred()
                             addDevice()
                         }) {
                             HStack {
@@ -970,6 +967,7 @@ struct AddDeviceView: View {
                             )
                             .cornerRadius(CornerRadius.medium)
                         }
+                        .aladdinTapFeedback(.medium)
                         .disabled(!isFormValid || isLoading)
                         .padding(.horizontal, Spacing.screenPadding)
                         .accessibilityLabel(localizationManager.localized("devices_add_device_button"))
@@ -993,6 +991,7 @@ struct AddDeviceView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("common_cancel")) {
+                        HapticFeedback.selection()
                         dismiss()
                     }
                     .foregroundColor(.textPrimary)
@@ -1016,6 +1015,7 @@ struct AddDeviceView: View {
             }
             .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
                 Button(localizationManager.localized("common_ok")) {
+                    HapticFeedback.selection()
                     errorMessage = nil
                 }
             } message: {

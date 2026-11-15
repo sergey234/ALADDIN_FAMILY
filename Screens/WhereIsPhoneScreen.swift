@@ -408,10 +408,10 @@ struct WhereIsPhoneScreen: View {
                 flushPendingHubSheetIfNeeded(reason: "memberDismiss")
             }) { member in
                 memberDetailSheet(member)
-                    // P1.5 S37: nest picker under member sheet — root nested-sheet broke PH/UIImage pick.
-                    .sheet(isPresented: $showMemberImagePicker) {
-                        ImagePicker(selectedImage: $memberCropSource)
-                    }
+            }
+            // Device QA: PHPicker as root fullScreenCover — nested sheet-on-sheet → 8BADF00D hang on SE.
+            .fullScreenCover(isPresented: $showMemberImagePicker) {
+                ImagePicker(selectedImage: $memberCropSource)
             }
             .sheet(isPresented: $showFamilyCircleSettings) {
                 familyCircleSettingsSheet
@@ -423,7 +423,7 @@ struct WhereIsPhoneScreen: View {
                     .environmentObject(localizationManager)
                     .environmentObject(navigationManager)
             }
-            .sheet(isPresented: Binding(
+            .fullScreenCover(isPresented: Binding(
                 get: { memberCropSource != nil },
                 set: { if !$0 { memberCropSource = nil } }
             )) {
@@ -435,6 +435,7 @@ struct WhereIsPhoneScreen: View {
                             memberAvatarImage = cropped
                             memberAvatarEpoch += 1
                             memberCropSource = nil
+                            showMemberImagePicker = false
                             HapticFeedback.notification(.success)
                         },
                         onCancel: {
@@ -1333,7 +1334,6 @@ struct WhereIsPhoneScreen: View {
             HStack(spacing: Spacing.s) {
                 ForEach(SheetChip.allCases) { chip in
                     Button {
-                        HapticFeedback.selection()
                         print("WHERE_PHONE sheet chip tap → \(chip)")
                         // Expand only if not already near-full (avoids layout thrash on iOS 15).
                         if sheetExpansion < 0.95 {
@@ -1363,7 +1363,7 @@ struct WhereIsPhoneScreen: View {
                                 .stroke(Color.secondaryGold.opacity(activeChip == chip ? 0 : 0.35), lineWidth: 1)
                         )
                     }
-                    .buttonStyle(.plain)
+                    .aladdinTapFeedback(.light)
                     .accessibilityIdentifier("where_phone_chip_\(chip.rawValue)")
                 }
             }
@@ -2385,6 +2385,7 @@ struct WhereIsPhoneScreen: View {
                                 systemImage: "person.3.fill"
                             )
                         }
+                        .buttonStyle(AladdinTapButtonStyle())
                         .accessibilityIdentifier("family_circle_settings_roles")
 
                         Divider().background(Color.white.opacity(0.12))
@@ -2400,7 +2401,7 @@ struct WhereIsPhoneScreen: View {
                                 systemImage: "mappin.and.ellipse"
                             )
                         }
-                        .buttonStyle(.plain)
+                        .aladdinTapFeedback(.light)
                         .accessibilityIdentifier("family_circle_settings_places")
 
                         Divider().background(Color.white.opacity(0.12))
@@ -2416,6 +2417,7 @@ struct WhereIsPhoneScreen: View {
                                 systemImage: "hand.raised.fill"
                             )
                         }
+                        .buttonStyle(AladdinTapButtonStyle())
                         .accessibilityIdentifier("family_circle_settings_privacy")
 
                         Divider().background(Color.white.opacity(0.12))
@@ -2428,7 +2430,7 @@ struct WhereIsPhoneScreen: View {
                                 systemImage: "bell.badge.fill"
                             )
                         }
-                        .buttonStyle(.plain)
+                        .aladdinTapFeedback(.light)
                         .accessibilityIdentifier("family_circle_settings_notifications")
                     }
                     .background(
@@ -2930,9 +2932,7 @@ struct WhereIsPhoneScreen: View {
                 }
                 ForEach(trips.prefix(6)) { trip in
                     Button {
-                        SelectionHaptic.selection()
-                        selectedMember = nil
-                        hubTab = .driving
+                        focusTripOnLocationMap(report: trip)
                     } label: {
                         HStack(spacing: Spacing.s) {
                             Image(systemName: "car.fill")
@@ -2949,7 +2949,7 @@ struct WhereIsPhoneScreen: View {
                                 .foregroundColor(.textSecondary)
                         }
                     }
-                    .buttonStyle(.plain)
+                    .aladdinTapFeedback(.light)
                 }
             }
         }
@@ -3000,7 +3000,7 @@ struct WhereIsPhoneScreen: View {
     /// P0-5: Life360-style overlapping avatar — tap opens crop/pan.
     private func memberAvatarHeader(_ member: HubMemberCard) -> some View {
         Button {
-            HapticFeedback.selection()
+            // Present picker from root fullScreenCover (not nested under this sheet).
             showMemberImagePicker = true
         } label: {
             ZStack {
@@ -3031,44 +3031,49 @@ struct WhereIsPhoneScreen: View {
                     .offset(x: 4, y: 4)
             }
         }
-        .buttonStyle(.plain)
+        .aladdinTapFeedback(.light)
         .frame(maxWidth: .infinity)
         .padding(.top, Spacing.s)
         .accessibilityIdentifier("where_phone_member_avatar")
         .accessibilityLabel(localizationManager.localized("avatar_crop_title"))
     }
 
-    /// S19: trip card + mini-map from real local GPS track when present (never invent mid-points).
-    /// Whole card opens Driving tab (trial/family/premium entitled) — not only the footer link.
+    /// S19: trip card + mini-map. Mini-map → gold polyline on Location map (not Driving tab).
     private var memberRecentTripsCard: some View {
         let liveTrip = Self.liveTripPreviewReport()
-        return Button {
-            print("WHERE_PHONE member recent-trips card tap → driving tab")
-            SelectionHaptic.selection()
-            selectedMember = nil
-            hubTab = .driving
-        } label: {
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(localizationManager.localized("map_member_weekly_trips_title"))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.textPrimary)
-                if let liveTrip {
-                    Text("\(Self.streetTitleWithoutAtPrefix(liveTrip.startLocation)) → \(Self.streetTitleWithoutAtPrefix(liveTrip.endLocation))")
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.secondaryGold)
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("map_member_weekly_trips_title"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.textPrimary)
+            if let liveTrip {
+                Text("\(Self.streetTitleWithoutAtPrefix(liveTrip.startLocation)) → \(Self.streetTitleWithoutAtPrefix(liveTrip.endLocation))")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                Button {
+                    focusTripOnLocationMap(report: liveTrip)
+                } label: {
                     TripEndpointMapPreview(report: liveTrip)
                         .frame(height: 120)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-                        .allowsHitTesting(false)
-                        .accessibilityIdentifier("where_phone_member_trip_minimap")
-                } else {
-                    Text(localizationManager.localized("map_journal_empty"))
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.92))
-                    Text(localizationManager.localized("trip_no_map_track"))
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.92))
+                        .contentShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                 }
+                .buttonStyle(.plain)
+                .aladdinTapFeedback(.light)
+                .accessibilityIdentifier("where_phone_member_trip_minimap")
+                .accessibilityLabel(localizationManager.localized("map_member_weekly_trips_title"))
+            } else {
+                Text(localizationManager.localized("map_journal_empty"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.92))
+                Text(localizationManager.localized("trip_no_map_track"))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.92))
+            }
+            Button {
+                HapticFeedback.impact(.light)
+                selectedMember = nil
+                hubTab = .driving
+            } label: {
                 Text(
                     String(
                         format: localizationManager.localized("map_member_weekly_trips_subtitle"),
@@ -3077,17 +3082,44 @@ struct WhereIsPhoneScreen: View {
                 )
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.secondaryGold)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(Spacing.m)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.28))
-            )
-            .contentShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.28))
+        )
         .accessibilityIdentifier("where_phone_member_recent_trips")
+    }
+
+    /// Device QA: minimap / journal trip → stay on Location, draw route (not jump to Driving).
+    private func focusTripOnLocationMap(report: DrivingReport) {
+        print("WHERE_PHONE trip focus → location map id=\(report.id)")
+        selectedMember = nil
+        hubTab = .location
+        applyHighlightedTrip(tripId: report.id)
+        if highlightedTripRoute.count < 2 {
+            var coords: [CLLocationCoordinate2D] = []
+            if let sLat = report.startLatitude, let sLon = report.startLongitude {
+                coords.append(CLLocationCoordinate2D(latitude: sLat, longitude: sLon))
+            }
+            if let eLat = report.endLatitude, let eLon = report.endLongitude {
+                coords.append(CLLocationCoordinate2D(latitude: eLat, longitude: eLon))
+            }
+            if coords.count >= 2 {
+                highlightedTripRoute = coords
+                let mid = CLLocationCoordinate2D(
+                    latitude: (coords[0].latitude + coords[1].latitude) / 2,
+                    longitude: (coords[0].longitude + coords[1].longitude) / 2
+                )
+                mapRegion.center = mid
+                mapCameraToken += 1
+            }
+        }
+        sheetExpansion = 0.38
     }
 
     /// Build a preview report from the active (or last known) local GPS track — real samples only.
@@ -3661,7 +3693,6 @@ struct WhereIsPhoneScreen: View {
         HStack(spacing: 0) {
             ForEach(HubTab.allCases) { tab in
                 Button {
-                    HapticFeedback.selection()
                     hubTab = tab
                 } label: {
                     VStack(spacing: 4) {
@@ -3680,7 +3711,7 @@ struct WhereIsPhoneScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.s)
                 }
-                .buttonStyle(.plain)
+                .aladdinTapFeedback(.light)
                 .accessibilityIdentifier("where_phone_hub_tab_\(tab.rawValue)")
             }
         }

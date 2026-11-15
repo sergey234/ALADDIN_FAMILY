@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Hybrid Simple Home Shell — «Удобный режим».
 /// Pay-pains F3: при `PayPainsUIFlags.usesNewPayPainsHome` — полоса семьи + 3 двери + Меню.
@@ -39,13 +40,15 @@ struct SimpleHomeScreen: View {
     /// Entry-only: doors spin clockwise once around orbit, then rest (0 = done).
     @State private var hybridDoorIntroSpinDegrees: Double = 0
     @State private var hybridDoorIntroPlayed = false
-    /// CapCut hero carousel (R01=5811 + R02…R06 transparent). Off when Reduce Motion.
+    /// CapCut hero carousel (R01=5811 cutout + R02…R06). Off when Reduce Motion.
     @State private var hybridHeroIndex = 0
     @State private var hybridHeroRotationTask: Task<Void, Never>?
+    /// Preloaded UIImages — avoids empty circle while Asset Catalog decodes on device (SE).
+    @State private var hybridHeroImages: [UIImage] = []
     /// Nudge hero art slightly up inside the circle (optical center).
     private static let hybridHeroYNudge: CGFloat = -14
 
-    /// Orbit hero set: current 5811 + 5 CapCut cutouts (PNG alpha).
+    /// Orbit hero set: 5811 family-shield cutout + 5 CapCut cutouts (PNG alpha).
     private static let hybridHeroAssetNames: [String] = [
         "SimpleHome_Hero_5811",
         "SimpleHome_Hero_R02_FamilyWalk",
@@ -54,8 +57,9 @@ struct SimpleHomeScreen: View {
         "SimpleHome_Hero_R05_ShieldVerify",
         "SimpleHome_Hero_R06_GlobePin"
     ]
-    private static let hybridHeroRotationSeconds: UInt64 = 5_500_000_000
-    private static let hybridHeroCrossfade: Double = 0.55
+    /// ~6.5s between frames (Device QA: 6–7s).
+    private static let hybridHeroRotationSeconds: UInt64 = 6_500_000_000
+    private static let hybridHeroCrossfade: Double = 0.45
 
     private let tileMinHeight: CGFloat = 120
     private var usesPayPainsHome: Bool { PayPainsUIFlags.usesNewPayPainsHome }
@@ -106,6 +110,13 @@ struct SimpleHomeScreen: View {
             if PayPainsSoftReviewPrompt.shouldPresent {
                 showSoftReview = true
             }
+            preloadHybridHeroImagesIfNeeded()
+            startHybridHeroRotationIfNeeded()
+        }
+        .onDisappear {
+            // Leave Convenient Mode → stop carousel (orbit remount must NOT cancel).
+            hybridHeroRotationTask?.cancel()
+            hybridHeroRotationTask = nil
         }
         .onReceive(NotificationCenter.default.publisher(for: .payPainsSoftReviewPending)) { _ in
             if PayPainsSoftReviewPrompt.shouldPresent {
@@ -320,11 +331,11 @@ struct SimpleHomeScreen: View {
             .onAppear {
                 startHybridDoorIntroSpinIfNeeded()
                 startHybridDoorPulseIfNeeded()
+                preloadHybridHeroImagesIfNeeded()
                 startHybridHeroRotationIfNeeded()
             }
             .onDisappear {
-                hybridHeroRotationTask?.cancel()
-                hybridHeroRotationTask = nil
+                // Do NOT cancel hero rotation here — brief remounts on device killed the carousel.
                 // Allow clockwise intro again next time user opens Aladdin start orbit.
                 hybridDoorIntroPlayed = false
                 hybridDoorIntroSpinDegrees = 0
@@ -341,22 +352,49 @@ struct SimpleHomeScreen: View {
 
     private var hybridOrbitHeroView: some View {
         let names = Self.hybridHeroAssetNames
-        let name = names[hybridHeroIndex % names.count]
+        let idx = hybridHeroIndex % max(names.count, 1)
+        let name = names[idx]
         let d = Self.hybridHeroCircleDiameter
-        return Image(name)
-            .resizable()
-            .scaledToFit()
+        let preloaded: UIImage? = {
+            guard idx < hybridHeroImages.count else { return nil }
+            return hybridHeroImages[idx]
+        }()
+        return ZStack {
+            // Keep previous frame under crossfade so device never shows an empty hole.
+            Circle()
+                .fill(Color.black.opacity(0.22))
+                .frame(width: d, height: d)
+            Group {
+                if let preloaded {
+                    Image(uiImage: preloaded)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    Image(name)
+                        .resizable()
+                        .scaledToFit()
+                }
+            }
             .frame(width: d, height: d)
             .offset(y: Self.hybridHeroYNudge)
             .frame(width: d, height: d)
             .clipShape(Circle())
-            .shadow(color: Color.black.opacity(0.35), radius: 14, y: 8)
             .id(name)
             .transition(.opacity)
-            .animation(.easeInOut(duration: Self.hybridHeroCrossfade), value: hybridHeroIndex)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-            .accessibilityIdentifier("pay_pains_hybrid_hero")
+        }
+        .shadow(color: Color.black.opacity(0.35), radius: 14, y: 8)
+        .animation(.easeInOut(duration: Self.hybridHeroCrossfade), value: hybridHeroIndex)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .accessibilityIdentifier("pay_pains_hybrid_hero")
+    }
+
+    private func preloadHybridHeroImagesIfNeeded() {
+        guard hybridHeroImages.count != Self.hybridHeroAssetNames.count else { return }
+        hybridHeroImages = Self.hybridHeroAssetNames.compactMap { UIImage(named: $0) }
+        if hybridHeroImages.count != Self.hybridHeroAssetNames.count {
+            print("SimpleHome hero preload partial \(hybridHeroImages.count)/\(Self.hybridHeroAssetNames.count)")
+        }
     }
 
     /// One clockwise lap on first enter only (Reduce Motion → skip).
@@ -399,10 +437,13 @@ struct SimpleHomeScreen: View {
     }
 
     private func startHybridHeroRotationIfNeeded() {
-        hybridHeroRotationTask?.cancel()
-        hybridHeroRotationTask = nil
         guard !reduceMotion else { return }
         guard Self.hybridHeroAssetNames.count > 1 else { return }
+        // Already running — keep it (device remounts used to cancel → single stuck frame).
+        if let existing = hybridHeroRotationTask, !existing.isCancelled {
+            return
+        }
+        hybridHeroRotationTask?.cancel()
         hybridHeroRotationTask = Task { @MainActor in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: Self.hybridHeroRotationSeconds)
@@ -1296,7 +1337,6 @@ struct SimpleHomeScreen: View {
         action: @escaping () -> Void
     ) -> some View {
         Button {
-            HapticFeedback.impact(.light)
             restorePayPainsMenuOnReturn = restoreMenuOnBack
             // Device QA: navigate FIRST, then dismiss sheet.
             // Old path: dismiss → flash SimpleHome → then navigate (Aladdin start blink).
@@ -1323,7 +1363,7 @@ struct SimpleHomeScreen: View {
             .contentShape(Rectangle())
             .aladdinProductCard(cornerRadius: CornerRadius.large)
         }
-        .buttonStyle(.plain)
+        .aladdinTapFeedback(.light)
         .accessibilityIdentifier(id)
     }
 
