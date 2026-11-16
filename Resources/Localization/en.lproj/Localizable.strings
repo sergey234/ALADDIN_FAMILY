@@ -3078,7 +3078,7 @@
 "main_protect_parents_subtitle" = "Second hand for 60+: calls and family trust";
 "main_more_title" = "More";
 "main_more_subtitle" = "Comfortable mode and other sections";
-"main_simple_version_title" = "Aladdin start";
+"main_simple_version_title" = "ALADDIN Home";
 "main_simple_version_subtitle" = "Everything important on one screen";
 "family_safe_word_show_phrase" = "Show phrase";
 "family_safe_word_hide_phrase" = "Hide phrase";
@@ -3109,8 +3109,8 @@
 "pay_pains_family_strip_slots_fmt" = "Family · %d of %d seats";
 "pay_pains_family_strip_add" = "Add";
 "pay_pains_family_strip_add_to_family" = "Add to family";
-"simple_home_open_full_main" = "Start Aladdin";
-"simple_home_title" = "Aladdin start";
+"simple_home_open_full_main" = "ALADDIN Home";
+"simple_home_title" = "ALADDIN Home";
 "pay_pains_door_check_title" = "Check";
 "pay_pains_door_check_subtitle" = "We'll check a call, message, video, or text";
 "pay_pains_door_child_title" = "Child";
@@ -3720,7 +3720,7 @@
 
 /* map_soon_* */
 "map_soon_pet_title" = "Pets nearby";
-"map_soon_pet_body" = "Coming soon. No pet map until a partner is live.";
+"map_soon_pet_body" = "Coming soon!";
 "map_soon_tile_title" = "Tags";
 "map_soon_tile_body" = "Coming soon: item and pet tags on the map.";
 "map_soon_evac_title" = "Roadside help";
@@ -3759,7 +3759,10 @@
 "lists_empty_title" = "My lists";
 "lists_empty_body" = "Your own and spam numbers appear after sync. Empty for now — no fake rows.";
 "map_routes_title" = "Directions";
-"map_routes_body" = "Opens Apple Maps with the mode you pick. Uses the last known point.";
+"map_routes_body" = "Family map line in ALADDIN comes first. Use Apple or Yandex here when you need turn-by-turn. Uses the last known point.";
+"map_routes_on_family_map_hint" = "Route on the family map. Navigator — tap the nearby button.";
+"map_routes_need_my_location" = "Turn on your location to draw the «me → member» line.";
+"map_routes_open_navigator" = "Open in navigator";
 "map_routes_drive" = "Drive";
 "map_routes_walk" = "Walk";
 "map_routes_transit" = "Transit";
@@ -3812,7 +3815,7 @@
 "pet_type_cat" = "Cat";
 "pet_type_other" = "Other";
 "where_phone_pets_hero_title" = "Family pets";
-"where_phone_pets_hero_body" = "Profile and reminders on this iPhone. Live map pin comes later.";
+"where_phone_pets_hero_body" = "Profile and reminders on this iPhone. Live map pin coming soon!";
 "pet_add_photo_title" = "Add a photo of your pet";
 "pet_add_photo_cta" = "Add photo";
 "pet_skip" = "Skip";
@@ -4192,3 +4195,7 @@
 "drive_weekly_stats_km" = "Total km %.0f";
 "drive_weekly_stats_max" = "Max speed";
 "drive_weekly_stats_max_na" = "No data";
+
+/* Policy A — Antifake App Trial access (pre-prod 2026-11-16) */
+"antifake_premium_gate_honest_body" = "Authenticity checks require an active App Trial, or Family / Premium. We do not show demo verdicts without real analysis.";
+"faq_antifake_apple_limits_answer" = "ALADDIN checks text, links, audio, and video only when you tap Check or share content via the Share sheet.\n\nWe do not listen to all phone calls in the background — iOS forbids that. We do not hang up automatically or intercept FaceTime or messengers.\n\nCall labels apply only to numbers in our verified database (Call Directory), not every unknown caller.\n\nOn aladdin-ai.ru/antifake — **14-day free trial** or Family/Premium with a code; 25 MB file limit. In the app — active App Trial, Family, or Premium.\n\nResults are assessments (likely fake / uncertain / likely real), not legal verdicts.";

@@ -83,7 +83,14 @@ class CrashDetectionManager: NSObject, ObservableObject {
     private var sendCounter: Int = 0 // Счетчик для оптимизации отправки данных
     
     // Конфигурация
-    private var sensitivity: CrashDetectionSensitivity = .medium
+    private static let sensitivityDefaultsKey = "aladdin_crash_detection_sensitivity_v1"
+    private var sensitivity: CrashDetectionSensitivity = {
+        if let raw = UserDefaults.standard.string(forKey: CrashDetectionManager.sensitivityDefaultsKey),
+           let parsed = CrashDetectionSensitivity(rawValue: raw) {
+            return parsed
+        }
+        return .medium
+    }()
     private let countdownDuration: Int = 10 // Обратный отсчет в секундах
     private let updateInterval: TimeInterval = 0.1 // Интервал обновления (100ms)
     private let dataSendInterval: Int = 50 // Отправка данных каждые 5 секунд (50 * 0.1 сек) - оптимизация производительности
@@ -180,14 +187,25 @@ class CrashDetectionManager: NSObject, ObservableObject {
 
     // MARK: - Settings Management
 
-    /// Установить чувствительность обнаружения аварий
+    /// Установить чувствительность обнаружения аварий (persist local — QA-07).
     func setSensitivity(_ sensitivity: CrashDetectionSensitivity) {
         self.sensitivity = sensitivity
-        print("🚨 CrashDetectionManager: Чувствительность установлена на \(sensitivity.rawValue) (G > \(sensitivity.gForceThreshold))")
+        UserDefaults.standard.set(sensitivity.rawValue, forKey: Self.sensitivityDefaultsKey)
+        // Flush early: device QA saw Signal 9 / XPC kills mid-sheet; in-memory alone is not enough.
+        UserDefaults.standard.synchronize()
+        print("🚨 CrashDetectionManager: Чувствительность установлена на \(sensitivity.rawValue) (G > \(sensitivity.gForceThreshold)) key=\(Self.sensitivityDefaultsKey)")
     }
 
-    /// Получить текущую чувствительность
+    /// Получить текущую чувствительность (UserDefaults SSOT — переживает kill/relaunch).
     func getSensitivity() -> CrashDetectionSensitivity {
+        if let raw = UserDefaults.standard.string(forKey: Self.sensitivityDefaultsKey),
+           let parsed = CrashDetectionSensitivity(rawValue: raw) {
+            if sensitivity != parsed {
+                sensitivity = parsed
+                print("🚨 CrashDetectionManager: sensitivity reloaded from UD → \(parsed.rawValue)")
+            }
+            return parsed
+        }
         return sensitivity
     }
 

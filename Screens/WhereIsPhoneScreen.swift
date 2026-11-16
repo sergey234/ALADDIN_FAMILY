@@ -165,6 +165,11 @@ struct WhereIsPhoneScreen: View {
     @State private var journalCustomDate: Date = Date()
     /// P1.2 weekly trips card on member sheet — period filter (today/week/month).
     @State private var memberWeeklyPeriod: String = "week"
+    /// Device 8BADF00D: defer MKMapView + dense cards until after first journal paint.
+    @State private var journalHeavyContentReady = false
+    @State private var journalDiagOpenedAt: CFAbsoluteTime = 0
+    /// Route B★: after in-app polyline, offer Apple/Yandex as secondary.
+    @State private var showNavigatorOfferBanner = false
 
     private enum JournalPeriod: String, CaseIterable, Identifiable {
         case today, week, custom
@@ -1210,6 +1215,7 @@ struct WhereIsPhoneScreen: View {
                     HapticFeedback.selection()
                     print("WHERE_PHONE clear trip polyline points=\(highlightedTripRoute.count)")
                     highlightedTripRoute = []
+                    showNavigatorOfferBanner = false
                 } label: {
                     Text(localizationManager.localized("map_clear_route"))
                         .font(.caption2.weight(.bold))
@@ -1221,6 +1227,25 @@ struct WhereIsPhoneScreen: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("where_phone_clear_trip_route")
+            }
+
+            if showNavigatorOfferBanner {
+                Button {
+                    HapticFeedback.selection()
+                    print("WHERE_PHONE directions B★ open external navigator sheet")
+                    showNavigatorOfferBanner = false
+                    queueHubSheet(.routes)
+                } label: {
+                    Text(localizationManager.localized("map_routes_open_navigator"))
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.backgroundDark)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondaryGold.opacity(0.95))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("where_phone_open_navigator_banner")
             }
 
             if liveLocation.isCoarseAccuracy {
@@ -2784,72 +2809,73 @@ struct WhereIsPhoneScreen: View {
                         queueHubSheet(.places(preferredNameKey: nil))
                     }
                     actionButton("map_member_directions", id: "where_phone_member_directions") {
-                        queueHubSheet(.routes)
+                        // Route B★: in-app family map first; Apple/Yandex via FAB / banner.
+                        focusMemberDirectionsOnFamilyMap(member: member)
                     }
 
-                    // Trip cards (real endpoints / honest empty) — densitiy mini-map in S19-POLISH.
-                    memberRecentTripsCard(memberId: member.id)
+                    // Defer 2nd MKMapView + dense cards — IPS 8BADF00D on device during first layout.
+                    if journalHeavyContentReady {
+                        memberRecentTripsCard(memberId: member.id)
+                        densPlacesDayCard
+                        memberWeeklyTripsCard
+                        memberDrivingLocksCard
+                        densLocationHistoryCard
 
-                    // Stays today (real geofences only).
-                    densPlacesDayCard
-
-                    // S19a / S19d — weekly trips card → real Driving tab (no mock).
-                    memberWeeklyTripsCard
-
-                    // S19a — driving insight locks (honest paywall; no fake event counts).
-                    memberDrivingLocksCard
-
-                    // 30d history upsell (B1).
-                    densLocationHistoryCard
-
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(localizationManager.localized("map_member_quiet_zone"))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.textPrimary)
-                        Text(localizationManager.localized("map_privacy_zone_hint"))
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.92))
-                        Slider(value: $quietMeters, in: 50...500, step: 25) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
                             Text(localizationManager.localized("map_member_quiet_zone"))
-                        }
-                        .tint(Color.secondaryGold)
-                        .onChange(of: quietMeters) { value in
-                            FamilyMapQuietZoneStore.meters = value
-                            print("WHERE_PHONE quiet meters=\(Int(value))")
-                        }
-                        Text(
-                            String(
-                                format: localizationManager.localized("map_unit_meters"),
-                                Int(quietMeters)
-                            )
-                        )
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.92))
-                        Text(localizationManager.localized("map_share_link_title"))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.textPrimary)
-                            .padding(.top, Spacing.s)
-                        Picker(localizationManager.localized("map_share_duration"), selection: $shareDuration) {
-                            ForEach(FamilyMapShareDuration.allCases) { dur in
-                                Text(localizationManager.localized(dur.titleKey)).tag(dur)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized("map_privacy_zone_hint"))
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.92))
+                            Slider(value: $quietMeters, in: 50...500, step: 25) {
+                                Text(localizationManager.localized("map_member_quiet_zone"))
                             }
-                        }
-                        .pickerStyle(.segmented)
-                        if let exp = shareExpiresAt, FamilyMapShareSessionStore.isActive {
-                            let minsLeft = max(1, Int(ceil(exp.timeIntervalSinceNow / 60)))
+                            .tint(Color.secondaryGold)
+                            .onChange(of: quietMeters) { value in
+                                FamilyMapQuietZoneStore.meters = value
+                                print("WHERE_PHONE quiet meters=\(Int(value))")
+                            }
                             Text(
                                 String(
-                                    format: localizationManager.localized("map_share_expires_fmt"),
-                                    minsLeft
+                                    format: localizationManager.localized("map_unit_meters"),
+                                    Int(quietMeters)
                                 )
                             )
-                            .font(.caption)
-                            .foregroundColor(.secondaryGold)
-                        } else if shareExpiresAt != nil {
-                            Text(localizationManager.localized("map_share_expired"))
                                 .font(.caption)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.92))
+                            Text(localizationManager.localized("map_share_link_title"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.textPrimary)
+                                .padding(.top, Spacing.s)
+                            Picker(localizationManager.localized("map_share_duration"), selection: $shareDuration) {
+                                ForEach(FamilyMapShareDuration.allCases) { dur in
+                                    Text(localizationManager.localized(dur.titleKey)).tag(dur)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            if let exp = shareExpiresAt, FamilyMapShareSessionStore.isActive {
+                                let minsLeft = max(1, Int(ceil(exp.timeIntervalSinceNow / 60)))
+                                Text(
+                                    String(
+                                        format: localizationManager.localized("map_share_expires_fmt"),
+                                        minsLeft
+                                    )
+                                )
+                                .font(.caption)
+                                .foregroundColor(.secondaryGold)
+                            } else if shareExpiresAt != nil {
+                                Text(localizationManager.localized("map_share_expired"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                            }
                         }
+                    } else {
+                        ProgressView()
+                            .tint(.secondaryGold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.l)
+                            .accessibilityIdentifier("where_phone_day_journal_heavy_loading")
                     }
                 }
                 .padding(Spacing.l)
@@ -2860,10 +2886,23 @@ struct WhereIsPhoneScreen: View {
                 selectedMember = nil
             })
             .onAppear {
-                print("WHERE_PHONE day journal present member=\(member.id)")
+                journalDiagOpenedAt = CFAbsoluteTimeGetCurrent()
+                journalHeavyContentReady = false
+                print("WHERE_PHONE day journal present member=\(member.id) t0")
                 if memberAvatarImage == nil {
                     memberAvatarImage = ProfileImageManager.shared.loadProfileImage(for: .main)
                 }
+                print("WHERE_PHONE day journal avatar loaded +\(Int((CFAbsoluteTimeGetCurrent() - journalDiagOpenedAt) * 1000))ms")
+                // After first paint: mount TripEndpointMapPreview (2nd MKMapView) + dense cards.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    guard selectedMember?.id == member.id else { return }
+                    journalHeavyContentReady = true
+                    print("WHERE_PHONE day journal heavy mount +\(Int((CFAbsoluteTimeGetCurrent() - journalDiagOpenedAt) * 1000))ms")
+                }
+            }
+            .onDisappear {
+                journalHeavyContentReady = false
+                print("WHERE_PHONE day journal disappear")
             }
             .id(memberAvatarEpoch)
         }
@@ -3198,6 +3237,52 @@ struct WhereIsPhoneScreen: View {
             }
         }
         sheetExpansion = 0.38
+    }
+
+    /// Route B★: journal «Маршрут» → polyline on ALADDIN family map (me → member), not external maps first.
+    /// External Apple/Yandex remain on FAB routes / `FamilyMapRoutesSheet`.
+    private func focusMemberDirectionsOnFamilyMap(member: HubMemberCard) {
+        let dest = mapCoordinate
+        let origin = LocationManager.shared.currentLocation?.coordinate
+        print(
+            "WHERE_PHONE directions B★ member=\(member.id) dest=\(dest != nil) origin=\(origin != nil)"
+        )
+        selectedMember = nil
+        hubTab = .location
+        guard let dest else {
+            locatorHint = localizationManager.localized("map_live_no_signal")
+            sheetExpansion = 0.38
+            return
+        }
+        if let origin {
+            highlightedTripRoute = [origin, dest]
+            let mid = CLLocationCoordinate2D(
+                latitude: (origin.latitude + dest.latitude) / 2,
+                longitude: (origin.longitude + dest.longitude) / 2
+            )
+            let latDelta = max(0.01, abs(origin.latitude - dest.latitude) * 1.6)
+            let lonDelta = max(0.01, abs(origin.longitude - dest.longitude) * 1.6)
+            mapRegion = MKCoordinateRegion(
+                center: mid,
+                span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta)
+            )
+            mapCameraToken += 1
+            locatorHint = localizationManager.localized("map_routes_on_family_map_hint")
+            print("WHERE_PHONE directions B★ polyline points=2")
+        } else {
+            // No self GPS yet — still center on member pin; user can open navigator FAB.
+            mapRegion.center = dest
+            mapCameraToken += 1
+            highlightedTripRoute = []
+            locatorHint = localizationManager.localized("map_routes_need_my_location")
+            print("WHERE_PHONE directions B★ no origin — center member only")
+        }
+        sheetExpansion = 0.38
+        // Secondary: offer external navigator after first paint (does not block map).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            guard selectedMember == nil else { return }
+            showNavigatorOfferBanner = true
+        }
     }
 
     /// Build a preview report from the active (or last known) local GPS track — real samples only.

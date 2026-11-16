@@ -33,6 +33,7 @@ struct HomeMapSection: View {
                 }
                 Spacer(minLength: 8)
                 Button {
+                    HapticFeedback.selection()
                     navigationManager.navigateToDeviceHub(tab: .iot)
                 } label: {
                     Text(localizationManager.localized("home_map_open_hub"))
@@ -91,6 +92,7 @@ struct HomeMapSection: View {
             }
 
             Button {
+                HapticFeedback.selection()
                 navigationManager.navigateTo(.family)
             } label: {
                 Text(localizationManager.localized("home_map_screen_time_link"))
@@ -146,6 +148,7 @@ struct HomeMapSection: View {
                 ProgressView().tint(.white)
             } else if paused {
                 Button {
+                    HapticFeedback.impact(.light)
                     pauseBusyFamilyId = device.id
                     onResumeFamilyDevice(device)
                     pauseBusyFamilyId = nil
@@ -158,6 +161,7 @@ struct HomeMapSection: View {
                 .accessibilityIdentifier("home_map_resume_phone_\(device.id)")
             } else {
                 Button {
+                    HapticFeedback.impact(.light)
                     pauseBusyFamilyId = device.id
                     onPauseFamilyDevice(device)
                     pauseBusyFamilyId = nil
@@ -241,6 +245,7 @@ struct HomeMapSection: View {
                 ProgressView().tint(.white)
             } else if paused {
                 Button {
+                    HapticFeedback.impact(.light)
                     Task { await resumeIoT(device) }
                 } label: {
                     Text(localizationManager.localized("home_map_resume"))
@@ -251,6 +256,7 @@ struct HomeMapSection: View {
                 .accessibilityIdentifier("home_map_resume_iot_\(device.id)")
             } else {
                 Button {
+                    HapticFeedback.impact(.light)
                     Task { await pauseIoT(device) }
                 } label: {
                     Text(localizationManager.localized("home_map_pause_1h"))

@@ -2989,7 +2989,7 @@
 "main_protect_parents_subtitle" = "Вторая рука для 60+: звонки и доверие в семье";
 "main_more_title" = "Ещё";
 "main_more_subtitle" = "Удобный режим и другие разделы";
-"main_simple_version_title" = "Aladdin start";
+"main_simple_version_title" = "ALADDIN Home";
 "main_simple_version_subtitle" = "Всё важное на одном экране";
 "family_safe_word_show_phrase" = "Показать фразу";
 "family_safe_word_hide_phrase" = "Скрыть фразу";
@@ -3020,8 +3020,8 @@
 "pay_pains_family_strip_slots_fmt" = "Семья · %d из %d мест";
 "pay_pains_family_strip_add" = "Добавить";
 "pay_pains_family_strip_add_to_family" = "Добавить в семью";
-"simple_home_open_full_main" = "Start Aladdin";
-"simple_home_title" = "Aladdin start";
+"simple_home_open_full_main" = "ALADDIN Home";
+"simple_home_title" = "ALADDIN Home";
 "pay_pains_door_check_title" = "Проверить";
 "pay_pains_door_check_subtitle" = "Проверим звонок, сообщение, видео или текст";
 "pay_pains_door_child_title" = "Ребёнок";
@@ -3631,7 +3631,7 @@
 
 /* map_soon_* */
 "map_soon_pet_title" = "Питомцы рядом";
-"map_soon_pet_body" = "В скором времени. Без карты питомцев, пока нет партнёра.";
+"map_soon_pet_body" = "В скором времени!";
 "map_soon_tile_title" = "Метки";
 "map_soon_tile_body" = "Скоро: метки вещей и питомцев на карте.";
 "map_soon_evac_title" = "Помощь на дороге";
@@ -3670,7 +3670,10 @@
 "lists_empty_title" = "Мои списки";
 "lists_empty_body" = "Свои и спам-номера появятся после синхронизации. Сейчас список пуст — без заглушек.";
 "map_routes_title" = "Маршрут";
-"map_routes_body" = "Откроем Apple Карты с выбранным способом. Точка — последняя известная.";
+"map_routes_body" = "Сначала линия на карте семьи в ALADDIN. Здесь — Apple или Яндекс, если нужен навигатор. Точка — последняя известная.";
+"map_routes_on_family_map_hint" = "Маршрут на карте семьи. Навигатор — по кнопке рядом.";
+"map_routes_need_my_location" = "Нужна ваша геолокация, чтобы нарисовать линию «я → участник».";
+"map_routes_open_navigator" = "Открыть в навигаторе";
 "map_routes_drive" = "На машине";
 "map_routes_walk" = "Пешком";
 "map_routes_transit" = "Транспорт";
@@ -3723,7 +3726,7 @@
 "pet_type_cat" = "Кошка";
 "pet_type_other" = "Другой";
 "where_phone_pets_hero_title" = "Питомцы семьи";
-"where_phone_pets_hero_body" = "Профиль и напоминания на этом iPhone. Живая метка на карте — позже.";
+"where_phone_pets_hero_body" = "Профиль и напоминания на этом iPhone. Живая метка на карте в скором времени!";
 "pet_add_photo_title" = "Добавьте фото питомца";
 "pet_add_photo_cta" = "Добавить фото";
 "pet_skip" = "Пропустить";
@@ -4162,3 +4165,7 @@
 "ai_categories_for_child" = "Для: %@";
 "ai_categories_action_allow" = "Разрешить";
 "ai_categories_action_block" = "Блокировать";
+
+/* Policy A — Antifake App Trial access (pre-prod 2026-11-16) */
+"antifake_premium_gate_honest_body" = "Проверка подлинности доступна на активном пробном периоде приложения, а также в тарифах Family и Premium. Мы не показываем демо-вердикты без реального анализа.";
+"faq_antifake_apple_limits_answer" = "ALADDIN проверяет текст, ссылки, аудио и видео только когда вы сами нажимаете «Проверить» или делитесь контентом через «Поделиться».\n\nМы не слушаем все телефонные звонки в фоне — iOS это запрещает. Не кладём трубку автоматически и не перехватываем FaceTime или мессенджеры.\n\nМетки на звонках — только для номеров из проверенной базы (Call Directory), не для всех незнакомых.\n\nНа сайте aladdin-ai.ru/antifake — **14 дней бесплатно** или Family/Premium по коду; лимит файлов 25 МБ. В приложении — активный App Trial, Family или Premium.\n\nРезультат — оценка (похоже на подделку / неясно / похоже на подлинное), не юридическое заключение.";

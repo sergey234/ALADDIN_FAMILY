@@ -43,7 +43,7 @@ struct AntifakeHubScreen: View {
                             shareOnboardTip
                         }
                         tabContent
-                        askAssistantHelpCard
+                        // W2: «Спросить помощника» hidden on Hub — stays in Settings only.
                         // Wave C hero · боль: семья вместе против фейка
                         antifakeHeroCheckFamily
                         if hasPremiumAccess {
@@ -281,41 +281,6 @@ struct AntifakeHubScreen: View {
                 .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }
-    }
-
-    private var askAssistantHelpCard: some View {
-        Button {
-            guard let url = URL(string: AppConfig.supportAssistantURL) else { return }
-            UIApplication.shared.open(url)
-        } label: {
-            HStack(spacing: Spacing.m) {
-                AliveGlyph(id: .aiFriends, size: 28) {
-                    Image(systemName: "sparkles")
-                        .font(.title3.weight(.semibold))
-                        .foregroundColor(.secondaryGold)
-                }
-                .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(localizationManager.localized("support_ask_assistant"))
-                        .font(.subheadline.bold())
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("support_ask_assistant_antifake_subtitle"))
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "arrow.up.right")
-                    .foregroundColor(.white.opacity(0.7))
-                    .accessibilityHidden(true)
-            }
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .secondaryGold)
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("antifake_ask_assistant_cta")
-        .accessibilityLabel(localizationManager.localized("support_ask_assistant"))
-        .accessibilityHint(localizationManager.localized("support_ask_assistant_antifake_subtitle"))
     }
 
     @ViewBuilder

@@ -2967,6 +2967,9 @@ struct GeofencesSettingsModal: View {
                                 Text(localizationManager.localized("geofences_radius"))
                             }
                             .tint(.secondaryGold)
+                            .onChange(of: newGeofenceRadius) { newValue in
+                                print("GEOFENCE_RADIUS_UI value=\(Int(newValue))")
+                            }
                         }
                         .padding(Spacing.m)
                         .background(Color.backgroundMedium.opacity(0.3))
@@ -2988,7 +2991,14 @@ struct GeofencesSettingsModal: View {
                             
                             Button(action: {
                                 HapticFeedback.impact(.medium)
-                                geofences.append(GeofenceItem(name: newGeofenceName, address: newGeofenceAddress, radius: newGeofenceRadius))
+                                let trimmedName = newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                let trimmedAddress = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+                                guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else {
+                                    print("GEOFENCE_SAVE_FAIL reason=name_or_address_empty")
+                                    return
+                                }
+                                geofences.append(GeofenceItem(name: trimmedName, address: trimmedAddress, radius: newGeofenceRadius))
+                                print("GEOFENCE_SAVE_OK name=\(trimmedName) radius=\(Int(newGeofenceRadius))")
                                 newGeofenceName = ""
                                 newGeofenceAddress = ""
                                 newGeofenceRadius = 100

@@ -334,7 +334,9 @@ class LocationManager: NSObject, ObservableObject {
         locationManager.startMonitoring(for: region)
         monitoredRegions[geofence.id.uuidString] = region
         
-        print("✅ LocationManager: Начало мониторинга геозоны '\(geofence.name)' (ID: \(geofence.id.uuidString))")
+        let appliedRadius = max(minRegionRadius, geofence.radius)
+        print("GEOFENCE_MONITOR_START id=\(geofence.id.uuidString) name=\(geofence.name) radius=\(Int(appliedRadius))")
+        print("✅ LocationManager: Начало мониторинга геозоны '\(geofence.name)' (ID: \(geofence.id.uuidString), радиус: \(Int(appliedRadius))м)")
     }
     
     /// Начать мониторинг геозоны с координатами
@@ -377,6 +379,7 @@ class LocationManager: NSObject, ObservableObject {
         locationManager.startMonitoring(for: region)
         monitoredRegions[identifier] = region
         
+        print("GEOFENCE_MONITOR_START id=\(identifier) radius=\(Int(radius))")
         print("✅ LocationManager: Начало мониторинга геозоны '\(identifier)' (радиус: \(radius)м)")
     }
     

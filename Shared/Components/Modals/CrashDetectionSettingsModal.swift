@@ -183,23 +183,35 @@ struct CrashDetectionSettingsModal: View {
 
     private func loadCurrentSettings() {
         SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_load_start", state: .syncing)
-        sensitivity = crashDetectionManager.getSensitivity()
+        let loaded = crashDetectionManager.getSensitivity()
+        sensitivity = loaded
+        let udRaw = UserDefaults.standard.string(forKey: "aladdin_crash_detection_sensitivity_v1") ?? "nil"
+        print("🚨 CrashDetectionSettingsModal: LOAD sensitivity=\(loaded.rawValue) ud=\(udRaw)")
         SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_load_complete", state: .synced)
     }
 
     private func resolvedUserId() -> String? {
-        let stored = (UserDefaults.standard.string(forKey: "user_id") ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return stored.isEmpty ? nil : stored
+        let keys = ["user_id", "userId", "aladdin_user_id"]
+        for key in keys {
+            let stored = (UserDefaults.standard.string(forKey: key) ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !stored.isEmpty { return stored }
+        }
+        if let n = UserDefaults.standard.object(forKey: "user_id") as? Int {
+            return String(n)
+        }
+        return nil
     }
 
     private func saveSettings() {
+        // Local SSOT first — before consent/login/cloud. Radio already writes; Save must too.
+        crashDetectionManager.setSensitivity(sensitivity)
+        UserDefaults.standard.set(sensitivity.rawValue, forKey: "crash_detection_pending_sensitivity")
+        UserDefaults.standard.synchronize()
+        print("🚨 CrashDetectionSettingsModal: SAVE local sensitivity=\(sensitivity.rawValue) G>\(sensitivity.gForceThreshold) consent=\(crashConsentAccepted) userId=\(resolvedUserId() ?? "nil")")
+
         guard crashConsentAccepted else {
             toastManager.showError(localizationManager.localized("crash_consent_required"))
-            return
-        }
-        guard let userId = resolvedUserId() else {
-            toastManager.showError(localizationManager.localized("crash_settings_save_error_login_required"))
             return
         }
 
@@ -207,64 +219,70 @@ struct CrashDetectionSettingsModal: View {
         SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_start", state: .syncing)
 
         Task {
-            // Local always first: toggle/sensitivity work on-device even if cloud SFM is mock.
-            crashDetectionManager.setSensitivity(sensitivity)
-            UserDefaults.standard.set(sensitivity.rawValue, forKey: "crash_detection_pending_sensitivity")
-
+            // Cloud is best-effort. Local sensitivity already persisted.
+            let userId = resolvedUserId()
             do {
-                let apiResponse = try await apiService.updateCrashDetectionSettings(
-                    userId: userId,
-                    sensitivity: sensitivity.gForceThreshold,
-                    geofenceRadius: 1000.0
-                )
-                guard apiResponse.success else {
-                    throw NSError(
-                        domain: "CrashDetectionSettings",
-                        code: -1,
-                        userInfo: [NSLocalizedDescriptionKey: localizationManager.localized("crash_settings_save_error")]
+                if let userId {
+                    let apiResponse = try await apiService.updateCrashDetectionSettings(
+                        userId: userId,
+                        sensitivity: sensitivity.gForceThreshold,
+                        geofenceRadius: 1000.0
                     )
-                }
+                    guard apiResponse.success else {
+                        throw NSError(
+                            domain: "CrashDetectionSettings",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: localizationManager.localized("crash_settings_save_error")]
+                        )
+                    }
 
-                // Cloud /start may be gated on prod; on-device monitoring is the product.
-                await acknowledgeCloudCrashStartIfAvailable()
-                try await crashDetectionManager.startMonitoring()
+                    await acknowledgeCloudCrashStartIfAvailable()
+                    try await crashDetectionManager.startMonitoring()
 
-                let configuration = ComponentConfiguration(
-                    isEnabled: true,
-                    priority: .critical,
-                    additionalSettings: [
-                        "sensitivity": AnyCodable(sensitivity.rawValue),
-                        "gForceThreshold": AnyCodable(sensitivity.gForceThreshold),
-                        "speedThreshold": AnyCodable(50.0),
-                        "batteryOptimization": AnyCodable(true),
-                    ]
-                )
-                try await configurationService.saveConfiguration(
-                    componentId: componentId,
-                    configuration: configuration
-                )
+                    let configuration = ComponentConfiguration(
+                        isEnabled: true,
+                        priority: .critical,
+                        additionalSettings: [
+                            "sensitivity": AnyCodable(sensitivity.rawValue),
+                            "gForceThreshold": AnyCodable(sensitivity.gForceThreshold),
+                            "speedThreshold": AnyCodable(50.0),
+                            "batteryOptimization": AnyCodable(true),
+                        ]
+                    )
+                    try await configurationService.saveConfiguration(
+                        componentId: componentId,
+                        configuration: configuration
+                    )
 
-                await MainActor.run {
-                    UserDefaults.standard.set(false, forKey: pendingSyncKey)
-                    pendingSync = false
-                    toastManager.showSuccess(localizationManager.localized("crash_settings_save_success"))
-                    isPresented = false
-                }
-                SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
-            } catch {
-                // Settings/SFM cloud fail: sensitivity already local — pending sync, not hard fail.
-                try? await crashDetectionManager.startMonitoring()
-                await MainActor.run {
-                    if shouldKeepPendingSync(for: error) {
+                    await MainActor.run {
+                        UserDefaults.standard.set(false, forKey: pendingSyncKey)
+                        pendingSync = false
+                        toastManager.showSuccess(localizationManager.localized("crash_settings_save_success"))
+                        isPresented = false
+                    }
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
+                } else {
+                    // No user_id yet (onboarding/demo) — keep local, mark pending cloud sync.
+                    try? await crashDetectionManager.startMonitoring()
+                    await MainActor.run {
                         UserDefaults.standard.set(true, forKey: pendingSyncKey)
                         pendingSync = true
                         toastManager.showInfo(localizationManager.localized("crash_settings_saved_pending_sync"))
                         isPresented = false
-                    } else {
-                        toastManager.showError(saveErrorMessage(for: error))
                     }
+                    print("ℹ️ CrashDetectionSettingsModal: local save OK, cloud skipped (no user_id)")
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_local_only", state: .synced)
                 }
-                print("❌ CrashDetectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
+            } catch {
+                // Settings/SFM cloud fail: sensitivity already local — pending sync, not hard fail.
+                try? await crashDetectionManager.startMonitoring()
+                await MainActor.run {
+                    UserDefaults.standard.set(true, forKey: pendingSyncKey)
+                    pendingSync = true
+                    toastManager.showInfo(localizationManager.localized("crash_settings_saved_pending_sync"))
+                    isPresented = false
+                }
+                print("❌ CrashDetectionSettingsModal: cloud save failed (local kept): \(error.localizedDescription)")
                 SyncEngine.shared.publish(
                     domain: .networkProtection,
                     operation: "crash_detection_modal_save_error",

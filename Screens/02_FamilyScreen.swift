@@ -8428,6 +8428,7 @@ struct GeofencesSettingsModal: View {
                             }
                             .tint(.secondaryGold)
                             .onChange(of: newGeofenceRadius) { newValue in
+                                print("GEOFENCE_RADIUS_UI value=\(Int(newValue))")
                                 VisualLogger.shared.log(
                                     "🎚️ geofence_radius = \(Int(newValue)) m",
                                     level: .info,
@@ -8588,11 +8589,13 @@ struct GeofencesSettingsModal: View {
         let trimmedAddress = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else {
+            print("GEOFENCE_SAVE_FAIL reason=name_or_address_empty")
             validationAlertMessage = localizationManager.localized("geofences_name_address_required")
             showValidationAlert = true
             return
         }
         guard !GeofenceGeocodingService.isDemoPlaceholderAddress(trimmedAddress, localization: localizationManager) else {
+            print("GEOFENCE_SAVE_FAIL reason=demo_placeholder_address")
             validationAlertMessage = localizationManager.localized("geofences_demo_address_blocked")
             showValidationAlert = true
             return
@@ -8616,6 +8619,9 @@ struct GeofencesSettingsModal: View {
                 latitude: center.latitude,
                 longitude: center.longitude
             )
+            print(
+                "GEOFENCE_SAVE_OK name=\(trimmedName) radius=\(Int(newGeofenceRadius)) lat=\(center.latitude) lon=\(center.longitude)"
+            )
             VisualLogger.shared.log(
                 "➕ geofence_add name=\(trimmedName) radius=\(Int(newGeofenceRadius)) lat=\(center.latitude)",
                 level: .info,
@@ -8629,6 +8635,7 @@ struct GeofencesSettingsModal: View {
             showAddForm = false
             saveGeofences()
         } catch {
+            print("GEOFENCE_SAVE_FAIL reason=geocode_failed name=\(trimmedName)")
             validationAlertMessage = localizationManager.localized("geofences_geocode_failed")
             showValidationAlert = true
             VisualLogger.shared.log(

@@ -48,6 +48,9 @@ struct SimpleHomeScreen: View {
     @State private var hybridHeroImages: [UIImage?] = []
     /// Nudge hero art slightly up inside the circle (optical center).
     private static let hybridHeroYNudge: CGFloat = -14
+    /// R04 phone is taller in-frame — lower + slight shrink so Dynamic Island / top bezel stay visible.
+    private static let hybridHeroR04YNudge: CGFloat = 8
+    private static let hybridHeroR04Scale: CGFloat = 0.90
 
     /// Orbit hero set: 5811 family-shield cutout + 5 CapCut cutouts (PNG alpha).
     private static let hybridHeroAssetNames: [String] = [
@@ -58,6 +61,13 @@ struct SimpleHomeScreen: View {
         "SimpleHome_Hero_R05_ShieldVerify",
         "SimpleHome_Hero_R06_GlobePin"
     ]
+
+    private static func hybridHeroLayout(for assetName: String) -> (y: CGFloat, scale: CGFloat) {
+        if assetName.contains("R04_FamilyMapPhone") {
+            return (y: hybridHeroR04YNudge, scale: hybridHeroR04Scale)
+        }
+        return (y: hybridHeroYNudge, scale: 1.0)
+    }
     /// ~6.5s between frames (Device QA: 6–7s).
     private static let hybridHeroRotationSeconds: UInt64 = 6_500_000_000
     private static let hybridHeroCrossfade: Double = 0.45
@@ -385,8 +395,9 @@ struct SimpleHomeScreen: View {
                         )
                 }
             }
+            .scaleEffect(Self.hybridHeroLayout(for: name).scale)
             .frame(width: d, height: d)
-            .offset(y: Self.hybridHeroYNudge)
+            .offset(y: Self.hybridHeroLayout(for: name).y)
             .frame(width: d, height: d)
             .clipShape(Circle())
             .id(name)

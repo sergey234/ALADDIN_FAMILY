@@ -1229,9 +1229,14 @@ enum FamilyControlsAvailabilityError: LocalizedError {
     
     // MARK: - ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: API методы для синхронизации
     
-    /// Получить familyId для API вызовов
+    /// Получить familyId для API вызовов (Hybrid-B SSOT: FAM_*, never legacy family_001).
     private var familyId: String {
-        UserDefaults.standard.string(forKey: "family_id") ?? "family_001"
+        let resolved = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if resolved.isEmpty {
+            print("FAMILY_ID_MISSING source=ParentalControlManager.familyId")
+        }
+        return resolved
     }
     
     /// Получить deviceId для API вызовов
@@ -1246,7 +1251,16 @@ enum FamilyControlsAvailabilityError: LocalizedError {
     }
     
     func saveSettingsToServer(familyId: String? = nil, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, internetPaused: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
-        let family = familyId ?? self.familyId
+        let family = (familyId ?? self.familyId).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !family.isEmpty else {
+            print("FAMILY_ID_MISSING source=ParentalControlManager.saveSettingsToServer")
+            completion(.failure(NSError(
+                domain: "ParentalControlManager",
+                code: 400,
+                userInfo: [NSLocalizedDescriptionKey: "FAMILY_ID_MISSING"]
+            )))
+            return
+        }
         apiService.updateParentalControlSettings(
             familyId: family,
             childId: childId,

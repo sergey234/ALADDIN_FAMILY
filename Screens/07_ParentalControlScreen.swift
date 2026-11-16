@@ -1485,7 +1485,12 @@ struct ParentalControlScreen: View {
     private func syncParentalControlData() async {
         guard let resolvedChildId = resolveSelectedChildID(), !resolvedChildId.isEmpty else { return }
         
-        let familyId = UserDefaults.standard.string(forKey: "family_id") ?? "family_001"
+        let familyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if familyId.isEmpty {
+            print("FAMILY_ID_MISSING source=ParentalControlScreen.syncParentalControlData")
+            return
+        }
         UserDefaults.standard.set(resolvedChildId, forKey: "active_child_profile_server_id")
         _ = await ScreenTimeUsageSync.pullForParent(familyId: familyId, memberId: resolvedChildId)
         await MainActor.run {
