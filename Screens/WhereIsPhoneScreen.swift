@@ -152,7 +152,6 @@ struct WhereIsPhoneScreen: View {
     @State private var selectedMember: HubMemberCard?
     /// P0-5: member avatar — UIKit PHPicker+crop (NOT SwiftUI sheet/cover while journal sheet is open).
     @State private var memberAvatarImage: UIImage?
-    @State private var memberAvatarEpoch: Int = 0
     /// Retains PHPicker delegate while UIKit modal is up (SwiftUI @State alone would drop it).
     @State private var memberAvatarPickerBridge: MemberAvatarPhotoPickerBridge?
     /// P1.4 / C19 gap hub from map gear.
@@ -165,8 +164,12 @@ struct WhereIsPhoneScreen: View {
     @State private var journalCustomDate: Date = Date()
     /// P1.2 weekly trips card on member sheet — period filter (today/week/month).
     @State private var memberWeeklyPeriod: String = "week"
-    /// Device 8BADF00D: defer MKMapView + dense cards until after first journal paint.
+    /// Device 8BADF00D: defer dense cards until after first journal paint.
     @State private var journalHeavyContentReady = false
+    /// IPS 2026-11-17: 2nd MKMapView must NOT auto-mount with dense cards (AttributeGraph + Metal).
+    @State private var journalTripMapPreviewReady = false
+    /// Freeze «Возле:» label — live `mapPointName` updates re-diff whole sheet → Image== hang.
+    @State private var journalNearPlaceSnapshot: String?
     @State private var journalDiagOpenedAt: CFAbsoluteTime = 0
     /// Route B★: after in-app polyline, offer Apple/Yandex as secondary.
     @State private var showNavigatorOfferBanner = false
@@ -2720,7 +2723,8 @@ struct WhereIsPhoneScreen: View {
                 .accessibilityIdentifier("where_phone_journal_sticky_hat")
 
                 ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.m) {
+                // LazyVStack: avoid building every Image/ForEach row on first layout (device 8BADF00D).
+                LazyVStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("family_day_journal_title"))
                         .font(AladdinFamilyType.title2())
                         .foregroundColor(.secondaryGold)
@@ -2770,8 +2774,8 @@ struct WhereIsPhoneScreen: View {
                         .foregroundColor(.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    // C2: «Возле:» when we have a map place name for this member.
-                    if let place = mapPointName?.trimmingCharacters(in: .whitespacesAndNewlines),
+                    // C2: snapshot only — live mapPointName must not re-diff journal (IPS Image==).
+                    if let place = journalNearPlaceSnapshot?.trimmingCharacters(in: .whitespacesAndNewlines),
                        !place.isEmpty {
                         Text(
                             String(
@@ -2888,13 +2892,16 @@ struct WhereIsPhoneScreen: View {
             .onAppear {
                 journalDiagOpenedAt = CFAbsoluteTimeGetCurrent()
                 journalHeavyContentReady = false
+                journalTripMapPreviewReady = false
+                // Freeze place label for this sheet open — live GPS must not invalidate body.
+                journalNearPlaceSnapshot = mapPointName
                 print("WHERE_PHONE day journal present member=\(member.id) t0")
                 if memberAvatarImage == nil {
                     memberAvatarImage = ProfileImageManager.shared.loadProfileImage(for: .main)
                 }
                 print("WHERE_PHONE day journal avatar loaded +\(Int((CFAbsoluteTimeGetCurrent() - journalDiagOpenedAt) * 1000))ms")
-                // After first paint: mount TripEndpointMapPreview (2nd MKMapView) + dense cards.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                // Dense cards after first paint — WITHOUT 2nd MKMapView (IPS 8BADF00D Image== / Metal).
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
                     guard selectedMember?.id == member.id else { return }
                     journalHeavyContentReady = true
                     print("WHERE_PHONE day journal heavy mount +\(Int((CFAbsoluteTimeGetCurrent() - journalDiagOpenedAt) * 1000))ms")
@@ -2902,9 +2909,11 @@ struct WhereIsPhoneScreen: View {
             }
             .onDisappear {
                 journalHeavyContentReady = false
+                journalTripMapPreviewReady = false
+                journalNearPlaceSnapshot = nil
                 print("WHERE_PHONE day journal disappear")
             }
-            .id(memberAvatarEpoch)
+            // Do NOT .id(memberAvatarEpoch) on whole sheet — remounts ForEach+Image → 8BADF00D.
         }
     }
 
@@ -3059,9 +3068,9 @@ struct WhereIsPhoneScreen: View {
                     .fill(Color.backgroundMedium.opacity(0.55))
                     .frame(width: 96, height: 96)
                 if let memberAvatarImage {
-                    Image(uiImage: memberAvatarImage)
-                        .resizable()
-                        .scaledToFill()
+                    // UIKit UIImageView — SwiftUI Image(uiImage:) participates in
+                    // NamedImageProvider.== inside ForEach/AG (IPS 2026-11-17 8BADF00D).
+                    JournalAvatarUIImageView(image: memberAvatarImage)
                         .frame(width: 96, height: 96)
                         .clipShape(Circle())
                 } else {
@@ -3100,7 +3109,6 @@ struct WhereIsPhoneScreen: View {
                 if let cropped {
                     _ = ProfileImageManager.shared.saveProfileImage(cropped, for: .main)
                     memberAvatarImage = cropped
-                    memberAvatarEpoch += 1
                     HapticFeedback.notification(.success)
                     print("WHERE_PHONE avatar photo UIKit crop committed")
                 } else {
@@ -3134,18 +3142,38 @@ struct WhereIsPhoneScreen: View {
                 Text("\(Self.streetTitleWithoutAtPrefix(preview.startLocation)) → \(Self.streetTitleWithoutAtPrefix(preview.endLocation))")
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.secondaryGold)
-                Button {
-                    focusTripOnLocationMap(report: preview)
-                } label: {
-                    TripEndpointMapPreview(report: preview)
-                        .frame(height: 120)
-                        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-                        .contentShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                if journalTripMapPreviewReady {
+                    Button {
+                        focusTripOnLocationMap(report: preview)
+                    } label: {
+                        TripEndpointMapPreview(report: preview)
+                            .frame(height: 120)
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                            .contentShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                    }
+                    .buttonStyle(.plain)
+                    .aladdinTapFeedback(.light)
+                    .accessibilityIdentifier("where_phone_member_trip_minimap")
+                    .accessibilityLabel(localizationManager.localized("map_member_weekly_trips_title"))
+                } else {
+                    // Tap-to-load: never auto-mount 2nd MKMapView with dense journal (device watchdog).
+                    Button {
+                        HapticFeedback.selection()
+                        journalTripMapPreviewReady = true
+                        print("WHERE_PHONE day journal trip map preview user-load")
+                    } label: {
+                        Text(localizationManager.localized("map_member_weekly_trips_title"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                    .stroke(Color.secondaryGold.opacity(0.5), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("where_phone_member_trip_minimap_load")
                 }
-                .buttonStyle(.plain)
-                .aladdinTapFeedback(.light)
-                .accessibilityIdentifier("where_phone_member_trip_minimap")
-                .accessibilityLabel(localizationManager.localized("map_member_weekly_trips_title"))
             } else {
                 Text(localizationManager.localized("driving_empty_filtered"))
                     .font(.caption)
@@ -3413,28 +3441,22 @@ struct WhereIsPhoneScreen: View {
                 .accessibilityIdentifier("where_phone_member_drive_unlock")
             }
 
-            ForEach(
-                [
-                    ("map_drive_lock_speeding", "speedometer"),
-                    ("map_drive_lock_inattention", "iphone.radiowaves.left.and.right"),
-                    ("map_drive_lock_acceleration", "bolt.fill")
-                ],
-                id: \.0
-            ) { key, symbol in
-                HStack(spacing: Spacing.m) {
-                    Image(systemName: symbol)
-                        .foregroundColor(.secondaryGold)
-                        .frame(width: 28)
-                    Text(localizationManager.localized(key))
-                        .font(.subheadline)
-                        .foregroundColor(.textPrimary)
-                    Spacer()
-                    Image(systemName: entitled ? "checkmark.circle.fill" : "lock.fill")
-                        .foregroundColor(entitled ? .secondaryGold : .textSecondary)
-                }
-                .padding(.vertical, 6)
-                .accessibilityIdentifier("where_phone_drive_lock_\(key)")
-            }
+            // Fixed rows (not ForEach+Image): IPS 8BADF00D stuck in Image.NamedImageProvider.==.
+            driveLockRow(
+                titleKey: "map_drive_lock_speeding",
+                symbol: "speedometer",
+                entitled: entitled
+            )
+            driveLockRow(
+                titleKey: "map_drive_lock_inattention",
+                symbol: "iphone.radiowaves.left.and.right",
+                entitled: entitled
+            )
+            driveLockRow(
+                titleKey: "map_drive_lock_acceleration",
+                symbol: "bolt.fill",
+                entitled: entitled
+            )
 
             if !entitled {
                 Text(localizationManager.localized("map_drive_locks_hint"))
@@ -3448,6 +3470,23 @@ struct WhereIsPhoneScreen: View {
             RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.22))
         )
+        .accessibilityIdentifier("where_phone_member_drive_locks")
+    }
+
+    private func driveLockRow(titleKey: String, symbol: String, entitled: Bool) -> some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: symbol)
+                .foregroundColor(.secondaryGold)
+                .frame(width: 28)
+            Text(localizationManager.localized(titleKey))
+                .font(.subheadline)
+                .foregroundColor(.textPrimary)
+            Spacer()
+            Image(systemName: entitled ? "checkmark.circle.fill" : "lock.fill")
+                .foregroundColor(entitled ? .secondaryGold : .textSecondary)
+        }
+        .padding(.vertical, 6)
+        .accessibilityIdentifier("where_phone_drive_lock_\(titleKey)")
     }
 
     private static func wallClockTime(_ date: Date) -> String {
@@ -4601,6 +4640,28 @@ struct WhereIsPhoneScreen: View {
             }
         }
         #endif
+    }
+}
+
+// MARK: - Journal avatar (UIKit) — avoids SwiftUI Image(uiImage:) equality hang
+
+/// IPS 2026-11-17: main thread stuck in `Image.NamedImageProvider.==` / ForEachChild during journal layout.
+private struct JournalAvatarUIImageView: UIViewRepresentable {
+    let image: UIImage
+
+    func makeUIView(context: Context) -> UIImageView {
+        let view = UIImageView(image: image)
+        view.contentMode = .scaleAspectFill
+        view.clipsToBounds = true
+        view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        view.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIImageView, context: Context) {
+        if uiView.image !== image {
+            uiView.image = image
+        }
     }
 }
 
