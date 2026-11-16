@@ -707,23 +707,42 @@ class APIService: ObservableObject {
     }
 
     private func familyAddRosterLimitUserMessage(networkError: NetworkError) -> String {
-        // Hybrid-B: always surface server used/max (UserDefaults aligned with familyQuotaSnapshot).
-        let limit = SubscriptionManager.currentFamilyLimit
-        let used = UserDefaults.standard.integer(forKey: "family_roster_used_last")
-        if case .conflict(let detail) = networkError,
-           let d = detail?.lowercased(),
-           d.contains("family_roster") {
-            if limit > 0 {
-                let capacity = "\(max(used, 0))/\(limit)"
-                return "Лимит участников на сервере (\(capacity)) достигнут. Обновите тариф или удалите участника."
+        // Prefer capacity from 409 detail (`family_roster_full|used/max|tier`) over stale UserDefaults.
+        var used = UserDefaults.standard.integer(forKey: "family_roster_used_last")
+        var limit = SubscriptionManager.currentFamilyLimit
+        if case .conflict(let detail) = networkError, let raw = detail {
+            let lower = raw.lowercased()
+            if lower.contains("family_roster"),
+               let parsed = Self.parseFamilyRosterFullCapacity(from: raw) {
+                used = parsed.used
+                limit = parsed.max
+                UserDefaults.standard.set(parsed.max, forKey: "family_limit")
+                UserDefaults.standard.set(parsed.used, forKey: "family_roster_used_last")
             }
-            return "Нельзя добавить участника: ростер заполнен по данным сервера."
+            if lower.contains("family_roster") {
+                if limit > 0 {
+                    let capacity = "\(max(used, 0))/\(limit)"
+                    return "Лимит участников на сервере (\(capacity)) достигнут. Обновите тариф или удалите участника."
+                }
+                return "Нельзя добавить участника: ростер заполнен по данным сервера."
+            }
         }
         if limit > 0 {
             let capacity = "\(max(used, 0))/\(limit)"
             return "Лимит участников на сервере (\(capacity)) достигнут. Обновите тариф, чтобы добавить больше."
         }
         return "Нельзя добавить участника: достигнут лимит для текущего тарифа."
+    }
+
+    /// Parses `family_roster_full|3/3|trial` from NetworkManager 409 detail enrichment.
+    nonisolated static func parseFamilyRosterFullCapacity(from detail: String) -> (used: Int, max: Int)? {
+        let parts = detail.split(separator: "|").map(String.init)
+        guard parts.count >= 2, parts[0].lowercased().contains("family_roster") else { return nil }
+        let ratio = parts[1].split(separator: "/")
+        guard ratio.count == 2, let used = Int(ratio[0]), let maxSlots = Int(ratio[1]), maxSlots > 0 else {
+            return nil
+        }
+        return (used, maxSlots)
     }
 
     private func performAddFamilyMember(

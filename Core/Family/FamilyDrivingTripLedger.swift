@@ -306,6 +306,41 @@ enum FamilyDrivingTripLedger {
         saveAll(all)
     }
 
+    /// Explicit delete only (period × member). Never called on dismiss/background.
+    @discardableResult
+    static func deleteReports(memberId: String?, period: String) -> [String] {
+        let start = periodStart(period)
+        let mid = (memberId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let deviceId = currentDeviceMember().id
+        var all = loadAll()
+        var removedIds: [String] = []
+        all.removeAll { report in
+            guard report.startTime >= start else { return false }
+            let matchesMember: Bool
+            if mid.isEmpty || mid == "current" {
+                matchesMember = true
+            } else if mid == deviceId {
+                matchesMember = report.userId == mid
+                    || report.userId == "current"
+                    || report.userId.isEmpty
+            } else {
+                matchesMember = report.userId == mid
+            }
+            guard matchesMember else { return false }
+            removedIds.append(report.id)
+            return true
+        }
+        if !removedIds.isEmpty {
+            saveAll(all)
+            for id in removedIds {
+                DrivingTripTrackStore.remove(tripId: id)
+                clearMeta(tripId: id)
+            }
+            print("TRIP_AUTO ledger delete period=\(period) member=\(mid) count=\(removedIds.count)")
+        }
+        return removedIds
+    }
+
     static func loadAll() -> [DrivingReport] {
         guard let data = UserDefaults.standard.data(forKey: indexKey),
               let decoded = try? JSONDecoder().decode([DrivingReport].self, from: data) else {

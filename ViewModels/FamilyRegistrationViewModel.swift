@@ -255,6 +255,8 @@ class FamilyRegistrationViewModel: ObservableObject {
     @Published var familyMembers: [FamilyMember] = []
     
     @Published var isLoading: Bool = false
+    /// True while spinner shows add-to-existing-family (not first create).
+    @Published var isAddingExistingFamilyMember: Bool = false
     @Published var errorMessage: String?
     /// qa-16: drives Retry vs Tariffs CTA — never wipe family via Retry on limit/403.
     @Published var registrationErrorKind: RegistrationErrorKind = .none
@@ -479,6 +481,8 @@ class FamilyRegistrationViewModel: ObservableObject {
             logger.business("🛡️ ADMIN-ADD: skipping family role save (\(role.rawValue))")
         }
         
+        // Loading copy: «Добавление участника...» vs «Создание семьи...» (admin_add may clear mid-flight).
+        isAddingExistingFamilyMember = UserDefaults.standard.bool(forKey: "admin_add_mode") && hasExistingFamilyOnDevice
         currentStep = .creatingFamily
         isLoading = true
         

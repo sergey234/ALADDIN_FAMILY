@@ -75,7 +75,10 @@ curl -sS -m 15 -H "Authorization: Bearer ${ALADDIN_JWT}" \
 
 ## 4. Join по коду приглашения
 
-- **Клиент iOS:** `POST /api/family/join` + fallback `POST /family/join`, тело `JoinFamilyRequest` (`family_id`, `role`, `age_group`, `personal_letter`, `device_type`).
+- **Клиент iOS:** `POST /api/family/join` + fallback `POST /family/join`, тело `JoinFamilyRequest` (`family_id`, optional `invite_code`, optional `invite_token`, `role`, `age_group`, `personal_letter`, `device_type`).
+- **QR семьи:** JSON payload с `family_id` + `invite_token`; клиент показывает пользователю `FAM-XXXX-XXXX-XXXX`, но отправляет token, если он был в QR.
+- **Manual code:** `FAM-XXXX-XXXX-XXXX` отправляется как `invite_code`.
+- **Не путать:** **6 цифр** — это не family join, а device pairing (`POST /api/devices/bind`, см. `docs/api/DEVICE_BIND.md`).
 - **Контракт в репозитории:** в `docs/release/current/openapi.json` на `/api/family/join` есть **GET** (compat) и **POST** (боевой join, схемы `JoinFamilyRequest` / `FamilyJoinAPIResponse`). Детали выката — `docs/server/BACKEND_FAMILY_JOIN_AND_ADD_GATE.md`.
 
 Смоук DoD: второе устройство / второй JWT проходит join **без 404** на основном пути, в ответе есть данные семьи и `your_member_id` для нового участника.
@@ -111,6 +114,28 @@ curl -sS -m 15 -H "Authorization: Bearer ${ALADDIN_JWT}" \
 ## 8. Лимит Personal (семейные слоты)
 
 Ожидаемое **максимальное число членов семьи** для тарифа Personal на клиенте после выравнивания: **2** (как в `subscription_limits.py` на проде). См. `REGISTRATION_AND_TARIFF_MAIN_SCREEN_ML_REFERENCE.md` §10.1.
+
+---
+
+## 8.1 Trial roster (3 seats) + enriched 409
+
+Канон: `trial` → `familyRosterMax=3` (тот же `max_family_slots_for_subscription_level`, что gate `POST /api/family/add`).
+
+```bash
+# On MAIN (localhost:8002) or with FAMILY_SMOKE_BASE:
+python3 scripts/trial_roster_smoke.py
+# or equivalent: register-device-trial → create → stats max=3/tier=trial
+# → add until 3 members → 4th add → 409 detail:
+# { "error_code":"family_roster_full", "roster_used":3, "roster_max":3, "owner_subscription_level":"trial" }
+```
+
+DoD:
+- `GET /api/family/stats` after trial register: `ownerSubscriptionTier=trial`, `familyRosterMax=3`;
+- add members 2 and 3 → 200;
+- add 4th → **409** `family_roster_full` with **`roster_used` / `roster_max` / `owner_subscription_level`** (not a bare string);
+- metric/log: `family_add_roster_full` includes `owner_subscription_level` (structlog on MAIN).
+
+Incident 2026-11-16: owner with JWT/local trial but `users.subscription_level=free` and **no** `subscriptions` row → stats/add max=1. Heal: insert trial subscription + set `users.subscription_level=trial`. Client must **not** optimistic-inflate add-gate above serverStats.
 
 ---
 

@@ -2997,6 +2997,7 @@ private struct PostAdminAddDeviceCoordinatorSheet: View {
 }
 
 /// Предложение сразу после admin-add: зарегистрировать устройство для только что добавленного участника.
+/// Family Settings style: backgroundDark + NY/gold title, readable secondary «Позже».
 private struct PostAdminAddDeviceOfferSheet: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     let memberDisplayName: String
@@ -3007,71 +3008,70 @@ private struct PostAdminAddDeviceOfferSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(localizationManager.localized("post_admin_add_device_offer_title"))
-                .font(.h3)
-                .foregroundColor(.textPrimary)
+                .font(AladdinFamilyType.title2())
+                .foregroundColor(.secondaryGold)
                 .accessibilityAddTraits(.isHeader)
 
             Text(String(format: localizationManager.localized("post_admin_add_device_offer_subtitle"), memberDisplayName))
                 .font(.body)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.white.opacity(0.85))
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(spacing: Spacing.s) {
-                Button(action: onAddDevice) {
+                Button {
+                    HapticFeedback.impact(.light)
+                    onAddDevice()
+                } label: {
                     Text(localizationManager.localized("post_admin_add_device_offer_primary"))
                         .font(.bodyBold)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            LinearGradient(
-                                colors: [Color.primaryBlue, Color.primaryBlue.opacity(0.88)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .foregroundColor(.white)
+                        .padding(.vertical, 14)
+                        .background(Color.secondaryGold)
+                        .foregroundColor(.backgroundDark)
                         .cornerRadius(CornerRadius.medium)
                 }
                 .accessibilityLabel(localizationManager.localized("post_admin_add_device_offer_primary"))
 
-                Button(action: onOpenDevicesTab) {
+                Button {
+                    HapticFeedback.impact(.light)
+                    onOpenDevicesTab()
+                } label: {
                     Text(localizationManager.localized("post_admin_add_device_offer_open_devices"))
                         .font(.bodyBold)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.secondaryGold.opacity(0.18))
+                        .padding(.vertical, 14)
                         .foregroundColor(.secondaryGold)
+                        .background(Color.clear)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                                .stroke(Color.secondaryGold.opacity(0.7), lineWidth: 1.5)
                         )
-                        .cornerRadius(CornerRadius.medium)
                 }
                 .accessibilityLabel(localizationManager.localized("post_admin_add_device_offer_open_devices"))
 
-                Button(action: onLater) {
+                Button {
+                    HapticFeedback.selection()
+                    onLater()
+                } label: {
                     Text(localizationManager.localized("post_admin_add_device_offer_secondary"))
-                        .font(.body)
+                        .font(.body.weight(.semibold))
+                        .underline(true, color: Color.secondaryGold.opacity(0.85))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .foregroundColor(.textSecondary)
+                        .padding(.vertical, 12)
+                        .foregroundColor(.white)
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel(localizationManager.localized("post_admin_add_device_offer_secondary"))
+                .accessibilityIdentifier("post_admin_add_device_later")
             }
         }
         .padding(Spacing.l)
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.backgroundDark, Color.primaryBlue.opacity(0.12)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(Color.backgroundDark)
                 .overlay(
                     RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 1.2)
                 )
         )
         .padding(Spacing.l)
@@ -3084,15 +3084,16 @@ private struct PostRegistrationDeviceGuideModal: View {
     let onLater: () -> Void
 
     var body: some View {
+        // W13: title/steps light on glass (match W12 / post-reg StormMesh).
         VStack(alignment: .leading, spacing: Spacing.m) {
             Text(localizationManager.localized("post_reg_device_title"))
                 .font(AladdinFamilyType.title2())
-                .foregroundColor(.textPrimary)
+                .foregroundColor(.white)
                 .accessibilityAddTraits(.isHeader)
 
             Text(localizationManager.localized("post_reg_device_subtitle"))
                 .font(AladdinFamilyType.subheadline())
-                .foregroundColor(.white.opacity(0.82))
+                .foregroundColor(.white.opacity(0.88))
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: Spacing.s) {
@@ -3101,7 +3102,7 @@ private struct PostRegistrationDeviceGuideModal: View {
                 Text("3. \(localizationManager.localized("post_reg_device_step_3"))")
             }
             .font(AladdinFamilyType.body())
-            .foregroundColor(.textPrimary)
+            .foregroundColor(.white.opacity(0.92))
 
             HStack(spacing: Spacing.s) {
                 Button {
@@ -3112,11 +3113,11 @@ private struct PostRegistrationDeviceGuideModal: View {
                         .font(AladdinFamilyType.body(weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.secondaryGold.opacity(0.18))
+                        .background(Color.secondaryGold.opacity(0.22))
                         .foregroundColor(.secondaryGold)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                                .stroke(Color.secondaryGold.opacity(0.55), lineWidth: 1)
                         )
                         .cornerRadius(CornerRadius.medium)
                 }

@@ -1,0 +1,23 @@
+{
+  "images": [
+    {
+      "filename": "SimpleHome_Hero_R06_GlobePin_1x.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "filename": "SimpleHome_Hero_R06_GlobePin_2x.png",
+      "idiom": "universal",
+      "scale": "2x"
+    },
+    {
+      "filename": "SimpleHome_Hero_R06_GlobePin_3x.png",
+      "idiom": "universal",
+      "scale": "3x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

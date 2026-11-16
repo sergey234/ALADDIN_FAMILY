@@ -42,6 +42,8 @@ struct DrivingReportsModal: View {
     @State private var playbackReport: DrivingReport?
     /// Wave B tip · Where→Езда→отчёты (strings `asc_tip_driving_reports_*`).
     @AppStorage("asc_tip_driving_reports_dismissed") private var drivingReportsTipDismissed = false
+    /// Explicit period×member delete (never on dismiss).
+    @State private var showDeletePeriodConfirm = false
     
     enum FilterType: String, CaseIterable {
         case all = "all"
@@ -117,6 +119,20 @@ struct DrivingReportsModal: View {
         .sheet(item: $playbackReport) { report in
             DrivingTripPlaybackSheet(report: report)
                 .environmentObject(localizationManager)
+        }
+        .alert(
+            localizationManager.localized("driving_delete_period_confirm"),
+            isPresented: $showDeletePeriodConfirm
+        ) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("driving_delete_period_button"), role: .destructive) {
+                let removed = FamilyDrivingTripLedger.deleteReports(
+                    memberId: resolvedMemberId,
+                    period: selectedPeriod
+                )
+                print("TRIP_AUTO UI delete period=\(selectedPeriod) member=\(resolvedMemberId) removed=\(removed.count)")
+                Task { await reloadDrivingData() }
+            }
         }
     }
 
@@ -426,6 +442,18 @@ struct DrivingReportsModal: View {
                 periodButton("week", title: localizationManager.localized("driving_reports_filter_week"))
                 periodButton("month", title: localizationManager.localized("driving_reports_filter_month"))
             }
+
+            Button {
+                HapticFeedback.selection()
+                showDeletePeriodConfirm = true
+            } label: {
+                Text(localizationManager.localized("driving_delete_period_button"))
+                    .font(AladdinFamilyType.caption(weight: .semibold))
+                    .foregroundColor(.red.opacity(0.9))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("driving_delete_period")
         }
         .padding(Spacing.m)
         .background(
@@ -741,7 +769,7 @@ struct DrivingReportsModal: View {
 
     private var emptyStateView: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text(localizationManager.localized("driving_reports_empty"))
+            Text(localizationManager.localized("driving_empty_filtered"))
                 .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .center)

@@ -950,7 +950,7 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// Hybrid-B authority: `GET /api/family/stats.familyRosterMax` = owner DB cap (same as POST /add gate).
-    /// Chip + `canAddFamilyMember` must follow this. Stale free=1 during real trial → optimistic trial=3.
+    /// Chip + `canAddFamilyMember` follow serverStats only (no optimistic inflate above server cap).
     func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
         guard let cap = stats.familyRosterMax, cap > 0 else { return }
         let used = stats.familyRosterUsed ?? stats.totalMembers
@@ -959,21 +959,20 @@ final class SubscriptionManager: ObservableObject {
         let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
         let tier = (stats.ownerSubscriptionTier ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let trialCap = Self.familyMemberLimitStatic(for: .trial)
-        var effectiveCap = cap
-        var source: FamilyQuotaSource = .serverStats
-        // Drift guard: stats say free/1 while client has real active trial → show trial slots.
+        let effectiveCap = cap
+        let source: FamilyQuotaSource = .serverStats
+        // Never inflate add-gate above serverStats (was: optimistic trial=3 while server free=1
+        // → UI «1 из 3» + unlocked Add → 409 family_roster_full 1/1). Server heal is SSOT.
         if isRealServerBackedTrialActiveForRosterCap,
            cap < trialCap,
            tier == "free" || tier.isEmpty || tier == "trial" {
-            effectiveCap = trialCap
-            source = .tariffFallback
             VisualLogger.shared.log(
-                "⚠️ FAMILY STATS stale free cap=\(cap) tier=\(tier.isEmpty ? "?" : tier) → optimistic trial=\(trialCap)",
+                "⚠️ FAMILY STATS drift: JWT/local trial but server cap=\(cap) tier=\(tier.isEmpty ? "?" : tier) — keep server gate (no optimistic \(trialCap))",
                 level: .warning,
                 category: "FAMILY"
             )
             logger.business(
-                "⚠️ Hybrid-B heal: stale serverStats max=\(cap) while real trial active → tariffFallback \(trialCap)"
+                "⚠️ Hybrid-B: stale serverStats max=\(cap) while local trial active — NOT inflating add gate"
             )
         }
         publishFamilyQuotaSnapshot(used: used, maxSlots: effectiveCap, source: source, familyId: familyId)

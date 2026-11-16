@@ -300,11 +300,18 @@ struct MainScreenWithRegistration: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 .scaleEffect(1.5)
             
-            Text(localizationManager.localized("registration_creating_family"))
+            Text(
+                localizationManager.localized(
+                    registrationVM.isAddingExistingFamilyMember
+                        ? "registration_adding_member"
+                        : "registration_creating_family"
+                )
+            )
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.white)
             
-            if let role = registrationVM.selectedRole, role == .teenager {
+            if !registrationVM.isAddingExistingFamilyMember,
+               let role = registrationVM.selectedRole, role == .teenager {
                 Text(localizationManager.localized("registration_creating_family_teenager"))
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.8))

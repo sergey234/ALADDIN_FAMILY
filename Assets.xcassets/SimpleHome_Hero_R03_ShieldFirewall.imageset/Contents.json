@@ -1,0 +1,23 @@
+{
+  "images": [
+    {
+      "filename": "SimpleHome_Hero_R03_ShieldFirewall_1x.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "filename": "SimpleHome_Hero_R03_ShieldFirewall_2x.png",
+      "idiom": "universal",
+      "scale": "2x"
+    },
+    {
+      "filename": "SimpleHome_Hero_R03_ShieldFirewall_3x.png",
+      "idiom": "universal",
+      "scale": "3x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

@@ -2,6 +2,7 @@ import SwiftUI
 import CoreLocation
 import MapKit
 import UIKit
+import PhotosUI
 import EventKit
 import UserNotifications
 
@@ -118,8 +119,8 @@ struct WhereIsPhoneScreen: View {
     @State private var lastWherePhoneTapAt: Date = .distantPast
     /// 1A: one deferred present after dismiss (member / S2 location sheet).
     @State private var pendingHubSheet: PendingHubSheet?
-    /// Explicit send-fail UI (CLError 0 was only statusText in scroll).
-    @State private var sendFailAlertMessage: String?
+    /// Explicit send-fail UI — denied/Always vs waiting GPS (CLError 0 ≠ Settings).
+    @State private var sendFailPrompt: ShareLocationFailPrompt?
     @State private var statusText: String?
     @State private var locatorHint: String?
     @State private var showPlaces = false
@@ -149,11 +150,11 @@ struct WhereIsPhoneScreen: View {
     @State private var quietMeters: Double = FamilyMapQuietZoneStore.meters
     @State private var quietZoneEnabled: Bool = FamilyMapQuietZoneStore.isEnabled
     @State private var selectedMember: HubMemberCard?
-    /// P0-5: member avatar crop pipeline (reuse AvatarCropEditor + ImagePicker).
+    /// P0-5: member avatar — UIKit PHPicker+crop (NOT SwiftUI sheet/cover while journal sheet is open).
     @State private var memberAvatarImage: UIImage?
     @State private var memberAvatarEpoch: Int = 0
-    @State private var showMemberImagePicker = false
-    @State private var memberCropSource: UIImage?
+    /// Retains PHPicker delegate while UIKit modal is up (SwiftUI @State alone would drop it).
+    @State private var memberAvatarPickerBridge: MemberAvatarPhotoPickerBridge?
     /// P1.4 / C19 gap hub from map gear.
     @State private var showFamilyCircleSettings = false
     /// Envelope → inbox as sheet on map (do NOT leave hub → Stats/Main).
@@ -162,6 +163,8 @@ struct WhereIsPhoneScreen: View {
     /// P1.1 journal period (filters trips + geofence trail — not cosmetic-only).
     @State private var journalPeriod: JournalPeriod = .today
     @State private var journalCustomDate: Date = Date()
+    /// P1.2 weekly trips card on member sheet — period filter (today/week/month).
+    @State private var memberWeeklyPeriod: String = "week"
 
     private enum JournalPeriod: String, CaseIterable, Identifiable {
         case today, week, custom
@@ -409,10 +412,6 @@ struct WhereIsPhoneScreen: View {
             }) { member in
                 memberDetailSheet(member)
             }
-            // Device QA: PHPicker as root fullScreenCover — nested sheet-on-sheet → 8BADF00D hang on SE.
-            .fullScreenCover(isPresented: $showMemberImagePicker) {
-                ImagePicker(selectedImage: $memberCropSource)
-            }
             .sheet(isPresented: $showFamilyCircleSettings) {
                 familyCircleSettingsSheet
                     .environmentObject(localizationManager)
@@ -423,28 +422,7 @@ struct WhereIsPhoneScreen: View {
                     .environmentObject(localizationManager)
                     .environmentObject(navigationManager)
             }
-            .fullScreenCover(isPresented: Binding(
-                get: { memberCropSource != nil },
-                set: { if !$0 { memberCropSource = nil } }
-            )) {
-                if let source = memberCropSource {
-                    AvatarCropEditor(
-                        image: source,
-                        onCommit: { cropped in
-                            _ = ProfileImageManager.shared.saveProfileImage(cropped, for: .main)
-                            memberAvatarImage = cropped
-                            memberAvatarEpoch += 1
-                            memberCropSource = nil
-                            showMemberImagePicker = false
-                            HapticFeedback.notification(.success)
-                        },
-                        onCancel: {
-                            memberCropSource = nil
-                        }
-                    )
-                    .environmentObject(localizationManager)
-                }
-            }
+            // Avatar photo: UIKit present on top of journal sheet — never a 2nd SwiftUI sheet/cover.
     }
 
     private var quietZoneSheet: some View {
@@ -563,15 +541,29 @@ struct WhereIsPhoneScreen: View {
             .alert(
                 localizationManager.localized("where_phone_share_button"),
                 isPresented: Binding(
-                    get: { sendFailAlertMessage != nil },
-                    set: { if !$0 { sendFailAlertMessage = nil } }
+                    get: { sendFailPrompt != nil },
+                    set: { if !$0 { sendFailPrompt = nil } }
                 )
             ) {
+                if sendFailPrompt?.allowsRetry == true {
+                    Button(localizationManager.localized("common_retry")) {
+                        sendFailPrompt = nil
+                        sendPlace()
+                    }
+                }
+                if sendFailPrompt?.opensSettings == true {
+                    Button(localizationManager.localized("map_perm_open_settings")) {
+                        sendFailPrompt = nil
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                }
                 Button(localizationManager.localized("common_ok"), role: .cancel) {
-                    sendFailAlertMessage = nil
+                    sendFailPrompt = nil
                 }
             } message: {
-                Text(sendFailAlertMessage ?? "")
+                Text(sendFailPrompt?.message ?? "")
             }
     }
 
@@ -595,8 +587,7 @@ struct WhereIsPhoneScreen: View {
         showInviteRole = false
         showCrashConfirm = false
         selectedMember = nil
-        showMemberImagePicker = false
-        memberCropSource = nil
+        memberAvatarPickerBridge = nil
         showFamilyCircleSettings = false
         if tab != .location {
             showLocationSystemSheet = false
@@ -1213,6 +1204,24 @@ struct WhereIsPhoneScreen: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("where_phone_refresh_my_place")
             .accessibilityLabel(localizationManager.localized("where_phone_refresh_location_a11y"))
+
+            if highlightedTripRoute.count >= 2 {
+                Button {
+                    HapticFeedback.selection()
+                    print("WHERE_PHONE clear trip polyline points=\(highlightedTripRoute.count)")
+                    highlightedTripRoute = []
+                } label: {
+                    Text(localizationManager.localized("map_clear_route"))
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.backgroundDark)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.secondaryGold.opacity(0.95))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("where_phone_clear_trip_route")
+            }
 
             if liveLocation.isCoarseAccuracy {
                 Button {
@@ -2779,7 +2788,7 @@ struct WhereIsPhoneScreen: View {
                     }
 
                     // Trip cards (real endpoints / honest empty) — densitiy mini-map in S19-POLISH.
-                    memberRecentTripsCard
+                    memberRecentTripsCard(memberId: member.id)
 
                     // Stays today (real geofences only).
                     densPlacesDayCard
@@ -2902,7 +2911,11 @@ struct WhereIsPhoneScreen: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.textPrimary)
             if trail.isEmpty && trips.isEmpty {
-                Text(localizationManager.localized("family_day_journal_empty"))
+                Text(
+                    journalPeriod == .today
+                        ? localizationManager.localized("family_day_journal_empty")
+                        : localizationManager.localized("family_day_journal_empty_filtered")
+                )
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
@@ -3000,8 +3013,7 @@ struct WhereIsPhoneScreen: View {
     /// P0-5: Life360-style overlapping avatar — tap opens crop/pan.
     private func memberAvatarHeader(_ member: HubMemberCard) -> some View {
         Button {
-            // Present picker from root fullScreenCover (not nested under this sheet).
-            showMemberImagePicker = true
+            presentMemberAvatarPhotoViaUIKit()
         } label: {
             ZStack {
                 Circle()
@@ -3038,21 +3050,55 @@ struct WhereIsPhoneScreen: View {
         .accessibilityLabel(localizationManager.localized("avatar_crop_title"))
     }
 
+    /// Build 25 false-fix: SwiftUI `.fullScreenCover` next to `.sheet(item: selectedMember)` still
+    /// queues a 2nd presentation → infinite “only presenting a single sheet” → 8BADF00D.
+    /// UIKit present on the top VC (journal sheet) is outside that SwiftUI rule.
+    private func presentMemberAvatarPhotoViaUIKit() {
+        let loc = localizationManager
+        let bridge = MemberAvatarPhotoPickerBridge(
+            localization: loc,
+            onFinished: { cropped in
+                if let cropped {
+                    _ = ProfileImageManager.shared.saveProfileImage(cropped, for: .main)
+                    memberAvatarImage = cropped
+                    memberAvatarEpoch += 1
+                    HapticFeedback.notification(.success)
+                    print("WHERE_PHONE avatar photo UIKit crop committed")
+                } else {
+                    print("WHERE_PHONE avatar photo UIKit cancelled")
+                }
+                memberAvatarPickerBridge = nil
+            }
+        )
+        memberAvatarPickerBridge = bridge
+        bridge.start()
+    }
+
     /// S19: trip card + mini-map. Mini-map → gold polyline on Location map (not Driving tab).
-    private var memberRecentTripsCard: some View {
+    private func memberRecentTripsCard(memberId: String) -> some View {
         let liveTrip = Self.liveTripPreviewReport()
+        let periodTrips = FamilyDrivingTripLedger.reports(memberId: memberId, period: memberWeeklyPeriod)
+        let preview = liveTrip ?? periodTrips.first
         return VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("map_member_weekly_trips_title"))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.textPrimary)
-            if let liveTrip {
-                Text("\(Self.streetTitleWithoutAtPrefix(liveTrip.startLocation)) → \(Self.streetTitleWithoutAtPrefix(liveTrip.endLocation))")
+
+            HStack(spacing: Spacing.s) {
+                memberWeeklyPeriodChip("today", titleKey: "driving_reports_filter_today")
+                memberWeeklyPeriodChip("week", titleKey: "driving_reports_filter_week")
+                memberWeeklyPeriodChip("month", titleKey: "driving_reports_filter_month")
+            }
+            .accessibilityIdentifier("where_phone_member_weekly_period")
+
+            if let preview {
+                Text("\(Self.streetTitleWithoutAtPrefix(preview.startLocation)) → \(Self.streetTitleWithoutAtPrefix(preview.endLocation))")
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.secondaryGold)
                 Button {
-                    focusTripOnLocationMap(report: liveTrip)
+                    focusTripOnLocationMap(report: preview)
                 } label: {
-                    TripEndpointMapPreview(report: liveTrip)
+                    TripEndpointMapPreview(report: preview)
                         .frame(height: 120)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         .contentShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
@@ -3062,13 +3108,27 @@ struct WhereIsPhoneScreen: View {
                 .accessibilityIdentifier("where_phone_member_trip_minimap")
                 .accessibilityLabel(localizationManager.localized("map_member_weekly_trips_title"))
             } else {
-                Text(localizationManager.localized("map_journal_empty"))
+                Text(localizationManager.localized("driving_empty_filtered"))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.92))
                 Text(localizationManager.localized("trip_no_map_track"))
                     .font(.caption2)
                     .foregroundColor(.white.opacity(0.92))
             }
+
+            if highlightedTripRoute.count >= 2 {
+                Button {
+                    HapticFeedback.selection()
+                    highlightedTripRoute = []
+                } label: {
+                    Text(localizationManager.localized("map_clear_route"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("where_phone_member_clear_route")
+            }
+
             Button {
                 HapticFeedback.impact(.light)
                 selectedMember = nil
@@ -3093,6 +3153,24 @@ struct WhereIsPhoneScreen: View {
                 .fill(Color.backgroundMedium.opacity(0.28))
         )
         .accessibilityIdentifier("where_phone_member_recent_trips")
+    }
+
+    private func memberWeeklyPeriodChip(_ period: String, titleKey: String) -> some View {
+        Button {
+            HapticFeedback.selection()
+            memberWeeklyPeriod = period
+        } label: {
+            Text(localizationManager.localized(titleKey))
+                .font(.caption2.weight(.semibold))
+                .foregroundColor(memberWeeklyPeriod == period ? .backgroundDark : .textPrimary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(memberWeeklyPeriod == period ? Color.secondaryGold : Color.backgroundMedium.opacity(0.45))
+                )
+        }
+        .buttonStyle(.plain)
     }
 
     /// Device QA: minimap / journal trip → stay on Location, draw route (not jump to Driving).
@@ -3297,10 +3375,8 @@ struct WhereIsPhoneScreen: View {
     private static func weekStartLabel() -> String {
         let cal = Calendar.current
         let start = cal.dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
-        let f = DateFormatter()
-        f.locale = .current
-        f.setLocalizedDateFormatFromTemplate("EEEEdMMM")
-        return f.string(from: start)
+        // Reuse genitive weekday path so «С %@» → «С понедельника…» not «С понедельник…».
+        return dayJournalDateLabel(date: start)
     }
 
     private func maybeOfferAlwaysAllow() {
@@ -4312,9 +4388,9 @@ struct WhereIsPhoneScreen: View {
                     self.isSending = false
                     let ns = error as NSError
                     print("WHERE_PHONE send fail domain=\(ns.domain) code=\(ns.code)")
-                    let message = self.shareFailureText(error)
-                    self.statusText = message
-                    self.sendFailAlertMessage = message
+                    let prompt = self.shareFailurePrompt(error)
+                    self.statusText = prompt.message
+                    self.sendFailPrompt = prompt
                 case .success(let location):
                     print("WHERE_PHONE send ok")
                     self.deliver(location)
@@ -4323,15 +4399,54 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
-    private func shareFailureText(_ error: Error) -> String {
+    /// Hybrid★: Settings only when auth is actually bad; timeout/unknown → waiting + Retry.
+    private func shareFailurePrompt(_ error: Error) -> ShareLocationFailPrompt {
+        let auth = LocationManager.shared.authorizationStatus
         if case WherePhoneLocationError.denied = error {
-            return localizationManager.localized("where_phone_share_denied")
+            return ShareLocationFailPrompt(
+                message: localizationManager.localized("where_phone_share_denied"),
+                opensSettings: true,
+                allowsRetry: false
+            )
         }
         let ns = error as NSError
         if ns.domain == kCLErrorDomain, ns.code == CLError.denied.rawValue {
-            return localizationManager.localized("where_phone_share_denied")
+            return ShareLocationFailPrompt(
+                message: localizationManager.localized("where_phone_share_denied"),
+                opensSettings: true,
+                allowsRetry: false
+            )
         }
-        return localizationManager.localized("where_phone_share_no_gps")
+        if case WherePhoneLocationError.unavailable = error,
+           !CLLocationManager.locationServicesEnabled() {
+            return ShareLocationFailPrompt(
+                message: localizationManager.localized("where_phone_share_denied"),
+                opensSettings: true,
+                allowsRetry: false
+            )
+        }
+        // Family map: When In Use alone → ask for Always (Settings), still allow Retry.
+        if auth == .authorizedWhenInUse {
+            return ShareLocationFailPrompt(
+                message: localizationManager.localized("where_phone_share_need_always"),
+                opensSettings: true,
+                allowsRetry: true
+            )
+        }
+        // Always / authorized but no fix yet (timeout, kCLErrorLocationUnknown=0, etc.).
+        if auth == .authorizedAlways || auth == .authorizedWhenInUse {
+            return ShareLocationFailPrompt(
+                message: localizationManager.localized("where_phone_share_waiting_gps"),
+                opensSettings: false,
+                allowsRetry: true
+            )
+        }
+        // notDetermined / restricted / unknown — Settings path.
+        return ShareLocationFailPrompt(
+            message: localizationManager.localized("where_phone_share_denied"),
+            opensSettings: true,
+            allowsRetry: false
+        )
     }
 
     private func deliver(_ location: CLLocation) {
@@ -4401,6 +4516,107 @@ struct WhereIsPhoneScreen: View {
             }
         }
         #endif
+    }
+}
+
+// MARK: - Member avatar photo (UIKit) — avoids SwiftUI nested sheet/cover → 8BADF00D
+
+/// Presents PHPicker + AvatarCropEditor via UIKit on the topmost VC (usually the day-journal sheet).
+/// Must NOT use SwiftUI `.sheet` / `.fullScreenCover` while `selectedMember` sheet is already up.
+final class MemberAvatarPhotoPickerBridge: NSObject, PHPickerViewControllerDelegate {
+    private let localization: LocalizationManager
+    private let onFinished: (UIImage?) -> Void
+    private weak var cropHost: UIViewController?
+
+    init(localization: LocalizationManager, onFinished: @escaping (UIImage?) -> Void) {
+        self.localization = localization
+        self.onFinished = onFinished
+    }
+
+    func start() {
+        guard let host = Self.topPresentedViewController() else {
+            print("WHERE_PHONE avatar photo UIKit — no host VC")
+            onFinished(nil)
+            return
+        }
+        print("WHERE_PHONE avatar photo UIKit present PHPicker over journal sheet")
+        var config = PHPickerConfiguration(photoLibrary: .shared())
+        config.filter = .images
+        config.selectionLimit = 1
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = self
+        host.present(picker, animated: true)
+    }
+
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        guard let provider = results.first?.itemProvider,
+              provider.canLoadObject(ofClass: UIImage.self) else {
+            picker.dismiss(animated: true) { [weak self] in
+                self?.onFinished(nil)
+            }
+            return
+        }
+        provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+            DispatchQueue.main.async {
+                guard let self else {
+                    picker.dismiss(animated: true)
+                    return
+                }
+                guard let image = object as? UIImage else {
+                    picker.dismiss(animated: true) { self.onFinished(nil) }
+                    return
+                }
+                picker.dismiss(animated: true) {
+                    self.presentCrop(image: image)
+                }
+            }
+        }
+    }
+
+    private func presentCrop(image: UIImage) {
+        guard let host = Self.topPresentedViewController() else {
+            onFinished(nil)
+            return
+        }
+        print("WHERE_PHONE avatar photo UIKit present crop")
+        let box = CropDismissBox()
+        let editor = AvatarCropEditor(
+            image: image,
+            onCommit: { [weak self] cropped in
+                box.controller?.dismiss(animated: true) {
+                    self?.onFinished(cropped)
+                }
+            },
+            onCancel: { [weak self] in
+                box.controller?.dismiss(animated: true) {
+                    self?.onFinished(nil)
+                }
+            }
+        )
+        .environmentObject(localization)
+        let vc = UIHostingController(rootView: editor)
+        vc.modalPresentationStyle = .fullScreen
+        vc.view.backgroundColor = .black
+        box.controller = vc
+        cropHost = vc
+        host.present(vc, animated: true)
+    }
+
+    private static func topPresentedViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let window = scenes
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)
+            ?? scenes.first?.windows.first
+        var top = window?.rootViewController
+        while let presented = top?.presentedViewController {
+            top = presented
+        }
+        return top
+    }
+
+    private final class CropDismissBox {
+        weak var controller: UIViewController?
     }
 }
 
@@ -4619,6 +4835,14 @@ private final class WherePhoneOneShot: NSObject, ObservableObject, CLLocationMan
 private enum WherePhoneLocationError: Error {
     case denied
     case unavailable
+}
+
+/// Share-location fail UI: Settings only when auth is bad; Retry when GPS still hunting.
+private struct ShareLocationFailPrompt: Identifiable {
+    let id = UUID()
+    let message: String
+    let opensSettings: Bool
+    let allowsRetry: Bool
 }
 
 struct WherePhoneFamilySignal: Identifiable, Equatable {

@@ -904,6 +904,9 @@
 "driving_reports_violations" = "Нарушения";
 "driving_reports_history_title" = "История поездок";
 "driving_reports_empty" = "Пока нет данных о поездках";
+"driving_empty_filtered" = "Поездок пока нет";
+"driving_delete_period_button" = "Удалить за период";
+"driving_delete_period_confirm" = "Удалить поездки выбранного участника за этот период?";
 "driving_reports_empty_lead" = "Отчёт появится после реальной поездки.";
 "driving_reports_report_cta" = "Отчёт о реальной поездке";
 "driving_reports_done" = "Готово";
@@ -3387,8 +3390,10 @@
 "where_phone_places_empty" = "Добавить дом или школу";
 "where_phone_places_none" = "Пока нет сигнала";
 "where_phone_places_waiting" = "%@ · пока нет сигнала";
-"where_phone_share_no_gps" = "Место ещё не определилось. Включите доступ к месту в настройках iPhone.";
-"where_phone_share_denied" = "Место выключено в настройках iPhone.";
+"where_phone_share_no_gps" = "Место ещё ищем. Подождите у окна или нажмите Повторить.";
+"where_phone_share_waiting_gps" = "Место ещё ищем. Подождите у окна или нажмите Повторить.";
+"where_phone_share_need_always" = "Для карты семьи нужно: Геопозиция → Всегда.";
+"where_phone_share_denied" = "Нет доступа к месту. Откройте Настройки → ALADDIN → Геопозиция → Всегда.";
 "where_phone_event_line" = "%@ · %@ · %@";
 "where_phone_signal_arrived" = "пришёл · %@";
 "where_phone_signal_left" = "ушёл · %@";
@@ -3606,6 +3611,8 @@
 /* journal / share / privacy */
 "family_day_journal_title" = "Журнал дня";
 "family_day_journal_empty" = "Пока нет точек и поездок за сегодня";
+"family_day_journal_empty_filtered" = "Пока нет точек и поездок за этот период";
+"map_clear_route" = "Очистить маршрут";
 "map_journal_title" = "История за сегодня";
 "map_journal_empty" = "Пока нет перемещений за сегодня";
 "map_share_link_title" = "Ссылка на место";

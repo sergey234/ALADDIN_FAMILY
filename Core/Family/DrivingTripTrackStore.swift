@@ -74,4 +74,12 @@ enum DrivingTripTrackStore {
             UserDefaults.standard.set(data, forKey: pointsPrefix + tripId)
         }
     }
+
+    /// Drop stored polyline for a trip (explicit delete only — never on modal dismiss).
+    static func remove(tripId: String) {
+        UserDefaults.standard.removeObject(forKey: pointsPrefix + tripId)
+        if activeTripId == tripId {
+            activeTripId = nil
+        }
+    }
 }

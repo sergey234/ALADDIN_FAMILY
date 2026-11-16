@@ -261,8 +261,8 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
     }
 #endif
 
-    /// Real active trial + stale stats free=1 → optimistic trial=3 (Main/Family SSOT, add allowed).
-    func testRealTrialHealsStaleServerFreeCapToThree() {
+    /// Real local trial + stale stats free=1 → keep server gate (no optimistic unlock → 409 1/1).
+    func testRealTrialDoesNotInflateStaleServerFreeCap() {
         UserDefaults.standard.set("FAM_HYBRID_TRIAL", forKey: FamilyLocalStore.familyIdKey)
         UserDefaults.standard.removeObject(forKey: "debug_qa_local_trial_override_v1")
         UserDefaults.standard.synchronize()
@@ -296,12 +296,61 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         )
         subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
 
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 1, "Must follow serverStats max=1 (no optimistic 3)")
+        let display = subscriptionManager.effectiveFamilyDisplay(localRosterCount: 1)
+        XCTAssertEqual(display.slotsMax, 1)
+        XCTAssertEqual(display.level, .trial)
+        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 1)
+        XCTAssertFalse(allowed, "Must not unlock Add while server cap is still 1")
+    }
+
+    /// After server heal returns trial max=3, add is allowed at used=1.
+    func testServerTrialStatsMaxThreeAllowsAdd() {
+        UserDefaults.standard.set("FAM_HYBRID_TRIAL_OK", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.removeObject(forKey: "debug_qa_local_trial_override_v1")
+        UserDefaults.standard.synchronize()
+
+        let trial = TrialInfo(
+            startDate: Date().addingTimeInterval(-86_400),
+            endDate: Date().addingTimeInterval(86_400 * 9),
+            durationDays: 14
+        )
+        let status = SubscriptionStatus(
+            level: .trial,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: trial,
+            limits: SubscriptionLimits.trialLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(status)
+
+        let stats = FamilyStatsResponse(
+            totalMembers: 1,
+            totalDevices: 0,
+            totalThreats: 0,
+            protectionLevel: 80,
+            familyStatus: "protected",
+            familyStatusMessage: nil,
+            familyRosterUsed: 1,
+            familyRosterMax: 3,
+            ownerSubscriptionTier: "trial"
+        )
+        subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
+
         XCTAssertEqual(subscriptionManager.currentFamilyLimit, 3)
         let display = subscriptionManager.effectiveFamilyDisplay(localRosterCount: 1)
         XCTAssertEqual(display.slotsMax, 3)
-        XCTAssertEqual(display.level, .trial)
         let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 1)
-        XCTAssertTrue(allowed, "Real trial must allow add when only 1 of 3 used")
+        XCTAssertTrue(allowed, "Server trial max=3 must allow add when only 1 used")
+    }
+
+    func testParseFamilyRosterFullCapacityFrom409Detail() {
+        let parsed = APIService.parseFamilyRosterFullCapacity(from: "family_roster_full|3/3|trial")
+        XCTAssertEqual(parsed?.used, 3)
+        XCTAssertEqual(parsed?.max, 3)
+        XCTAssertNil(APIService.parseFamilyRosterFullCapacity(from: "context mismatch"))
     }
 
     func testPaidUpgradeMayOverwriteServerStatsOptimistically() {

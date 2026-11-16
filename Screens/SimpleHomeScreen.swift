@@ -43,8 +43,9 @@ struct SimpleHomeScreen: View {
     /// CapCut hero carousel (R01=5811 cutout + R02…R06). Off when Reduce Motion.
     @State private var hybridHeroIndex = 0
     @State private var hybridHeroRotationTask: Task<Void, Never>?
-    /// Preloaded UIImages — avoids empty circle while Asset Catalog decodes on device (SE).
-    @State private var hybridHeroImages: [UIImage] = []
+    /// Preloaded UIImages aligned 1:1 with `hybridHeroAssetNames` (nil = missing asset).
+    /// Do not `compactMap` — index must match rotation idx or the center goes empty/wrong.
+    @State private var hybridHeroImages: [UIImage?] = []
     /// Nudge hero art slightly up inside the circle (optical center).
     private static let hybridHeroYNudge: CGFloat = -14
 
@@ -369,10 +370,19 @@ struct SimpleHomeScreen: View {
                     Image(uiImage: preloaded)
                         .resizable()
                         .scaledToFit()
-                } else {
+                } else if UIImage(named: name) != nil {
                     Image(name)
                         .resizable()
                         .scaledToFit()
+                } else {
+                    // Honest empty — never blank hole without a log trail.
+                    Circle()
+                        .fill(Color.secondaryGold.opacity(0.18))
+                        .overlay(
+                            Image(systemName: "photo")
+                                .font(.title2)
+                                .foregroundColor(.secondaryGold.opacity(0.7))
+                        )
                 }
             }
             .frame(width: d, height: d)
@@ -391,9 +401,17 @@ struct SimpleHomeScreen: View {
 
     private func preloadHybridHeroImagesIfNeeded() {
         guard hybridHeroImages.count != Self.hybridHeroAssetNames.count else { return }
-        hybridHeroImages = Self.hybridHeroAssetNames.compactMap { UIImage(named: $0) }
-        if hybridHeroImages.count != Self.hybridHeroAssetNames.count {
-            print("SimpleHome hero preload partial \(hybridHeroImages.count)/\(Self.hybridHeroAssetNames.count)")
+        hybridHeroImages = Self.hybridHeroAssetNames.map { name in
+            let img = UIImage(named: name)
+            if img == nil {
+                print("HERO_ROTATE asset_nil name=\(name)")
+            }
+            return img
+        }
+        let loaded = hybridHeroImages.compactMap { $0 }.count
+        print("HERO_ROTATE preload loaded=\(loaded)/\(Self.hybridHeroAssetNames.count)")
+        if loaded != Self.hybridHeroAssetNames.count {
+            print("SimpleHome hero preload partial \(loaded)/\(Self.hybridHeroAssetNames.count)")
         }
     }
 
@@ -437,13 +455,19 @@ struct SimpleHomeScreen: View {
     }
 
     private func startHybridHeroRotationIfNeeded() {
-        guard !reduceMotion else { return }
+        guard !reduceMotion else {
+            let loaded = hybridHeroImages.compactMap { $0 }.count
+            print("HERO_ROTATE skip_reduce_motion idx=\(hybridHeroIndex)/\(Self.hybridHeroAssetNames.count) loaded=\(loaded)")
+            return
+        }
         guard Self.hybridHeroAssetNames.count > 1 else { return }
         // Already running — keep it (device remounts used to cancel → single stuck frame).
         if let existing = hybridHeroRotationTask, !existing.isCancelled {
             return
         }
         hybridHeroRotationTask?.cancel()
+        let loaded0 = hybridHeroImages.compactMap { $0 }.count
+        print("HERO_ROTATE start idx=\(hybridHeroIndex)/\(Self.hybridHeroAssetNames.count) loaded=\(loaded0)")
         hybridHeroRotationTask = Task { @MainActor in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: Self.hybridHeroRotationSeconds)
@@ -451,6 +475,11 @@ struct SimpleHomeScreen: View {
                 withAnimation(.easeInOut(duration: Self.hybridHeroCrossfade)) {
                     hybridHeroIndex = (hybridHeroIndex + 1) % Self.hybridHeroAssetNames.count
                 }
+                let loaded = hybridHeroImages.compactMap { $0 }.count
+                let name = Self.hybridHeroAssetNames[hybridHeroIndex % Self.hybridHeroAssetNames.count]
+                let ok = (hybridHeroIndex < hybridHeroImages.count && hybridHeroImages[hybridHeroIndex] != nil)
+                    || UIImage(named: name) != nil
+                print("HERO_ROTATE tick idx=\(hybridHeroIndex)/\(Self.hybridHeroAssetNames.count) loaded=\(loaded) frame_ok=\(ok) name=\(name)")
             }
         }
     }

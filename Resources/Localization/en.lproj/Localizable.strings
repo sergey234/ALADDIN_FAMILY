@@ -803,6 +803,9 @@
 "driving_reports_violations" = "Violations";
 "driving_reports_history_title" = "Trip History";
 "driving_reports_empty" = "No trip data yet";
+"driving_empty_filtered" = "No trips yet";
+"driving_delete_period_button" = "Delete for period";
+"driving_delete_period_confirm" = "Delete this member’s trips for the selected period?";
 "driving_reports_empty_lead" = "A report appears after a real trip.";
 "driving_reports_report_cta" = "Real trip report";
 "driving_reports_done" = "Done";
@@ -3476,8 +3479,10 @@
 "where_phone_places_empty" = "Add home or school";
 "where_phone_places_none" = "No signal yet";
 "where_phone_places_waiting" = "%@ · no signal yet";
-"where_phone_share_no_gps" = "Place not found yet. Turn on place access in iPhone Settings.";
-"where_phone_share_denied" = "Location is off in iPhone Settings.";
+"where_phone_share_no_gps" = "Still finding location. Wait near a window or tap Retry.";
+"where_phone_share_waiting_gps" = "Still finding location. Wait near a window or tap Retry.";
+"where_phone_share_need_always" = "Family map needs Location → Always.";
+"where_phone_share_denied" = "Location is off. Settings → ALADDIN → Location → Always.";
 "where_phone_event_line" = "%@ · %@ · %@";
 "where_phone_signal_arrived" = "arrived · %@";
 "where_phone_signal_left" = "left · %@";
@@ -3695,6 +3700,8 @@
 /* journal / share / privacy */
 "family_day_journal_title" = "Day journal";
 "family_day_journal_empty" = "No places or trips today yet";
+"family_day_journal_empty_filtered" = "No places or trips for this period yet";
+"map_clear_route" = "Clear route";
 "map_journal_title" = "Today’s history";
 "map_journal_empty" = "No moves today yet";
 "map_share_link_title" = "Location link";

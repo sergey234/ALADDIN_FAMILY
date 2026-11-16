@@ -73,6 +73,17 @@ private let logger = MasterLogger.shared
             if let detail = json["detail"] as? String { return detail }
             if let message = json["message"] as? String { return message }
             if let detail = json["detail"] as? [String: Any] {
+                if let code = detail["error_code"] as? String, code == "family_roster_full" {
+                    let used = (detail["roster_used"] as? Int)
+                        ?? (detail["roster_used"] as? NSNumber)?.intValue
+                    let maxSlots = (detail["roster_max"] as? Int)
+                        ?? (detail["roster_max"] as? NSNumber)?.intValue
+                    let tier = (detail["owner_subscription_level"] as? String) ?? ""
+                    if let used, let maxSlots, maxSlots > 0 {
+                        return "family_roster_full|\(used)/\(maxSlots)|\(tier)"
+                    }
+                    return code
+                }
                 return (detail["error_code"] as? String)
                     ?? (detail["error"] as? String)
                     ?? (detail["message"] as? String)
