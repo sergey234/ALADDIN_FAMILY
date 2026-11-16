@@ -1278,64 +1278,56 @@ struct SimpleHomeScreen: View {
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_plan",
                             systemImage: "creditcard.fill",
-                            id: "pay_pains_menu_plan",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_plan"
                         ) {
                             navigationManager.navigateTo(.tariffs)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_settings",
                             systemImage: "gearshape.fill",
-                            id: "pay_pains_menu_settings",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_settings"
                         ) {
                             navigationManager.navigateTo(.settings)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_protection",
                             systemImage: "shield.fill",
-                            id: "pay_pains_menu_protection",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_protection"
                         ) {
                             navigationManager.navigateTo(.networkProtection)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_ai_friends",
                             systemImage: "person.2.wave.2.fill",
-                            id: "pay_pains_menu_ai_friends",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_ai_friends"
                         ) {
                             navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_ai_helper",
                             systemImage: "brain.head.profile",
-                            id: "pay_pains_menu_ai_helper",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_ai_helper"
                         ) {
                             navigationManager.navigateTo(.aiAssistant)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_family_chat",
                             systemImage: "message.fill",
-                            id: "pay_pains_menu_family_chat",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_family_chat"
                         ) {
                             navigationManager.navigateTo(.familyChat)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_notifications_analytics",
                             systemImage: "bell.fill",
-                            id: "pay_pains_menu_notifications_analytics",
-                            restoreMenuOnBack: true
+                            id: "pay_pains_menu_notifications_analytics"
                         ) {
                             navigationManager.navigateTo(.notifications)
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_full_screen",
                             systemImage: "rectangle.split.2x1",
-                            id: "pay_pains_menu_full_screen",
-                            restoreMenuOnBack: false
+                            id: "pay_pains_menu_full_screen"
                         ) {
                             navigationManager.navigateToRoot(.main)
                         }
@@ -1362,15 +1354,16 @@ struct SimpleHomeScreen: View {
         titleKey: String,
         systemImage: String,
         id: String,
-        restoreMenuOnBack: Bool,
         action: @escaping () -> Void
     ) -> some View {
         Button {
-            restorePayPainsMenuOnReturn = restoreMenuOnBack
-            // Device QA: navigate FIRST, then dismiss sheet.
-            // Old path: dismiss → flash SimpleHome → then navigate (Aladdin start blink).
-            pendingMoreNavigation = nil
-            action()
+            // REGRESSION GUARD (build 24 «navigate first» broke this):
+            // navigateTo while sheet is up leaves «Все разделы» covering the
+            // destination — user must swipe it down N times. Always dismiss
+            // first; navigate in sheet onDismiss via pendingMoreNavigation.
+            // Do NOT restore menu on goBack — back = SimpleHome only.
+            restorePayPainsMenuOnReturn = false
+            pendingMoreNavigation = action
             showPayPainsMenu = false
             showMoreSheet = false
         } label: {
@@ -1734,9 +1727,9 @@ struct SimpleHomeScreen: View {
         action: @escaping () -> Void
     ) -> some View {
         Button {
-            // Same as payPainsMenuGlassRow: navigate first — avoid SimpleHome flash.
-            pendingMoreNavigation = nil
-            action()
+            // Same as payPainsMenuGlassRow: dismiss sheet, then navigate onDismiss.
+            restorePayPainsMenuOnReturn = false
+            pendingMoreNavigation = action
             showMoreSheet = false
             showPayPainsMenu = false
         } label: {

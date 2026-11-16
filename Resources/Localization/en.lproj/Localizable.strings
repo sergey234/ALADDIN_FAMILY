@@ -3926,6 +3926,20 @@
 "drive_inc_explain_data_note" = "No sensor trips yet — counters stay 0. On the Driving tab tap Allow Motion & Fitness, then take a drive.";
 "drive_export_pdf" = "Share PDF";
 "drive_pdf_disclaimer" = "Family estimate only — not an insurance report.";
+"drive_pdf_family_title" = "Family driving report";
+"drive_pdf_generated" = "Generated: %@";
+"drive_pdf_member_col" = "Member";
+"drive_pdf_trips_col" = "Trips";
+"drive_pdf_km_col" = "km";
+"drive_pdf_score_col" = "Score";
+"drive_pdf_risks_col" = "Risks s/a/b";
+"drive_pdf_date_col" = "Date";
+"drive_pdf_route_col" = "Route";
+"drive_pdf_turn_col" = "Turns";
+"drive_pdf_family_total" = "Total";
+"drive_pdf_no_trips_member" = "No trips";
+"drive_pdf_phone_na" = "Phone: not counted yet";
+"drive_pdf_empty_period" = "No trips for this period";
 /* ===== Family Safety Round2 S01–S80 (2026-11-09) ===== */
 "antifake_trust_banner" = "This is an assessment, not a guarantee.";
 "antifake_trust_banner_more" = "More";

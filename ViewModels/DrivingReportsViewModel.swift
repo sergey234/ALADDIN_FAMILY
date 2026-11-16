@@ -68,18 +68,20 @@ class DrivingReportsViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
 
-        let normalizedPeriod: String = {
-            switch period {
-            case "today", "week", "month", "year": return period
-            default: return "week"
-            }
-        }()
+        let normalizedPeriod = Self.normalizePeriod(period)
+        let merged = await fetchMergedReports(userId: userId, period: normalizedPeriod)
+        reports = merged
+        stats = FamilyDrivingTripLedger.stats(from: merged, period: normalizedPeriod)
+        errorMessage = nil
+    }
 
+    /// Snapshot for family PDF — does not mutate `reports` / `stats`.
+    func fetchMergedReports(userId: String?, period: String) async -> [DrivingReport] {
+        let normalizedPeriod = Self.normalizePeriod(period)
         let local = FamilyDrivingTripLedger.reports(memberId: userId, period: normalizedPeriod)
 
         var remote: [DrivingReport] = []
         do {
-            // API period: today → week window on server (фильтр today уже на клиенте).
             let apiPeriod = (normalizedPeriod == "today") ? "week" : normalizedPeriod
             remote = try await withCheckedThrowingContinuation { continuation in
                 apiService.getDrivingReports(userId: userId, period: apiPeriod) { result in
@@ -96,18 +98,21 @@ class DrivingReportsViewModel: ObservableObject {
         } catch {
             let networkError = NetworkError.from(error)
             if case .unauthorized = networkError {
-                // Local ledger всё равно показываем — родитель видит свои поездки offline.
                 print("⚠️ DrivingReportsViewModel: unauthorized — local ledger only")
             } else {
                 print("⚠️ DrivingReportsViewModel: remote load failed: \(networkError.localizedDescription)")
             }
         }
 
-        let merged = FamilyDrivingTripLedger.merge(remote: remote, local: local)
+        return FamilyDrivingTripLedger.merge(remote: remote, local: local)
             .map { DrivingTripTrackStore.mergeInto($0) }
-        reports = merged
-        stats = FamilyDrivingTripLedger.stats(from: merged, period: normalizedPeriod)
-        errorMessage = nil
+    }
+
+    private static func normalizePeriod(_ period: String) -> String {
+        switch period {
+        case "today", "week", "month", "year": return period
+        default: return "week"
+        }
     }
     
     func exportReport(reportId: String, format: String) async throws -> Data {

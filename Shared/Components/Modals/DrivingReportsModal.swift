@@ -44,6 +44,8 @@ struct DrivingReportsModal: View {
     @AppStorage("asc_tip_driving_reports_dismissed") private var drivingReportsTipDismissed = false
     /// Explicit period×member delete (never on dismiss).
     @State private var showDeletePeriodConfirm = false
+    @State private var isExportingFamilyPDF = false
+    @State private var showPDFEmptyAlert = false
     
     enum FilterType: String, CaseIterable {
         case all = "all"
@@ -133,6 +135,12 @@ struct DrivingReportsModal: View {
                 print("TRIP_AUTO UI delete period=\(selectedPeriod) member=\(resolvedMemberId) removed=\(removed.count)")
                 Task { await reloadDrivingData() }
             }
+        }
+        .alert(
+            localizationManager.localized("drive_pdf_empty_period"),
+            isPresented: $showPDFEmptyAlert
+        ) {
+            Button(localizationManager.localized("common_ok"), role: .cancel) {}
         }
     }
 
@@ -1122,6 +1130,13 @@ struct DrivingReportsModal: View {
                     .accessibilityIdentifier("drive_inc_\(kind.rawValue)")
                 }
             }
+
+            if entitled {
+                Text(localizationManager.localized("drive_pdf_phone_na"))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.75))
+                    .accessibilityIdentifier("drive_phone_na_hint")
+            }
         }
         .padding(Spacing.cardPadding)
         .background(cardBackground)
@@ -1147,41 +1162,27 @@ struct DrivingReportsModal: View {
         .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
 
-    /// Honest counts: aggregate violations only on speed when entitled; never invent per-type splits.
+    /// Honest counts from real `ViolationType` on visible trips. Phone stays 0 (no sensor yet).
     private func incidentCounts(from stats: DrivingStats?, entitled: Bool) -> [DriveIncidentKind: Int] {
-        guard entitled, let stats else {
+        _ = stats
+        guard entitled else {
             return Dictionary(uniqueKeysWithValues: DriveIncidentKind.allCases.map { ($0, 0) })
         }
-        return [
-            .phone: 0,
-            .speed: max(0, stats.violationsCount),
-            .accel: 0,
-            .brake: 0
-        ]
+        return DriveRiskCounts.from(trips: filteredReports).asIncidentDict()
     }
 
     private func exportPDFButton(stats: DrivingStats) -> some View {
         Button {
-            let periodKey: String = {
-                switch selectedPeriod {
-                case "today": return "driving_reports_filter_today"
-                case "month": return "driving_reports_filter_month"
-                default: return "driving_reports_filter_week"
-                }
-            }()
-            if let url = FamilyDrivingWeeklyReportPDF.write(
-                stats: stats,
-                trips: filteredReports,
-                memberName: selectedMemberName,
-                periodLabel: localizationManager.localized(periodKey),
-                localization: localizationManager
-            ) {
-                sharePDFItems = [url]
-                showSharePDF = true
-            }
+            HapticFeedback.selection()
+            Task { await exportFamilyPDF() }
         } label: {
             HStack {
-                Image(systemName: "square.and.arrow.up")
+                if isExportingFamilyPDF {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .backgroundDark))
+                } else {
+                    Image(systemName: "square.and.arrow.up")
+                }
                 Text(localizationManager.localized("drive_export_pdf"))
                     .fontWeight(.semibold)
             }
@@ -1192,8 +1193,85 @@ struct DrivingReportsModal: View {
             .cornerRadius(CornerRadius.medium)
         }
         .buttonStyle(.plain)
-        .disabled(stats.totalTrips == 0 && filteredReports.isEmpty)
+        .disabled(isExportingFamilyPDF)
         .accessibilityIdentifier("drive_export_pdf")
+        .accessibilityHint(stats.totalTrips == 0 ? localizationManager.localized("drive_pdf_empty_period") : "")
+    }
+
+    @MainActor
+    private func exportFamilyPDF() async {
+        guard !isExportingFamilyPDF else { return }
+        isExportingFamilyPDF = true
+        defer { isExportingFamilyPDF = false }
+
+        let periodKey: String = {
+            switch selectedPeriod {
+            case "today": return "driving_reports_filter_today"
+            case "month": return "driving_reports_filter_month"
+            default: return "driving_reports_filter_week"
+            }
+        }()
+        let periodLabel = localizationManager.localized(periodKey)
+        let members = await buildFamilyPDFMembers(period: selectedPeriod)
+        let anyTrips = members.contains { !$0.trips.isEmpty }
+        guard anyTrips else {
+            showPDFEmptyAlert = true
+            print("DRIVE_PDF empty period=\(selectedPeriod) members=\(members.count)")
+            return
+        }
+        let model = FamilyDrivePDFModel(
+            periodLabel: periodLabel,
+            generatedAt: Date(),
+            members: members
+        )
+        if let url = FamilyDrivingWeeklyReportPDF.writeFamily(model: model, localization: localizationManager) {
+            sharePDFItems = [url]
+            showSharePDF = true
+            print("DRIVE_PDF family ok members=\(members.count) trips=\(members.reduce(0) { $0 + $1.trips.count })")
+        }
+    }
+
+    /// Hybrid★: API ∪ ledger per roster member (cap 12).
+    @MainActor
+    private func buildFamilyPDFMembers(period: String) async -> [FamilyDrivePDFMember] {
+        var roster: [(id: String, name: String)] = []
+        var seen = Set<String>()
+        for u in users {
+            let id = u.id.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !id.isEmpty, !seen.contains(id) else { continue }
+            seen.insert(id)
+            roster.append((id, u.name))
+        }
+        let device = FamilyDrivingTripLedger.currentDeviceMember()
+        if !device.id.isEmpty, !seen.contains(device.id) {
+            let name = device.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? localizationManager.localized("where_phone_you")
+                : device.name
+            roster.insert((device.id, name), at: 0)
+            seen.insert(device.id)
+        }
+        if roster.isEmpty {
+            roster.append((resolvedMemberId, selectedMemberName))
+        }
+        roster = Array(roster.prefix(12))
+
+        var result: [FamilyDrivePDFMember] = []
+        result.reserveCapacity(roster.count)
+        for entry in roster {
+            let trips = await viewModel.fetchMergedReports(userId: entry.id, period: period)
+            let stats = FamilyDrivingTripLedger.stats(from: trips, period: period)
+            let risks = DriveRiskCounts.from(trips: trips)
+            result.append(
+                FamilyDrivePDFMember(
+                    id: entry.id,
+                    name: entry.name,
+                    stats: stats,
+                    trips: trips,
+                    risks: risks
+                )
+            )
+        }
+        return result
     }
 
     private func driveIncidentExplainSheet(_ kind: DriveIncidentKind) -> some View {
@@ -1257,7 +1335,99 @@ enum DriveIncidentKind: String, CaseIterable, Identifiable {
     }
 }
 
+/// Honest risk buckets from real violations (phone not tracked yet → always 0).
+struct DriveRiskCounts: Equatable {
+    var phone: Int = 0
+    var speed: Int = 0
+    var accel: Int = 0
+    var brake: Int = 0
+    var sharpTurn: Int = 0
+
+    static func from(trips: [DrivingReport]) -> DriveRiskCounts {
+        var c = DriveRiskCounts()
+        for trip in trips {
+            for v in trip.violations {
+                switch v.type {
+                case .speedExceeded: c.speed += 1
+                case .harshAcceleration: c.accel += 1
+                case .harshBraking: c.brake += 1
+                case .sharpTurn: c.sharpTurn += 1
+                }
+            }
+        }
+        return c
+    }
+
+    func asIncidentDict() -> [DriveIncidentKind: Int] {
+        [.phone: phone, .speed: speed, .accel: accel, .brake: brake]
+    }
+
+    var knownTotal: Int { speed + accel + brake + sharpTurn }
+
+    var shortLabel: String {
+        "\(speed)/\(accel)/\(brake)"
+    }
+}
+
+struct FamilyDrivePDFMember {
+    let id: String
+    let name: String
+    let stats: DrivingStats
+    let trips: [DrivingReport]
+    let risks: DriveRiskCounts
+}
+
+struct FamilyDrivePDFModel {
+    let periodLabel: String
+    let generatedAt: Date
+    let members: [FamilyDrivePDFMember]
+}
+
 enum FamilyDrivingWeeklyReportPDF {
+    private static let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
+    private static let margin: CGFloat = 48
+    private static let contentWidth: CGFloat = 516
+
+    static func writeFamily(model: FamilyDrivePDFModel, localization: LocalizationManager) -> URL? {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("aladdin_drive_family_\(Int(model.generatedAt.timeIntervalSince1970)).pdf")
+        let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
+        let genFmt = DateFormatter()
+        genFmt.dateStyle = .medium
+        genFmt.timeStyle = .short
+        let tripFmt = DateFormatter()
+        tripFmt.dateStyle = .short
+        tripFmt.timeStyle = .short
+
+        do {
+            try renderer.writePDF(to: url) { ctx in
+                drawSummaryPage(
+                    ctx: ctx,
+                    model: model,
+                    localization: localization,
+                    generatedLabel: String(
+                        format: localization.localized("drive_pdf_generated"),
+                        genFmt.string(from: model.generatedAt)
+                    )
+                )
+                for member in model.members {
+                    drawMemberPages(
+                        ctx: ctx,
+                        member: member,
+                        periodLabel: model.periodLabel,
+                        localization: localization,
+                        tripFmt: tripFmt
+                    )
+                }
+            }
+            return url
+        } catch {
+            print("DRIVE_PDF write failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Legacy single-member entry (kept for call-site safety).
     static func write(
         stats: DrivingStats,
         trips: [DrivingReport] = [],
@@ -1265,59 +1435,261 @@ enum FamilyDrivingWeeklyReportPDF {
         periodLabel: String,
         localization: LocalizationManager
     ) -> URL? {
-        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
-        let safeName = memberName
-            .replacingOccurrences(of: "/", with: "-")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let fileStub = safeName.isEmpty ? "member" : safeName.replacingOccurrences(of: " ", with: "_")
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("aladdin_drive_\(fileStub)_\(Int(Date().timeIntervalSince1970)).pdf")
-        do {
-            try renderer.writePDF(to: url) { ctx in
-                ctx.beginPage()
-                let title = localization.localized("drive_weekly_title")
-                let df = DateFormatter()
-                df.dateStyle = .short
-                df.timeStyle = .short
-                var tripLines: [String] = []
-                for (idx, trip) in trips.prefix(40).enumerated() {
-                    tripLines.append(
-                        "\(idx + 1). \(df.string(from: trip.startTime)) · \(String(format: "%.1f", trip.distance)) km · \(trip.formattedSafetyScore)"
-                    )
-                }
-                if trips.isEmpty {
-                    tripLines.append(localization.localized("drive_no_trips"))
-                }
-                let body = """
-                \(memberName.isEmpty ? "" : memberName)
-                \(periodLabel)
+        let member = FamilyDrivePDFMember(
+            id: "single",
+            name: memberName,
+            stats: stats,
+            trips: trips,
+            risks: DriveRiskCounts.from(trips: trips)
+        )
+        return writeFamily(
+            model: FamilyDrivePDFModel(periodLabel: periodLabel, generatedAt: Date(), members: [member]),
+            localization: localization
+        )
+    }
 
-                \(localization.localized("drive_trips")): \(stats.totalTrips)
-                \(localization.localized("drive_total_km")): \(String(format: "%.1f", stats.totalDistance))
-                \(localization.localized("driving_reports_safety_score")): \(stats.formattedAverageSafetyScore)
-                \(localization.localized("driving_reports_violations")): \(stats.violationsCount)
+    private static func drawSummaryPage(
+        ctx: UIGraphicsPDFRendererContext,
+        model: FamilyDrivePDFModel,
+        localization: LocalizationManager,
+        generatedLabel: String
+    ) {
+        ctx.beginPage()
+        var y: CGFloat = margin
+        y = drawText(
+            localization.localized("drive_pdf_family_title"),
+            at: y,
+            font: .boldSystemFont(ofSize: 20)
+        )
+        y = drawText(model.periodLabel, at: y + 4, font: .systemFont(ofSize: 13, weight: .semibold))
+        y = drawText(generatedLabel, at: y + 2, font: .systemFont(ofSize: 11), color: .darkGray)
+        y += 16
 
-                \(localization.localized("driving_reports_history_title")):
-                \(tripLines.joined(separator: "\n"))
+        let header = [
+            localization.localized("drive_pdf_member_col"),
+            localization.localized("drive_pdf_trips_col"),
+            localization.localized("drive_pdf_km_col"),
+            localization.localized("drive_pdf_score_col"),
+            localization.localized("drive_pdf_risks_col")
+        ]
+        y = drawTableRow(header, at: y, bold: true)
+        y = drawLine(at: y + 2)
 
-                \(localization.localized("drive_pdf_disclaimer"))
-                """
-                let attrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 18, weight: .bold)
-                ]
-                (title as NSString).draw(at: CGPoint(x: 48, y: 48), withAttributes: attrs)
-                let bodyAttrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 12)
-                ]
-                (body as NSString).draw(
-                    in: CGRect(x: 48, y: 90, width: 516, height: 660),
-                    withAttributes: bodyAttrs
-                )
+        var totalTrips = 0
+        var totalKm = 0.0
+        var scoreSum = 0.0
+        var scoreN = 0
+        var riskTotal = 0
+
+        for m in model.members {
+            totalTrips += m.stats.totalTrips
+            totalKm += m.stats.totalDistance
+            if m.stats.totalTrips > 0 {
+                scoreSum += m.stats.averageSafetyScore
+                scoreN += 1
             }
-            return url
-        } catch {
-            return nil
+            riskTotal += m.risks.knownTotal
+            let score = m.stats.totalTrips > 0 ? m.stats.formattedAverageSafetyScore : "—"
+            let row = [
+                truncate(m.name, 16),
+                "\(m.stats.totalTrips)",
+                String(format: "%.0f", m.stats.totalDistance),
+                score,
+                m.risks.shortLabel
+            ]
+            y = drawTableRow(row, at: y + 4, bold: false)
+            if y > 700 {
+                ctx.beginPage()
+                y = margin
+                y = drawText(localization.localized("drive_pdf_family_title"), at: y, font: .boldSystemFont(ofSize: 16))
+                y += 8
+                y = drawTableRow(header, at: y, bold: true)
+                y = drawLine(at: y + 2)
+            }
         }
+
+        y += 12
+        y = drawLine(at: y)
+        let avgScore = scoreN > 0 ? String(format: "%.1f/10", scoreSum / Double(scoreN)) : "—"
+        y = drawTableRow(
+            [
+                localization.localized("drive_pdf_family_total"),
+                "\(totalTrips)",
+                String(format: "%.0f", totalKm),
+                avgScore,
+                "\(riskTotal)"
+            ],
+            at: y + 6,
+            bold: true
+        )
+        y += 20
+        y = drawText(localization.localized("drive_pdf_phone_na"), at: y, font: .systemFont(ofSize: 10), color: .darkGray)
+        y = drawText(localization.localized("drive_pdf_disclaimer"), at: y + 6, font: .systemFont(ofSize: 10), color: .darkGray)
+        _ = y
+    }
+
+    private static func drawMemberPages(
+        ctx: UIGraphicsPDFRendererContext,
+        member: FamilyDrivePDFMember,
+        periodLabel: String,
+        localization: LocalizationManager,
+        tripFmt: DateFormatter
+    ) {
+        ctx.beginPage()
+        var y: CGFloat = margin
+        y = drawText(member.name, at: y, font: .boldSystemFont(ofSize: 18))
+        y = drawText(periodLabel, at: y + 2, font: .systemFont(ofSize: 12, weight: .medium))
+        y += 10
+        y = drawText(
+            "\(localization.localized("drive_trips")): \(member.stats.totalTrips)  ·  \(localization.localized("drive_total_km")): \(String(format: "%.1f", member.stats.totalDistance))  ·  \(localization.localized("driving_reports_safety_score")): \(member.stats.totalTrips > 0 ? member.stats.formattedAverageSafetyScore : "—")",
+            at: y,
+            font: .systemFont(ofSize: 11)
+        )
+        y = drawText(
+            "\(localization.localized("drive_inc_speed_title")): \(member.risks.speed)  ·  \(localization.localized("drive_inc_accel_title")): \(member.risks.accel)  ·  \(localization.localized("drive_inc_brake_title")): \(member.risks.brake)  ·  \(localization.localized("drive_inc_phone_title")): \(member.risks.phone)",
+            at: y + 4,
+            font: .systemFont(ofSize: 11)
+        )
+        if member.risks.sharpTurn > 0 {
+            y = drawText(
+                "\(localization.localized("drive_pdf_turn_col")): \(member.risks.sharpTurn)",
+                at: y + 2,
+                font: .systemFont(ofSize: 10),
+                color: .darkGray
+            )
+        }
+        y = drawText(localization.localized("drive_pdf_phone_na"), at: y + 4, font: .systemFont(ofSize: 10), color: .darkGray)
+        y += 14
+
+        if member.trips.isEmpty {
+            y = drawText(localization.localized("drive_pdf_no_trips_member"), at: y, font: .systemFont(ofSize: 12))
+            return
+        }
+
+        let header = [
+            "#",
+            localization.localized("drive_pdf_date_col"),
+            localization.localized("drive_pdf_route_col"),
+            localization.localized("drive_pdf_km_col"),
+            localization.localized("drive_pdf_score_col"),
+            localization.localized("drive_pdf_risks_col")
+        ]
+        y = drawTripRow(header, at: y, bold: true)
+        y = drawLine(at: y + 2)
+
+        for (idx, trip) in member.trips.enumerated() {
+            if y > 720 {
+                ctx.beginPage()
+                y = margin
+                y = drawText(member.name, at: y, font: .boldSystemFont(ofSize: 14))
+                y += 8
+                y = drawTripRow(header, at: y, bold: true)
+                y = drawLine(at: y + 2)
+            }
+            let risks = DriveRiskCounts.from(trips: [trip])
+            let route = truncate(
+                "\(shortPlace(trip.startLocation)) → \(shortPlace(trip.endLocation))",
+                28
+            )
+            let row = [
+                "\(idx + 1)",
+                tripFmt.string(from: trip.startTime),
+                route,
+                String(format: "%.1f", trip.distance),
+                trip.formattedSafetyScore,
+                risks.shortLabel
+            ]
+            y = drawTripRow(row, at: y + 3, bold: false)
+        }
+    }
+
+    private static func shortPlace(_ raw: String) -> String {
+        let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.hasPrefix("@") { return String(t.dropFirst()).trimmingCharacters(in: .whitespaces) }
+        return t
+    }
+
+    private static func truncate(_ s: String, _ n: Int) -> String {
+        guard s.count > n else { return s }
+        return String(s.prefix(n - 1)) + "…"
+    }
+
+    @discardableResult
+    private static func drawText(
+        _ text: String,
+        at y: CGFloat,
+        font: UIFont,
+        color: UIColor = .black
+    ) -> CGFloat {
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: color
+        ]
+        let rect = CGRect(x: margin, y: y, width: contentWidth, height: 80)
+        let ns = text as NSString
+        let size = ns.boundingRect(
+            with: CGSize(width: contentWidth, height: 80),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attrs,
+            context: nil
+        )
+        ns.draw(in: CGRect(x: margin, y: y, width: contentWidth, height: ceil(size.height)), withAttributes: attrs)
+        return y + ceil(size.height) + 2
+    }
+
+    @discardableResult
+    private static func drawLine(at y: CGFloat) -> CGFloat {
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: margin, y: y))
+        path.addLine(to: CGPoint(x: margin + contentWidth, y: y))
+        UIColor.lightGray.setStroke()
+        path.lineWidth = 0.5
+        path.stroke()
+        return y + 2
+    }
+
+    @discardableResult
+    private static func drawTableRow(_ cols: [String], at y: CGFloat, bold: Bool) -> CGFloat {
+        // member | trips | km | score | risks
+        let widths: [CGFloat] = [150, 70, 70, 90, 136]
+        return drawColumns(cols, widths: widths, at: y, bold: bold, fontSize: 10)
+    }
+
+    @discardableResult
+    private static func drawTripRow(_ cols: [String], at y: CGFloat, bold: Bool) -> CGFloat {
+        // # | date | route | km | score | risks
+        let widths: [CGFloat] = [28, 100, 180, 50, 70, 88]
+        return drawColumns(cols, widths: widths, at: y, bold: bold, fontSize: 9)
+    }
+
+    @discardableResult
+    private static func drawColumns(
+        _ cols: [String],
+        widths: [CGFloat],
+        at y: CGFloat,
+        bold: Bool,
+        fontSize: CGFloat
+    ) -> CGFloat {
+        let font: UIFont = bold
+            ? .systemFont(ofSize: fontSize, weight: .semibold)
+            : .systemFont(ofSize: fontSize)
+        let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: UIColor.black]
+        var x = margin
+        var maxH: CGFloat = fontSize + 4
+        for (i, col) in cols.enumerated() {
+            let w = i < widths.count ? widths[i] : 60
+            let ns = col as NSString
+            let size = ns.boundingRect(
+                with: CGSize(width: w, height: 40),
+                options: [.usesLineFragmentOrigin],
+                attributes: attrs,
+                context: nil
+            )
+            ns.draw(in: CGRect(x: x, y: y, width: w, height: ceil(size.height)), withAttributes: attrs)
+            maxH = max(maxH, ceil(size.height))
+            x += w
+        }
+        return y + maxH
     }
 }
 

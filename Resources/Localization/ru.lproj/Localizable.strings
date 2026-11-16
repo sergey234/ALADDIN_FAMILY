@@ -3837,6 +3837,20 @@
 "drive_inc_explain_data_note" = "Пока нет поездок с датчиками — счётчики 0. На вкладке «Вождение» нажмите «Разрешить движение и фитнес», затем совершите поездку.";
 "drive_export_pdf" = "Поделиться PDF";
 "drive_pdf_disclaimer" = "Оценка для семьи, не страховой отчёт.";
+"drive_pdf_family_title" = "Семейный отчёт о вождении";
+"drive_pdf_generated" = "Сформирован: %@";
+"drive_pdf_member_col" = "Участник";
+"drive_pdf_trips_col" = "Поездки";
+"drive_pdf_km_col" = "км";
+"drive_pdf_score_col" = "Оценка";
+"drive_pdf_risks_col" = "Риски с/р/т";
+"drive_pdf_date_col" = "Дата";
+"drive_pdf_route_col" = "Маршрут";
+"drive_pdf_turn_col" = "Повороты";
+"drive_pdf_family_total" = "Итого";
+"drive_pdf_no_trips_member" = "Поездок нет";
+"drive_pdf_phone_na" = "Телефон: пока не считаем";
+"drive_pdf_empty_period" = "Нет поездок за этот период";
 /* ===== Family Safety Round2 S01–S80 (2026-11-09) ===== */
 "antifake_trust_banner" = "Это оценка, не гарантия.";
 "antifake_trust_banner_more" = "Подробнее";
