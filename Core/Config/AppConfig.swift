@@ -141,23 +141,76 @@ struct AppConfig {
     
     // MARK: - Auth
     
+    /// In-memory auth token cache. `nil` = cold; `.some(optional)` = warmed (token may be absent).
+    /// Mitigates 8BADF00D: SwiftUI body/layout must not hit `SecItemCopyMatching` on every read.
+    private static let authTokenLock = NSLock()
+    private static var authTokenCached: String?? = nil
+
+    #if DEBUG
+    /// How many times authToken filled from Keychain/legacy (cold path).
+    private(set) static var authTokenKeychainFillCount: Int = 0
+
+    /// Unit tests only — reset memory cache + fill counter.
+    static func resetAuthTokenCacheForTests() {
+        authTokenLock.lock()
+        authTokenCached = nil
+        authTokenKeychainFillCount = 0
+        authTokenLock.unlock()
+    }
+    #endif
+
+    /// Warm cache once at launch (deferred bootstrap / init). Safe to call repeatedly.
+    static func warmAuthTokenCache() {
+        authTokenLock.lock()
+        let alreadyWarm = authTokenCached != nil
+        authTokenLock.unlock()
+        guard !alreadyWarm else { return }
+        _ = loadAuthTokenFromStoreFillingCache()
+    }
+
+    private static func loadAuthTokenFromStoreFillingCache() -> String? {
+        #if DEBUG
+        if Thread.isMainThread {
+            print("⚠️ AppConfig.authToken: Keychain fill on main — prefer warmAuthTokenCache() before UI body")
+        }
+        authTokenLock.lock()
+        authTokenKeychainFillCount += 1
+        authTokenLock.unlock()
+        #endif
+
+        var value: String? = KeychainManager.shared.loadString(forKey: .authToken)
+        if value == nil,
+           let legacy = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken) {
+            KeychainManager.shared.save(legacy, forKey: .authToken)
+            UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
+            value = legacy
+        }
+
+        authTokenLock.lock()
+        authTokenCached = .some(value)
+        authTokenLock.unlock()
+        return value
+    }
+
     /**
      * Токен авторизации (если есть)
-     * Хранится в Keychain. Легаси-копия в UserDefaults при первом чтении переносится в Keychain и удаляется из UserDefaults.
+     * Хранится в Keychain; горячий путь читает память после `warmAuthTokenCache()` / set.
+     * Легаси-копия в UserDefaults при первом cold-fill переносится в Keychain.
      */
     static var authToken: String? {
         get {
-            if let keychainToken = KeychainManager.shared.loadString(forKey: .authToken) {
-                return keychainToken
+            authTokenLock.lock()
+            if let warmed = authTokenCached {
+                authTokenLock.unlock()
+                return warmed
             }
-            if let legacy = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken) {
-                KeychainManager.shared.save(legacy, forKey: .authToken)
-                UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
-                return legacy
-            }
-            return nil
+            authTokenLock.unlock()
+            return loadAuthTokenFromStoreFillingCache()
         }
         set {
+            authTokenLock.lock()
+            authTokenCached = .some(newValue)
+            authTokenLock.unlock()
             if let token = newValue {
                 KeychainManager.shared.save(token, forKey: .authToken)
                 UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
@@ -171,11 +224,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.2"
-    static let buildNumber = "28"
+    static let buildNumber = "29"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "28"
+    static let minimumClientBuildForApiContract = "29"
     static let bundleIdentifier = "ai.aladdin"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"

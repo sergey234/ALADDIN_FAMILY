@@ -38,8 +38,9 @@ struct SettingsScreen: View {
     @State private var showVoiceNotesScreen: Bool = false
     @State private var showCallsHubScreen: Bool = false
 
-    // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
+    #if DEBUG
     @State private var showCrashLogsView: Bool = false
+    #endif
     @State private var showConsentManageSheet: Bool = false
     @AppStorage("home_chat_default_mode") private var homeChatDefaultModeRaw: String = HomeChatDefaultMode.last.rawValue
     @AppStorage(AppConfig.UserDefaultsKeys.aiDataSharingEnabled) private var aiDataSharingEnabled: Bool = false
@@ -141,6 +142,7 @@ struct SettingsScreen: View {
                 
                     // Edit Button
                 Button(action: {
+                        HapticFeedback.selection()
                         print("🧪 DIRECT PRINT: Edit Profile button tapped")
                         logger.buttonTap("Edit Profile", screen: "Settings")
                         print("🧪 DIRECT PRINT: Logger called for Edit Profile")
@@ -234,6 +236,7 @@ struct SettingsScreen: View {
                     Spacer()
                                 
                                 Button(action: {
+                        HapticFeedback.selection()
                         viewModel.showProtectionExplanation = true
                                 }) {
                                     Image(systemName: "info.circle")
@@ -497,6 +500,7 @@ struct SettingsScreen: View {
                         .scaleEffect(0.8)
                 } else {
                 Button(action: {
+                        HapticFeedback.impact(.light)
                         viewModel.loadComponents()
                 }) {
                     Image(systemName: "arrow.clockwise")
@@ -516,6 +520,7 @@ struct SettingsScreen: View {
                         .font(.caption)
                     Spacer()
                     Button(viewModel.localizedStrings.retry) {
+                        HapticFeedback.impact(.light)
                         viewModel.loadComponents()
                     }
                     .foregroundColor(.blue)
@@ -627,7 +632,8 @@ struct SettingsScreen: View {
 
                 Divider()
 
-                // ✅ BUILD 95: Диагностика (лог крашей/предупреждений памяти/Pre-Crash State)
+                #if DEBUG
+                // Crash logs — DEBUG only (hidden from Release / App Store users)
                 settingsButton(
                     "ladybug.fill",
                     viewModel.localizedStrings.settingsDiagnosticsTitle,
@@ -635,6 +641,7 @@ struct SettingsScreen: View {
                 ) {
                     showCrashLogsView = true
                 }
+                #endif
 
             }
             .stormGlassCard(cornerRadius: 12)
@@ -742,10 +749,12 @@ struct SettingsScreen: View {
             ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
                 .aladdinSheetPresentation()
         }
+        #if DEBUG
         .sheet(isPresented: $showCrashLogsView) {
             CrashLogsView()
                 .aladdinSheetPresentation()
         }
+        #endif
         .sheet(isPresented: $viewModel.showProtectionExplanation) {
             ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: viewModel.currentTariff)
                 .aladdinSheetPresentation()
@@ -967,7 +976,10 @@ struct SettingsScreen: View {
 
     @ViewBuilder
     private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.impact(.light)
+            action()
+        }) {
             // Важно: фиксируем "контентную" высоту кнопки, чтобы сетка 3-х кнопок выглядела ровно
             // на разных размерах экранов (SE ↔ Pro Max), и чтобы 2 строки текста не "плясали".
             VStack(spacing: Spacing.xs) {
@@ -1072,6 +1084,7 @@ private struct SettingsConsentManageSheet: View {
                         .stormGlassCard(cornerRadius: CornerRadius.medium)
 
                         Button {
+                            HapticFeedback.selection()
                             URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/consent.html", tariffId: nil)
                         } label: {
                             settingsConsentRow(
@@ -1081,6 +1094,7 @@ private struct SettingsConsentManageSheet: View {
                         }
 
                         Button {
+                            HapticFeedback.selection()
                             URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/privacy.html", tariffId: nil)
                         } label: {
                             settingsConsentRow(
@@ -1091,6 +1105,7 @@ private struct SettingsConsentManageSheet: View {
 
                         if consentAccepted {
                             Button {
+                                HapticFeedback.notification(.warning)
                                 showRevokeAlert = true
                             } label: {
                                 HStack {
@@ -1119,12 +1134,18 @@ private struct SettingsConsentManageSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(localizationManager.localized("edit_profile_cancel")) { dismiss() }
+                    Button(localizationManager.localized("edit_profile_cancel")) {
+                        HapticFeedback.selection()
+                        dismiss()
+                    }
                 }
             }
             .alert(localizationManager.localized("profile_consent_revoke_title"), isPresented: $showRevokeAlert) {
-                Button(localizationManager.localized("profile_consent_revoke_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("profile_consent_revoke_cancel"), role: .cancel) {
+                    HapticFeedback.selection()
+                }
                 Button(localizationManager.localized("profile_consent_revoke_confirm"), role: .destructive) {
+                    HapticFeedback.notification(.warning)
                     consentAccepted = false
                     consentDate = ""
                 }

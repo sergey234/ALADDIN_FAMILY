@@ -47,7 +47,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "28")
+        XCTAssertEqual(AppConfig.buildNumber, "29")
     }
 
     // MARK: - Explicit Security API (B2-00 / GATE-D)
@@ -291,6 +291,53 @@ class AppConfigTests: XCTestCase {
         XCTAssertEqual(KeychainManager.shared.loadString(forKey: .authToken), testToken)
 
         AppConfig.authToken = nil
+    }
+
+    /// G2: after set/warm, repeated authToken gets must not call SecItemCopyMatching.
+    func testAuthTokenGetUsesMemoryCacheWithoutSecItem() throws {
+        let testToken = "cache-token-8badf00d-mitigation"
+        AppConfig.resetAuthTokenCacheForTests()
+        KeychainManager.resetSecItemCopyMatchingCallCountForTests()
+
+        AppConfig.authToken = testToken
+        KeychainManager.resetSecItemCopyMatchingCallCountForTests()
+
+        let first = AppConfig.authToken
+        let second = AppConfig.authToken
+        XCTAssertEqual(first, testToken)
+        XCTAssertEqual(second, testToken)
+        XCTAssertEqual(
+            KeychainManager.secItemCopyMatchingCallCount,
+            0,
+            "Cached authToken get must not hit SecItemCopyMatching (IPS 8BADF00D mitigation)"
+        )
+
+        AppConfig.authToken = nil
+        AppConfig.resetAuthTokenCacheForTests()
+    }
+
+    func testAuthTokenWarmFillsCacheOnce() throws {
+        let testToken = "warm-token-once"
+        AppConfig.authToken = testToken
+        AppConfig.resetAuthTokenCacheForTests()
+        KeychainManager.resetSecItemCopyMatchingCallCountForTests()
+
+        AppConfig.warmAuthTokenCache()
+        let fillsAfterWarm = AppConfig.authTokenKeychainFillCount
+        XCTAssertGreaterThanOrEqual(fillsAfterWarm, 1)
+
+        let copyCountAfterWarm = KeychainManager.secItemCopyMatchingCallCount
+        _ = AppConfig.authToken
+        _ = AppConfig.authToken
+        XCTAssertEqual(
+            KeychainManager.secItemCopyMatchingCallCount,
+            copyCountAfterWarm,
+            "After warmAuthTokenCache, gets must stay in memory"
+        )
+        XCTAssertEqual(AppConfig.authTokenKeychainFillCount, fillsAfterWarm)
+
+        AppConfig.authToken = nil
+        AppConfig.resetAuthTokenCacheForTests()
     }
     
     // MARK: - UserDefaultsKeys Tests

@@ -1055,7 +1055,7 @@ struct FamilyScreen: View {
             // затем сразу дожимаем серверную запись и повторный fetch.
             Task {
                 // Быстрая проверка контекста авторизации/семьи, чтобы не отправлять запрос в неверном контексте
-                let currentToken = AppConfig.authToken ?? KeychainManager.shared.loadString(forKey: .authToken)
+                let currentToken = AppConfig.authToken
                 let currentFamilyId = FamilyLocalStore.loadPersistedFamilyId()
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 guard let _ = currentToken, !currentFamilyId.isEmpty,

@@ -8,6 +8,15 @@ class KeychainManager {
     static let shared = KeychainManager()
     
     private let service = Bundle.main.bundleIdentifier ?? "ai.aladdin"
+
+    #if DEBUG
+    /// Counts `SecItemCopyMatching` via `loadData` / scoped load (unit tests / crash mitigation).
+    private(set) static var secItemCopyMatchingCallCount: Int = 0
+
+    static func resetSecItemCopyMatchingCallCountForTests() {
+        secItemCopyMatchingCallCount = 0
+    }
+    #endif
     
     private init() {}
     
@@ -98,6 +107,9 @@ class KeychainManager {
         ]
         
         var result: AnyObject?
+        #if DEBUG
+        Self.secItemCopyMatchingCallCount += 1
+        #endif
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         
         if status == errSecSuccess {
@@ -239,6 +251,9 @@ class KeychainManager {
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
         var item: CFTypeRef?
+        #if DEBUG
+        Self.secItemCopyMatchingCallCount += 1
+        #endif
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess, let data = item as? Data else { return nil }
         return data

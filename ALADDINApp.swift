@@ -395,6 +395,8 @@ struct ALADDINApp: App {
         ContentBackgroundSyncScheduler.shared.registerIfNeeded()
         ContentBackgroundSyncScheduler.shared.scheduleNextRefresh()
 
+        // One Keychain read at launch into memory — SwiftUI body must not SecItem on every layout (8BADF00D).
+        AppConfig.warmAuthTokenCache()
 #if DEBUG
         print("ℹ️ ALADDINApp.init: Debug/token recovery deferred to runDeferredLaunchBootstrapIfNeeded()")
 #endif
@@ -643,10 +645,14 @@ struct ALADDINApp: App {
         LaunchDiagnostics.appendStartupTrace("runDeferredLaunchBootstrapIfNeeded BEGIN")
         LaunchDiagnostics.appendLifecycleTrace("runDeferredLaunchBootstrapIfNeeded BEGIN")
 
+        AppConfig.warmAuthTokenCache()
+        LaunchDiagnostics.appendStartupTrace("deferred: AppConfig.warmAuthTokenCache done")
+
 #if DEBUG
         // Run heavy debug recovery here (after UI is already mounted), not in init().
         LaunchDiagnostics.appendStartupTrace("deferred: KeychainAutoRecoveryService.repairTokensIfNeeded BEGIN")
         KeychainAutoRecoveryService.repairTokensIfNeeded()
+        AppConfig.warmAuthTokenCache()
         LaunchDiagnostics.appendStartupTrace("deferred: KeychainAutoRecoveryService.repairTokensIfNeeded END")
 #endif
 
@@ -872,7 +878,7 @@ struct ALADDINApp: App {
                     print("⚠️ ALADDINApp: Токен действительно невалиден - удаляем токены")
                     #endif
                     Task { @MainActor in
-                        KeychainManager.shared.delete(forKey: .authToken)
+                        AppConfig.authToken = nil
                         KeychainManager.shared.delete(forKey: .refreshToken)
                     }
                     navigationManager.navigateToRoot(.onboarding)

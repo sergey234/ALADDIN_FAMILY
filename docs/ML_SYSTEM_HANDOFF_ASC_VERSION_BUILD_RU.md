@@ -9,7 +9,7 @@
 **Карта картинок:** `docs/ML_SYSTEM_ASSET_MAP_IN_APP_2026-11-14.md`
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** только `master` · **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`
-**CI:** `check-secrets.yml` · candidate **1.0.2 / 23** (после **GO на push** · Archive+Upload)
+**CI:** `check-secrets.yml` · candidate **1.0.2 / 29** (после **GO на push** · Archive+Upload)
 
 ---
 
@@ -18,11 +18,11 @@
 | Имя | Что это | Ключи в коде | Сейчас (канон) | В App Store Connect |
 |-----|---------|--------------|----------------|---------------------|
 | **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.2** | iOS version **1.0.2** |
-| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **23** | train **1.0.2**; candidate upload **23** |
+| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **29** | train **1.0.2**; candidate upload **29** |
 
-В Xcode должно читаться: **Version 1.0.2 · Build 23**.
+В Xcode должно читаться: **Version 1.0.2 · Build 29**.
 
-- Следующее поднятие **Build** (23→24): только после нового **GO на bump** build.
+- Следующее поднятие **Build** (29→30): только после нового **GO на bump** build.
 - Поднимать **Version** (1.0.1→1.0.2): только если ASC закрыл train / после approve, и только после **GO** + создания новой version в ASC.
 - **Нельзя** заливать новые Build на уже closed/approved marketing train (урок ниже).
 
@@ -33,8 +33,8 @@
 Файл: `docs/RELEASE_BUILD_PROMPT.md`
 
 ```text
-PREV_BUILD = 28
-NEXT_BUILD = 29
+PREV_BUILD = 29
+NEXT_BUILD = 30
 CURRENT_MARKETING_VERSION = 1.0.2
 ```
 
