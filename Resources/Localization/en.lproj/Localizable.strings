@@ -865,10 +865,10 @@
 "where_phone_setup_km_format" = "%d km";
 "where_phone_setup_m_format" = "%d m";
 "where_phone_setup_share_title" = "Show you to your family on the map?";
-"where_phone_setup_share_body" = "Your family will see your last location. Only your family. Turn it off anytime: map menu → Quiet zone.";
+"where_phone_setup_share_body" = "Your family will see your last location. Only your family. Turn it off anytime with the 👁 button on the map.";
 "where_phone_setup_share_cta" = "Show me to my family";
 "where_phone_family_share_toggle" = "Show me to my family";
-"where_phone_family_share_toggle_hint" = "Family sees your last location. Nothing is sent inside a quiet zone.";
+"where_phone_family_share_toggle_hint" = "Family sees your last location. When off, no new points are sent; the last one stays with its time. Nothing is sent inside a quiet zone.";
 "family_trip_ended_push_title" = "Trip completed";
 "family_trip_ended_push_body" = "%@ · %.1f km · up to %d km/h";
 "family_trip_map_track_a11y" = "Trip route";

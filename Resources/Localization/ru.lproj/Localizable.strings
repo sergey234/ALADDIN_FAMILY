@@ -966,10 +966,10 @@
 "where_phone_setup_km_format" = "%d км";
 "where_phone_setup_m_format" = "%d м";
 "where_phone_setup_share_title" = "Показывать вас семье на карте?";
-"where_phone_setup_share_body" = "Близкие увидят, где вы были последний раз. Только ваша семья. Выключить можно в любой момент: меню карты → «Тихая зона».";
+"where_phone_setup_share_body" = "Близкие увидят, где вы были последний раз. Только ваша семья. Выключить можно в любой момент кнопкой 👁 на карте.";
 "where_phone_setup_share_cta" = "Показывать меня семье";
 "where_phone_family_share_toggle" = "Показывать меня семье";
-"where_phone_family_share_toggle_hint" = "Семья видит вашу последнюю точку. В тихой зоне точка не отправляется.";
+"where_phone_family_share_toggle_hint" = "Семья видит вашу последнюю точку. После выключения новые точки не отправляются, последняя остаётся со временем. В тихой зоне точка не отправляется.";
 "family_trip_ended_push_title" = "Поездка завершена";
 "family_trip_ended_push_body" = "%@ · %.1f км · до %d км/ч";
 "family_trip_map_track_a11y" = "Маршрут поездки";
