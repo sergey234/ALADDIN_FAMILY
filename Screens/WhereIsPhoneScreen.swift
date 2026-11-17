@@ -219,6 +219,8 @@ struct WhereIsPhoneScreen: View {
     @State private var mapPointName: String?
     @State private var mapPointAt: Date?
     @State private var mapPinSource: MapPinSource = .none
+    /// Server last point can be the viewer's own row → show own photo, not a letter.
+    @State private var remotePinIsSelf = false
     @State private var travelMinutesToday: Int?
     @State private var mapRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 55.75, longitude: 37.62),
@@ -942,7 +944,7 @@ struct WhereIsPhoneScreen: View {
                 quietRadiusMeters: quietMeters,
                 approximateRadiusMeters: mapPinSource == .approximate ? approximateAreaRadiusMeters : 0,
                 tripRoute: highlightedTripRoute,
-                mainPinIsSelf: mapPinSource != .remote,
+                mainPinIsSelf: mapPinSource != .remote || remotePinIsSelf,
                 memberPins: familyMemberPins,
                 onPinSelected: {
                     openMemberFromMapPin()
@@ -1088,7 +1090,7 @@ struct WhereIsPhoneScreen: View {
                     quietRadiusMeters: quietMeters,
                     approximateRadiusMeters: mapPinSource == .approximate ? approximateAreaRadiusMeters : 0,
                     tripRoute: highlightedTripRoute,
-                    mainPinIsSelf: mapPinSource != .remote,
+                    mainPinIsSelf: mapPinSource != .remote || remotePinIsSelf,
                     memberPins: familyMemberPins,
                     onPinSelected: {
                         openMemberFromMapPin()
@@ -4521,6 +4523,7 @@ struct WhereIsPhoneScreen: View {
         let preferredRemote = remoteCandidates.first(where: { $0.memberId != mine })
             ?? remoteCandidates.first
         if let remote = preferredRemote, let coord = remote.coordinate {
+            remotePinIsSelf = remote.memberId == mine
             applyMapPin(coord, name: friendlyPointName(remote.name), at: remote.at, source: .remote)
             return
         }

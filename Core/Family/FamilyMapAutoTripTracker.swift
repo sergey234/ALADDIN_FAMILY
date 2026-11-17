@@ -31,6 +31,10 @@ enum FamilyMapAutoTripTracker {
         }
         guard FamilyMapQuietZoneStore.allowsFamilyShare(location) else {
             // In quiet zone: no samples. Parked inside (home) → end the trip at its last point outside.
+            if DrivingTripTrackStore.activeTripId == nil,
+               location.speed >= 0, location.speed * 3.6 <= stopSpeedKmh {
+                LocationManager.shared.armTripDepartureIfNeeded(at: location)
+            }
             if let tripId = DrivingTripTrackStore.activeTripId,
                location.speed >= 0, location.speed * 3.6 <= stopSpeedKmh {
                 stopHits += 1
@@ -74,11 +78,16 @@ enum FamilyMapAutoTripTracker {
                     "speed=\(Int(speedKmh)) auth=\(auth.rawValue)"
                 )
             } else if let tripId = DrivingTripTrackStore.activeTripId {
+                // App relaunched mid-trip (region/SLC wake) → GPS mode is not on yet.
+                LocationManager.shared.ensureTripTracking()
                 maybeAppend(tripId: tripId, location: location)
             }
         } else if speedKmh <= stopSpeedKmh {
             stopHits += 1
             movingHits = 0
+            if DrivingTripTrackStore.activeTripId == nil {
+                LocationManager.shared.armTripDepartureIfNeeded(at: location)
+            }
             if let tripId = DrivingTripTrackStore.activeTripId, stopHits >= stopHitsToEnd {
                 print("TRIP_AUTO finalize id=\(tripId) speed=\(Int(speedKmh)) hits=\(stopHits)")
                 DrivingTripTrackStore.append(tripId: tripId, location: location)
@@ -96,7 +105,11 @@ enum FamilyMapAutoTripTracker {
     }
 
     private static func finalize(tripId: String) {
+        let parked = DrivingTripTrackStore.load(tripId: tripId).last.map {
+            CLLocation(latitude: $0.latitude, longitude: $0.longitude)
+        }
         _ = FamilyDrivingTripLedger.finalizeActiveTrip(tripId: tripId, end: nil)
+        LocationManager.shared.endTripTracking(parkedAt: parked)
         movingHits = 0
         stopHits = 0
     }

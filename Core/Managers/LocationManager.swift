@@ -503,7 +503,104 @@ class LocationManager: NSObject, ObservableObject {
 
     /// P0.4: while an auto-trip is open, prefer GPS over SLC coarse fixes.
     func boostAccuracyForActiveTrip() {
-        activateHighAccuracyMode()
+        beginTripTracking()
+    }
+
+    // MARK: - Trip tracking (Life360-style)
+
+    nonisolated static let tripDepartureRegionId = "aladdin_trip_departure"
+    private let tripDepartureRadius: CLLocationDistance = 150
+    private let departureWatchDuration: TimeInterval = 5 * 60
+    private var isTripTrackingActive = false
+    private var isDepartureWatchActive = false
+
+    /// `allowsBackgroundLocationUpdates = true` crashes without `location` in UIBackgroundModes.
+    private var canTrackInBackground: Bool {
+        let modes = Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") as? [String] ?? []
+        return modes.contains("location") && locationManager.authorizationStatus == .authorizedAlways
+    }
+
+    /// Continuous navigation-grade GPS for the whole trip, also with the screen locked.
+    func beginTripTracking() {
+        highAccuracyTimer?.invalidate()
+        highAccuracyTimer = nil
+        isTripTrackingActive = true
+        isDepartureWatchActive = false
+        stopMonitoringTripDeparture()
+        if canTrackInBackground {
+            locationManager.allowsBackgroundLocationUpdates = true
+            locationManager.showsBackgroundLocationIndicator = false
+        }
+        locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.activityType = .automotiveNavigation
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 15
+        locationManager.startUpdatingLocation()
+        print("TRIP_GPS begin background=\(canTrackInBackground)")
+    }
+
+    func ensureTripTracking() {
+        guard !isTripTrackingActive else { return }
+        beginTripTracking()
+    }
+
+    /// Trip closed → back to battery mode and arm a departure fence at the parking spot.
+    func endTripTracking(parkedAt location: CLLocation?) {
+        guard isTripTrackingActive else { return }
+        isTripTrackingActive = false
+        locationManager.allowsBackgroundLocationUpdates = false
+        locationManager.pausesLocationUpdatesAutomatically = true
+        locationManager.activityType = .other
+        deactivateHighAccuracyMode()
+        if let location {
+            armTripDeparture(at: location)
+        }
+        print("TRIP_GPS end")
+    }
+
+    /// Leaving the parking spot wakes the app within ~150 m, long before the next SLC fix.
+    func armTripDeparture(at location: CLLocation) {
+        guard canTrackInBackground,
+              CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self),
+              location.horizontalAccuracy >= 0, location.horizontalAccuracy <= 200 else { return }
+        stopMonitoringTripDeparture()
+        let region = CLCircularRegion(
+            center: location.coordinate,
+            radius: tripDepartureRadius,
+            identifier: Self.tripDepartureRegionId
+        )
+        region.notifyOnEntry = false
+        region.notifyOnExit = true
+        locationManager.startMonitoring(for: region)
+        print("TRIP_GPS departure fence armed")
+    }
+
+    /// Parked with no fence yet (first launch, after a walk) → arm one at this spot.
+    func armTripDepartureIfNeeded(at location: CLLocation) {
+        guard !isTripTrackingActive, !isDepartureWatchActive,
+              !locationManager.monitoredRegions.contains(where: { $0.identifier == Self.tripDepartureRegionId })
+        else { return }
+        armTripDeparture(at: location)
+    }
+
+    private func stopMonitoringTripDeparture() {
+        for region in locationManager.monitoredRegions where region.identifier == Self.tripDepartureRegionId {
+            locationManager.stopMonitoring(for: region)
+        }
+    }
+
+    /// Woken by the departure fence: short GPS window so the auto tracker can see driving speed.
+    private func startDepartureWatch() {
+        guard !isTripTrackingActive else { return }
+        stopMonitoringTripDeparture()
+        if canTrackInBackground {
+            locationManager.allowsBackgroundLocationUpdates = true
+            locationManager.showsBackgroundLocationIndicator = false
+        }
+        locationManager.activityType = .automotiveNavigation
+        isDepartureWatchActive = true
+        activateHighAccuracyMode(duration: departureWatchDuration)
+        print("TRIP_GPS departure watch")
     }
     
     private func saveToBuffer(_ report: LocationReport) {
@@ -580,7 +677,9 @@ class LocationManager: NSObject, ObservableObject {
         }
     }
     
-    private func activateHighAccuracyMode() {
+    private func activateHighAccuracyMode(duration: TimeInterval? = nil) {
+        // Trip GPS is already on and must not be cut by a geofence-proximity timer.
+        guard !isTripTrackingActive else { return }
         // Сбрасываем старый таймер
         highAccuracyTimer?.invalidate()
         
@@ -590,7 +689,7 @@ class LocationManager: NSObject, ObservableObject {
         locationManager.startUpdatingLocation()
         
         // Выключаем через 3 минуты
-        highAccuracyTimer = Timer.scheduledTimer(withTimeInterval: highAccuracyDuration, repeats: false) { [weak self] _ in
+        highAccuracyTimer = Timer.scheduledTimer(withTimeInterval: duration ?? highAccuracyDuration, repeats: false) { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.deactivateHighAccuracyMode()
             }
@@ -598,6 +697,12 @@ class LocationManager: NSObject, ObservableObject {
     }
     
     private func deactivateHighAccuracyMode() {
+        guard !isTripTrackingActive else { return }
+        isDepartureWatchActive = false
+        if locationManager.allowsBackgroundLocationUpdates {
+            locationManager.allowsBackgroundLocationUpdates = false
+            locationManager.activityType = .other
+        }
         print("🔋 LocationManager: Режим высокой точности завершен. Переход в эконом-режим.")
         locationManager.stopUpdatingLocation()
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
@@ -613,8 +718,13 @@ extension LocationManager: CLLocationManagerDelegate {
     
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        // Deferred/background delivery batches fixes; the trip track needs every one of them.
+        let earlier = Array(locations.dropLast())
         Task { @MainActor [weak self] in
             guard let self = self else { return }
+            for fix in earlier {
+                FamilyMapAutoTripTracker.note(location: fix)
+            }
             self.currentLocation = location
             print("📍 LocationManager: Обновление местоположения: \(location.coordinate.latitude), \(location.coordinate.longitude)")
             
@@ -703,7 +813,8 @@ extension LocationManager: CLLocationManagerDelegate {
     // MARK: - Region Monitoring Delegate
     
     nonisolated func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-        guard let circularRegion = region as? CLCircularRegion else { return }
+        guard let circularRegion = region as? CLCircularRegion,
+              region.identifier != LocationManager.tripDepartureRegionId else { return }
         Task { @MainActor in
             print("✅ LocationManager: Вход в геозону '\(region.identifier)'")
             print("📍 LocationManager: Центр: \(circularRegion.center.latitude), \(circularRegion.center.longitude)")
@@ -724,6 +835,12 @@ extension LocationManager: CLLocationManagerDelegate {
     
     nonisolated func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         guard let circularRegion = region as? CLCircularRegion else { return }
+        if region.identifier == LocationManager.tripDepartureRegionId {
+            Task { @MainActor [weak self] in
+                self?.startDepartureWatch()
+            }
+            return
+        }
         Task { @MainActor in
             print("✅ LocationManager: Выход из геозоны '\(region.identifier)'")
             print("📍 LocationManager: Центр: \(circularRegion.center.latitude), \(circularRegion.center.longitude)")
@@ -761,6 +878,7 @@ extension LocationManager: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+        guard region.identifier != LocationManager.tripDepartureRegionId else { return }
         let stateLabel: String
         switch state {
         case .inside: stateLabel = "inside"

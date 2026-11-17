@@ -12,8 +12,8 @@ App:          ai.aladdin  (ALADDIN AI)
 Team:         B3WGHSWL79  (SAUDAPAYDI)   ← НЕ 6CJVBBUGSN
 Version:      1.0.2       (= marketing / ASC iOS version)
 Build:        32          (= CFBundleVersion / next upload candidate)
-PREV_BUILD:   34
-NEXT_BUILD:   35          ← подставлять ТОЛЬКО после GO на bump
+PREV_BUILD:   35
+NEXT_BUILD:   36          ← подставлять ТОЛЬКО после GO на bump
 CURRENT_MARKETING_VERSION = 1.0.2
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git

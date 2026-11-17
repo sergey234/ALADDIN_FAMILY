@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>34</string>
+	<string>35</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -95,7 +95,7 @@
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>ALADDIN does not write Health records. HealthKit is enabled only to read a fall-related signal for a family urgent alert when you turn it on.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>ALADDIN needs location while the app is closed so your family map stays up to date and place alerts (home, school, work) can work. We do not keep an all-day trail when you are not moving. In a quiet zone we do not send your point to the family.</string>
+	<string>ALADDIN needs location while the app is closed so your family map stays up to date, place alerts (home, school, work) can work, and car trips are recorded with distance and speed. Precise GPS runs only while you are driving. We do not keep an all-day trail when you are not moving. In a quiet zone we do not send your point to the family.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>FamilyMap</key>
@@ -146,6 +146,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UIFileSharingEnabled</key>

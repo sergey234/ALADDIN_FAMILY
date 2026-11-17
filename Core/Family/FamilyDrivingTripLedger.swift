@@ -63,6 +63,10 @@ enum FamilyDrivingTripLedger {
 
     // MARK: - Finish → ledger
 
+    /// Auto trips below this are GPS noise / parking shuffles: no ledger row, no push.
+    static let minAutoTripKm: Double = 0.5
+    static let minAutoTripSeconds: TimeInterval = 120
+
     /// Собрать отчёт из GPS-трека и положить в ledger. Без выдуманных точек.
     @discardableResult
     static func finalizeActiveTrip(
@@ -93,8 +97,20 @@ enum FamilyDrivingTripLedger {
         // Stale close (iOS paused updates on parking): end = last real fix, not «now».
         let endedAt = points.last?.t ?? Date()
 
+        let rawDuration = endedAt.timeIntervalSince(startedAt)
+        if tripId.hasPrefix("auto_"),
+           metrics.distanceKm < minAutoTripKm || rawDuration < minAutoTripSeconds {
+            print(
+                "TRIP_AUTO drop id=\(tripId) — too short km=\(String(format: "%.2f", metrics.distanceKm)) " +
+                "sec=\(Int(rawDuration)) points=\(points.count)"
+            )
+            DrivingTripTrackStore.remove(tripId: tripId)
+            clearMeta(tripId: tripId)
+            return nil
+        }
+
         let maxSpeedKmh = metrics.maxSpeedKmh
-        let duration = max(endedAt.timeIntervalSince(startedAt), 60)
+        let duration = max(rawDuration, 60)
         let distanceKm = metrics.distanceKm
         let avgSpeed = duration > 0 ? (distanceKm / (duration / 3600.0)) : 0
         let safety = max(1.0, safetyScore(maxSpeedKmh: maxSpeedKmh) - 0.5 * Double(metrics.harshViolations.count))

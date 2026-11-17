@@ -12,7 +12,8 @@ alwaysApply: false
 ## Scope
 
 - Screen Time close · Shield Action · Critical Alerts · Comm Notifications · NE **Content Filter/DNS Proxy** · HealthKit fall · **Location/Geofences (`cap-L*`)** · privacy hygiene · build **11**
-- **OUT:** Packet Tunnel / in-app VPN · `UIBackgroundModes location` / continuous GPS
+- **OUT:** Packet Tunnel / in-app VPN · continuous all-day GPS
+- **Owner GO 2026-11-17 (build 35):** `UIBackgroundModes location` only trip-scoped (`LocationManager.begin/endTripTracking`); L10 verify checks the gate · ASC notes: `docs/AppStore/WAVE3_L15_ASC_PRIVACY_LOCATION_PACK_RU.md`
 
 ## Mandatory TodoWrite
 

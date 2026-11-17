@@ -135,6 +135,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // 🛑 CRASH HANDLER - для диагностики крашей при запуске
         setupCrashHandler()
 
+        // Relaunched by a location event (trip departure fence / SLC): the CLLocationManager
+        // delegate must exist before the event is delivered, or the trip start is lost.
+        if launchOptions?[.location] != nil {
+            let location = LocationManager.shared
+            if location.hasRequiredAuthorization(forBackground: true) {
+                location.startSignificantLocationChanges()
+            }
+        }
+
         // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: DNS prefetching вызывает краш
         // performDNSPrefetching()
 

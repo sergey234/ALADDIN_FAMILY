@@ -7,10 +7,20 @@ FAIL=0
 
 echo "== WAVE3 static verify =="
 
-# L10: never ship continuous background location mode in this wave
+# L10 (owner decision 2026-11-17, build 35): background `location` is allowed ONLY as trip-scoped GPS.
+# Gate: the flag is flipped on in beginTripTracking/departure watch and off again in battery mode.
 if /usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' Info.plist 2>/dev/null | grep -q 'location'; then
-  echo "FAIL: UIBackgroundModes contains 'location' (Packet-Tunnel-style continuous GPS — OUT of WAVE3)"
-  FAIL=1
+  LM=Core/Managers/LocationManager.swift
+  if grep -q 'func beginTripTracking' "$LM" \
+    && grep -q 'func endTripTracking' "$LM" \
+    && grep -q 'allowsBackgroundLocationUpdates = false' "$LM" \
+    && grep -q 'canTrackInBackground' "$LM" \
+    && ! rg -q 'allowsBackgroundLocationUpdates = true' --glob '*.swift' Core Screens Shared ViewModels -g "!$LM" 2>/dev/null; then
+    echo "OK: background location is trip-scoped (LocationManager begin/endTripTracking)"
+  else
+    echo "FAIL: UIBackgroundModes location without trip-scoped gate in LocationManager"
+    FAIL=1
+  fi
 else
   echo "OK: no UIBackgroundModes location"
 fi

@@ -7935,9 +7935,12 @@ struct GeofencesSettingsModal: View {
         } label: {
             Text(localizationManager.localized(titleKey))
                 .font(.caption.weight(.bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
                 .foregroundColor(exists ? .textSecondary : .secondaryGold)
-                .padding(.horizontal, Spacing.m)
+                .padding(.horizontal, Spacing.s)
                 .padding(.vertical, Spacing.s)
+                .frame(maxWidth: .infinity)
                 .background(Color.white.opacity(exists ? 0.06 : 0.12))
                 .cornerRadius(CornerRadius.medium)
         }
