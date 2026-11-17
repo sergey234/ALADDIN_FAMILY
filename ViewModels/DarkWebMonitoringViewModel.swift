@@ -28,7 +28,7 @@ class DarkWebMonitoringViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
+    init(apiService: APIService? = nil, localizationManager: LocalizationManager = .shared) {
         self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
     }

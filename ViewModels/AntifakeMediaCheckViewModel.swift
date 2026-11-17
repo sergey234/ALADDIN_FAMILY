@@ -42,7 +42,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     init(
         mediaKind: AntifakeMediaKind,
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager()
+        localizationManager: LocalizationManager = .shared
     ) {
         self.mediaKind = mediaKind
         self.apiService = apiService ?? APIService.shared

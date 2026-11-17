@@ -10318,7 +10318,7 @@ struct FamilyParentalControlSettingsModal: View {
             if let direct = AgeGroup(rawValue: value) {
                 return direct
             }
-            let manager = LocalizationManager()
+            let manager = LocalizationManager.shared
             let normalized = value.lowercased()
             let ru = manager.translations[.russian] ?? [:]
             let en = manager.translations[.english] ?? [:]

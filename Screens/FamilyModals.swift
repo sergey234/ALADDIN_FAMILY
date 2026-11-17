@@ -3933,7 +3933,7 @@ struct FamilyParentalControlSettingsModal: View {
             if let direct = AgeGroup(rawValue: value) {
                 return direct
             }
-            let manager = LocalizationManager()
+            let manager = LocalizationManager.shared
             let normalized = value.lowercased()
             let ru = manager.translations[.russian] ?? [:]
             let en = manager.translations[.english] ?? [:]
@@ -4432,7 +4432,7 @@ extension FamilyMemberCard.FamilyRole: Codable {
         let container = try decoder.singleValueContainer()
         let rawValue = try container.decode(String.self)
         
-        let localizationManager = LocalizationManager()
+        let localizationManager = LocalizationManager.shared
         let normalized = rawValue.lowercased()
         let parentLabels = Set(["parent", localizationManager.translations[.russian]?["family_role_parent_label"]?.lowercased() ?? "parent"])
         let childLabels = Set([
@@ -4466,7 +4466,7 @@ extension FamilyMemberCard.ProtectionStatus: Codable {
         let container = try decoder.singleValueContainer()
         let rawValue = try container.decode(String.self)
         
-        let localizationManager = LocalizationManager()
+        let localizationManager = LocalizationManager.shared
         let normalized = rawValue.lowercased()
         let protectedLabels = Set(["protected", localizationManager.translations[.russian]?["family_status_protected"]?.lowercased() ?? "protected"])
         let warningLabels = Set(["warning", localizationManager.translations[.russian]?["family_status_warning"]?.lowercased() ?? "warning"])

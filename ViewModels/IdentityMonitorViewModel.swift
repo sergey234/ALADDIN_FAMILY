@@ -19,7 +19,7 @@ final class IdentityMonitorViewModel: ObservableObject {
 
     init(
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager(),
+        localizationManager: LocalizationManager = .shared,
         protectionSettingsManager: ProtectionSettingsManager? = nil,
         tariffManager: TariffManager? = nil
     ) {

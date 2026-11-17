@@ -18,11 +18,11 @@
 | Имя | Что это | Ключи в коде | Сейчас (канон) | В App Store Connect |
 |-----|---------|--------------|----------------|---------------------|
 | **Version** (версия приложения) | Marketing / «поезд» ASC | `MARKETING_VERSION`, `CFBundleShortVersionString`, `AppConfig.appVersion` | **1.0.2** | iOS version **1.0.2** |
-| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **31** | train **1.0.2**; candidate upload **31** |
+| **Build** (номер сборки) | Уникальный билд внутри version | `CFBundleVersion`, `CURRENT_PROJECT_VERSION`, `AppConfig.buildNumber` | **32** | train **1.0.2**; candidate upload **32** |
 
-В Xcode должно читаться: **Version 1.0.2 · Build 31**.
+В Xcode должно читаться: **Version 1.0.2 · Build 32**.
 
-- Следующее поднятие **Build** (31→32): только после нового **GO на bump** build.
+- Следующее поднятие **Build** (32→33): только после нового **GO на bump** build.
 - Поднимать **Version** (1.0.1→1.0.2): только если ASC закрыл train / после approve, и только после **GO** + создания новой version в ASC.
 - **Нельзя** заливать новые Build на уже closed/approved marketing train (урок ниже).
 
@@ -33,8 +33,8 @@
 Файл: `docs/RELEASE_BUILD_PROMPT.md`
 
 ```text
-PREV_BUILD = 31
-NEXT_BUILD = 32
+PREV_BUILD = 32
+NEXT_BUILD = 33
 CURRENT_MARKETING_VERSION = 1.0.2
 ```
 

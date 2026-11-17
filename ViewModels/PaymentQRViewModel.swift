@@ -51,12 +51,12 @@ enum PaymentMethod: String, CaseIterable {
     case vtb = "vtb"
     
     var displayName: String {
-        localizedName(LocalizationManager())
+        localizedName(LocalizationManager.shared)
     }
     
     // ✅ КОМПАКТНЫЕ НАЗВАНИЯ: Для табов без переносов
     var compactDisplayName: String {
-        localizedShortName(LocalizationManager())
+        localizedShortName(LocalizationManager.shared)
     }
 }
 
@@ -159,11 +159,11 @@ class PaymentQRViewModel: ObservableObject {
     
     // MARK: - Localization Helper
     private func localized(_ key: String) -> String {
-        LocalizationManager().localized(key)
+        LocalizationManager.shared.localized(key)
     }
     
     private func localizedFormat(_ key: String, _ arguments: CVarArg...) -> String {
-        let manager = LocalizationManager()
+        let manager = LocalizationManager.shared
         let format = manager.localized(key)
         return String(format: format, locale: manager.locale, arguments: arguments)
     }
@@ -211,7 +211,7 @@ class PaymentQRViewModel: ObservableObject {
             print("⚠️ PaymentQRViewModel.init: Получен невалидный тариф, используем безопасные значения")
             
             // ✅ Безопасное создание features массива
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             let safeFeatures: [String] = {
                 if tariff.features.isEmpty {
                     return [localizationManager.localized("payment_qr_fallback_feature")]

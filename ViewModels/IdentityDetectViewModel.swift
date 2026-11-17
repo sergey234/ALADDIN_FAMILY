@@ -24,7 +24,7 @@ final class IdentityDetectViewModel: ObservableObject {
 
     init(
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager()
+        localizationManager: LocalizationManager = .shared
     ) {
         self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager

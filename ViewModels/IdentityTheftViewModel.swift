@@ -20,7 +20,7 @@ class IdentityTheftViewModel: ObservableObject {
     private let localizationManager: LocalizationManager
     private var cancellables = Set<AnyCancellable>()
 
-    init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
+    init(apiService: APIService? = nil, localizationManager: LocalizationManager = .shared) {
         self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
     }

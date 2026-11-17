@@ -1,4 +1,4 @@
-# Краши watchdog 8BADF00D — сводка сборок 27→29 (Day Journal + Keychain)
+# Краши watchdog 8BADF00D — сводка сборок 27→32 (Day Journal + Keychain + SimpleHome body + LocalizationManager)
 
 **App:** `ai.aladdin` · **Version:** 1.0.2 · **Team:** B3WGHSWL79  
 **Канон релиза:** `docs/RELEASE_BUILD_PROMPT.md`  
@@ -192,7 +192,7 @@ Build 30 правки на карте только **уменьшают** пуб
 5. Локализация: дата журнала из `LocalizationManager.shared.locale`; не сохранять переведённый fallback как имя точки; `friendlyPointName` мапит старые RU/EN fallback-строки.
 6. Доказательства до TF: MetricKit JSON с телефона (`Файлы → ALADDIN → MetricKit`) + Instruments (SwiftUI + Hangs) на SE 2 по сценарию журнала.
 
-### Build 31 — что сделано в коде (без сборки, 2026-11-17)
+### Build 31 — что сделано (TF 1.0.2 / 31, коммит `7851780f` на master, 2026-11-17)
 
 | # | Было | Стало | Файл |
 |---|------|-------|------|
@@ -206,6 +206,54 @@ Build 30 правки на карте только **уменьшают** пуб
 - **п.4 (журнал в отдельную struct):** отложен до Instruments. Это перенос ~300 строк с десятком `@State` в mega-file; п.1+3 уже снимают оба доказанных усилителя. Делать, если Instruments покажет пересчёт журнала от `liveLocation`.
 
 Static: `swiftc -parse` 5 файлов OK · `verify_capabilities_wave3_static.sh` ALL OK. Тест: `FamilyLocalStorePersistenceTests.testLoadPersistedFamilyIdSeesRecoveryCodeWrite` (+ сброс memo в setUp/tearDown).
+
+### Build 31 — коммит и CI
+
+| Что | Значение |
+|-----|----------|
+| Коммит | `7851780f feat(build 31): fix 8BADF00D — no Keychain/JWT/JSON in SimpleHome body, isolate family sheet, journal locale` |
+| Push | `master` → `git@github.com:sergey234/ALADDIN_FAMILY.git` (`c502d4e4..7851780f`) |
+| CI | `check-secrets.yml` «Build and Upload to App Store», run `44062666545` (статус — `gh run view 44062666545`) |
+| Bump 30→31 | 7× `Info.plist` (app, CallDirectory, DeviceActivityMonitor, DeviceActivityReport, ShieldConfiguration, ShieldAction, ContentFilter) · 24× `CURRENT_PROJECT_VERSION` · `AppConfig.buildNumber` + `minimumClientBuildForApiContract` · `AppConfigTests` · `RELEASE_BUILD_PROMPT.md` / `ML_SYSTEM_HANDOFF_ASC_VERSION_BUILD_RU.md` (PREV 31 / NEXT 32) |
+| Деплой сервера | Не нужен — правки только iOS |
+| Не в коммите | бот, `.env`, VPN handoff §32, посторонние правки (Chat, Buttons, DevicePairingModal, `.cursor`, xcuserdata) |
+| Instruments на SE 2 | Не проводился до TF — владелец собирает в Xcode сам; доказательство = Device QA TF 31 ниже |
+
+### Кэш токена после refresh — проверено, риска нет
+
+Опасение: `JWTTokenManager` refresh и `FamilyRegistrationViewModel.saveTokens` пишут токен прямо в Keychain, а кэш `AppConfig.authToken` остаётся старым.
+Проверка кода: оба пути сразу обновляют кэш (`publishAccessTokenRefreshToClients` → `AppConfig.authToken`; регистрация — `AppConfig.authToken = accessToken`). Остаток: refresh обновляет кэш через `DispatchQueue.main.async` — повтор после 401, сделанный в ту же долю секунды, может уйти со старым токеном и получить ещё один 401. На краш и данные не влияет; отдельной задачей не делаем (при правках сети — присваивать синхронно).
+`FamilyLocalStore.currentJWTUserId()` всё равно читает Keychain: `reconcileFamilyContextWithCurrentJWT()` вызывается между записью в Keychain и обновлением кэша.
+
+### Итог: эволюция гипотез 27 → 31
+
+| Build | Что считали причиной | Что сделали | Результат на SE 2 |
+|-------|----------------------|-------------|-------------------|
+| 27 | Тяжёлые `Image` / UIKit в журнале | — | краш |
+| 28 | Журнал строит всё сразу | LazyVStack, отложенный heavy-контент | краш (стек SecItem) |
+| 29 | Keychain `authToken` в body | кэш токена в памяти + warm на старте | краш |
+| 30 | Живой GPS пересчитывает журнал | пауза GPS под журналом, дедуп publish, стоп декоративной анимации под sheet, MetricKit | краш (IPS: `SimpleHome.body` → `FamilyLocalStore` Keychain/JWT) |
+| 31 | Главная под листом пересчитывает body с I/O + лист без diff | снимок плашки, memo FamilyLocalStore, `WherePhoneSheetHost: Equatable`, локаль журнала | симулятор OK (лог 14:22–14:24) |
+| 32 | Разбор каждого участника семьи строил **весь** словарь переводов ×2 | `LocalizationManager()` → `.shared` в Codable/VM | ⏳ Device QA |
+
+---
+
+## Build 32 — корень CPU: `LocalizationManager()` в разборе семьи (2026-11-17)
+
+**Как нашли:** лог симулятора build 31 (14:24:11 / :15 / :18) — при каждом переходе на вкладку «Вождение» `STARTUP_TRACE: LocalizationManager.init BEGIN/END`. Поиск `LocalizationManager()` в рабочем коде.
+
+**Главное:** `FamilyMemberCard.FamilyRole` и `FamilyMemberCard.ProtectionStatus` (`Screens/FamilyModals.swift`, `init(from decoder:)`) создавали **новый** `LocalizationManager()` на каждое декодирование значения. `FamilyMemberData` содержит оба поля → разбор ростера из N участников = **2×N полных построений словаря (~21k строк)**. В build 30 `SimpleHome.body` разбирал ростер 2–3 раза на кадр → это и есть ~5 с CPU в IPS (`FamilyLocalStore` в стеке — верхушка, словарь — тело работы).
+
+| Место | Было | Стало |
+|-------|------|-------|
+| `FamilyModals.swift` `FamilyRole` / `ProtectionStatus` Codable, `AgeGroup.fromStoredValue` | `LocalizationManager()` на каждый вызов | `LocalizationManager.shared` |
+| `02_FamilyScreen.swift` `AgeGroup.fromStoredValue` | то же | `.shared` |
+| `PaymentQRViewModel` (`displayName`, `compactDisplayName`, `localized`, `localizedFormat`, init fallback) | новый словарь на **каждую** строку | `.shared` |
+| VM по умолчанию: `DrivingReports`, `AICategories`, `IdentityTheft/Monitor/Detect`, `AntifakeMediaCheck`, `DarkWebMonitoring`, `PrivacyReports` | `= LocalizationManager()` | `= .shared` |
+
+Не трогали: `.environmentObject(LocalizationManager())` в `#Preview` / `PreviewProvider` (в Release не исполняются).
+Семантика та же: новый экземпляр читал язык из UserDefaults, `shared` держит тот же язык; класс не `@MainActor`, `localized()` под lock.
+Static: `swiftc -parse` 11 файлов OK; mega-files — точечно, `wc -l` без изменений.
 
 ---
 
@@ -230,10 +278,23 @@ Static: `swiftc -parse` 5 файлов OK · `verify_capabilities_wave3_static.s
 4. Настройки: пункта «Диагностика» **нет** (Release).
 5. Journal: нет зависания как на 27.
 
+## Чеклист Device QA после TF 31 (SE 2)
+
+1. Установить build **31** (Настройки → О приложении / TestFlight: 1.0.2 (31)).
+2. Главная → «Обновить точку» → «Где семья» (карта): 3 входа подряд — без краша (на 30 было 1 из 3).
+3. Свой аватар → «Журнал дня»: 10 мин переключать День / Неделя / Свой период, скролл; затем свернуть и смахнуть приложение — без краша.
+4. Повторить п.3 на «тёплом» телефоне (после зарядки / навигации) — thermal fair/serious был у всех IPS build 30.
+5. Язык приложения EN: дата «Tuesday, November 17» (не «вторник, 17 ноября»), «Last point» / «You», DatePicker «Свой период» и календарь — английские месяцы.
+6. Плашка семьи на главной: «Семья · N из M» и инициал совпадают с экраном Семья; после добавления участника обновляется.
+7. Если краш: `.ips` из Аналитики + JSON из «Файлы → ALADDIN → MetricKit» → в этот файл новой секцией «Build 31 — IPS».
+
 ---
 
 ## Связанные артефакты владельца
 
 - `~/Downloads/ALADDIN-2026-11-17-014852.ips`
+- `~/Downloads/ALADDIN-2026-11-17-032822.ips` (build 29)
+- `~/Downloads/ALADDIN-2026-11-17-132620.ips`, `…132649.ips`, `…132811.ips` (build 30, SE 2, iOS 26.7)
+- IPA build 30 для символизации: CI run `44047438056`, артефакт `ALADDIN-IPA`, UUID `6EDD5624-0F42-3D4A-BD4E-AD44768E2884`
 - `~/Downloads/aladdin_diagnostics_1794865855.txt`
 - ASC capture helper: `scripts/asc_capture_10_screens_prepare.sh`
