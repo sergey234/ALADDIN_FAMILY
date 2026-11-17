@@ -28,6 +28,10 @@ struct SimpleHomeScreen: View {
     @State private var showChildMinutes = false
     @State private var childMinutesEnabled = true
     @State private var showWherePhone = false
+    /// Family strip inputs: Keychain/JWT/roster decode must not run inside `body`
+    /// (IPS build 30: SimpleHome body → FamilyLocalStore on main → 0x8BADF00D under the Day Journal).
+    @State private var familyStripRosterCount = 0
+    @State private var familyStripFirstName: String?
     /// After closing «Где семья» sheet — navigate (tariffs etc.) so push is not buried under modal.
     @State private var pendingWherePhoneNavigation: (() -> Void)?
     @State private var showChildPauseSheet = false
@@ -126,6 +130,10 @@ struct SimpleHomeScreen: View {
             }
             preloadHybridHeroImagesIfNeeded()
             startHybridHeroRotationIfNeeded()
+            refreshFamilyStripSnapshot()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
+            refreshFamilyStripSnapshot()
         }
         .onDisappear {
             // Leave Convenient Mode → stop carousel (orbit remount must NOT cancel).
@@ -160,7 +168,7 @@ struct SimpleHomeScreen: View {
                 DispatchQueue.main.async { pending() }
             }
         }) {
-            WhereIsPhoneScreen(
+            WherePhoneSheetHost(
                 isPresented: $showWherePhone,
                 onLeaveToNavigate: { screen in
                     pendingWherePhoneNavigation = {
@@ -169,6 +177,7 @@ struct SimpleHomeScreen: View {
                     showWherePhone = false
                 }
             )
+            .equatable()
             .environmentObject(localizationManager)
             .environmentObject(navigationManager)
             // P0.6 S14: map pan/swipe must NOT dismiss the hub sheet (X / isPresented only).
@@ -673,13 +682,23 @@ struct SimpleHomeScreen: View {
         .accessibilityIdentifier("pay_pains_menu")
     }
 
+    private func refreshFamilyStripSnapshot() {
+        let members = FamilyLocalStore.loadPersistedMembers()
+        if familyStripRosterCount != members.count {
+            familyStripRosterCount = members.count
+        }
+        let firstName = members.first?.name
+        if familyStripFirstName != firstName {
+            familyStripFirstName = firstName
+        }
+    }
+
     private var payPainsFamilyStrip: some View {
         // Same SSOT as Main tariff card (`effectiveFamilyDisplay`) — never local roster alone.
-        let familyDisplay = subscriptionManager.effectiveFamilyDisplay()
-        let members = FamilyLocalStore.loadPersistedMembers()
+        let familyDisplay = subscriptionManager.effectiveFamilyDisplay(localRosterCount: familyStripRosterCount)
         let slotsUsed = familyDisplay.slotsUsed
         let slotsMax = familyDisplay.slotsMax
-        let isEmpty = slotsUsed == 0 && members.isEmpty
+        let isEmpty = slotsUsed == 0 && familyStripRosterCount == 0
         // Compact «Семья · N из M» — same numbers as Main; never truncate with «…человек».
         // LOCKED A★: always «Семья · N из M мест» — never naked «1 из 1» on iOS 15.
         let slotsFull = String(
@@ -708,7 +727,7 @@ struct SimpleHomeScreen: View {
                                 .foregroundColor(.white)
                         }
                     } else {
-                        let name = members.first?.name ?? "A"
+                        let name = familyStripFirstName ?? "A"
                         Text(PayPainsMemberInitials.from(name: name))
                             .font(AladdinFamilyType.caption2(weight: .bold))
                             .foregroundColor(.white)
@@ -1732,5 +1751,20 @@ struct SimpleHomeScreen: View {
             Label(localizationManager.localized(titleKey), systemImage: systemImage)
         }
         .accessibilityIdentifier(id)
+    }
+}
+
+/// «Где семья» sheet content is rebuilt by every SimpleHome render (orbit, subscription publishes).
+/// `WhereIsPhoneScreen` stores a closure → never diffable → its whole body (incl. Day Journal)
+/// re-ran on each parent tick. Inputs here are stable for the sheet's lifetime: the binding reads
+/// live `@State` storage and the closure only touches `@State` / the shared NavigationManager.
+private struct WherePhoneSheetHost: View, Equatable {
+    let isPresented: Binding<Bool>
+    let onLeaveToNavigate: (NavigationManager.ALADDINScreen) -> Void
+
+    static func == (lhs: WherePhoneSheetHost, rhs: WherePhoneSheetHost) -> Bool { true }
+
+    var body: some View {
+        WhereIsPhoneScreen(isPresented: isPresented, onLeaveToNavigate: onLeaveToNavigate)
     }
 }

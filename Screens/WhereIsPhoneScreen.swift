@@ -2735,7 +2735,8 @@ struct WhereIsPhoneScreen: View {
                         String(
                             format: localizationManager.localized("family_day_journal_from_date_fmt"),
                             Self.dayJournalDateLabel(
-                                date: journalPeriod == .custom ? journalCustomDate : Date()
+                                date: journalPeriod == .custom ? journalCustomDate : Date(),
+                                locale: localizationManager.locale
                             )
                         )
                     )
@@ -2763,6 +2764,7 @@ struct WhereIsPhoneScreen: View {
                             displayedComponents: [.date]
                         )
                         .labelsHidden()
+                        .environment(\.locale, localizationManager.locale)
                         .padding(.horizontal, Spacing.m)
                         .accessibilityIdentifier("where_phone_day_journal_custom_date")
                     }
@@ -3026,8 +3028,8 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// P1.1a: «понедельника, 9 ноября» (RU genitive weekday) — prefix «С » via loc fmt.
-    private static func dayJournalDateLabel(date: Date = Date()) -> String {
-        let locale = Locale.autoupdatingCurrent
+    /// `locale` = in-app language (EN app on a RU-region iPhone must not print «вторник, 17 ноября»).
+    private static func dayJournalDateLabel(date: Date = Date(), locale: Locale) -> String {
         let f = DateFormatter()
         f.locale = locale
         f.setLocalizedDateFormatFromTemplate("EEEEdMMMM")
@@ -3206,7 +3208,7 @@ struct WhereIsPhoneScreen: View {
                 Text(
                     String(
                         format: localizationManager.localized("map_member_weekly_trips_subtitle"),
-                        Self.weekStartLabel()
+                        Self.weekStartLabel(locale: localizationManager.locale)
                     )
                 )
                 .font(.caption.weight(.semibold))
@@ -3383,7 +3385,7 @@ struct WhereIsPhoneScreen: View {
                     Text(
                         String(
                             format: localizationManager.localized("map_member_weekly_trips_subtitle"),
-                            Self.weekStartLabel()
+                            Self.weekStartLabel(locale: localizationManager.locale)
                         )
                     )
                     .font(.caption)
@@ -3498,11 +3500,11 @@ struct WhereIsPhoneScreen: View {
         return f.string(from: date)
     }
 
-    private static func weekStartLabel() -> String {
+    private static func weekStartLabel(locale: Locale) -> String {
         let cal = Calendar.current
         let start = cal.dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
         // Reuse genitive weekday path so «С %@» → «С понедельника…» not «С понедельник…».
-        return dayJournalDateLabel(date: start)
+        return dayJournalDateLabel(date: start, locale: locale)
     }
 
     private func maybeOfferAlwaysAllow() {
@@ -3658,6 +3660,7 @@ struct WhereIsPhoneScreen: View {
                         displayedComponents: [.date]
                     )
                     .datePickerStyle(.graphical)
+                    .environment(\.locale, localizationManager.locale)
                     .tint(Color.secondaryGold)
                     .colorScheme(.light)
                     .padding(Spacing.s)
@@ -4448,8 +4451,20 @@ struct WhereIsPhoneScreen: View {
         if trimmed.isEmpty || trimmed.hasPrefix("MEM_") || junk.contains(lowered) {
             return localizationManager.localized("where_phone_you")
         }
+        // Stored names can be the UI fallback in the language that was active when saved.
+        if let key = Self.persistedFallbackNameKeys[trimmed] {
+            return localizationManager.localized(key)
+        }
         return Self.streetTitleWithoutAtPrefix(trimmed)
     }
+
+    /// Must mirror ru/en `Localizable.strings` values of these keys.
+    private static let persistedFallbackNameKeys: [String: String] = [
+        "Последняя точка": "where_phone_map_card_title",
+        "Last point": "where_phone_map_card_title",
+        "Вы": "where_phone_you",
+        "You": "where_phone_you"
+    ]
 
     /// C1: drop Life360-style «В » / «At » before street names.
     private static func streetTitleWithoutAtPrefix(_ raw: String) -> String {

@@ -154,6 +154,61 @@ Static verify: `xcrun swiftc -parse` по всем изменённым файл
 
 ---
 
+## Build 30 — краш НЕ закрыт (Device, 2026-11-17 13:26–13:28)
+
+IPS: `ALADDIN-2026-11-17-132620.ips`, `…132649.ips`, `…132811.ips` · все **1.0.2 (30)** · iPhone SE 2 · iOS 26.7 · `0x8BADF00D process-exit` · app CPU **5.08–5.34 s из 5 s** · жизнь процесса **50 s / 25 s / 75 s** · thermal fair / fair / **serious**. Владелец: Журнал дня — краш всегда; карта «Где семья» — 1 из 3.
+
+Бинарь CI-артефакта `ALADDIN-IPA` (run `44047438056`) — UUID `6EDD5624-0F42-3D4A-BD4E-AD44768E2884` = UUID в IPS. Символов нет (stripped), функции опознаны по строковым литералам рядом с адресами (`/tmp/b30/strs.py`, adrp+add → `__cstring`).
+
+| IPS | Main thread (сверху вниз) | Наш код |
+|-----|---------------------------|---------|
+| 132620 | `Button initializeWithCopy` → `DynamicBody.updateValue` → render | нет |
+| **132649** | `replacingOccurrences` ← `FamilyLocalStore` (JWT payload decode) ← **`SimpleHomeScreen` body** (`pay_pains_family_strip`) ← `ScrollView` ← `ZStack` ← render | **да** |
+| 132811 | `libswiftObservation` → `StaticBody.updateValue` → render | нет |
+
+### Что не предусмотрели в build 28–30
+
+1. **Главная (SimpleHome) делает I/O в `body`.** `payPainsFamilyStrip` → `FamilyLocalStore.loadPersistedMembers()` → `validatePersistedRosterAgainstCurrentFamily()` → `loadPersistedFamilyId()` → `currentJWTUserId()` → **`KeychainManager.loadString(.authToken)` напрямую (в обход кэша build 29)** + base64/`replacingOccurrences`/`JSONSerialization` JWT + ещё Keychain (scoped `family_id`) + `JSONDecoder` ростера; плюс `subscriptionManager.effectiveFamilyDisplay()` → `persistedLocalRosterCount()` → второй `JSONDecoder`. Это на **каждый** пересчёт body главной.
+2. **«Где семья» — `.sheet` внутри body главной** (`SimpleHomeScreen.swift` ~155–172), а `WhereIsPhoneScreen(isPresented:onLeaveToNavigate:)` хранит замыкание → SwiftUI не может сравнить вью (closures non-diffable) → **любой** пересчёт главной (publish `SubscriptionManager` / `LocalizationManager` / @State) заново считает весь хаб карты **и** открытый Журнал дня. Build 30 убрал только один источник (GPS); остальные `@EnvironmentObject` публикации остались.
+3. Build 29 закэшировал `AppConfig.authToken`, но `FamilyLocalStore.currentJWTUserId()` читает Keychain сам — тот же класс, что build 28 (`SecItemCopyMatching`).
+4. Симулятор не воспроизводит: M-серия Mac в разы быстрее A13, Keychain в симуляторе — файл, нет живого GPS/термала.
+
+Build 30 правки на карте только **уменьшают** публикации (dedupe) и ставят GPS на паузу под журналом — новой работы не добавляют. Крах на карте 1/3 — тот же механизм (п.1–2), шанс выше при нагреве (IPS 132811 thermal serious).
+
+### Локализация (EN в приложении, телефон RU-регион)
+
+| Где | Баг | Причина |
+|-----|-----|---------|
+| Журнал дня, чип даты «С вторника, 17 ноября» | RU дни/месяцы в EN | `dayJournalDateLabel` → `Locale.autoupdatingCurrent` (локаль телефона), а не `LocalizationManager.locale` |
+| Карта, «Последняя точка» как имя точки | RU текст в EN | `WherePhoneLastPointStore.save(name: mapPointName ?? localized("where_phone_map_card_title"))` — **сохраняется переведённая строка**, потом показывается как имя |
+| Неделя / Свой период | проверить `DatePicker` и подписи периода | `environment(\.locale)` есть в корне; лист — проверить на устройстве |
+
+### План build 31 (код)
+
+1. SimpleHome: снимок полоски семьи в `@State`, обновлять на `onAppear` + `FamilyMembersUpdated`; `effectiveFamilyDisplay(localRosterCount:)` из снимка. В body — 0 Keychain / JSON.
+2. `FamilyLocalStore`: `currentJWTUserId()` через `AppConfig.authToken` (memory) + memo payload по токену; memo `loadPersistedFamilyId()` по uid (сброс в persist/clear); memo decode ростера по `Data`.
+3. Изолировать лист «Где семья» от пересчётов главной: обёртка `Equatable` (`.equatable()`), без хранения замыканий-строителей.
+4. Журнал дня — отдельная `struct` со снимком входных данных (не наблюдает `liveLocation`, не пересчитывается от хаба).
+5. Локализация: дата журнала из `LocalizationManager.shared.locale`; не сохранять переведённый fallback как имя точки; `friendlyPointName` мапит старые RU/EN fallback-строки.
+6. Доказательства до TF: MetricKit JSON с телефона (`Файлы → ALADDIN → MetricKit`) + Instruments (SwiftUI + Hangs) на SE 2 по сценарию журнала.
+
+### Build 31 — что сделано в коде (без сборки, 2026-11-17)
+
+| # | Было | Стало | Файл |
+|---|------|-------|------|
+| 1 | `body` главной: `loadPersistedMembers()` + `effectiveFamilyDisplay()` (Keychain + JWT + JSON) на каждый рендер | `@State` снимок (`familyStripRosterCount`, `familyStripFirstName`), обновление в `onAppear` + `FamilyMembersUpdated`; `effectiveFamilyDisplay(localRosterCount:)` | `Screens/SimpleHomeScreen.swift` |
+| 2 | Каждый вызов: Keychain + base64/JSON токена, 2 чтения Keychain для `family_id`, декод ростера ×2 | memo payload по строке токена; memo `family_id` по uid (сброс: `persistFamilyId`, clear, `RecoveryCodeStorageManager` save/delete); memo декода ростера по `Data` | `Core/Managers/FamilyLocalStore.swift`, `Core/Security/RecoveryCodeStorageManager.swift` |
+| 3 | `WhereIsPhoneScreen` (хранит замыкание) пересчитывался целиком на каждый рендер главной | `WherePhoneSheetHost: Equatable` + `.equatable()` — родитель больше не дёргает лист | `Screens/SimpleHomeScreen.swift` |
+| 5 | Дата журнала / недели — локаль телефона; DatePicker — локаль телефона; «Последняя точка»/«Вы» из сохранённого имени | `dayJournalDateLabel(locale:)` / `weekStartLabel(locale:)` = язык приложения; `.environment(\.locale)` на DatePicker журнала и календаря; `friendlyPointName` переводит сохранённые RU/EN fallback-строки | `Screens/WhereIsPhoneScreen.swift` |
+
+Отклонено от плана:
+- **п.2:** `currentJWTUserId()` оставлен на Keychain, не на `AppConfig.authToken`. Регистрация (`FamilyRegistrationViewModel`) и refresh (`JWTTokenManager`) пишут токен в Keychain напрямую и сразу зовут `reconcileFamilyContextWithCurrentJWT()` — кэш `AppConfig` там отстаёт (отдельный латентный баг, не чинили без GO). Горячий путь из `body` убран п.1.
+- **п.4 (журнал в отдельную struct):** отложен до Instruments. Это перенос ~300 строк с десятком `@State` в mega-file; п.1+3 уже снимают оба доказанных усилителя. Делать, если Instruments покажет пересчёт журнала от `liveLocation`.
+
+Static: `swiftc -parse` 5 файлов OK · `verify_capabilities_wave3_static.sh` ALL OK. Тест: `FamilyLocalStorePersistenceTests.testLoadPersistedFamilyIdSeesRecoveryCodeWrite` (+ сброс memo в setUp/tearDown).
+
+---
+
 ## Можно ли проверить на симуляторе?
 
 | Проверка | Сим | Устройство / TestFlight |

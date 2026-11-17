@@ -27,15 +27,68 @@ enum FamilyLocalStore {
         return "family_id_uid_\(uid)"
     }
 
+    // Reached from SwiftUI bodies (SimpleHome family strip): IPS build 30 showed Keychain + JWT
+    // decode on main during render → 0x8BADF00D. Memoize per token / per roster bytes.
+    private static let memoLock = NSLock()
+    private static var memoJWT: String?
+    private static var memoJWTUserId: String??
+    private static var memoFamilyIdUserId: String?
+    private static var memoFamilyId: String?
+    private static var memoRosterData: Data?
+    private static var memoRoster: [FamilyMemberData] = []
+
+    static func invalidateFamilyIdMemo() {
+        memoLock.lock()
+        memoFamilyIdUserId = nil
+        memoFamilyId = nil
+        memoLock.unlock()
+    }
+
+    /// Decode `family_members_list` once per stored bytes.
+    private static func decodedRoster(from data: Data) -> [FamilyMemberData]? {
+        memoLock.lock()
+        if let cached = memoRosterData, cached == data {
+            let list = memoRoster
+            memoLock.unlock()
+            return list
+        }
+        memoLock.unlock()
+        guard let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return nil }
+        memoLock.lock()
+        memoRosterData = data
+        memoRoster = list
+        memoLock.unlock()
+        return list
+    }
+
     /// `user_id` из текущего JWT (без side effects).
     static func currentJWTUserId(defaults: UserDefaults = .standard) -> String? {
+        // Keychain, not `AppConfig.authToken`: registration / JWT refresh write Keychain directly
+        // and call `reconcileFamilyContextWithCurrentJWT()` right after — the memory cache lags there.
         let jwt = KeychainManager.shared.loadString(forKey: .authToken)?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !jwt.isEmpty {
+            memoLock.lock()
+            if memoJWT == jwt, let cached = memoJWTUserId {
+                memoLock.unlock()
+                return cached
+            }
+            memoLock.unlock()
+        }
         guard !jwt.isEmpty, let payload = jwtPayloadDictionary(from: jwt) else {
             let stored = (defaults.string(forKey: familyContextOwnerUserIdKey) ?? "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             return stored.isEmpty ? nil : stored
         }
+        let resolved = userId(fromJWTPayload: payload)
+        memoLock.lock()
+        memoJWT = jwt
+        memoJWTUserId = .some(resolved)
+        memoLock.unlock()
+        return resolved
+    }
+
+    private static func userId(fromJWTPayload payload: [String: Any]) -> String? {
         if let s = payload["user_id"] as? String {
             let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
             if !t.isEmpty { return t }
@@ -50,6 +103,22 @@ enum FamilyLocalStore {
     }
 
     static func loadPersistedFamilyId() -> String {
+        let uidKey = currentJWTUserId() ?? ""
+        memoLock.lock()
+        if let cachedUid = memoFamilyIdUserId, cachedUid == uidKey, let cached = memoFamilyId {
+            memoLock.unlock()
+            return cached
+        }
+        memoLock.unlock()
+        let resolved = loadPersistedFamilyIdFromStores()
+        memoLock.lock()
+        memoFamilyIdUserId = uidKey
+        memoFamilyId = resolved
+        memoLock.unlock()
+        return resolved
+    }
+
+    private static func loadPersistedFamilyIdFromStores() -> String {
         if let uid = currentJWTUserId(),
            let scoped = KeychainManager.shared.loadString(scopedKey: scopedFamilyIdKey(forUserId: uid))?
             .trimmingCharacters(in: .whitespacesAndNewlines), !scoped.isEmpty {
@@ -72,6 +141,8 @@ enum FamilyLocalStore {
     }
 
     static func persistFamilyId(_ newFamilyId: String) {
+        invalidateFamilyIdMemo()
+        defer { invalidateFamilyIdMemo() }
         let newId = newFamilyId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newId.isEmpty else {
             clearPersistedFamilyIdFromAllStores()
@@ -171,6 +242,7 @@ enum FamilyLocalStore {
             KeychainManager.shared.delete(scopedKey: scopedFamilyIdKey(forUserId: uid))
         }
         defaults.removeObject(forKey: familyIdKey)
+        invalidateFamilyIdMemo()
     }
 
     /// Сбрасывает family-кэш, если JWT принадлежит другому `user_id`, чем сохранённый контекст.
@@ -244,7 +316,7 @@ enum FamilyLocalStore {
         let snap = (defaults.string(forKey: rosterSnapshotFamilyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard let data = defaults.data(forKey: familyMembersKey),
-              let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data),
+              let list = decodedRoster(from: data),
               !list.isEmpty else {
             return true
         }
@@ -386,7 +458,7 @@ enum FamilyLocalStore {
     static func loadPersistedMembers(defaults: UserDefaults = .standard) -> [FamilyMemberData] {
         validatePersistedRosterAgainstCurrentFamily(defaults: defaults)
         guard let data = defaults.data(forKey: familyMembersKey),
-              let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return [] }
+              let list = decodedRoster(from: data) else { return [] }
         return list
     }
 
@@ -599,7 +671,7 @@ enum FamilyLocalStore {
 
     static func persistedLocalRosterCount(defaults: UserDefaults = .standard) -> Int {
         guard let data = defaults.data(forKey: familyMembersKey),
-              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else {
+              let decoded = decodedRoster(from: data) else {
             return 0
         }
         return decoded.count

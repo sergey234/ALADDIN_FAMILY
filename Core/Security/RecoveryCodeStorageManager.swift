@@ -27,6 +27,7 @@ class RecoveryCodeStorageManager {
         
         // Сохраняем Family ID
         keychain.save(familyID, forKey: .familyId)
+        FamilyLocalStore.invalidateFamilyIdMemo()
         
         print("✅ RecoveryCodeStorageManager: Код сохранен: \(code)")
         return true
@@ -61,6 +62,7 @@ class RecoveryCodeStorageManager {
     func deleteRecoveryCode() -> Bool {
         keychain.delete(forKey: .recoveryCode)
         keychain.delete(forKey: .familyId)
+        FamilyLocalStore.invalidateFamilyIdMemo()
         
         print("✅ RecoveryCodeStorageManager: Код удален")
         return true

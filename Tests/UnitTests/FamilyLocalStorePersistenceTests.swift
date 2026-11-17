@@ -6,12 +6,26 @@ final class FamilyLocalStorePersistenceTests: XCTestCase {
     private let testFamilyId = "FAM_BUILD198_TEST"
     private let testUserId = "170"
 
+    override func setUp() {
+        super.setUp()
+        FamilyLocalStore.invalidateFamilyIdMemo()
+    }
+
     override func tearDown() {
         KeychainManager.shared.delete(forKey: .familyId)
         KeychainManager.shared.delete(scopedKey: "family_id_uid_\(testUserId)")
         UserDefaults.standard.removeObject(forKey: FamilyLocalStore.familyIdKey)
         UserDefaults.standard.removeObject(forKey: FamilyLocalStore.familyContextOwnerUserIdKey)
+        FamilyLocalStore.invalidateFamilyIdMemo()
         super.tearDown()
+    }
+
+    func testLoadPersistedFamilyIdSeesRecoveryCodeWrite() {
+        UserDefaults.standard.set(testUserId, forKey: FamilyLocalStore.familyContextOwnerUserIdKey)
+        XCTAssertEqual(FamilyLocalStore.loadPersistedFamilyId(), "")
+        XCTAssertTrue(RecoveryCodeStorageManager.shared.saveRecoveryCode("RC-TEST", familyID: testFamilyId))
+        XCTAssertEqual(FamilyLocalStore.loadPersistedFamilyId(), testFamilyId)
+        _ = RecoveryCodeStorageManager.shared.deleteRecoveryCode()
     }
 
     func testLoadPersistedFamilyIdReadsKeychainAfterPersist() {
