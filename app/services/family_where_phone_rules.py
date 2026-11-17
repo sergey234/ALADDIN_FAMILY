@@ -1,7 +1,7 @@
 """Rules for the Where-phone family snapshot. No database. No GPS trail."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import parse_qs, urlparse
 
 CHILD_ROLES = frozenset({"child", "teenager"})
@@ -33,9 +33,13 @@ def rows_for_viewer(
     rows: List[Dict[str, Any]],
     role: Optional[str],
     own_member_id: Optional[str],
+    parent_member_ids: Optional[Iterable[str]] = None,
 ) -> List[Dict[str, Any]]:
-    """A child or teenager sees only their own row. A parent sees the family list."""
+    """A child or teenager sees their own row and their parents. A parent sees the family list."""
     if (role or "").strip().lower() in CHILD_ROLES:
+        visible = {str(m).strip() for m in (parent_member_ids or []) if str(m).strip()}
         own = (own_member_id or "").strip()
-        return [row for row in rows if str(row.get("member_id") or "") == own]
+        if own:
+            visible.add(own)
+        return [row for row in rows if str(row.get("member_id") or "") in visible]
     return list(rows)

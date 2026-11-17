@@ -209,6 +209,16 @@ def list_where_phone(*, user_id: int) -> Dict[str, Any]:
             ),
             {"fid": family_id},
         ).mappings().all()
+        parent_rows = conn.execute(
+            text(
+                """
+                SELECT id FROM family_members
+                WHERE family_id = :fid AND lower(trim(role)) = 'parent'
+                """
+            ),
+            {"fid": family_id},
+        ).all()
+    parent_ids = [str(r[0]) for r in parent_rows]
 
     signals: List[Dict[str, Any]] = []
     for row in signal_rows:
@@ -234,6 +244,6 @@ def list_where_phone(*, user_id: int) -> Dict[str, Any]:
 
     return {
         "ok": True,
-        "signals": rows_for_viewer(signals, role, own_id),
-        "points": rows_for_viewer(points, role, own_id),
+        "signals": rows_for_viewer(signals, role, own_id, parent_ids),
+        "points": rows_for_viewer(points, role, own_id, parent_ids),
     }

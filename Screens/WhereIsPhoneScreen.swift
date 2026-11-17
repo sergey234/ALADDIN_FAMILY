@@ -201,6 +201,12 @@ struct WhereIsPhoneScreen: View {
     @AppStorage("aladdin_crash_detection_consent_v1") private var crashConsentAccepted = false
     @AppStorage("where_phone_map_type") private var mapTypeRaw: String = "auto"
     @AppStorage("where_phone_always_prompt_done") private var alwaysPromptDone = false
+    /// iOS shows the Always upgrade prompt once; afterwards the card opens Settings.
+    @AppStorage("where_phone_setup_always_asked_v1") private var setupAlwaysAsked = false
+    @AppStorage("where_phone_setup_always_dismissed_v1") private var setupAlwaysDismissed = false
+    @AppStorage(FamilyMapAutoShare.enabledKey) private var familyAutoShareEnabled = false
+    @AppStorage("where_phone_setup_family_share_declined_v1") private var familyShareDeclined = false
+    private let familySyncTimer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
     @AppStorage("where_phone_first_open_ts") private var firstOpenTs: Double = 0
     @AppStorage("where_phone_soft_paywall_done") private var softPaywallDone = false
     /// Seeded by locale: RU→Yandex, EN→Apple. User can always switch.
@@ -219,7 +225,7 @@ struct WhereIsPhoneScreen: View {
     @State private var showOpenInMapsSheet = false
 
     private enum MapPinSource: String {
-        case none, live, local, remote
+        case none, live, local, remote, approximate
     }
 
     @StateObject private var locator = WherePhoneOneShot()
@@ -242,9 +248,8 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// Children: server `rows_for_viewer` already returns only self + parents (siblings never sent).
     private var hideOthers: Bool {
-        let role = UserDefaults.standard.string(forKey: "current_user_role") ?? ""
-        if role == "child" || role == "teenager" { return true }
         // Wave A Full/Limited — limited hides other members’ live board rows.
         return familyAccessMode == "limited"
     }
@@ -443,6 +448,22 @@ struct WhereIsPhoneScreen: View {
                     .font(AladdinFamilyType.subheadline())
                     .foregroundColor(.white.opacity(0.85))
 
+                Toggle(isOn: Binding(
+                    get: { familyAutoShareEnabled },
+                    set: { setFamilyAutoShare($0) }
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(localizationManager.localized("where_phone_family_share_toggle"))
+                            .font(AladdinFamilyType.subheadline(weight: .semibold))
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("where_phone_family_share_toggle_hint"))
+                            .font(AladdinFamilyType.caption())
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                }
+                .tint(Color.secondaryGold)
+                .accessibilityIdentifier("where_phone_family_share_toggle")
+
                 Toggle(isOn: $quietZoneEnabled) {
                     Text(localizationManager.localized("map_quiet_zone_toggle"))
                         .font(AladdinFamilyType.subheadline(weight: .semibold))
@@ -507,11 +528,13 @@ struct WhereIsPhoneScreen: View {
             .onReceive(NotificationCenter.default.publisher(for: .geofenceDayEventsDidChange)) { _ in
                 reload()
             }
+            // Family avatars move while the map is open (server points refresh every ≥2.5 min per member).
+            .onReceive(familySyncTimer) { _ in
+                syncFamilyWherePhone()
+            }
             .onReceive(liveLocation.$coordinate) { coord in
-                // Continuous live pin: Always Allow + Family+/trial/premium.
-                guard FamilyMapLiveAccess.isEntitled,
-                      liveLocation.authStatus == .authorizedAlways,
-                      let coord else {
+                // Live pin: Family+/trial/premium · Always (continuous) or When In Use (fix on open).
+                guard liveFixAllowed, let coord else {
                     applyBestMapPin()
                     return
                 }
@@ -533,6 +556,11 @@ struct WhereIsPhoneScreen: View {
             }
             .onReceive(liveLocation.$authStatus) { _ in
                 applyBestMapPin()
+            }
+            .onReceive(liveLocation.$approximateCoordinate) { _ in
+                if mapPinSource == .none || mapPinSource == .approximate {
+                    applyBestMapPin()
+                }
             }
             .onChange(of: crashConsentAccepted) { enabled in
                 Task { @MainActor in
@@ -906,9 +934,15 @@ struct WhereIsPhoneScreen: View {
                 interactionEnabled: mapInteractionEnabled,
                 cameraToken: mapCameraToken,
                 quietRadiusMeters: quietMeters,
+                approximateRadiusMeters: mapPinSource == .approximate ? approximateAreaRadiusMeters : 0,
                 tripRoute: highlightedTripRoute,
+                mainPinIsSelf: mapPinSource != .remote,
+                memberPins: familyMemberPins,
                 onPinSelected: {
                     openMemberFromMapPin()
+                },
+                onMemberPinSelected: { pin in
+                    openMemberFromMemberPin(pin)
                 }
             )
             .ignoresSafeArea()
@@ -1046,9 +1080,15 @@ struct WhereIsPhoneScreen: View {
                     interactionEnabled: mapInteractionEnabled,
                     cameraToken: mapCameraToken,
                     quietRadiusMeters: quietMeters,
+                    approximateRadiusMeters: mapPinSource == .approximate ? approximateAreaRadiusMeters : 0,
                     tripRoute: highlightedTripRoute,
+                    mainPinIsSelf: mapPinSource != .remote,
+                    memberPins: familyMemberPins,
                     onPinSelected: {
                         openMemberFromMapPin()
+                    },
+                    onMemberPinSelected: { pin in
+                        openMemberFromMemberPin(pin)
                     }
                 )
                 .frame(width: geo.size.width, height: mapStripH)
@@ -1189,9 +1229,7 @@ struct WhereIsPhoneScreen: View {
             Button {
                 HapticFeedback.selection()
                 if liveLocation.isCoarseAccuracy, !liveLocation.isPreciseLocationEnabled {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
+                    liveLocation.requestPreciseLocation(openSettingsFallback: { openAppSettings() })
                     return
                 }
                 liveLocation.requestFreshFix()
@@ -1251,44 +1289,20 @@ struct WhereIsPhoneScreen: View {
                 .accessibilityIdentifier("where_phone_open_navigator_banner")
             }
 
-            if liveLocation.isCoarseAccuracy {
-                Button {
-                    HapticFeedback.selection()
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
-                } label: {
-                    Text(localizationManager.localized("where_phone_accuracy_coarse_cta"))
-                        .font(.caption2.weight(.bold))
-                        .foregroundColor(.backgroundDark)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.orange.opacity(0.92))
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("where_phone_accuracy_coarse_cta")
-            }
-
-            if liveLocation.accuracyMeters >= 0, mapCoordinate != nil || liveLocation.isCoarseAccuracy {
-                let meters = Int(liveLocation.accuracyMeters.rounded())
+            if let step = mapSetupStep {
+                mapSetupCard(step)
+            } else if liveLocation.accuracyMeters >= 0, mapCoordinate != nil, !liveLocation.isCoarseAccuracy {
                 Text(
                     String(
-                        format: localizationManager.localized(
-                            liveLocation.isCoarseAccuracy
-                                ? "where_phone_accuracy_coarse_hint"
-                                : "map_accuracy_meters_format"
-                        ),
-                        meters
+                        format: localizationManager.localized("map_accuracy_meters_format"),
+                        Int(liveLocation.accuracyMeters.rounded())
                     )
                 )
                 .font(.caption2.weight(.bold))
                 .foregroundColor(.backgroundDark)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(
-                    (liveLocation.isCoarseAccuracy ? Color.orange : Color.white).opacity(0.88)
-                )
+                .background(Color.white.opacity(0.88))
                 .clipShape(Capsule())
                 .accessibilityIdentifier("where_phone_accuracy_badge")
             }
@@ -1327,7 +1341,7 @@ struct WhereIsPhoneScreen: View {
                     .clipShape(Capsule())
             }
             // Wall-clock of last GPS fix. Hide when «только что» (same minute as now) — avoids «С 12:24» noise.
-            if mapCoordinate != nil, mapPinSource != .none, let at = mapPointAt,
+            if mapCoordinate != nil, mapPinSource != .none, mapPinSource != .approximate, let at = mapPointAt,
                Date().timeIntervalSince(at) >= 60 {
                 Text(
                     String(
@@ -1363,6 +1377,148 @@ struct WhereIsPhoneScreen: View {
                     .clipShape(Capsule())
                     .accessibilityIdentifier("where_phone_speed_badge")
             }
+        }
+    }
+
+    /// The Always step waits until the one-time Always sheet was shown/closed (no double prompt).
+    private var mapSetupStep: FamilyMapSetupStep? {
+        FamilyMapSetupStep.resolve(
+            auth: liveLocation.authStatus,
+            preciseEnabled: liveLocation.isPreciseLocationEnabled,
+            entitled: FamilyMapLiveAccess.isEntitled,
+            alwaysCardDismissed: setupAlwaysDismissed || !alwaysPromptDone,
+            familySharingDecided: familyAutoShareEnabled || familyShareDeclined
+        )
+    }
+
+    private func setFamilyAutoShare(_ enabled: Bool) {
+        familyAutoShareEnabled = enabled
+        print("WHERE_PHONE familyAutoShare enabled=\(enabled)")
+        guard enabled else { return }
+        familyShareDeclined = false
+        FamilyMapAutoShare.resetThrottle()
+        if let loc = LocationManager.shared.currentLocation,
+           !FamilyMapQuietZoneStore.contains(loc) {
+            FamilyMapAutoShare.publishIfNeeded(loc)
+        }
+        liveLocation.requestPreciseLocation(openSettingsFallback: {})
+    }
+
+    private func mapSetupCard(_ step: FamilyMapSetupStep) -> some View {
+        let title: String
+        let body: String
+        let cta: String
+        switch step {
+        case .allowAccess:
+            title = localizationManager.localized("where_phone_setup_allow_title")
+            body = localizationManager.localized("where_phone_setup_allow_body")
+            cta = localizationManager.localized("where_phone_setup_allow_cta")
+        case .openSettings:
+            title = localizationManager.localized("where_phone_setup_denied_title")
+            body = localizationManager.localized("where_phone_setup_denied_body")
+            cta = localizationManager.localized("where_phone_setup_denied_cta")
+        case .preciseLocation:
+            title = String(
+                format: localizationManager.localized("where_phone_setup_precise_title"),
+                FamilyMapSetupStep.accuracyLabel(
+                    meters: liveLocation.accuracyMeters,
+                    localization: localizationManager
+                )
+            )
+            body = localizationManager.localized("where_phone_setup_precise_body")
+            cta = localizationManager.localized("where_phone_setup_precise_cta")
+        case .shareWithFamily:
+            title = localizationManager.localized("where_phone_setup_share_title")
+            body = localizationManager.localized("where_phone_setup_share_body")
+            cta = localizationManager.localized("where_phone_setup_share_cta")
+        case .alwaysAllow:
+            title = localizationManager.localized("where_phone_setup_always_title")
+            body = localizationManager.localized("where_phone_setup_always_body")
+            cta = localizationManager.localized("where_phone_setup_always_cta")
+        }
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top, spacing: 6) {
+                Image(systemName: step == .alwaysAllow || step == .shareWithFamily ? "person.2.fill" : "location.fill")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondaryGold)
+                Text(title)
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.white)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                if step == .alwaysAllow || step == .shareWithFamily {
+                    Button {
+                        HapticFeedback.selection()
+                        if step == .shareWithFamily {
+                            familyShareDeclined = true
+                        } else {
+                            setupAlwaysDismissed = true
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption2.weight(.bold))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(localizationManager.localized("common_close"))
+                    .accessibilityIdentifier("where_phone_setup_dismiss")
+                }
+            }
+            Text(body)
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+            Button {
+                HapticFeedback.selection()
+                performMapSetupAction(step)
+            } label: {
+                Text(cta)
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.backgroundDark)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 7)
+                    .background(Color.secondaryGold)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("where_phone_setup_cta")
+        }
+        .padding(10)
+        .frame(maxWidth: 270, alignment: .leading)
+        .background(Color.backgroundDark.opacity(0.92))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.medium, style: .continuous)
+                .stroke(Color.secondaryGold.opacity(0.5), lineWidth: 1)
+        )
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("where_phone_setup_card")
+    }
+
+    private func performMapSetupAction(_ step: FamilyMapSetupStep) {
+        print("WHERE_PHONE setupCard tap step=\(step)")
+        switch step {
+        case .allowAccess:
+            LocationManager.shared.requestAuthorization(always: false)
+        case .openSettings:
+            openAppSettings()
+        case .preciseLocation:
+            liveLocation.requestPreciseLocation(openSettingsFallback: { openAppSettings() })
+        case .shareWithFamily:
+            setFamilyAutoShare(true)
+        case .alwaysAllow:
+            if setupAlwaysAsked {
+                openAppSettings()
+            } else {
+                setupAlwaysAsked = true
+                LocationManager.shared.requestAlwaysUpgradeIfEligible()
+            }
+        }
+    }
+
+    private func openAppSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
         }
     }
 
@@ -3348,6 +3504,32 @@ struct WhereIsPhoneScreen: View {
     }
 
     /// P0-3: pin tap → member card for the current map pin.
+    private var mainPinRemoteMemberId: String? {
+        guard mapPinSource == .remote else { return nil }
+        return remotePoints.first(where: { $0.coordinate != nil })?.memberId
+    }
+
+    /// Everyone else who shares a point → their own avatar next to the main pin.
+    private var familyMemberPins: [FamilyMapMemberPin] {
+        guard mapPinSource != .none else { return [] }
+        return FamilyMapMemberPin.extras(
+            from: pointLines.map {
+                (memberId: $0.memberId, name: friendlyPointName($0.name), coordinate: $0.coordinate)
+            },
+            selfMemberId: myMemberId,
+            mainMemberId: mainPinRemoteMemberId,
+            mainCoordinate: mapCoordinate
+        )
+    }
+
+    private func openMemberFromMemberPin(_ pin: FamilyMapMemberPin) {
+        HapticFeedback.selection()
+        expandLocationSheetToFull()
+        let at = pointLines.first(where: { $0.memberId == pin.memberId })?.at ?? Date()
+        print("WHERE_PHONE member pin → day journal id=\(pin.memberId)")
+        selectedMember = HubMemberCard(id: pin.memberId, name: pin.name, at: at)
+    }
+
     private func openMemberFromMapPin() {
         HapticFeedback.selection()
         expandLocationSheetToFull()
@@ -4282,6 +4464,10 @@ struct WhereIsPhoneScreen: View {
         travelMinutesToday = WherePhoneTravel.minutesInTransitToday()
         shares = WherePhoneShareStore.load()
         applyBestMapPin()
+        syncFamilyWherePhone()
+    }
+
+    private func syncFamilyWherePhone() {
         APIService.shared.getFamilyWherePhone { result in
             DispatchQueue.main.async {
                 switch result {
@@ -4297,10 +4483,15 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
-    /// Hybrid pin: live (Always + Family+) → local last-point / share → remote family map_url.
+    /// Live fix while the map is open (Always: continuous · When In Use: one fix on open).
+    private var liveFixAllowed: Bool {
+        FamilyMapLiveAccess.isEntitled
+            && (liveLocation.authStatus == .authorizedAlways || liveLocation.authStatus == .authorizedWhenInUse)
+    }
+
+    /// Hybrid pin: live → local last-point / share → remote family map_url → approximate (city-grade).
     private func applyBestMapPin() {
-        if FamilyMapLiveAccess.isEntitled,
-           liveLocation.authStatus == .authorizedAlways,
+        if liveFixAllowed,
            let coord = liveLocation.coordinate {
             applyMapPin(
                 coord,
@@ -4327,6 +4518,16 @@ struct WhereIsPhoneScreen: View {
             applyMapPin(coord, name: friendlyPointName(remote.name), at: remote.at, source: .remote)
             return
         }
+        if liveFixAllowed, let approx = liveLocation.approximateCoordinate {
+            applyMapPin(
+                approx,
+                name: mapPointName ?? localizationManager.localized("where_phone_map_card_title"),
+                at: Date(),
+                source: .approximate,
+                spanMeters: approximateAreaRadiusMeters * 2.6
+            )
+            return
+        }
         mapCoordinate = nil
         mapPointName = nil
         mapPointAt = nil
@@ -4337,16 +4538,30 @@ struct WhereIsPhoneScreen: View {
         _ coordinate: CLLocationCoordinate2D,
         name: String,
         at: Date,
-        source: MapPinSource
+        source: MapPinSource,
+        spanMeters: CLLocationDistance? = nil
     ) {
         mapCoordinate = coordinate
         mapPointName = name
         mapPointAt = at
         mapPinSource = source
-        mapRegion = MKCoordinateRegion(
-            center: coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-        )
+        if let spanMeters {
+            mapRegion = MKCoordinateRegion(
+                center: coordinate,
+                latitudinalMeters: spanMeters,
+                longitudinalMeters: spanMeters
+            )
+        } else {
+            mapRegion = MKCoordinateRegion(
+                center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+            )
+        }
+    }
+
+    /// Radius of the dashed «примерно здесь» circle (iOS reports ±m; floor keeps it visible).
+    private var approximateAreaRadiusMeters: CLLocationDistance {
+        max(liveLocation.accuracyMeters, 500)
     }
 
     /// R10: open member sheet from push (SOS / ImOK / battery).

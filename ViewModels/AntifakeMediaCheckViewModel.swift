@@ -50,7 +50,14 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     }
 
     var canSubmit: Bool {
-        fileData != nil && !isChecking
+        (fileData != nil || isCallerNumberOnlyCheck) && !isChecking
+    }
+
+    /// Call tab without a recording: check the caller number via the text pipeline (contact mode).
+    var isCallerNumberOnlyCheck: Bool {
+        mediaKind == .call
+            && fileData == nil
+            && !callerId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     func setSelectedFile(data: Data, filename: String) {
@@ -105,6 +112,9 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
         guard AppConfig.authToken != nil else {
             errorMessage = localizationManager.localized("antifake_error_unauthorized")
             return false
+        }
+        if isCallerNumberOnlyCheck {
+            return await runCallerNumberCheck()
         }
         guard let fileData, let selectedFilename else { return false }
 
@@ -163,6 +173,53 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
                 errorMessage = localizationManager.localized("antifake_upload_cancelled")
                 isChecking = false
                 statusMessage = nil
+                return false
+            }
+            handleCheckError(error)
+            return false
+        }
+    }
+
+    private func runCallerNumberCheck() async -> Bool {
+        let payload = AntifakeTextInputClassifier.composeContactCheckText(
+            callerId: callerId,
+            displayName: displayName,
+            localizationManager: localizationManager
+        )
+        isChecking = true
+        errorMessage = nil
+        verdict = nil
+        requiresPremiumUpgrade = false
+        defer {
+            if !Task.isCancelled {
+                isChecking = false
+                statusMessage = nil
+            }
+        }
+        do {
+            let result: SecurityVerdict = try await withCheckedThrowingContinuation { continuation in
+                apiService.antifakeCheckText(text: payload, mode: "sms") { result in
+                    continuation.resume(with: result)
+                }
+            }
+            try Task.checkCancellation()
+            verdict = result
+            AntifakeAnalytics.trackCheckComplete(
+                kind: AntifakeTextInputMode.contact.rawValue,
+                verdict: result.verdict.rawValue,
+                source: result.source
+            )
+            AntifakeHistoryRecorder.record(
+                verdict: result,
+                kind: AntifakeTextInputMode.contact.rawValue,
+                summary: callerId.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            AntifakeLastCallContext.save(callerId: callerId, displayName: displayName)
+            return true
+        } catch {
+            if error is CancellationError || Task.isCancelled {
+                errorMessage = localizationManager.localized("antifake_upload_cancelled")
+                isChecking = false
                 return false
             }
             handleCheckError(error)

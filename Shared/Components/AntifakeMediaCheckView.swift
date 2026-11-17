@@ -216,6 +216,14 @@ struct AntifakeMediaCheckView: View {
                 }
             }
 
+            if viewModel.mediaKind == .call, viewModel.selectedFilename == nil {
+                Text(localizationManager.localized("antifake_call_number_only_hint"))
+                    .font(.caption)
+                    .foregroundColor(.secondaryGold.opacity(0.95))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("\(panelId)_number_only_hint")
+            }
+
             if viewModel.mediaKind == .call {
                 Text(localizationManager.localized("antifake_call_soon"))
                     .font(.caption)
@@ -229,7 +237,7 @@ struct AntifakeMediaCheckView: View {
                 isDisabled: !viewModel.canSubmit
             ) {
                 Task {
-                    if needsMediaUploadConsent {
+                    if needsMediaUploadConsent, !viewModel.isCallerNumberOnlyCheck {
                         pendingSubmitAfterConsent = true
                         showMediaUploadConsent = true
                         return

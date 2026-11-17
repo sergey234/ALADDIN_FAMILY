@@ -32,6 +32,15 @@ class FamilyWherePhoneRulesTests(unittest.TestCase):
             [{"member_id": "MEM_CHILD", "display_name": "Маша"}],
         )
 
+    def test_child_also_sees_parents_but_not_siblings(self):
+        rows = [
+            {"member_id": "MEM_CHILD"},
+            {"member_id": "MEM_PARENT"},
+            {"member_id": "MEM_SIBLING"},
+        ]
+        visible = rows_for_viewer(rows, "child", "MEM_CHILD", ["MEM_PARENT"])
+        self.assertEqual([r["member_id"] for r in visible], ["MEM_CHILD", "MEM_PARENT"])
+
     def test_parent_sees_every_row(self):
         rows = [
             {"member_id": "MEM_CHILD"},

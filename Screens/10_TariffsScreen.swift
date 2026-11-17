@@ -74,8 +74,7 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_personal_features_4"),
                 localizationManager.localized("tariffs_personal_features_5"),
                 localizationManager.localized("tariffs_personal_features_6"),
-                localizationManager.localized("tariffs_antifake_paid"),
-                localizationManager.localized("tariffs_antifake_action_only")
+                localizationManager.localized("tariffs_antifake_paid")
             ]
             case .family: return [
                 localizationManager.localized("tariffs_family_features_1"),
@@ -96,8 +95,7 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_premium_features_6"),
                 localizationManager.localized("tariffs_premium_features_7"),
                 localizationManager.localized("tariffs_premium_features_8"),
-                localizationManager.localized("tariffs_antifake_paid"),
-                localizationManager.localized("tariffs_antifake_action_only")
+                localizationManager.localized("tariffs_antifake_paid")
             ]
             }
         }
@@ -196,6 +194,7 @@ struct TariffsScreen: View {
                             .padding(.horizontal, Spacing.screenPadding)
 
                         Button {
+                            HapticFeedback.impact(.light)
                             Task { @MainActor in
                                 await viewModel.restorePurchases()
                             }
@@ -265,6 +264,7 @@ struct TariffsScreen: View {
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
             Button(localizationManager.localized("tariffs_ok")) {
+                HapticFeedback.selection()
                 viewModel.errorMessage = nil
             }
         } message: {
@@ -277,8 +277,8 @@ struct TariffsScreen: View {
             set: { if !$0 { viewModel.isPurchaseSuccessful = false } }
         )) {
             Button(localizationManager.localized("tariffs_excellent")) {
+                HapticFeedback.notification(.success)
                 viewModel.isPurchaseSuccessful = false
-                // Можно обновить UI
             }
         } message: {
             Text(localizationManager.localized("tariffs_subscription_activated"))
@@ -287,8 +287,11 @@ struct TariffsScreen: View {
             localizationManager.localized("tariffs_downgrade_trial_confirm_title"),
             isPresented: $showDowngradeFromTrialConfirm
         ) {
-            Button(localizationManager.localized("tariffs_downgrade_trial_confirm_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("tariffs_downgrade_trial_confirm_cancel"), role: .cancel) {
+                HapticFeedback.selection()
+            }
             Button(localizationManager.localized("tariffs_downgrade_trial_confirm_continue"), role: .destructive) {
+                HapticFeedback.notification(.warning)
                 Task { @MainActor in
                     await SubscriptionManager.shared.downgradeToFree()
                 }
@@ -439,6 +442,7 @@ struct TariffsScreen: View {
             .padding(Spacing.l)
             .background(LinearGradient.backgroundGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
+                HapticFeedback.selection()
                 billingChooserTariff = nil
             })
         }
@@ -888,6 +892,7 @@ struct TariffsScreen: View {
                             
                             HStack(spacing: Spacing.xxs) {
                                 Button(action: {
+                                    HapticFeedback.selection()
                                     showTermsOfService = true
                                 }) {
                                     Text(localizationManager.localized("terms_of_service"))
@@ -901,6 +906,7 @@ struct TariffsScreen: View {
                                     .foregroundColor(.textSecondary)
                                 
                                 Button(action: {
+                                    HapticFeedback.selection()
                                     showPrivacyPolicy = true
                                 }) {
                                     Text(localizationManager.localized("privacy_policy"))

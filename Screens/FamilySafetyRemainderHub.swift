@@ -27,6 +27,12 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     @Published var isPreciseLocationEnabled: Bool = true
     /// P5: true while waiting for a usable GPS fix after «Обновить моё место».
     @Published var isRefiningFix = false
+    /// City-grade fix (worse than `maxPinAccuracyMeters`): map shows avatar + «примерно здесь» circle.
+    /// Never reported to family / server and never saved as last point.
+    @Published var approximateCoordinate: CLLocationCoordinate2D?
+
+    /// `NSLocationTemporaryUsageDescriptionDictionary` purpose key (Info.plist + InfoPlist.strings).
+    static let preciseAccuracyPurposeKey = "FamilyMap"
 
     /// Reject cell-tower-grade fixes for the map pin (Samara device: ±5155 m).
     static let maxPinAccuracyMeters: CLLocationAccuracy = 80
@@ -103,8 +109,9 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             LocationManager.shared.startSignificantLocationChanges()
             Task { await GeofenceMonitoringBootstrap.reloadIfNeeded() }
         case .authorizedWhenInUse:
-            // Пока нет доступа при закрытом приложении: last-point / one-shot share.
+            // Нет доступа при закрытом приложении: одна точка при открытии карты, без постоянного GPS.
             manager.stopUpdatingLocation()
+            manager.requestLocation()
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
         default:
@@ -144,6 +151,44 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
         manager.startUpdatingLocation()
     }
 
+    /// One tap «Включить точное место»: system sheet in-app; Settings only if iOS refuses.
+    func requestPreciseLocation(openSettingsFallback: @escaping @MainActor () -> Void) {
+        authStatus = manager.authorizationStatus
+        switch authStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+            return
+        case .denied, .restricted:
+            openSettingsFallback()
+            return
+        default:
+            break
+        }
+        refreshPreciseFlag()
+        guard #available(iOS 14.0, *), manager.accuracyAuthorization == .reducedAccuracy else {
+            requestFreshFix()
+            return
+        }
+        manager.requestTemporaryFullAccuracyAuthorization(
+            withPurposeKey: Self.preciseAccuracyPurposeKey
+        ) { [weak self] error in
+            Task { @MainActor in
+                guard let self else { return }
+                self.refreshPreciseFlag()
+                let declined = (error as? CLError)?.code == .promptDeclined
+                print(
+                    "WHERE_PHONE preciseRequest precise=\(self.isPreciseLocationEnabled) " +
+                    "declined=\(declined) error=\(error != nil)"
+                )
+                if self.isPreciseLocationEnabled {
+                    self.requestFreshFix()
+                } else if !declined {
+                    openSettingsFallback()
+                }
+            }
+        }
+    }
+
     private func finishRefiningIfNeeded() {
         guard isRefiningFix else { return }
         isRefiningFix = false
@@ -169,6 +214,11 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             if manager.authorizationStatus == .authorizedAlways {
                 manager.startUpdatingLocation()
                 LocationManager.shared.startSignificantLocationChanges()
+            } else if manager.authorizationStatus == .authorizedWhenInUse {
+                if !self.isRefiningFix {
+                    manager.stopUpdatingLocation()
+                }
+                manager.requestLocation()
             } else {
                 manager.stopUpdatingLocation()
             }
@@ -197,12 +247,26 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
             let usablePin = loc.horizontalAccuracy >= 0
                 && loc.horizontalAccuracy <= Self.maxPinAccuracyMeters
             if usablePin {
+                if self.approximateCoordinate != nil {
+                    self.approximateCoordinate = nil
+                }
                 self.coordinate = loc.coordinate
                 self.updatedAt = loc.timestamp
                 self.finishRefiningIfNeeded()
-            } else if self.isRefiningFix,
-                      let deadline = self.refineDeadline,
-                      Date() >= deadline {
+                if !FamilyMapQuietZoneStore.contains(loc) {
+                    FamilyMapAutoShare.publishIfNeeded(loc)
+                }
+            } else if loc.horizontalAccuracy >= 0 {
+                let moved = self.approximateCoordinate.map {
+                    CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(from: loc) > 300
+                } ?? true
+                if moved {
+                    self.approximateCoordinate = loc.coordinate
+                }
+            }
+            if !usablePin, self.isRefiningFix,
+               let deadline = self.refineDeadline,
+               Date() >= deadline {
                 // Timeout: keep previous pin; never adopt ±kilometre cell fix as “my place”.
                 self.finishRefiningIfNeeded()
             }
@@ -237,8 +301,12 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     }
 }
 
-/// Live map entitlement: trial · family · premium. Free/Personal = last-point + share only.
+/// Live map entitlement: trial · family · premium — own plan **or** the family owner's plan
+/// (invited members usually have a free account of their own). Free/Personal = last-point + share only.
 enum FamilyMapLiveAccess {
+    private static let ownerTierKey = "family_owner_subscription_tier_v1"
+    private static let familyGrantingTiers: Set<String> = ["trial", "trial_premium", "family", "premium"]
+
     @MainActor
     static var isEntitled: Bool {
         if SubscriptionManager.shared.trialStatus?.isActive == true { return true }
@@ -246,8 +314,142 @@ enum FamilyMapLiveAccess {
         case .trial, .family, .premium:
             return true
         case .free, .personal:
-            return false
+            return ownerTierGrantsLiveMap(UserDefaults.standard.string(forKey: ownerTierKey))
         }
+    }
+
+    /// `/api/family/stats.ownerSubscriptionTier` — refreshed on every stats load (expiry included).
+    static func cacheFamilyOwnerTier(_ tier: String, defaults: UserDefaults = .standard) {
+        defaults.set(tier.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), forKey: ownerTierKey)
+    }
+
+    static func ownerTierGrantsLiveMap(_ tier: String?) -> Bool {
+        guard let tier = tier?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else { return false }
+        return familyGrantingTiers.contains(tier)
+    }
+}
+
+/// «Показывать меня семье»: own last precise point → `/api/family/where-phone/point` (one row per person,
+/// no track). Opt-in, quiet zone respected upstream, approximate fixes never sent.
+@MainActor
+enum FamilyMapAutoShare {
+    nonisolated static let enabledKey = "family_map_auto_share_enabled_v1"
+    private static let lastAtKey = "family_map_auto_share_last_at_v1"
+    private static let lastLatKey = "family_map_auto_share_last_lat_v1"
+    private static let lastLonKey = "family_map_auto_share_last_lon_v1"
+    /// Server: 30 req/hour per user → never faster than 2.5 min.
+    static let minInterval: TimeInterval = 150
+    static let refreshInterval: TimeInterval = 300
+    static let minDistance: CLLocationDistance = 200
+    static let maxAccuracy: CLLocationAccuracy = 100
+
+    private static var inFlight = false
+
+    static var isEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: enabledKey) }
+        set { UserDefaults.standard.set(newValue, forKey: enabledKey) }
+    }
+
+    nonisolated static func shouldPublish(
+        accuracy: CLLocationAccuracy,
+        distanceFromLast: CLLocationDistance?,
+        secondsSinceLast: TimeInterval?
+    ) -> Bool {
+        guard accuracy >= 0, accuracy <= maxAccuracy else { return false }
+        guard let secondsSinceLast, let distanceFromLast else { return true }
+        if secondsSinceLast < minInterval { return false }
+        return secondsSinceLast >= refreshInterval || distanceFromLast >= minDistance
+    }
+
+    static func publishIfNeeded(_ location: CLLocation, now: Date = Date()) {
+        guard isEnabled, !inFlight, FamilyMapLiveAccess.isEntitled else { return }
+        let defaults = UserDefaults.standard
+        let lastAt = defaults.double(forKey: lastAtKey)
+        let since: TimeInterval? = lastAt > 0 ? now.timeIntervalSince1970 - lastAt : nil
+        let distance: CLLocationDistance? = lastAt > 0
+            ? CLLocation(latitude: defaults.double(forKey: lastLatKey), longitude: defaults.double(forKey: lastLonKey))
+                .distance(from: location)
+            : nil
+        guard shouldPublish(
+            accuracy: location.horizontalAccuracy,
+            distanceFromLast: distance,
+            secondsSinceLast: since
+        ) else { return }
+
+        let lat = location.coordinate.latitude
+        let lon = location.coordinate.longitude
+        let mapURL = String(format: "https://maps.apple.com/?ll=%f,%f", lat, lon)
+        let name = (defaults.string(forKey: "user_name") ?? defaults.string(forKey: "user_display_name") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        inFlight = true
+        APIService.shared.postFamilyWherePhonePoint(displayName: name, mapURL: mapURL) { result in
+            Task { @MainActor in
+                inFlight = false
+                if case .success(true) = result {
+                    let defaults = UserDefaults.standard
+                    defaults.set(now.timeIntervalSince1970, forKey: lastAtKey)
+                    defaults.set(lat, forKey: lastLatKey)
+                    defaults.set(lon, forKey: lastLonKey)
+                    print("WHERE_PHONE autoShare point saved")
+                } else {
+                    print("WHERE_PHONE autoShare point save fail")
+                }
+            }
+        }
+    }
+
+    static func resetThrottle() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: lastAtKey)
+        defaults.removeObject(forKey: lastLatKey)
+        defaults.removeObject(forKey: lastLonKey)
+    }
+}
+
+/// One card above the map: the single next step so the user's avatar appears.
+enum FamilyMapSetupStep: Equatable {
+    /// Never asked → system «Allow While Using».
+    case allowAccess
+    /// Denied / restricted → only Settings can fix it.
+    case openSettings
+    /// Precise Location off → in-app temporary full accuracy sheet.
+    case preciseLocation
+    /// Explicit opt-in: «Показывать меня семье» (Apple 5.1.1 — consent before sharing).
+    case shareWithFamily
+    /// While Using only → family sees you only while the app is open.
+    case alwaysAllow
+
+    static func resolve(
+        auth: CLAuthorizationStatus,
+        preciseEnabled: Bool,
+        entitled: Bool,
+        alwaysCardDismissed: Bool,
+        familySharingDecided: Bool = true
+    ) -> FamilyMapSetupStep? {
+        switch auth {
+        case .notDetermined:
+            return .allowAccess
+        case .denied, .restricted:
+            return .openSettings
+        case .authorizedWhenInUse, .authorizedAlways:
+            if !preciseEnabled { return .preciseLocation }
+            if entitled, !familySharingDecided { return .shareWithFamily }
+            if auth == .authorizedWhenInUse, entitled, !alwaysCardDismissed { return .alwaysAllow }
+            return nil
+        @unknown default:
+            return nil
+        }
+    }
+
+    /// «±5 км» / «±800 м» for the precise-step title.
+    static func accuracyLabel(meters: Double, localization: LocalizationManager) -> String {
+        guard meters >= 0 else { return "" }
+        if meters >= 1000 {
+            let km = Int((meters / 1000).rounded())
+            return String(format: localization.localized("where_phone_setup_km_format"), km)
+        }
+        let m = Int((meters / 10).rounded() * 10)
+        return String(format: localization.localized("where_phone_setup_m_format"), m)
     }
 }
 
@@ -312,6 +514,53 @@ enum FamilyMapShareSessionStore {
 
 // MARK: - Life360-style live map (one MKMapView for screen lifetime)
 
+/// Soft «примерно здесь» area around a city-grade pin (Precise Location off).
+final class FamilyHubApproximateAreaCircle: MKCircle {}
+
+/// Another family member's last point on the shared map (from `/api/family/where-phone` points).
+struct FamilyMapMemberPin: Equatable {
+    let memberId: String
+    let name: String
+    let latitude: Double
+    let longitude: Double
+
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+
+    /// Extra pins beside the main one: skip own row, the member already shown as main pin,
+    /// and anything within `minSeparationMeters` of the main pin (same place → one avatar).
+    static func extras(
+        from points: [(memberId: String, name: String, coordinate: CLLocationCoordinate2D?)],
+        selfMemberId: String,
+        mainMemberId: String?,
+        mainCoordinate: CLLocationCoordinate2D?,
+        minSeparationMeters: CLLocationDistance = 25
+    ) -> [FamilyMapMemberPin] {
+        var seen = Set<String>()
+        var result: [FamilyMapMemberPin] = []
+        for point in points {
+            let id = point.memberId.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !id.isEmpty, id != selfMemberId, id != mainMemberId,
+                  let coord = point.coordinate, !seen.contains(id) else { continue }
+            if let main = mainCoordinate,
+               CLLocation(latitude: main.latitude, longitude: main.longitude)
+                .distance(from: CLLocation(latitude: coord.latitude, longitude: coord.longitude)) < minSeparationMeters {
+                continue
+            }
+            seen.insert(id)
+            result.append(
+                FamilyMapMemberPin(memberId: id, name: point.name, latitude: coord.latitude, longitude: coord.longitude)
+            )
+        }
+        return result
+    }
+}
+
+final class FamilyHubMemberAnnotation: MKPointAnnotation {
+    var memberId = ""
+}
+
 /// UIKit host: single `MKMapView` pinned to edges. Sheet overlay in SwiftUI must NEVER
 /// change this view’s frame — only slide over it. Interaction toggles with sheet detent.
 final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate {
@@ -319,8 +568,11 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
     var onRegionChangedByUser: ((MKCoordinateRegion) -> Void)?
     /// P0-3: tap avatar pin → open member sheet (Life360).
     var onPinSelected: (() -> Void)?
+    var onMemberPinSelected: ((FamilyMapMemberPin) -> Void)?
 
     private var pinDiameter: CGFloat = 36
+    private var mainPinIsSelf = true
+    private var lastMemberPins: [FamilyMapMemberPin] = []
     private var lastRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 0, longitude: 0),
         span: MKCoordinateSpan(latitudeDelta: 0, longitudeDelta: 0)
@@ -360,6 +612,7 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
     }
 
     private var lastQuietRadius: CLLocationDistance = -1
+    private var lastApproximateRadius: CLLocationDistance = -1
 
     /// Cheap apply — skip MapKit work unless inputs actually changed.
     func apply(
@@ -371,7 +624,10 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         interactionEnabled: Bool,
         forceCamera: Bool,
         quietRadiusMeters: CLLocationDistance = 0,
-        tripRoute: [CLLocationCoordinate2D] = []
+        approximateRadiusMeters: CLLocationDistance = 0,
+        tripRoute: [CLLocationCoordinate2D] = [],
+        mainPinIsSelf: Bool = true,
+        memberPins: [FamilyMapMemberPin] = []
     ) {
         self.pinDiameter = pinDiameter
         mapView.isScrollEnabled = interactionEnabled
@@ -408,12 +664,23 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
             || lon != lastPinLon
             || title != lastPinTitle
             || abs(pinDiameter - lastAppliedPinDiameter) > 0.5
-        if pinChanged || forceCamera {
+            || mainPinIsSelf != self.mainPinIsSelf
+        let membersChanged = memberPins != lastMemberPins
+        if pinChanged || membersChanged || forceCamera {
             lastPinLat = lat
             lastPinLon = lon
             lastPinTitle = title
             lastAppliedPinDiameter = pinDiameter
+            self.mainPinIsSelf = mainPinIsSelf
+            lastMemberPins = memberPins
             mapView.removeAnnotations(mapView.annotations.filter { !($0 is MKUserLocation) })
+            for member in memberPins {
+                let pin = FamilyHubMemberAnnotation()
+                pin.memberId = member.memberId
+                pin.coordinate = member.coordinate
+                pin.title = member.name
+                mapView.addAnnotation(pin)
+            }
             if let coordinate {
                 let pin = MKPointAnnotation()
                 pin.coordinate = coordinate
@@ -429,10 +696,27 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
             || forceCamera
         if quietChanged {
             lastQuietRadius = quietRadiusMeters
-            mapView.removeOverlays(mapView.overlays.filter { $0 is MKCircle })
+            mapView.removeOverlays(mapView.overlays.filter {
+                $0 is MKCircle && !($0 is FamilyHubApproximateAreaCircle)
+            })
             if let coordinate, quietRadiusMeters >= 50 {
                 let circle = MKCircle(center: coordinate, radius: quietRadiusMeters)
                 mapView.addOverlay(circle)
+            }
+        }
+
+        let approximateChanged =
+            abs(approximateRadiusMeters - lastApproximateRadius) > 0.5
+            || pinChanged
+            || forceCamera
+        if approximateChanged {
+            lastApproximateRadius = approximateRadiusMeters
+            mapView.removeOverlays(mapView.overlays.filter { $0 is FamilyHubApproximateAreaCircle })
+            if let coordinate, approximateRadiusMeters > 0 {
+                mapView.addOverlay(
+                    FamilyHubApproximateAreaCircle(center: coordinate, radius: approximateRadiusMeters),
+                    level: .aboveRoads
+                )
             }
         }
 
@@ -462,11 +746,26 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
         let view = (mapView.dequeueReusableAnnotationView(withIdentifier: id) as? FamilyHubAvatarPinView)
             ?? FamilyHubAvatarPinView(annotation: annotation, reuseIdentifier: id)
         view.annotation = annotation
-        view.apply(size: pinDiameter, title: annotation.title ?? nil)
+        let isMember = annotation is FamilyHubMemberAnnotation
+        view.apply(
+            size: isMember ? pinDiameter * 0.85 : pinDiameter,
+            title: annotation.title ?? nil,
+            showOwnPhoto: !isMember && mainPinIsSelf
+        )
+        view.displayPriority = isMember ? .defaultHigh : .required
+        view.zPriority = isMember ? .defaultUnselected : .max
         return view
     }
 
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let area = overlay as? FamilyHubApproximateAreaCircle {
+            let r = MKCircleRenderer(circle: area)
+            r.fillColor = UIColor.white.withAlphaComponent(0.14)
+            r.strokeColor = UIColor.white.withAlphaComponent(0.7)
+            r.lineWidth = 1.5
+            r.lineDashPattern = [6, 5]
+            return r
+        }
         if let circle = overlay as? MKCircle {
             let r = MKCircleRenderer(circle: circle)
             // Quiet-zone: gold (не Life360 purple) — P0 2026-11-11
@@ -495,7 +794,12 @@ final class FamilyHubLiveMapViewController: UIViewController, MKMapViewDelegate 
 
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard !(view.annotation is MKUserLocation) else { return }
-        onPinSelected?()
+        if let member = view.annotation as? FamilyHubMemberAnnotation,
+           let pin = lastMemberPins.first(where: { $0.memberId == member.memberId }) {
+            onMemberPinSelected?(pin)
+        } else {
+            onPinSelected?()
+        }
         if let annotation = view.annotation {
             mapView.deselectAnnotation(annotation, animated: false)
         }
@@ -515,9 +819,15 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
     var cameraToken: Int = 0
     /// HUB-P1.8 — quiet-zone radius in meters (0 = hide circle).
     var quietRadiusMeters: CLLocationDistance = 0
+    /// Dashed «примерно здесь» area (0 = hide). Used when only a city-grade fix exists.
+    var approximateRadiusMeters: CLLocationDistance = 0
     /// P0.4 H1 — trip track polyline coordinates.
     var tripRoute: [CLLocationCoordinate2D] = []
+    /// Main pin is the viewer → own profile photo; otherwise letter avatar.
+    var mainPinIsSelf: Bool = true
+    var memberPins: [FamilyMapMemberPin] = []
     var onPinSelected: (() -> Void)? = nil
+    var onMemberPinSelected: ((FamilyMapMemberPin) -> Void)? = nil
 
     func makeUIViewController(context: Context) -> FamilyHubLiveMapViewController {
         let vc = FamilyHubLiveMapViewController()
@@ -527,6 +837,9 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
         }
         vc.onPinSelected = {
             coordinator.parent.onPinSelected?()
+        }
+        vc.onMemberPinSelected = { pin in
+            coordinator.parent.onMemberPinSelected?(pin)
         }
         return vc
     }
@@ -542,6 +855,9 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
         vc.onPinSelected = {
             coordinator.parent.onPinSelected?()
         }
+        vc.onMemberPinSelected = { pin in
+            coordinator.parent.onMemberPinSelected?(pin)
+        }
         vc.apply(
             region: region,
             coordinate: coordinate,
@@ -551,7 +867,10 @@ struct FamilyHubLiveMapRepresentable: UIViewControllerRepresentable {
             interactionEnabled: interactionEnabled,
             forceCamera: force,
             quietRadiusMeters: quietRadiusMeters,
-            tripRoute: tripRoute
+            approximateRadiusMeters: approximateRadiusMeters,
+            tripRoute: tripRoute,
+            mainPinIsSelf: mainPinIsSelf,
+            memberPins: memberPins
         )
     }
 
@@ -708,7 +1027,7 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
         startBreatheIfNeeded()
     }
 
-    func apply(size: CGFloat, title: String?) {
+    func apply(size: CGFloat, title: String?, showOwnPhoto: Bool = true) {
         // P4: L=56; cap 64 so breathe ±8% не обрезается layout-ом.
         let d = max(24, min(64, size))
         frame = CGRect(x: 0, y: 0, width: d, height: d)
@@ -720,7 +1039,7 @@ private final class FamilyHubAvatarPinView: MKAnnotationView {
         bubble.frame = bounds
         bubble.font = .systemFont(ofSize: d * 0.38, weight: .bold)
         // Prefer cropped profile photo (same store as AvatarCropEditor).
-        if let image = ProfileImageManager.shared.loadProfileImage(for: .main) {
+        if showOwnPhoto, let image = ProfileImageManager.shared.loadProfileImage(for: .main) {
             photoView.image = image
             photoView.isHidden = false
             bubble.isHidden = true

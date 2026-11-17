@@ -76,4 +76,29 @@ final class AntifakePostCallFlowTests: XCTestCase {
         AntifakeLastCallContext.applyPrefillIfNeeded(to: vm2)
         XCTAssertTrue(vm2.callerId.isEmpty)
     }
+
+    @MainActor
+    func testCallTabEnablesNumberOnlyCheckWithoutRecording() {
+        let vm = AntifakeMediaCheckViewModel(mediaKind: .call)
+        XCTAssertFalse(vm.canSubmit)
+
+        vm.callerId = "   "
+        XCTAssertFalse(vm.canSubmit)
+
+        vm.callerId = "+79990001122"
+        XCTAssertTrue(vm.isCallerNumberOnlyCheck)
+        XCTAssertTrue(vm.canSubmit)
+
+        vm.setSelectedFile(data: Data([0x01]), filename: "call.m4a")
+        XCTAssertFalse(vm.isCallerNumberOnlyCheck)
+        XCTAssertTrue(vm.canSubmit)
+    }
+
+    @MainActor
+    func testNonCallMediaStillRequiresFile() {
+        let vm = AntifakeMediaCheckViewModel(mediaKind: .audio)
+        vm.callerId = "+79990001122"
+        XCTAssertFalse(vm.isCallerNumberOnlyCheck)
+        XCTAssertFalse(vm.canSubmit)
+    }
 }

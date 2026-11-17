@@ -951,6 +951,25 @@
 "where_phone_accuracy_coarse_cta" = "Включить точную геолокацию";
 "where_phone_accuracy_stale_hint" = "Место могло устареть. Обновите точку.";
 "where_phone_accuracy_coarse_hint" = "Сейчас приблизительное место (±%d м). Включите «Точные» для ALADDIN.";
+"where_phone_setup_allow_title" = "Покажите себя на карте";
+"where_phone_setup_allow_body" = "Разрешите геопозицию — и семья увидит ваш аватар.";
+"where_phone_setup_allow_cta" = "Разрешить";
+"where_phone_setup_denied_title" = "Геопозиция выключена";
+"where_phone_setup_denied_body" = "Включите её для ALADDIN в Настройках — это один переключатель.";
+"where_phone_setup_denied_cta" = "Открыть настройки";
+"where_phone_setup_precise_title" = "Вы на карте примерно (±%@)";
+"where_phone_setup_precise_body" = "Включите точное место — аватар встанет туда, где вы.";
+"where_phone_setup_precise_cta" = "Включить точно";
+"where_phone_setup_always_title" = "Семья видит вас, только пока ALADDIN открыт";
+"where_phone_setup_always_body" = "Разрешите «Всегда» — и место обновится, даже когда приложение закрыто.";
+"where_phone_setup_always_cta" = "Разрешить всегда";
+"where_phone_setup_km_format" = "%d км";
+"where_phone_setup_m_format" = "%d м";
+"where_phone_setup_share_title" = "Показывать вас семье на карте?";
+"where_phone_setup_share_body" = "Близкие увидят, где вы были последний раз. Только ваша семья. Выключить можно в любой момент: меню карты → «Тихая зона».";
+"where_phone_setup_share_cta" = "Показывать меня семье";
+"where_phone_family_share_toggle" = "Показывать меня семье";
+"where_phone_family_share_toggle_hint" = "Семья видит вашу последнюю точку. В тихой зоне точка не отправляется.";
 "family_trip_ended_push_title" = "Поездка завершена";
 "family_trip_ended_push_body" = "%@ · %.1f км · до %d км/ч";
 "family_trip_map_track_a11y" = "Маршрут поездки";
@@ -3790,6 +3809,7 @@
 "antifake_doc_prefer_photo" = "Лучше фото или PDF штрафа/договора. Текстовый файл может не подойти.";
 "antifake_video_size_hint" = "Большое видео грузится дольше. Попробуйте короткий ролик до 25 МБ.";
 "antifake_call_soon" = "Проверка звонка может занять больше времени. Если зависает — Отменить и повторить, или проверьте голос/текст.";
+"antifake_call_number_only_hint" = "Без записи проверим только номер. Чтобы проверить голос собеседника — прикрепите запись разговора.";
 "antifake_sync_fail" = "Не удалось связаться с сервером проверки. Повторите через минуту.";
 "antifake_upload_cancelled" = "Проверка отменена";
 

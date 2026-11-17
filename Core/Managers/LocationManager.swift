@@ -86,6 +86,7 @@ class LocationManager: NSObject, ObservableObject {
     private var locationContinuation: CheckedContinuation<CLLocation, Error>?
     // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
     private var locationContinuationHasResumed = false
+    private var locationRequestId: UInt64 = 0
     private var cancellables = Set<AnyCancellable>()
     
     // Константы iOS
@@ -198,6 +199,13 @@ class LocationManager: NSObject, ObservableObject {
         }
         
         return try await withCheckedThrowingContinuation { continuation in
+            // Overlapping callers: finish the previous waiter, otherwise it leaks forever.
+            if let previous = locationContinuation, !locationContinuationHasResumed {
+                locationContinuation = nil
+                previous.resume(throwing: LocationManagerError.locationUnavailable)
+            }
+            locationRequestId &+= 1
+            let requestId = locationRequestId
             // ✅ BUILD 115: Сброс флага для нового запроса
             locationContinuationHasResumed = false
             locationContinuation = continuation
@@ -206,7 +214,8 @@ class LocationManager: NSObject, ObservableObject {
             // Таймаут через 30 секунд
             Task {
                 try? await Task.sleep(nanoseconds: 30_000_000_000)
-                if let continuation = locationContinuation, !locationContinuationHasResumed {
+                if requestId == locationRequestId,
+                   let continuation = locationContinuation, !locationContinuationHasResumed {
                     locationContinuation = nil
                     locationContinuationHasResumed = true
                     continuation.resume(throwing: LocationManagerError.locationUnavailable)
@@ -475,6 +484,8 @@ class LocationManager: NSObject, ObservableObject {
             print("ℹ️ LocationManager: тихая зона — report пропущен (trip note already ran)")
             return
         }
+
+        FamilyMapAutoShare.publishIfNeeded(location)
 
         let report = LocationReport(
             lat: location.coordinate.latitude,

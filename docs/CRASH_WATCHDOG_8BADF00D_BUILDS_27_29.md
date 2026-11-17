@@ -234,7 +234,28 @@ Static: `swiftc -parse` 5 файлов OK · `verify_capabilities_wave3_static.s
 | 29 | Keychain `authToken` в body | кэш токена в памяти + warm на старте | краш |
 | 30 | Живой GPS пересчитывает журнал | пауза GPS под журналом, дедуп publish, стоп декоративной анимации под sheet, MetricKit | краш (IPS: `SimpleHome.body` → `FamilyLocalStore` Keychain/JWT) |
 | 31 | Главная под листом пересчитывает body с I/O + лист без diff | снимок плашки, memo FamilyLocalStore, `WherePhoneSheetHost: Equatable`, локаль журнала | симулятор OK (лог 14:22–14:24) |
-| 32 | Разбор каждого участника семьи строил **весь** словарь переводов ×2 | `LocalizationManager()` → `.shared` в Codable/VM | ⏳ Device QA |
+| 32 | Разбор каждого участника семьи строил **весь** словарь переводов ×2 | `LocalizationManager()` → `.shared` в Codable/VM | ✅ **краша нет** (владелец, 2026-11-17) |
+
+---
+
+## ✅ Итог: что реально помогло (закрыто 2026-11-17, TF 32)
+
+Владелец подтвердил на устройстве: после TF **32** краш 8BADF00D не повторяется.
+
+**Первопричина:** `LocalizationManager()` создавался заново при разборе **каждого** участника семьи (`FamilyRole` / `ProtectionStatus` Codable) — полный словарь ~21k строк ×2 на участника, несколько раз на кадр главной. Главный поток уходил в CPU ~5 с → watchdog.
+
+**Что помогло (по вкладу):**
+
+1. **Build 32 — решающий фикс:** `LocalizationManager()` → `LocalizationManager.shared` в Codable семьи и VM (`d25f8bd6`).
+2. **Build 31 — снял лишнюю нагрузку с body:** без Keychain/JWT/JSON в `SimpleHome.body`, memo `FamilyLocalStore`, `WherePhoneSheetHost: Equatable` (`7851780f`). Без него 32 тоже помог бы, но кадр оставался бы тяжёлым.
+3. **Build 29–30 — гигиена, не корень:** кэш `authToken`, пауза GPS под журналом, дедуп publish. Полезно, но краш оставался.
+
+**Что не помогло само по себе:** правки картинок/LazyVStack (28), кэш токена (29) — лечили симптомы из верхушки стека.
+
+**Урок (правило на будущее):**
+- В Release-коде **никогда** `LocalizationManager()` — только `.shared` (кроме `#Preview`). Проверка: `rg -n "LocalizationManager\(\)" --glob '*.swift' Core Screens Shared ViewModels Components UI` — на 2026-11-17 все попадания внутри `*_Previews: PreviewProvider` (в Release не исполняются).
+- Верхушка стека IPS (Keychain, Image) ≠ причина: смотреть, **кто держит CPU** (симулятор + `STARTUP_TRACE` повторных `init`).
+- Body SwiftUI — без I/O (Keychain, JWT, JSON decode).
 
 ---
 

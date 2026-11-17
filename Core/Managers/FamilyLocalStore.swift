@@ -88,7 +88,7 @@ enum FamilyLocalStore {
         return resolved
     }
 
-    private static func userId(fromJWTPayload payload: [String: Any]) -> String? {
+    static func userId(fromJWTPayload payload: [String: Any]) -> String? {
         if let s = payload["user_id"] as? String {
             let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
             if !t.isEmpty { return t }
@@ -361,6 +361,14 @@ enum FamilyLocalStore {
     static func currentFamilyCreatorMemberId() -> String? {
         let v = UserDefaults.standard.string(forKey: familyCreatorMemberIdKey)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return v.isEmpty ? nil : v
+    }
+
+    /// This install created the persisted family (so `/api/family/stats.ownerSubscriptionTier` is our own tier).
+    static func isCurrentAccountFamilyCreator(defaults: UserDefaults = .standard) -> Bool {
+        let creator = defaults.string(forKey: familyCreatorMemberIdKey)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !creator.isEmpty else { return false }
+        let mine = defaults.string(forKey: yourMemberIdUserDefaultsKey)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return !mine.isEmpty && mine == creator
     }
 
     // MARK: - JWT payload (align your_member_id with roster when possible)

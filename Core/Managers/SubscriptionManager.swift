@@ -209,6 +209,8 @@ final class SubscriptionManager: ObservableObject {
     private let tokenKey = "jwt_token"
     private let subscriptionKey = "subscription_status"
     private let trialKey = "trial_info"
+    /// JWT `user_id` the Keychain `trial_info` belongs to — Keychain outlives reinstall / account switch.
+    private let trialOwnerUidKey = "trial_info_owner_uid"
     private let trialAttemptTimestampsKey = "trial_attempt_timestamps_v1"
     private let trialRiskSaltKey = "trial_risk_salt_v1"
     private let trialRiskSaltCreatedAtKey = "trial_risk_salt_created_at_v1"
@@ -958,6 +960,10 @@ final class SubscriptionManager: ObservableObject {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
         let tier = (stats.ownerSubscriptionTier ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if !tier.isEmpty {
+            dropTrialInheritedFromAnotherAccount(reason: "familyStats", serverOwnerTier: tier)
+            FamilyMapLiveAccess.cacheFamilyOwnerTier(tier)
+        }
         let trialCap = Self.familyMemberLimitStatic(for: .trial)
         let effectiveCap = cap
         let source: FamilyQuotaSource = .serverStats
@@ -1264,7 +1270,7 @@ final class SubscriptionManager: ObservableObject {
     func registerDeviceAnonymously() async throws -> JWTToken {
         logger.business("📱 НАЧАЛО РЕГИСТРАЦИИ УСТРОЙСТВА АНОНИМНО")
 
-        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceId = StableDeviceIdentity.current()
         let deviceType = "ios"
 
         logger.business("📋 Параметры регистрации:")
@@ -1478,7 +1484,7 @@ final class SubscriptionManager: ObservableObject {
     private func registerDeviceWithTrial(trialInfo: TrialInfo) async throws -> JWTToken {
         logger.business("📱 НАЧАЛО РЕГИСТРАЦИИ УСТРОЙСТВА С TRIAL (server-side)")
 
-        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceId = StableDeviceIdentity.current()
         let deviceType = "ios"
         let antiAbuseSignals = buildTrialAntiAbuseSignals(deviceId: deviceId)
 
@@ -2216,6 +2222,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🏥 DEFENSIVE JWT: Monitoring запущен для нового токена")
 
         print("💾💾💾 STORE_TOKEN: Completed")
+        dropTrialInheritedFromAnotherAccount(reason: "storeToken")
         persistOfflineUserIdFromJWTIfMissing()
         // W6: if SSOT empty (reinstall / restore), freeze issuedAt once — never daily "today".
         _ = AccountRegistrationDateStore.captureIfNeeded(token.issuedAt)
@@ -2233,6 +2240,64 @@ final class SubscriptionManager: ObservableObject {
     private func persistTrialStatus(_ trial: TrialInfo) {
         if let data = try? JSONEncoder().encode(trial) {
             saveToKeychain(data: data, key: trialKey)
+        }
+        if let uid = Self.jwtUserId(currentToken?.token) {
+            saveToKeychain(data: Data(uid.utf8), key: trialOwnerUidKey)
+        }
+    }
+
+    private static func jwtUserId(_ jwt: String?) -> String? {
+        guard let jwt, !jwt.isEmpty,
+              let payload = FamilyLocalStore.jwtPayloadDictionary(from: jwt)
+        else { return nil }
+        return FamilyLocalStore.userId(fromJWTPayload: payload)
+    }
+
+    /// Keychain trial left by another server account (reinstall → new IDFV → new free user):
+    /// UI showed «Пробный» while `/api/family/stats` capped the roster at free=1.
+    /// - Parameter serverOwnerTier: `ownerSubscriptionTier` of a family this account created —
+    ///   the only server answer trusted for legacy trials saved before the owner stamp existed.
+    private func dropTrialInheritedFromAnotherAccount(reason: String, serverOwnerTier: String? = nil) {
+        guard trialStatus != nil || ssotTrialEndDate != nil else { return }
+        let paid: Set<SubscriptionLevel> = [.personal, .family, .premium]
+        if let s = currentSubscription?.level, paid.contains(s) { return }
+        guard let uid = Self.jwtUserId(currentToken?.token) else { return }
+
+        let owner = loadFromKeychain(key: trialOwnerUidKey)
+            .flatMap { String(data: $0, encoding: .utf8) }?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !owner.isEmpty {
+            guard owner != uid else { return }
+        } else {
+            guard let tier = serverOwnerTier, FamilyLocalStore.isCurrentAccountFamilyCreator() else { return }
+            if tier == SubscriptionLevel.trial.rawValue {
+                saveToKeychain(data: Data(uid.utf8), key: trialOwnerUidKey)
+                return
+            }
+            guard tier == SubscriptionLevel.free.rawValue else { return }
+        }
+
+        logger.business(
+            "🧹 TRIAL_TARIFF_PIPELINE drop inherited trial reason=\(reason) trial_owner=\(owner.isEmpty ? "legacy" : owner) jwt_uid=\(uid) server_tier=\(serverOwnerTier ?? "-")"
+        )
+        if trialStatus != nil {
+            NotificationManager.shared.cancelTrialNotifications()
+        }
+        trialStatus = nil
+        deleteFromKeychain(key: trialKey)
+        deleteFromKeychain(key: trialOwnerUidKey)
+        UserDefaults.standard.removeObject(forKey: Self.recoverableTrialEndEpochKey)
+        if currentSubscription == nil || currentSubscription?.level == .trial {
+            updateSubscriptionStatus(createSubscriptionStatus(
+                level: .free,
+                isActive: true,
+                expiresAt: nil,
+                trialInfo: nil,
+                limits: SubscriptionLimits.freeLimits,
+                components: currentSubscription?.components ?? []
+            ))
+        } else {
+            bumpSubscriptionDisplayEpoch()
         }
     }
 

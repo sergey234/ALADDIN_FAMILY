@@ -1,5 +1,6 @@
 import Foundation
 import Security
+import UIKit
 
 /// 🔐 Keychain Manager
 /// Безопасное хранение данных в Keychain
@@ -266,6 +267,67 @@ class KeychainManager {
             kSecAttrAccount as String: account
         ]
         SecItemDelete(query as CFDictionary)
+    }
+}
+
+/// Device id for `/api/auth/register-device*` that survives app delete + reinstall.
+/// `identifierForVendor` is reset on reinstall → server creates a new free user while the
+/// trial and family stay on the old account («Пробный · 1 из 1»). Keychain items outlive the app,
+/// so the first value (seeded from the current IDFV — same server account for existing installs)
+/// is pinned here. Separate account name: `KeychainManager.clearAll()` must not reset identity.
+enum StableDeviceIdentity {
+    private static let account = "aladdin_stable_device_id_v1"
+    private static let lock = NSLock()
+    private static var cached: String?
+
+    static func current() -> String {
+        lock.lock()
+        defer { lock.unlock() }
+        if let cached { return cached }
+
+        let existing = read()
+        if let stored = existing.value {
+            cached = stored
+            return stored
+        }
+        let seed = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        // Only pin when the item is truly absent; a locked Keychain (pre-first-unlock) must not mint a new identity.
+        guard existing.status == errSecItemNotFound else { return seed }
+
+        var add = baseQuery()
+        add[kSecValueData as String] = Data(seed.utf8)
+        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        let status = SecItemAdd(add as CFDictionary, nil)
+        if status == errSecDuplicateItem, let stored = read().value {
+            cached = stored
+            return stored
+        }
+        if status == errSecSuccess {
+            cached = seed
+        }
+        return seed
+    }
+
+    private static func baseQuery() -> [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Bundle.main.bundleIdentifier ?? "ai.aladdin",
+            kSecAttrAccount as String: account,
+        ]
+    }
+
+    private static func read() -> (value: String?, status: OSStatus) {
+        var query = baseQuery()
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess,
+              let data = item as? Data,
+              let value = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !value.isEmpty
+        else { return (nil, status) }
+        return (value, status)
     }
 }
 

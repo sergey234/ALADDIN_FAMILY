@@ -850,6 +850,25 @@
 "where_phone_accuracy_coarse_cta" = "Turn on Precise Location";
 "where_phone_accuracy_stale_hint" = "Location may be outdated. Refresh the pin.";
 "where_phone_accuracy_coarse_hint" = "Approximate location (±%d m). Turn on Precise Location for ALADDIN.";
+"where_phone_setup_allow_title" = "Show yourself on the map";
+"where_phone_setup_allow_body" = "Allow location and your family will see your avatar.";
+"where_phone_setup_allow_cta" = "Allow";
+"where_phone_setup_denied_title" = "Location is off";
+"where_phone_setup_denied_body" = "Turn it on for ALADDIN in Settings — it's one switch.";
+"where_phone_setup_denied_cta" = "Open Settings";
+"where_phone_setup_precise_title" = "You're on the map roughly (±%@)";
+"where_phone_setup_precise_body" = "Turn on precise location so your avatar sits where you are.";
+"where_phone_setup_precise_cta" = "Make it precise";
+"where_phone_setup_always_title" = "Family sees you only while ALADDIN is open";
+"where_phone_setup_always_body" = "Allow \"Always\" so your place updates even when the app is closed.";
+"where_phone_setup_always_cta" = "Allow always";
+"where_phone_setup_km_format" = "%d km";
+"where_phone_setup_m_format" = "%d m";
+"where_phone_setup_share_title" = "Show you to your family on the map?";
+"where_phone_setup_share_body" = "Your family will see your last location. Only your family. Turn it off anytime: map menu → Quiet zone.";
+"where_phone_setup_share_cta" = "Show me to my family";
+"where_phone_family_share_toggle" = "Show me to my family";
+"where_phone_family_share_toggle_hint" = "Family sees your last location. Nothing is sent inside a quiet zone.";
 "family_trip_ended_push_title" = "Trip completed";
 "family_trip_ended_push_body" = "%@ · %.1f km · up to %d km/h";
 "family_trip_map_track_a11y" = "Trip route";
@@ -3879,6 +3898,7 @@
 "antifake_doc_prefer_photo" = "Prefer a photo or PDF of the fine/contract. A text file may not work.";
 "antifake_video_size_hint" = "Large videos take longer. Try a short clip under 25 MB.";
 "antifake_call_soon" = "Call checks can take longer. If it hangs — Cancel and retry, or try voice/text.";
+"antifake_call_number_only_hint" = "Without a recording we check the number only. To check the caller's voice, attach the call recording.";
 "antifake_sync_fail" = "Couldn’t reach the check server. Try again in a minute.";
 "antifake_upload_cancelled" = "Check cancelled";
 

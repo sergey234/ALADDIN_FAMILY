@@ -213,12 +213,33 @@ _MEDIA_UPLOAD_OPENAPI: dict[int | str, dict] = {
 def _require_premium(user: Dict[str, Any], request: Request, db: Optional[Session] = None) -> None:
     smoke_secret = request.headers.get("X-Aladdin-Smoke")
     client = request.headers.get("X-Aladdin-Client")
+    if db is None:
+        # JWT may still say free after trial activation; DB is SSOT for trial_end.
+        if user_has_antifake_access(user, smoke_secret=smoke_secret, client=client):
+            return
+        from app.database.database import SessionLocal
+
+        own_db = SessionLocal()
+        try:
+            if user_has_antifake_access_resolved(
+                user, own_db, smoke_secret=smoke_secret, client=client
+            ):
+                return
+            if web_trial_grants_access(user, own_db, client=client):
+                return
+        finally:
+            own_db.close()
+        _raise_premium_required()
     if user_has_antifake_access_resolved(
         user, db, smoke_secret=smoke_secret, client=client
     ):
         return
     if web_trial_grants_access(user, db, client=client):
         return
+    _raise_premium_required()
+
+
+def _raise_premium_required() -> None:
     raise HTTPException(
         status_code=403,
         detail={

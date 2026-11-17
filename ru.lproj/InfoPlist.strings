@@ -1,14 +1,15 @@
 /* Тексты системных разрешений — язык iPhone (не язык внутри приложения). */
 "NSUserNotificationsUsageDescription" = "ALADDIN нужен доступ к уведомлениям для безопасности семьи и важных оповещений.";
-"NSMicrophoneUsageDescription" = "ALADDIN нужен микрофон для голосовых сообщений и анализа голоса.";
+"NSMicrophoneUsageDescription" = "ALADDIN нужен микрофон для заметок и голосового ввода.";
 "NSCameraUsageDescription" = "ALADDIN нужна камера для функций безопасности и распознавания.";
 "NSPhotoLibraryUsageDescription" = "ALADDIN нужен доступ к фото для безопасной работы с семейными снимками.";
 "NSPhotoLibraryAddUsageDescription" = "ALADDIN нужен доступ к фото, чтобы сохранять снимки безопасности.";
 "NSContactsUsageDescription" = "ALADDIN нужен доступ к контактам для безопасного управления членами семьи.";
 "NSLocationWhenInUseUsageDescription" = "ALADDIN использует геолокацию, пока вы в приложении: чтобы задать семейные места и поделиться местоположением в экстренной ситуации (SOS).";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN использует доступ «Всегда», чтобы присылать алерты о входе и выходе из семейных мест (дом, школа, работа), даже когда приложение закрыто. Не используется для непрерывного GPS-трекинга.";
+"FamilyMap" = "Точное место нужно, чтобы ваш аватар стоял на карте семьи там, где вы, а не «где-то в городе».";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN нужен доступ к месту, когда приложение закрыто: чтобы карта семьи была свежей и работали сигналы о местах (дом, школа, работа). Мы не копим след за весь день, когда вы не в пути. В тихой зоне точку семье не отправляем.";
 "NSFaceIDUsageDescription" = "ALADDIN использует Face ID для безопасного входа.";
-"NSSpeechRecognitionUsageDescription" = "ALADDIN нужно распознавание речи для голосового ввода AI.";
+"NSSpeechRecognitionUsageDescription" = "ALADDIN превращает речь в текст для заметок и голосового ввода.";
 "NSMotionUsageDescription" = "ALADDIN использует движение, чтобы помочь отправить срочный сигнал семье при сильном ударе, если вы это включили.";
 "NSHealthShareUsageDescription" = "ALADDIN может читать данные о движении из Здоровья только для срочного сигнала семье, если вы это включили.";
 "NSHealthUpdateUsageDescription" = "ALADDIN не записывает данные в Здоровье. HealthKit нужен только чтобы прочитать сигнал о падении и отправить срочный сигнал семье, если вы это включили.";

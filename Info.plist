@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>32</string>
+	<string>33</string>
 	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -96,6 +96,11 @@
 	<string>ALADDIN does not write Health records. HealthKit is enabled only to read a fall-related signal for a family urgent alert when you turn it on.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ALADDIN needs location while the app is closed so your family map stays up to date and place alerts (home, school, work) can work. We do not keep an all-day trail when you are not moving. In a quiet zone we do not send your point to the family.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>FamilyMap</key>
+		<string>Precise location puts your avatar on the family map in the right place, not just somewhere in the city.</string>
+	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ALADDIN uses location while you use the app to set family places, show your place on the family map, and share location in an emergency (SOS).</string>
 	<key>NSMicrophoneUsageDescription</key>
