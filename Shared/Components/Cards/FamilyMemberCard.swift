@@ -247,7 +247,7 @@ struct FamilyMemberCard: View {
                 // Статус
                 Text(status.indicator)
                     .font(.system(size: 28))
-                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: status)
+                    .animation(.easeInOut(duration: 0.3), value: status)
             }
             .frame(height: softPresenceLine == nil ? 90 : 108)
             .frame(maxWidth: .infinity)

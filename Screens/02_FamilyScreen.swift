@@ -3785,7 +3785,6 @@ extension FamilyScreen {
                     // Large unicorn icon on the left
                     Text("🦄")
                         .font(.system(size: 40))
-                        .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: true)
                     
                     // Localized child reward title expands to full width
                     Text(localizationManager.localized("family_child_reward"))
@@ -5940,7 +5939,7 @@ struct ControlCard: View {
                 
                 Text(status == .green ? "🟢" : "🔴")
                     .font(.system(size: 28))
-                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: status)
+                    .animation(.easeInOut(duration: 0.3), value: status)
             }
             .frame(height: 90)
             .frame(maxWidth: .infinity)

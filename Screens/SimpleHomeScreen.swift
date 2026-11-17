@@ -35,8 +35,6 @@ struct SimpleHomeScreen: View {
     @AppStorage("parental_internet_paused") private var internetPaused = false
     @State private var pauseBusy = false
     @State private var pauseError: String?
-    /// G: soft breathing on orbit doors (off when Reduce Motion).
-    @State private var hybridDoorPulse = false
     /// Entry-only: doors spin clockwise once around orbit, then rest (0 = done).
     @State private var hybridDoorIntroSpinDegrees: Double = 0
     @State private var hybridDoorIntroPlayed = false
@@ -77,6 +75,11 @@ struct SimpleHomeScreen: View {
     /// Orbit only when pay-pains home + flag + not accessibility Dynamic Type (list fallback).
     private var usesHybridOrbit: Bool {
         usesPayPainsHome && hybridOrbitEnabled && !sizeCategory.isAccessibilityCategory
+    }
+    /// A sheet hides the orbit; its decorative motion must not keep re-rendering underneath
+    /// (Where-is-family → Day Journal sits on top of this screen).
+    private var isHomeCoveredBySheet: Bool {
+        showWherePhone || showChildDoor || showPayPainsMenu || showMoreSheet || showVoiceNotes
     }
 
     var body: some View {
@@ -341,7 +344,6 @@ struct SimpleHomeScreen: View {
             .accessibilityElement(children: .contain)
             .onAppear {
                 startHybridDoorIntroSpinIfNeeded()
-                startHybridDoorPulseIfNeeded()
                 preloadHybridHeroImagesIfNeeded()
                 startHybridHeroRotationIfNeeded()
             }
@@ -454,17 +456,6 @@ struct SimpleHomeScreen: View {
         return CGSize(width: radius * sin(a), height: -radius * cos(a))
     }
 
-    private func startHybridDoorPulseIfNeeded() {
-        guard !reduceMotion else {
-            hybridDoorPulse = false
-            return
-        }
-        hybridDoorPulse = false
-        withAnimation(.easeInOut(duration: 1.85).repeatForever(autoreverses: true)) {
-            hybridDoorPulse = true
-        }
-    }
-
     private func startHybridHeroRotationIfNeeded() {
         guard !reduceMotion else {
             let loaded = hybridHeroImages.compactMap { $0 }.count
@@ -483,6 +474,8 @@ struct SimpleHomeScreen: View {
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: Self.hybridHeroRotationSeconds)
                 if Task.isCancelled { break }
+                guard !isHomeCoveredBySheet,
+                      DecorativeMotionPolicy.allowsContinuousMotionNow(reduceMotion: false) else { continue }
                 withAnimation(.easeInOut(duration: Self.hybridHeroCrossfade)) {
                     hybridHeroIndex = (hybridHeroIndex + 1) % Self.hybridHeroAssetNames.count
                 }
@@ -538,15 +531,7 @@ struct SimpleHomeScreen: View {
                 .frame(width: size, height: size)
                 .contentShape(Circle())
                 .shadow(color: Color.black.opacity(0.25), radius: 8, y: 4)
-                .scaleEffect(reduceMotion ? 1.0 : (hybridDoorPulse ? 1.055 : 1.0))
-                .animation(
-                    reduceMotion
-                        ? nil
-                        : .easeInOut(duration: 1.85)
-                            .repeatForever(autoreverses: true)
-                            .delay(pulsePhase),
-                    value: hybridDoorPulse
-                )
+                .decorativePulse(delay: pulsePhase, isEnabled: !isHomeCoveredBySheet)
 
                 Text(title)
                     .font(AladdinFamilyType.subheadline(weight: .semibold))

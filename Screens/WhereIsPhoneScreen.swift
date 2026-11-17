@@ -2891,6 +2891,7 @@ struct WhereIsPhoneScreen: View {
             })
             .onAppear {
                 journalDiagOpenedAt = CFAbsoluteTimeGetCurrent()
+                liveLocation.setOverlayPaused(true)
                 journalHeavyContentReady = false
                 journalTripMapPreviewReady = false
                 // Freeze place label for this sheet open — live GPS must not invalidate body.
@@ -2908,6 +2909,7 @@ struct WhereIsPhoneScreen: View {
                 }
             }
             .onDisappear {
+                liveLocation.setOverlayPaused(false)
                 journalHeavyContentReady = false
                 journalTripMapPreviewReady = false
                 journalNearPlaceSnapshot = nil

@@ -1458,7 +1458,7 @@ struct ControlCard: View {
                 
                 Text(status == .green ? "🟢" : "🔴")
                     .font(.system(size: 28))
-                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: status)
+                    .animation(.easeInOut(duration: 0.3), value: status)
             }
             .frame(height: 90)
             .frame(maxWidth: .infinity)

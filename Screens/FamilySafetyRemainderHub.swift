@@ -35,6 +35,7 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
 
     private let manager = CLLocationManager()
     private var active = false
+    private var overlayPaused = false
     private var refineDeadline: Date?
 
     override init() {
@@ -54,10 +55,30 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     }
 
     private func refreshPreciseFlag() {
+        let precise: Bool
         if #available(iOS 14.0, *) {
-            isPreciseLocationEnabled = (manager.accuracyAuthorization == .fullAccuracy)
+            precise = (manager.accuracyAuthorization == .fullAccuracy)
         } else {
-            isPreciseLocationEnabled = true
+            precise = true
+        }
+        if isPreciseLocationEnabled != precise {
+            isPreciseLocationEnabled = precise
+        }
+    }
+
+    /// Day Journal covers the map and shows a frozen snapshot. Every @Published write here
+    /// re-renders the whole Where-is-family hub together with the open journal sheet
+    /// (IPS builds 27–29: 0x8BADF00D on iPhone SE 2), so live fixes pause while it is open.
+    func setOverlayPaused(_ paused: Bool) {
+        guard overlayPaused != paused else { return }
+        overlayPaused = paused
+        if paused {
+            isRefiningFix = false
+            refineDeadline = nil
+            manager.distanceFilter = 15
+            manager.stopUpdatingLocation()
+        } else if active {
+            startIfNeeded()
         }
     }
 
@@ -66,7 +87,11 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
 
     func startIfNeeded() {
         active = true
-        authStatus = manager.authorizationStatus
+        let status = manager.authorizationStatus
+        if authStatus != status {
+            authStatus = status
+        }
+        guard !overlayPaused else { return }
         guard FamilyMapLiveAccess.isEntitled else {
             manager.stopUpdatingLocation()
             return
@@ -95,6 +120,7 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     /// QA-08 A / P5: refresh — крутим updates до accuracy ≤ 80 м или timeout.
     /// P0.5 RCA: без Precise Location iOS отдаёт ±~kilometres; не подменяем pin coarse-фиксом.
     func requestFreshFix() {
+        guard !overlayPaused else { return }
         authStatus = manager.authorizationStatus
         refreshPreciseFlag()
         guard authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse else {
@@ -136,7 +162,7 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
                 "WHERE_PHONE liveAuthChange auth=\(manager.authorizationStatus.rawValue) " +
                 "precise=\(self.isPreciseLocationEnabled)"
             )
-            guard self.active, FamilyMapLiveAccess.isEntitled else {
+            guard self.active, !self.overlayPaused, FamilyMapLiveAccess.isEntitled else {
                 manager.stopUpdatingLocation()
                 return
             }
@@ -152,10 +178,15 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
         Task { @MainActor in
-            guard FamilyMapLiveAccess.isEntitled else { return }
+            guard !self.overlayPaused, FamilyMapLiveAccess.isEntitled else { return }
             self.refreshPreciseFlag()
-            // Always publish accuracy for the ±m badge (honest even when pin held).
-            self.accuracyMeters = loc.horizontalAccuracy
+            // ±m badge stays honest; 5 m buckets so GPS jitter does not re-render the hub every fix.
+            let accuracyBucket = loc.horizontalAccuracy < 0
+                ? loc.horizontalAccuracy
+                : (loc.horizontalAccuracy / 5).rounded() * 5
+            if self.accuracyMeters != accuracyBucket {
+                self.accuracyMeters = accuracyBucket
+            }
             if loc.horizontalAccuracy > Self.coarseAccuracyThresholdMeters {
                 print(
                     "WHERE_PHONE coarseFix ±\(Int(loc.horizontalAccuracy))m precise=\(self.isPreciseLocationEnabled) " +
@@ -184,8 +215,11 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
                loc.horizontalAccuracy < 40,
                speedOK,
                kmh <= 140 {
-                self.speedKmh = Int(kmh.rounded())
-            } else if !usablePin {
+                let rounded = Int(kmh.rounded())
+                if self.speedKmh != rounded {
+                    self.speedKmh = rounded
+                }
+            } else if !usablePin, self.speedKmh != nil {
                 self.speedKmh = nil
             }
             // Тихая зона + авто-поездка + серверный last-point — только usable pin.

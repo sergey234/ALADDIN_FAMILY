@@ -397,6 +397,7 @@ struct ALADDINApp: App {
 
         // One Keychain read at launch into memory — SwiftUI body must not SecItem on every layout (8BADF00D).
         AppConfig.warmAuthTokenCache()
+        HangDiagnosticsRecorder.shared.start()
 #if DEBUG
         print("ℹ️ ALADDINApp.init: Debug/token recovery deferred to runDeferredLaunchBootstrapIfNeeded()")
 #endif
