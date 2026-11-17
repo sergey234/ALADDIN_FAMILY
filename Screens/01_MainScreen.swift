@@ -568,32 +568,35 @@ struct MainScreen: View {
                             .accessibilityHint("Нажмите для открытия экрана тарифов")
 
                             // P2-14 — Senior 60+: тёплый вход в Companion (Аладдин, calm).
-                            Button(action: {
-                                HapticFeedback.impact(.light)
-                                UserDefaults.standard.set(true, forKey: "companion_senior_entry")
-                                CompanionHeroRouter.markUserOverride(characterId: "aladdin")
-                                navigationManager.navigateToCompanionHome(returnTo: .main)
-                            }) {
-                                VStack(spacing: 8) {
-                                    AliveGlyph(id: .senior60, size: 40) {
-                                        Text("🧓")
-                                            .font(.system(size: 28))
+                            // Hidden on mainland China App Store (AIGC compliance).
+                            if AppConfig.isCompanionAvailable {
+                                Button(action: {
+                                    HapticFeedback.impact(.light)
+                                    UserDefaults.standard.set(true, forKey: "companion_senior_entry")
+                                    CompanionHeroRouter.markUserOverride(characterId: "aladdin")
+                                    navigationManager.navigateToCompanionHome(returnTo: .main)
+                                }) {
+                                    VStack(spacing: 8) {
+                                        AliveGlyph(id: .senior60, size: 40) {
+                                            Text("🧓")
+                                                .font(.system(size: 28))
+                                        }
+                                        Text(localizationManager.localized("main_senior_companion_title"))
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .foregroundColor(.white)
+                                            .multilineTextAlignment(.center)
+                                        Text(localizationManager.localized("main_senior_companion_subtitle"))
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .multilineTextAlignment(.center)
                                     }
-                                    Text(localizationManager.localized("main_senior_companion_title"))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                    Text(localizationManager.localized("main_senior_companion_subtitle"))
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.white.opacity(0.8))
-                                        .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 100)
+                                    .aladdinProductCard(cornerRadius: 10)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 100)
-                                .aladdinProductCard(cornerRadius: 10)
+                                .buttonStyle(PlainButtonStyle())
+                                .accessibilityIdentifier("main_nav_senior_companion")
                             }
-                            .buttonStyle(PlainButtonStyle())
-                            .accessibilityIdentifier("main_nav_senior_companion")
 
                             // Аналитика карточка (через NavigationManager)
                             Button(action: {
@@ -815,12 +818,12 @@ struct MainScreen: View {
                             // Информация о семье — слоты/тариф из effectiveFamilyDisplay (W-pre-A).
                             let familyDisplayBody = subscriptionManager.effectiveFamilyDisplay()
                             VStack(alignment: .leading, spacing: 3) {
+                                // SSOT: 2nd %d = real devices (DevicesScreen / FamilyDevicesCountStore),
+                                // NOT slotsMax (that is the «1 из 3» chip — caused false «Устройств: 3»).
                                 Text(localizationManager.localized(
                                     "main_family_info",
                                     mainViewModel.familyMembers,
-                                    familyDisplayBody.slotsMax,
-                                    mainViewModel.devicesProtected,
-                                    familyDisplayBody.slotsMax
+                                    mainViewModel.devicesProtected
                                 ))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
@@ -1021,10 +1024,17 @@ struct MainScreen: View {
                         .id("family_tariff_card_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
                         .padding(.horizontal, 20)
                         
-                        // Chat switcher + contextual quick entry (ненавязчиво рядом с чатом)
+                        // Chat switcher + contextual quick entry (ненавязчиво рядом с чатом).
+                        // Mainland China (`CHN`): Family Chat + AI Assistant hidden (ASC compliance).
+                        if AppConfig.isFamilyChatAvailable || AppConfig.isAIAssistantAvailable {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 8) {
-                                ForEach(HomeChatDestination.allCases, id: \.rawValue) { destination in
+                                ForEach(HomeChatDestination.allCases.filter { destination in
+                                    switch destination {
+                                    case .family: return AppConfig.isFamilyChatAvailable
+                                    case .ai: return AppConfig.isAIAssistantAvailable
+                                    }
+                                }, id: \.rawValue) { destination in
                                     let isSelected = (HomeChatDestination(rawValue: homeChatDestinationRaw) ?? .family) == destination
                                     Button(action: {
                                         HapticFeedback.selection()
@@ -1106,6 +1116,7 @@ struct MainScreen: View {
                         .id("home_chat_segments_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
                         .accessibilityIdentifier("main_nav_ai_assistant")
                         .padding(.horizontal, 20)
+                        }
                         
                     }
                 }

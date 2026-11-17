@@ -281,6 +281,8 @@
 		A3000009 /* Core/Network/APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* Core/Network/APIService.swift */; };
 		A3000011 /* Core/Network/NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000010 /* Core/Network/NetworkManager.swift */; };
 		A3000013 /* Core/Config/AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000012 /* Core/Config/AppConfig.swift */; };
+		CMC000022F90000100C7D34B /* ChinaMainlandCompliance.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMC000012F90000100C7D34B /* ChinaMainlandCompliance.swift */; };
+		CMC000042F90000100C7D34B /* ChinaMainlandComplianceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMC000032F90000100C7D34B /* ChinaMainlandComplianceTests.swift */; };
 		A3000017 /* ViewModels/FamilyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000016 /* ViewModels/FamilyViewModel.swift */; };
 		A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000018 /* ViewModels/AIAssistantViewModel.swift */; };
 		A3000021 /* ViewModels/SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000020 /* ViewModels/SettingsViewModel.swift */; };
@@ -1234,6 +1236,8 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		A3000008 /* Core/Network/APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/APIService.swift; sourceTree = "<group>"; };
 		A3000010 /* Core/Network/NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/NetworkManager.swift; sourceTree = "<group>"; };
 		A3000012 /* Core/Config/AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Config/AppConfig.swift; sourceTree = "<group>"; };
+		CMC000012F90000100C7D34B /* ChinaMainlandCompliance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChinaMainlandCompliance.swift; path = Core/Compliance/ChinaMainlandCompliance.swift; sourceTree = "<group>"; };
+		CMC000032F90000100C7D34B /* ChinaMainlandComplianceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChinaMainlandComplianceTests.swift; sourceTree = "<group>"; };
 		A3000016 /* ViewModels/FamilyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyViewModel.swift; sourceTree = "<group>"; };
 		A3000018 /* ViewModels/AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/AIAssistantViewModel.swift; sourceTree = "<group>"; };
 		A3000020 /* ViewModels/SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SettingsViewModel.swift; sourceTree = "<group>"; };
@@ -2499,6 +2503,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A3000010 /* Core/Network/NetworkManager.swift */,
 				E7F8B0102FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift */,
 				A3000012 /* Core/Config/AppConfig.swift */,
+				CMC000012F90000100C7D34B /* ChinaMainlandCompliance.swift */,
 				A3000016 /* ViewModels/FamilyViewModel.swift */,
 				A3000018 /* ViewModels/AIAssistantViewModel.swift */,
 				A3000020 /* ViewModels/SettingsViewModel.swift */,
@@ -2696,6 +2701,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				MNEM0091B2C3D4E5F6070846 /* MnemoCoreV3Tests.swift */,
 				B5001101 /* APIServiceTests.swift */,
 				B5001102 /* AppConfigTests.swift */,
+				CMC000032F90000100C7D34B /* ChinaMainlandComplianceTests.swift */,
 				DMOTT000 /* DecorativeMotionPolicyTests.swift */,
 				A1C0N0112F90000100C7D34B /* AliveIconStyleTests.swift */,
 				B70002112F90000100ABC001 /* CallSessionsStoreTests.swift */,
@@ -3322,6 +3328,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A3F700022FA12A030065BDC4 /* FamilySyncDebugSnapshot.swift in Sources */,
 				E7F8B0022FA12A050065BDC4 /* FamilyRosterSyncMergePolicy.swift in Sources */,
 				A3000013 /* Core/Config/AppConfig.swift in Sources */,
+				CMC000022F90000100C7D34B /* ChinaMainlandCompliance.swift in Sources */,
 				5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */,
 				A3000017 /* ViewModels/FamilyViewModel.swift in Sources */,
 				A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */,
@@ -3954,6 +3961,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				5E7056D12F597D0C0065BDC4 /* DEFENSIVEJWTTests.swift in Sources */,
 				B5001201 /* APIServiceTests.swift in Sources */,
 				B5001202 /* AppConfigTests.swift in Sources */,
+				CMC000042F90000100C7D34B /* ChinaMainlandComplianceTests.swift in Sources */,
 				DMOTT001 /* DecorativeMotionPolicyTests.swift in Sources */,
 				A1C0N0122F90000100C7D34B /* AliveIconStyleTests.swift in Sources */,
 				B70002122F90000100ABC001 /* CallSessionsStoreTests.swift in Sources */,

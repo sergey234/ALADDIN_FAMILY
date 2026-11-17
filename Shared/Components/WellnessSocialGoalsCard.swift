@@ -51,7 +51,7 @@ struct WellnessSocialGoalsCard: View {
             }
 
             HStack(spacing: 12) {
-                if block.cta == "family_chat" {
+                if block.cta == "family_chat", AppConfig.isFamilyChatAvailable {
                     Button {
                         navigationManager.navigateTo(.familyChat)
                     } label: {
@@ -60,13 +60,15 @@ struct WellnessSocialGoalsCard: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.cyan)
                 }
-                Button {
-                    navigationManager.navigateToCompanionHome(returnTo: navigationManager.currentScreen)
-                } label: {
-                    Text(localizationManager.localized("wellness_social_goals_companion_cta"))
+                if AppConfig.isCompanionAvailable {
+                    Button {
+                        navigationManager.navigateToCompanionHome(returnTo: navigationManager.currentScreen)
+                    } label: {
+                        Text(localizationManager.localized("wellness_social_goals_companion_cta"))
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.white)
                 }
-                .buttonStyle(.bordered)
-                .tint(.white)
             }
         }
         .padding(12)

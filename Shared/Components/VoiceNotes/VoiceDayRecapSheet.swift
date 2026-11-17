@@ -78,23 +78,25 @@ struct VoiceDayRecapSheet: View {
                                 .foregroundColor(.white.opacity(0.8))
                         }
 
-                        Button {
-                            let draft = ([result.tellFamily] + result.bullets)
-                                .filter { !$0.isEmpty }
-                                .joined(separator: "\n")
-                            UserDefaults.standard.set(draft, forKey: VoiceDayRecapService.familyChatDraftKey)
-                            dismiss()
-                            navigationManager.navigateTo(.familyChat)
-                        } label: {
-                            Label(
-                                localizationManager.localized("voice_day_recap_cta_family"),
-                                systemImage: "bubble.left.and.bubble.right"
-                            )
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                        if AppConfig.isFamilyChatAvailable {
+                            Button {
+                                let draft = ([result.tellFamily] + result.bullets)
+                                    .filter { !$0.isEmpty }
+                                    .joined(separator: "\n")
+                                UserDefaults.standard.set(draft, forKey: VoiceDayRecapService.familyChatDraftKey)
+                                dismiss()
+                                navigationManager.navigateTo(.familyChat)
+                            } label: {
+                                Label(
+                                    localizationManager.localized("voice_day_recap_cta_family"),
+                                    systemImage: "bubble.left.and.bubble.right"
+                                )
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(Color(hex: "8B5CF6"))
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Color(hex: "8B5CF6"))
                     }
                     .padding()
                 }

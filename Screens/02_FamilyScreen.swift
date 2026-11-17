@@ -3317,27 +3317,29 @@ extension FamilyScreen {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("family_open_list")
 
-                Button {
-                    HapticFeedback.impact(.light)
-                    navigationManager.navigateTo(.familyChat)
-                } label: {
-                    HStack {
-                        AliveGlyph(id: .famChat, size: 28) {
-                            Image(systemName: "message.fill")
+                if AppConfig.isFamilyChatAvailable {
+                    Button {
+                        HapticFeedback.impact(.light)
+                        navigationManager.navigateTo(.familyChat)
+                    } label: {
+                        HStack {
+                            AliveGlyph(id: .famChat, size: 28) {
+                                Image(systemName: "message.fill")
+                            }
+                            Text(localizationManager.localized("pay_pains_menu_family_chat"))
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
                         }
-                        Text(localizationManager.localized("pay_pains_menu_family_chat"))
-                            .font(.subheadline.weight(.semibold))
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
+                        .foregroundColor(.textPrimary)
+                        .padding()
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .foregroundColor(.textPrimary)
-                    .padding()
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("family_open_chat")
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("family_open_chat")
 
                 Button {
                     HapticFeedback.impact(.light)

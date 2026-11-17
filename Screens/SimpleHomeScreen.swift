@@ -294,7 +294,9 @@ struct SimpleHomeScreen: View {
             ) {
                 showWherePhone = true
             }
-            payPainsAIFriendsRow
+            if AppConfig.isCompanionAvailable {
+                payPainsAIFriendsRow
+            }
             payPainsMenuRow
         }
     }
@@ -560,13 +562,15 @@ struct SimpleHomeScreen: View {
 
     private var hybridChipsRow: some View {
         HStack(spacing: 12) {
-            hybridChip(
-                titleKey: "pay_pains_ai_friends_row",
-                systemImage: "person.2.wave.2.fill",
-                aliveIcon: .aiFriends,
-                identifier: "pay_pains_ai_friends"
-            ) {
-                navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+            if AppConfig.isCompanionAvailable {
+                hybridChip(
+                    titleKey: "pay_pains_ai_friends_row",
+                    systemImage: "person.2.wave.2.fill",
+                    aliveIcon: .aiFriends,
+                    identifier: "pay_pains_ai_friends"
+                ) {
+                    navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+                }
             }
             hybridChip(
                 titleKey: "pay_pains_menu_button",
@@ -1311,26 +1315,32 @@ struct SimpleHomeScreen: View {
                         ) {
                             navigationManager.navigateTo(.networkProtection)
                         }
-                        payPainsMenuGlassRow(
-                            titleKey: "pay_pains_menu_ai_friends",
-                            systemImage: "person.2.wave.2.fill",
-                            id: "pay_pains_menu_ai_friends"
-                        ) {
-                            navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+                        if AppConfig.isCompanionAvailable {
+                            payPainsMenuGlassRow(
+                                titleKey: "pay_pains_menu_ai_friends",
+                                systemImage: "person.2.wave.2.fill",
+                                id: "pay_pains_menu_ai_friends"
+                            ) {
+                                navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+                            }
                         }
-                        payPainsMenuGlassRow(
-                            titleKey: "pay_pains_menu_ai_helper",
-                            systemImage: "brain.head.profile",
-                            id: "pay_pains_menu_ai_helper"
-                        ) {
-                            navigationManager.navigateTo(.aiAssistant)
+                        if AppConfig.isAIAssistantAvailable {
+                            payPainsMenuGlassRow(
+                                titleKey: "pay_pains_menu_ai_helper",
+                                systemImage: "brain.head.profile",
+                                id: "pay_pains_menu_ai_helper"
+                            ) {
+                                navigationManager.navigateTo(.aiAssistant)
+                            }
                         }
-                        payPainsMenuGlassRow(
-                            titleKey: "pay_pains_menu_family_chat",
-                            systemImage: "message.fill",
-                            id: "pay_pains_menu_family_chat"
-                        ) {
-                            navigationManager.navigateTo(.familyChat)
+                        if AppConfig.isFamilyChatAvailable {
+                            payPainsMenuGlassRow(
+                                titleKey: "pay_pains_menu_family_chat",
+                                systemImage: "message.fill",
+                                id: "pay_pains_menu_family_chat"
+                            ) {
+                                navigationManager.navigateTo(.familyChat)
+                            }
                         }
                         payPainsMenuGlassRow(
                             titleKey: "pay_pains_menu_notifications_analytics",
@@ -1502,13 +1512,15 @@ struct SimpleHomeScreen: View {
                 FamilyScamCallFunnel.log(.mainParentsCTA, source: "simple_home")
                 navigationManager.navigateTo(.family)
             }
-            tile(
-                titleKey: "simple_home_tile_hero_title",
-                subtitleKey: "simple_home_tile_hero_subtitle",
-                systemImage: "bubble.left.and.bubble.right.fill",
-                identifier: "simple_home_tile_hero"
-            ) {
-                navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+            if AppConfig.isCompanionAvailable {
+                tile(
+                    titleKey: "simple_home_tile_hero_title",
+                    subtitleKey: "simple_home_tile_hero_subtitle",
+                    systemImage: "bubble.left.and.bubble.right.fill",
+                    identifier: "simple_home_tile_hero"
+                ) {
+                    navigationManager.navigateToCompanionHome(returnTo: .simpleHome)
+                }
             }
             tile(
                 titleKey: "simple_home_tile_say_title",
@@ -1669,12 +1681,14 @@ struct SimpleHomeScreen: View {
                 ) {
                     navigationManager.navigateTo(.support)
                 }
-                moreRow(
-                    titleKey: "nav_screen_family_chat",
-                    systemImage: "message.fill",
-                    id: "simple_home_more_family_chat"
-                ) {
-                    navigationManager.navigateTo(.familyChat)
+                if AppConfig.isFamilyChatAvailable {
+                    moreRow(
+                        titleKey: "nav_screen_family_chat",
+                        systemImage: "message.fill",
+                        id: "simple_home_more_family_chat"
+                    ) {
+                        navigationManager.navigateTo(.familyChat)
+                    }
                 }
                 moreRow(
                     titleKey: "nav_screen_parental_control",
@@ -1692,12 +1706,14 @@ struct SimpleHomeScreen: View {
                         navigationManager.navigateTo(.focusSession)
                     }
                 }
-                moreRow(
-                    titleKey: "nav_screen_ai_assistant",
-                    systemImage: "brain.head.profile",
-                    id: "simple_home_more_ai_assistant"
-                ) {
-                    navigationManager.navigateTo(.aiAssistant)
+                if AppConfig.isAIAssistantAvailable {
+                    moreRow(
+                        titleKey: "nav_screen_ai_assistant",
+                        systemImage: "brain.head.profile",
+                        id: "simple_home_more_ai_assistant"
+                    ) {
+                        navigationManager.navigateTo(.aiAssistant)
+                    }
                 }
 
                 if simpleHomePreferred {

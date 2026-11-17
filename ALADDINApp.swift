@@ -649,6 +649,12 @@ struct ALADDINApp: App {
         AppConfig.warmAuthTokenCache()
         LaunchDiagnostics.appendStartupTrace("deferred: AppConfig.warmAuthTokenCache done")
 
+        LaunchDiagnostics.appendStartupTrace("deferred: ChinaMainlandCompliance.refreshStorefront BEGIN")
+        await ChinaMainlandCompliance.refreshStorefrontFromAppStore()
+        LaunchDiagnostics.appendStartupTrace(
+            "deferred: ChinaMainlandCompliance storefront=\(ChinaMainlandCompliance.resolvedStorefrontCountryCode() ?? "nil") restricts=\(ChinaMainlandCompliance.restrictsEncryptedChatAndAIGC)"
+        )
+
 #if DEBUG
         // Run heavy debug recovery here (after UI is already mounted), not in init().
         LaunchDiagnostics.appendStartupTrace("deferred: KeychainAutoRecoveryService.repairTokensIfNeeded BEGIN")

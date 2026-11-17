@@ -72,7 +72,7 @@ class NavigationManager: ObservableObject {
         print("🟢 NavigationManager.init: стартовый экран = \(self.currentScreen.rawValue) (онбординг завершён в UD: \(onboardingDone))")
     }
 
-    /// Канон входа (A2): Удобный режим при pay-pains; иначе Main. Child/teen/elderly — Main (или их shell).
+    /// Канон входа 2026-11-11: Удобный режим (SimpleHome) для всех ролей при новом UI; иначе Main.
     static func homeEntryScreen(
         defaults: UserDefaults = .standard
     ) -> ALADDINScreen {
@@ -81,10 +81,13 @@ class NavigationManager: ObservableObject {
 
     /// Корень входа без вспышки Main.
     func navigateToHomeEntry(reason: String? = nil) {
-        let screen = Self.homeEntryScreen()
-        if let reason {
-            appendLog("🏠 navigateToHomeEntry(\(screen)) | \(reason)")
-        }
+        let defaults = UserDefaults.standard
+        let screen = Self.homeEntryScreen(defaults: defaults)
+        let role = (defaults.string(forKey: "current_user_role") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let newUI = PayPainsUIFlags.isNewUIEnabled(defaults: defaults)
+        let why = reason ?? "unspecified"
+        print("🏠 HOME_ENTRY screen=\(screen.rawValue) role=\(role.isEmpty ? "∅" : role) newUI=\(newUI) reason=\(why)")
+        appendLog("🏠 navigateToHomeEntry(\(screen)) | \(why) | role=\(role.isEmpty ? "∅" : role) newUI=\(newUI)")
         navigateToRoot(screen)
     }
     
@@ -394,6 +397,11 @@ class NavigationManager: ObservableObject {
         logger.navigation(from: currentScreen.displayName, to: resolved.displayName, function: #function)
         #endif
 
+        if isBlockedByChinaMainlandCompliance(resolved) {
+            appendLog("🇨🇳 navigateTo(\(resolved)) отклонён: China mainland compliance (no E2EE chat / AIGC)")
+            return
+        }
+
         if resolved == .paymentQR, AppStoreBuildPolicy.isAppStoreBuild {
             selectedTariffForPayment = nil
             appendLog("🍎 navigateTo(.paymentQR) отклонён политикой App Store")
@@ -458,8 +466,23 @@ class NavigationManager: ObservableObject {
 
     /// «Мир героев» — запоминаем экран-источник для корректного «Назад».
     func navigateToCompanionHome(returnTo: ALADDINScreen? = nil) {
+        guard AppConfig.isCompanionAvailable else {
+            appendLog("🇨🇳 navigateToCompanionHome отклонён: China mainland compliance")
+            return
+        }
         companionReturnScreen = returnTo ?? currentScreen
         navigateTo(.companionHome)
+    }
+
+    /// China mainland (`CHN`): Family Chat E2EE + Companion/AIGC + AI Assistant blocked.
+    private func isBlockedByChinaMainlandCompliance(_ screen: ALADDINScreen) -> Bool {
+        guard ChinaMainlandCompliance.restrictsEncryptedChatAndAIGC else { return false }
+        switch screen {
+        case .familyChat, .companionHome, .companionHub, .companionConversation, .aiAssistant:
+            return true
+        default:
+            return false
+        }
     }
 
     /// Simple Home Shell — лаунчер «Удобный режим».
@@ -711,6 +734,10 @@ class NavigationManager: ObservableObject {
     /// Переход к экрану с очисткой стека
     func navigateToRoot(_ screen: ALADDINScreen) {
         logger.navigation(from: currentScreen.displayName, to: "<-- Root (\(screen.displayName))", function: #function) // Логируем переход к корню
+        if isBlockedByChinaMainlandCompliance(screen) {
+            appendLog("🇨🇳 navigateToRoot(\(screen)) отклонён: China mainland compliance")
+            return
+        }
         if currentScreen == screen && navigationStack.isEmpty {
             appendLog("⚠️ navigateToRoot(\(screen)) no-op: уже корневой экран")
             return
@@ -888,6 +915,8 @@ class NavigationManager: ObservableObject {
         textMode: AntifakeTextInputMode? = nil,
         postCallPrompt: Bool = false
     ) {
+        // Soft map pending must not hijack Check → return to Convenient (SOS kept).
+        FamilyPushDeepLink.clearSoftMapPending(reason: "navigateToAntifakeHub")
         pendingAntifakeHubTab = tab
         pendingAntifakeTextMode = textMode
         if postCallPrompt {

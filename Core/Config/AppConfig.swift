@@ -851,8 +851,23 @@ struct AppConfig {
     
     static let isNetworkProtectionEnabled = true
     static let isAIEnabled = true
+    /// Family Chat UI + APIs. Off on mainland China App Store (`CHN`) — ASC security assessment.
+    static var isFamilyChatAvailable: Bool {
+        !ChinaMainlandCompliance.restrictsEncryptedChatAndAIGC
+    }
+    /// Companion (AIGC heroes / chat / generation). Off on mainland China storefront.
+    static var isCompanionAvailable: Bool {
+        !ChinaMainlandCompliance.restrictsEncryptedChatAndAIGC
+    }
+    /// In-app AI Assistant chatbot. Off on mainland China storefront (AIGC).
+    static var isAIAssistantAvailable: Bool {
+        !ChinaMainlandCompliance.restrictsEncryptedChatAndAIGC
+    }
     /// E1.4 — новые текстовые сообщения Family Chat шифруются (envelope v2).
-    static let isFamilyChatE2EEEnabled = true
+    /// Also false when Family Chat is hidden for China mainland compliance.
+    static var isFamilyChatE2EEEnabled: Bool {
+        isFamilyChatAvailable
+    }
     static let isParentalControlEnabled = true
     static let isAnalyticsEnabled = true
     

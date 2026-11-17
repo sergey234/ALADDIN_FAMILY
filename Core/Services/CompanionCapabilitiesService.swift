@@ -56,7 +56,7 @@ final class CompanionCapabilitiesService: ObservableObject {
     }
 
     var companionEnabled: Bool {
-        featureEnabled("companion")
+        AppConfig.isCompanionAvailable && featureEnabled("companion")
     }
 
     var allowedCharactersFromCapabilities: [String] {
