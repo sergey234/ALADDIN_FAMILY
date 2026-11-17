@@ -184,7 +184,15 @@ class APIService: ObservableObject {
     func createFamily(request: CreateFamilyRequest, completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void) {
         // Production flow is JWT-protected, but on real devices token can be missing/expired.
         // Auto-bootstrap device JWT and retry once to avoid false 401 during first-time registration.
-        performCreateFamily(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
+        guard request.device_check_token == nil else {
+            performCreateFamily(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
+            return
+        }
+        DeviceCheckTokenProvider.fetch { token in
+            var body = request
+            body.device_check_token = token
+            self.performCreateFamily(request: body, hasRetriedAfterTokenBootstrap: false, completion: completion)
+        }
     }
 
     func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<APIResponse<FamilyResponse>, Error>) -> Void) {
@@ -352,7 +360,7 @@ class APIService: ObservableObject {
             return
         }
 
-        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceId = StableDeviceIdentity.current()
         let deviceType = UIDevice.current.userInterfaceIdiom == .pad ? "tablet" : "smartphone"
         let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
 

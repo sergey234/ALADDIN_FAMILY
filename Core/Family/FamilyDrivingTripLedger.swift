@@ -1,4 +1,5 @@
 import CoreLocation
+import CoreMotion
 import Foundation
 
 /// Локальный SSOT завершённых поездок (per member).
@@ -85,35 +86,27 @@ enum FamilyDrivingTripLedger {
         let device = currentDeviceMember()
         let uid = (memberId?.isEmpty == false ? memberId! : (meta?.memberId ?? device.id))
         let uname = (memberName?.isEmpty == false ? memberName! : (meta?.memberName ?? device.name))
-        let startedAt = meta?.startedAt ?? Date().addingTimeInterval(-Double(max(points.count - 1, 1) * 30))
-        let endedAt = Date()
+        let metrics = DrivingTripAnalyzer.analyze(points: points)
+        let startedAt = meta?.startedAt
+            ?? points.first?.t
+            ?? Date().addingTimeInterval(-Double(max(points.count - 1, 1) * 30))
+        // Stale close (iOS paused updates on parking): end = last real fix, not «now».
+        let endedAt = points.last?.t ?? Date()
 
-        var distanceM: Double = 0
-        var sampleSpeeds: [Double] = []
-        for i in 1..<points.count {
-            let a = CLLocation(latitude: points[i - 1].latitude, longitude: points[i - 1].longitude)
-            let b = CLLocation(latitude: points[i].latitude, longitude: points[i].longitude)
-            let d = a.distance(from: b)
-            distanceM += d
-            // ~30s sample gap — drop GPS spikes before UI cap ~140.
-            let speed = (d / 30.0) * 3.6
-            if speed.isFinite, speed > 0, speed <= 160 {
-                sampleSpeeds.append(speed)
-            }
-        }
-        let maxSpeedKmh = Self.cappedPeakSpeedKmh(sampleSpeeds)
+        let maxSpeedKmh = metrics.maxSpeedKmh
         let duration = max(endedAt.timeIntervalSince(startedAt), 60)
-        let distanceKm = distanceM / 1000.0
+        let distanceKm = metrics.distanceKm
         let avgSpeed = duration > 0 ? (distanceKm / (duration / 3600.0)) : 0
-        let safety = safetyScore(maxSpeedKmh: maxSpeedKmh)
-        let violations: [DrivingViolation] = maxSpeedKmh >= 120
-            ? [DrivingViolation(
+        let safety = max(1.0, safetyScore(maxSpeedKmh: maxSpeedKmh) - 0.5 * Double(metrics.harshViolations.count))
+        var violations: [DrivingViolation] = metrics.harshViolations
+        if maxSpeedKmh >= 120 {
+            violations.append(DrivingViolation(
                 type: .speedExceeded,
-                timestamp: endedAt,
+                timestamp: metrics.maxSpeedAt ?? endedAt,
                 description: "High speed \(Int(maxSpeedKmh)) km/h",
                 severity: maxSpeedKmh >= 140 ? .high : .medium
-            )]
-            : []
+            ))
+        }
 
         let first = points.first!
         let last = points.last!
@@ -130,7 +123,7 @@ enum FamilyDrivingTripLedger {
             averageSpeed: avgSpeed,
             maxSpeed: maxSpeedKmh,
             safetyScore: safety,
-            events: [],
+            events: metrics.events,
             violations: violations,
             positioningSystem: "GPS",
             startLatitude: first.latitude,
@@ -149,10 +142,26 @@ enum FamilyDrivingTripLedger {
         )
         // H1: local push + deep link (RU/EN via LocalizationManager on MainActor).
         Task { @MainActor in
+            if await DriveActivityClassifier.wasNotDriving(from: startedAt, to: endedAt) {
+                print("TRIP_AUTO drop id=\(tripId) — motion says cycling/walking, not a car trip")
+                removeReport(id: tripId)
+                return
+            }
             Self.notifyTripEnded(report)
             await enrichStreetLabels(for: report)
         }
         return report
+    }
+
+    static func report(id: String) -> DrivingReport? {
+        loadAll().first { $0.id == id }
+    }
+
+    static func removeReport(id: String) {
+        var all = loadAll()
+        all.removeAll { $0.id == id }
+        saveAll(all)
+        DrivingTripTrackStore.remove(tripId: id)
     }
 
     /// P0.4 H1 — Life360-style trip completed push → map + polyline.
@@ -172,6 +181,7 @@ enum FamilyDrivingTripLedger {
             format: loc.localized("family_trip_ended_push_body"),
             displayName,
             report.distance,
+            max(report.durationMinutes, 1),
             Int(report.maxSpeed.rounded())
         )
         let deepLink = FamilyPushDeepLink.mapURL(
@@ -279,7 +289,7 @@ enum FamilyDrivingTripLedger {
     }
 
     /// QA-04 A: median-of-window filter + hard UI/ledger cap ~140 (drops GPS 180 spikes).
-    private static func cappedPeakSpeedKmh(_ samples: [Double], uiCap: Double = 140) -> Double {
+    fileprivate static func cappedPeakSpeedKmh(_ samples: [Double], uiCap: Double = 140) -> Double {
         guard !samples.isEmpty else { return 0 }
         let sorted = samples.sorted()
         let median: Double
@@ -423,5 +433,139 @@ enum FamilyDrivingTripLedger {
             }
         }
         return map.values.sorted { $0.startTime > $1.startTime }
+    }
+}
+
+/// Trip metrics from real GPS fixes only (time + Doppler speed when present).
+/// Trips saved before build 34 have no timestamps → legacy 30 s spacing, no events.
+enum DrivingTripAnalyzer {
+    struct Metrics {
+        let distanceKm: Double
+        let maxSpeedKmh: Double
+        let maxSpeedAt: Date?
+        let events: [DrivingEvent]
+        let harshViolations: [DrivingViolation]
+    }
+
+    static let hardBrakeMps2: Double = -3.4
+    static let hardAccelMps2: Double = 3.0
+    private static let minEventSpeedKmh: Double = 20
+    private static let maxEventGapSeconds: TimeInterval = 12
+    private static let eventDedupSeconds: TimeInterval = 15
+    private static let legacyGapSeconds: TimeInterval = 30
+
+    static func analyze(points: [DrivingRoutePoint]) -> Metrics {
+        guard points.count >= 2 else {
+            return Metrics(distanceKm: 0, maxSpeedKmh: 0, maxSpeedAt: nil, events: [], harshViolations: [])
+        }
+        let hasTime = points.allSatisfy { $0.t != nil }
+        var distanceM: Double = 0
+        var speedKmh: [Double?] = Array(repeating: nil, count: points.count)
+        if let v = points[0].v { speedKmh[0] = v * 3.6 }
+
+        for i in 1..<points.count {
+            let a = CLLocation(latitude: points[i - 1].latitude, longitude: points[i - 1].longitude)
+            let b = CLLocation(latitude: points[i].latitude, longitude: points[i].longitude)
+            let d = a.distance(from: b)
+            distanceM += d
+            if let v = points[i].v {
+                speedKmh[i] = v * 3.6
+            } else if hasTime, let t0 = points[i - 1].t, let t1 = points[i].t {
+                let dt = t1.timeIntervalSince(t0)
+                if dt >= 1 { speedKmh[i] = d / dt * 3.6 }
+            } else if !hasTime {
+                speedKmh[i] = d / legacyGapSeconds * 3.6
+            }
+        }
+
+        var samples: [Double] = []
+        var peak: (speed: Double, at: Date?)?
+        for (i, s) in speedKmh.enumerated() {
+            guard let s, s.isFinite, s > 0, s <= 160 else { continue }
+            samples.append(s)
+            if peak == nil || s > peak!.speed { peak = (s, points[i].t) }
+        }
+        let maxSpeed = FamilyDrivingTripLedger.cappedPeakSpeedKmh(samples)
+
+        var events: [DrivingEvent] = []
+        var violations: [DrivingViolation] = []
+        if hasTime {
+            var lastAt: [DrivingEventType: Date] = [:]
+            for i in 1..<points.count {
+                guard let t0 = points[i - 1].t, let t1 = points[i].t,
+                      let s0 = speedKmh[i - 1], let s1 = speedKmh[i] else { continue }
+                let dt = t1.timeIntervalSince(t0)
+                guard dt >= 1, dt <= maxEventGapSeconds else { continue }
+                let accel = (s1 - s0) / 3.6 / dt
+                let type: DrivingEventType
+                if accel <= hardBrakeMps2, s0 >= minEventSpeedKmh {
+                    type = .braking
+                } else if accel >= hardAccelMps2, s1 >= minEventSpeedKmh {
+                    type = .acceleration
+                } else {
+                    continue
+                }
+                if let prev = lastAt[type], t1.timeIntervalSince(prev) < eventDedupSeconds { continue }
+                lastAt[type] = t1
+                let magnitude = abs(accel)
+                let place = String(format: "%.5f, %.5f", points[i].latitude, points[i].longitude)
+                events.append(DrivingEvent(type: type, timestamp: t1, severity: min(1, magnitude / 6), location: place))
+                violations.append(DrivingViolation(
+                    type: type == .braking ? .harshBraking : .harshAcceleration,
+                    timestamp: t1,
+                    description: String(format: "%.1f m/s²", magnitude),
+                    severity: magnitude >= 4.5 ? .high : .medium
+                ))
+            }
+        }
+
+        return Metrics(
+            distanceKm: distanceM / 1000.0,
+            maxSpeedKmh: maxSpeed,
+            maxSpeedAt: peak?.at,
+            events: events,
+            harshViolations: violations
+        )
+    }
+}
+
+/// Life360-style «car only»: drop a speed-detected trip when iPhone motion says it was a bike/walk.
+/// No Motion permission / no data → keep the trip (never hide a real drive).
+enum DriveActivityClassifier {
+    struct Segment {
+        let start: Date
+        let automotive: Bool
+        let nonCar: Bool
+    }
+
+    static func wasNotDriving(from: Date, to: Date) async -> Bool {
+        guard to > from,
+              CMMotionActivityManager.isActivityAvailable(),
+              CMMotionActivityManager.authorizationStatus() == .authorized else { return false }
+        let manager = CMMotionActivityManager()
+        let activities: [CMMotionActivity] = await withCheckedContinuation { continuation in
+            manager.queryActivityStarting(from: from, to: to, to: OperationQueue()) { list, _ in
+                continuation.resume(returning: list ?? [])
+            }
+        }
+        withExtendedLifetime(manager) {}
+        let segments = activities
+            .filter { $0.confidence != .low }
+            .map { Segment(start: $0.startDate, automotive: $0.automotive, nonCar: $0.cycling || $0.walking || $0.running) }
+        return isNotDriving(segments, end: to)
+    }
+
+    static func isNotDriving(_ segments: [Segment], end: Date) -> Bool {
+        let sorted = segments.sorted { $0.start < $1.start }
+        guard let first = sorted.first else { return false }
+        var automotiveSec: TimeInterval = 0
+        var nonCarSec: TimeInterval = 0
+        for (i, seg) in sorted.enumerated() {
+            let next = i + 1 < sorted.count ? sorted[i + 1].start : end
+            let length = max(0, next.timeIntervalSince(seg.start))
+            if seg.automotive { automotiveSec += length } else if seg.nonCar { nonCarSec += length }
+        }
+        let total = max(end.timeIntervalSince(first.start), 1)
+        return automotiveSec < 60 && nonCarSec >= total * 0.5
     }
 }

@@ -13,6 +13,10 @@ import SwiftUI
 struct DrivingRoutePoint: Codable, Equatable {
     let latitude: Double
     let longitude: Double
+    /// Fix time (nil in trips saved before build 34 → legacy 30 s spacing).
+    var t: Date? = nil
+    /// GPS Doppler speed, m/s (nil when the fix had no valid speed).
+    var v: Double? = nil
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -1115,9 +1119,11 @@ extension DrivingReport {
     }
 
     /// Round2 S19f — max speed only when GPS reported a positive peak (no invented numbers).
+    /// QA-04: UI cap ~140 km/h so GPS spikes never show as 180.
     func localizedFormattedMaxSpeed(_ localizationManager: LocalizationManager) -> String? {
         guard maxSpeed > 0 else { return nil }
-        let speed = String(format: "%.0f %@", maxSpeed, localizationManager.localized("driving_reports_unit_kmh"))
+        let capped = min(maxSpeed, 140)
+        let speed = String(format: "%.0f %@", capped, localizationManager.localized("driving_reports_unit_kmh"))
         return String(format: localizationManager.localized("driving_reports_max_speed"), speed)
     }
 

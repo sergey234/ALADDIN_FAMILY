@@ -3,6 +3,7 @@ Subscription Service for ALADDIN Backend
 Manages subscription lifecycle with PostgreSQL persistence
 """
 
+import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
@@ -31,6 +32,13 @@ except ImportError:  # fallback для gateway (main.py в корне)
         TrialDeviceRegisterRequest,
     )
     from backend.app.repositories import SubscriptionRepository, SubscriptionDB  # type: ignore[import]
+
+try:
+    from backend.app.services import apple_device_check  # type: ignore[import]
+except ImportError:
+    from app.services import apple_device_check  # type: ignore[import,no-redef]
+
+logger = logging.getLogger("subscription_service")
 
 
 class SubscriptionService:
@@ -176,8 +184,46 @@ class SubscriptionService:
             SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, SubscriptionLevel.FREE.value)
             return SubscriptionService._map_to_payload(db_sub)
 
+        device_check_token = getattr(request, "device_check_token", None)
+        device_check_used = apple_device_check.trial_already_used(device_check_token)
+        if device_check_used is None:
+            logger.info(
+                "trial_devicecheck_unavailable token=%s configured=%s",
+                bool(device_check_token),
+                apple_device_check.is_configured(),
+            )
+
+        # Apple DeviceCheck bit0 survives reinstall and full reset; ledger records the denial so
+        # trialAvailable stays false for this device afterwards.
+        if device_check_used:
+            logger.info("trial_denied_devicecheck_bit0")
+            real_user_id = SubscriptionService._ensure_user_for_device(
+                db, request.device_id, getattr(request, "device_type", None)
+            )
+            denied_data = {
+                "user_id": real_user_id,
+                "device_id": request.device_id,
+                "level": SubscriptionLevel.FREE.value,
+                "status": "active",
+                "start_date": now,
+                "trial_end_date": now,
+                "end_date": None,
+                "limits": SubscriptionLimits.free_limits().dict(),
+                "features": []
+            }
+            if existing:
+                db_sub = repo.update_subscription(existing, denied_data)
+            else:
+                db_sub = repo.create_subscription(denied_data)
+            SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, SubscriptionLevel.FREE.value)
+            return SubscriptionService._map_to_payload(db_sub)
+
+        token_missing = not (device_check_token or "").strip() and apple_device_check.token_required()
+        if token_missing:
+            logger.info("trial_denied_devicecheck_token_missing")
+
         # Anti-abuse policy: suspicious velocity/cooldown => free plan (no trial grant).
-        if SubscriptionService._should_deny_trial_by_anti_abuse(request):
+        if token_missing or SubscriptionService._should_deny_trial_by_anti_abuse(request):
             real_user_id = SubscriptionService._ensure_user_for_device(
                 db, request.device_id, getattr(request, "device_type", None)
             )
@@ -222,6 +268,9 @@ class SubscriptionService:
             db_sub = repo.create_subscription(sub_data)
 
         SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, db_sub.level)
+        if device_check_used is False:
+            apple_device_check.mark_trial_used(device_check_token)
+        logger.info("trial_granted user_id=%s devicecheck=%s", db_sub.user_id, device_check_used)
         return SubscriptionService._map_to_payload(db_sub)
 
     @staticmethod

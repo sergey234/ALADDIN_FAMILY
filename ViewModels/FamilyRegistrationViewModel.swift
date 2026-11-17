@@ -904,7 +904,7 @@ class FamilyRegistrationViewModel: ObservableObject {
     }
 
     private func bootstrapFamilyCompatibleToken(completion: @escaping (Bool) -> Void) {
-        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceId = StableDeviceIdentity.current()
         let deviceType = UIDevice.current.userInterfaceIdiom == .pad ? "tablet" : "smartphone"
         let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
 
@@ -1631,6 +1631,7 @@ struct CreateFamilyRequest: Codable {
     let age_group: String
     let personal_letter: String
     let device_type: String
+    var device_check_token: String? = nil
 }
 
 

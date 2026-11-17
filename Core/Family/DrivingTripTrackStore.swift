@@ -30,19 +30,43 @@ enum DrivingTripTrackStore {
         ])
     }
 
+    static func begin(tripId: String, location: CLLocation) {
+        activeTripId = tripId
+        replace(tripId: tripId, points: [point(from: location)])
+    }
+
     static func append(tripId: String, coordinate: CLLocationCoordinate2D) {
-        guard CLLocationCoordinate2DIsValid(coordinate) else { return }
+        append(tripId: tripId, point: DrivingRoutePoint(latitude: coordinate.latitude, longitude: coordinate.longitude))
+    }
+
+    static func append(tripId: String, location: CLLocation) {
+        append(tripId: tripId, point: point(from: location))
+    }
+
+    private static func append(tripId: String, point: DrivingRoutePoint) {
+        guard point.isValid else { return }
         var pts = load(tripId: tripId)
         if let last = pts.last {
             let d = CLLocation(latitude: last.latitude, longitude: last.longitude)
-                .distance(from: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude))
+                .distance(from: CLLocation(latitude: point.latitude, longitude: point.longitude))
             if d < 25 { return }
         }
-        pts.append(DrivingRoutePoint(latitude: coordinate.latitude, longitude: coordinate.longitude))
+        pts.append(point)
         if pts.count > maxPoints {
             pts = Array(pts.suffix(maxPoints))
         }
         replace(tripId: tripId, points: pts)
+    }
+
+    private static func point(from location: CLLocation) -> DrivingRoutePoint {
+        DrivingRoutePoint(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude,
+            t: location.timestamp,
+            v: location.speed >= 0 && location.speedAccuracy >= 0 && location.speedAccuracy <= 5
+                ? location.speed
+                : nil
+        )
     }
 
     static func finish(tripId: String, end: CLLocationCoordinate2D?) {

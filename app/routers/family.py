@@ -372,10 +372,18 @@ def _compact_invite_value(raw: Optional[str]) -> str:
     return re.sub(r"[^A-Z0-9]", "", (raw or "").strip().upper())
 
 
-def _api_error(error_code: str, message: str, next_action: Optional[str] = None) -> Dict[str, str]:
-    detail = {"error_code": error_code, "message": message}
+def _api_error(
+    error_code: str,
+    message: str,
+    next_action: Optional[str] = None,
+    **extra: Any,
+) -> Dict[str, Any]:
+    detail: Dict[str, Any] = {"error_code": error_code, "message": message}
     if next_action:
         detail["next_action"] = next_action
+    for key, value in extra.items():
+        if value is not None:
+            detail[key] = value
     return detail
 
 
@@ -583,14 +591,16 @@ def _effective_level_from_user_and_subscription(
 
 
 def _owner_subscription_level_for_family(db, family_id: str) -> str:
+    # Prefer subscriptions by user_id; fall back to users.device_id when row was
+    # never linked (owner free + empty subscriptions → familyRosterMax=1 while JWT trial).
     row = db.execute(
         text(
             """
             SELECT
                 f.owner_user_id,
                 NULLIF(lower(trim(u.subscription_level)), ''),
-                NULLIF(lower(trim(s.level)), ''),
-                s.trial_end_date
+                NULLIF(lower(trim(COALESCE(s.level, sd.level))), ''),
+                COALESCE(s.trial_end_date, sd.trial_end_date)
             FROM families f
             LEFT JOIN users u ON u.id = f.owner_user_id
             LEFT JOIN LATERAL (
@@ -600,6 +610,14 @@ def _owner_subscription_level_for_family(db, family_id: str) -> str:
                 ORDER BY updated_at DESC NULLS LAST, id DESC
                 LIMIT 1
             ) s ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT level, trial_end_date
+                FROM subscriptions
+                WHERE u.device_id IS NOT NULL
+                  AND device_id = u.device_id
+                ORDER BY updated_at DESC NULLS LAST, id DESC
+                LIMIT 1
+            ) sd ON TRUE
             WHERE f.id = :fid
             LIMIT 1
             """
@@ -614,6 +632,93 @@ def _owner_subscription_level_for_family(db, family_id: str) -> str:
     if owner_uid is not None and effective == "trial" and (user_level or "free") == "free":
         _heal_users_subscription_level(db, int(owner_uid), "trial")
     return effective
+
+
+def _user_trial_available(db, user_id: Optional[int]) -> bool:
+    """True when neither this user nor its device ever had a trial or paid tier (server ledger)."""
+    if user_id is None:
+        return False
+    row = db.execute(
+        text(
+            """
+            SELECT
+                u.id,
+                lower(COALESCE(u.subscription_level, '')),
+                EXISTS (
+                    SELECT 1 FROM subscriptions s
+                    WHERE (s.user_id = u.id::text
+                           OR (u.device_id IS NOT NULL AND s.device_id = u.device_id))
+                      AND (s.trial_end_date IS NOT NULL
+                           OR lower(COALESCE(s.level, '')) IN ('trial', 'personal', 'family', 'premium'))
+                )
+            FROM users u
+            WHERE u.id = :uid
+            LIMIT 1
+            """
+        ),
+        {"uid": int(user_id)},
+    ).fetchone()
+    if not row:
+        return False
+    level, ledger_used = (row[1] or "").strip(), bool(row[2])
+    return level in ("", "free") and not ledger_used
+
+
+def _family_owner_user_id(db, family_id: str) -> Optional[int]:
+    row = db.execute(
+        text("SELECT owner_user_id FROM families WHERE id = :fid LIMIT 1"),
+        {"fid": str(family_id)},
+    ).fetchone()
+    if not row or row[0] is None:
+        return None
+    try:
+        return int(row[0])
+    except (TypeError, ValueError):
+        return None
+
+
+def _grant_creator_trial(user_id: Optional[int], device_check_token: Optional[str]) -> Optional[str]:
+    """Auto-start the 14-day trial for the family creator's device; never raises."""
+    if user_id is None or not get_postgres_db:
+        return None
+    try:
+        from backend.app.models.subscription import TrialDeviceRegisterRequest, TrialInfo
+        from backend.app.services.subscription_service import SubscriptionService
+    except Exception as e:
+        logger.warning("family_create_trial_import_failed", error=str(e))
+        return None
+    gen = get_postgres_db()
+    db = next(gen)
+    try:
+        if not _user_trial_available(db, user_id):
+            return None
+        row = db.execute(
+            text("SELECT device_id, device_type FROM users WHERE id = :uid LIMIT 1"),
+            {"uid": int(user_id)},
+        ).fetchone()
+        device_id = (row[0] or "").strip() if row else ""
+        if not device_id:
+            return None
+        payload = SubscriptionService.register_device_with_trial(
+            db,
+            TrialDeviceRegisterRequest(
+                device_id=device_id,
+                device_type=(row[1] or "ios"),
+                trial_info=TrialInfo(duration_days=14),
+                device_check_token=device_check_token,
+            ),
+        )
+        level = getattr(getattr(payload, "level", None), "value", None) or str(getattr(payload, "level", ""))
+        return level
+    except Exception as e:
+        logger.warning("family_create_trial_failed", user_id=user_id, error=str(e))
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        return None
+    finally:
+        gen.close()
 
 
 def _actor_subscription_level(db, user_id: int) -> str:
@@ -726,6 +831,8 @@ class FamilyStatsResponse(BaseModel):
     familyRosterUsed: int = 0
     familyRosterMax: int = 0
     ownerSubscriptionTier: str = "free"
+    # Viewer may still start the one-time 14-day trial (never had trial/paid on this account or device).
+    trialAvailable: bool = False
 
 
 # ============================================
@@ -922,6 +1029,7 @@ async def get_family_stats(
                         familyRosterUsed=0,
                         familyRosterMax=cap,
                         ownerSubscriptionTier=tier,
+                        trialAvailable=(tier == "free" and _user_trial_available(db, user_id)),
                     ),
                     None,
                 )
@@ -984,6 +1092,15 @@ async def get_family_stats(
 
             owner_tier = _owner_subscription_level_for_family(db, str(family_id))
             roster_cap = max_family_slots_for_subscription_level(owner_tier)
+            trial_available = False
+            if owner_tier == "free":
+                try:
+                    owner_uid = _family_owner_user_id(db, str(family_id))
+                    trial_available = owner_uid is not None and owner_uid == int(user_id) and _user_trial_available(
+                        db, owner_uid
+                    )
+                except Exception as e:
+                    logger.warning("family_stats_trial_available_failed", family_id=str(family_id), error=str(e))
 
             logger.info(
                 "family_stats_aligned_with_members",
@@ -1006,6 +1123,7 @@ async def get_family_stats(
                     familyRosterUsed=total_members,
                     familyRosterMax=roster_cap,
                     ownerSubscriptionTier=owner_tier,
+                    trialAvailable=trial_available,
                 ),
                 str(family_id),
             )
@@ -1052,6 +1170,7 @@ class CreateFamilyRequest(BaseModel):
     age_group: str  # "1-6", "7-12", "13-17", "18-23", "24-55", "55+" (AgeGroup enum)
     personal_letter: str  # Одна буква (например, "V") - для анонимной идентификации
     device_type: str  # "iOS", "Android", и т.д.
+    device_check_token: Optional[str] = None  # Apple DeviceCheck (one trial per iPhone)
     
     # ⚠️ ВАЖНО: НЕ собираем персональные данные!
     # ❌ НЕТ email, password, телефон, имя, фамилия
@@ -1528,6 +1647,10 @@ async def create_family_endpoint(
                 gen.close()
 
         invite = await asyncio.to_thread(persist_sync)
+        granted_level = await asyncio.to_thread(
+            _grant_creator_trial, user_id, create_request.device_check_token
+        )
+        logger.info("family_create_trial_result", user_id=user_id, level=granted_level)
         if invite:
             response.short_code = invite["manual_code"]
             response.expires_at = invite["expires_at"]
@@ -1810,7 +1933,17 @@ async def add_family_member(
                     max_slots=max_slots,
                     owner_subscription_level=owner_level,
                 )
-                raise HTTPException(status_code=409, detail="family_roster_full")
+                raise HTTPException(
+                    status_code=409,
+                    detail=_api_error(
+                        "family_roster_full",
+                        f"Family roster is full ({current_slots}/{max_slots})",
+                        "open_tariffs_or_free_seat",
+                        roster_used=current_slots,
+                        roster_max=max_slots,
+                        owner_subscription_level=owner_level,
+                    ),
+                )
             logger.info(
                 "family_roster_gate_decision",
                 endpoint="/api/family/add",
@@ -2044,10 +2177,18 @@ async def join_family_post(
                     family_id=canonical_fid,
                     current_slots=current_slots,
                     max_slots=max_slots,
+                    owner_subscription_level=owner_level,
                 )
                 raise HTTPException(
                     status_code=409,
-                    detail=_api_error("family_roster_full", "Family roster is full", "open_tariffs_or_free_seat"),
+                    detail=_api_error(
+                        "family_roster_full",
+                        f"Family roster is full ({current_slots}/{max_slots})",
+                        "open_tariffs_or_free_seat",
+                        roster_used=current_slots,
+                        roster_max=max_slots,
+                        owner_subscription_level=owner_level,
+                    ),
                 )
             logger.info(
                 "family_roster_gate_decision",

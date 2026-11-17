@@ -12,6 +12,8 @@ enum FamilyMapAutoTripTracker {
     private static let minSampleGapMeters: CLLocationDistance = 40
     /// P0.4 RCA: SLC/cell fixes are often ±100–500 m; still reject ±kilometre coarse.
     private static let maxSampleAccuracyMeters: CLLocationAccuracy = 150
+    /// iOS pauses updates on parking → no «slow» fixes ever arrive; close the trip at its last real fix.
+    static let staleTripGapSeconds: TimeInterval = 10 * 60
 
     private static var movingHits = 0
     private static var stopHits = 0
@@ -19,6 +21,7 @@ enum FamilyMapAutoTripTracker {
 
     static func note(location: CLLocation) {
         let auth = LocationManager.shared.authorizationStatus
+        closeStaleTripIfNeeded(now: location.timestamp)
         if location.horizontalAccuracy < 0 || location.horizontalAccuracy > maxSampleAccuracyMeters {
             print(
                 "TRIP_AUTO drop accuracy=±\(Int(location.horizontalAccuracy))m " +
@@ -27,7 +30,16 @@ enum FamilyMapAutoTripTracker {
             return
         }
         guard FamilyMapQuietZoneStore.allowsFamilyShare(location) else {
-            // In quiet zone: pause sampling, keep trip open until leave + stop.
+            // In quiet zone: no samples. Parked inside (home) → end the trip at its last point outside.
+            if let tripId = DrivingTripTrackStore.activeTripId,
+               location.speed >= 0, location.speed * 3.6 <= stopSpeedKmh {
+                stopHits += 1
+                movingHits = 0
+                if stopHits >= 2 {
+                    print("TRIP_AUTO finalize id=\(tripId) reason=quiet_zone_parked")
+                    finalize(tripId: tripId)
+                }
+            }
             print("TRIP_AUTO quiet-zone pause active=\(DrivingTripTrackStore.activeTripId ?? "nil")")
             return
         }
@@ -50,7 +62,7 @@ enum FamilyMapAutoTripTracker {
             if DrivingTripTrackStore.activeTripId == nil, movingHits >= movingHitsToStart {
                 let tripId = "auto_\(Int(Date().timeIntervalSince1970))"
                 let member = FamilyDrivingTripLedger.currentDeviceMember()
-                DrivingTripTrackStore.begin(tripId: tripId, start: location.coordinate)
+                DrivingTripTrackStore.begin(tripId: tripId, location: location)
                 FamilyDrivingTripLedger.beginMeta(
                     tripId: tripId,
                     memberId: member.id,
@@ -69,10 +81,8 @@ enum FamilyMapAutoTripTracker {
             movingHits = 0
             if let tripId = DrivingTripTrackStore.activeTripId, stopHits >= stopHitsToEnd {
                 print("TRIP_AUTO finalize id=\(tripId) speed=\(Int(speedKmh)) hits=\(stopHits)")
-                _ = FamilyDrivingTripLedger.finalizeActiveTrip(
-                    tripId: tripId,
-                    end: location.coordinate
-                )
+                DrivingTripTrackStore.append(tripId: tripId, location: location)
+                finalize(tripId: tripId)
             }
         } else {
             movingHits = 0
@@ -85,11 +95,26 @@ enum FamilyMapAutoTripTracker {
         lastSample = location
     }
 
+    private static func finalize(tripId: String) {
+        _ = FamilyDrivingTripLedger.finalizeActiveTrip(tripId: tripId, end: nil)
+        movingHits = 0
+        stopHits = 0
+    }
+
+    private static func closeStaleTripIfNeeded(now: Date) {
+        guard let tripId = DrivingTripTrackStore.activeTripId,
+              let lastFix = DrivingTripTrackStore.load(tripId: tripId).last?.t,
+              now.timeIntervalSince(lastFix) > staleTripGapSeconds else { return }
+        print("TRIP_AUTO finalize id=\(tripId) reason=stale gap=\(Int(now.timeIntervalSince(lastFix)))s")
+        finalize(tripId: tripId)
+        lastSample = nil
+    }
+
     private static func maybeAppend(tripId: String, location: CLLocation) {
         if let last = lastSample, location.distance(from: last) < minSampleGapMeters {
             return
         }
-        DrivingTripTrackStore.append(tripId: tripId, coordinate: location.coordinate)
+        DrivingTripTrackStore.append(tripId: tripId, location: location)
         let n = DrivingTripTrackStore.load(tripId: tripId).count
         if n == 2 || n % 10 == 0 {
             print("TRIP_AUTO append id=\(tripId) points=\(n)")

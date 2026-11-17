@@ -1894,7 +1894,7 @@ struct TripRouteMapRepresentable: UIViewRepresentable {
 
 // MARK: - Play A (honest metrics scrubber — no mock map points)
 
-private struct DrivingTripPlaybackSheet: View {
+struct DrivingTripPlaybackSheet: View {
     let report: DrivingReport
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
@@ -1927,7 +1927,7 @@ private struct DrivingTripPlaybackSheet: View {
                     let merged = DrivingTripTrackStore.mergeInto(report)
                     if merged.hasGPSTrack || merged.hasRouteEndpoints {
                         TripEndpointMapPreview(report: merged, progress: progress)
-                            .frame(height: 180)
+                            .frame(height: 240)
                             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                     } else {
                         Text(localizationManager.localized("driving_play_no_track"))
@@ -1937,21 +1937,43 @@ private struct DrivingTripPlaybackSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text(routeTitle)
-                            .font(AladdinFamilyType.subheadline(weight: .semibold))
-                            .foregroundColor(AladdinSnowballPalette.ink)
-                        HStack(spacing: Spacing.m) {
-                            Label(report.localizedFormattedDistance(localizationManager), systemImage: "ruler")
-                            Label("\(report.durationMinutes) \(localizationManager.localized("driving_reports_unit_min"))", systemImage: "clock")
-                            if let maxSpeed = report.localizedFormattedMaxSpeed(localizationManager) {
-                                Label(maxSpeed, systemImage: "speedometer")
-                            }
-                        }
-                        .font(.caption)
+                        Text(String(
+                            format: localizationManager.localized("driving_reports_time_range"),
+                            Self.clock(report.startTime),
+                            Self.clock(report.endTime)
+                        ))
+                        .font(.caption.weight(.bold).monospacedDigit())
                         .foregroundColor(AladdinSnowballPalette.inkMuted)
+                        tripEndpointRow(
+                            icon: "car.fill",
+                            text: Self.streetTitle(startStreet.isEmpty ? report.startLocation : startStreet),
+                            time: Self.clock(report.startTime)
+                        )
+                        tripEndpointRow(
+                            icon: "flag.checkered",
+                            text: Self.streetTitle(endStreet.isEmpty ? report.endLocation : endStreet),
+                            time: Self.clock(report.endTime)
+                        )
+                        LazyVGrid(
+                            columns: [GridItem(.flexible(), spacing: Spacing.s), GridItem(.flexible(), spacing: Spacing.s)],
+                            spacing: Spacing.s
+                        ) {
+                            tripMetricTile(String(format: "%.1f", report.distance), "driving_stat_km_short")
+                            tripMetricTile("\(max(report.durationMinutes, 1))", "driving_stat_min_short")
+                            tripMetricTile(
+                                report.maxSpeed > 0 ? String(format: "%.0f", min(report.maxSpeed, 140)) : "—",
+                                "driving_stat_max_kmh_short"
+                            )
+                            tripMetricTile(
+                                report.averageSpeed > 0 ? String(format: "%.0f", report.averageSpeed) : "—",
+                                "driving_stat_avg_kmh_short"
+                            )
+                        }
                     }
                     .padding(Spacing.m)
                     .background(AladdinSnowballPalette.glassCard())
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(routeTitle)
 
                     Text(localizationManager.localized("driving_play_progress"))
                         .font(.caption.weight(.bold))
@@ -2061,6 +2083,44 @@ private struct DrivingTripPlaybackSheet: View {
                 await resolveStreetLabels()
             }
         }
+    }
+
+    private func tripEndpointRow(icon: String, text: String, time: String) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Image(systemName: icon)
+                .font(.caption.weight(.bold))
+                .foregroundColor(AladdinSnowballPalette.gold)
+                .frame(width: 18)
+            Text(text)
+                .font(AladdinFamilyType.subheadline(weight: .semibold))
+                .foregroundColor(AladdinSnowballPalette.ink)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: Spacing.xs)
+            Text(time)
+                .font(.caption.monospacedDigit())
+                .foregroundColor(AladdinSnowballPalette.inkMuted)
+        }
+    }
+
+    private func tripMetricTile(_ value: String, _ labelKey: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.title3.weight(.bold).monospacedDigit())
+                .foregroundColor(AladdinSnowballPalette.ink)
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+            Text(localizationManager.localized(labelKey))
+                .font(.caption2)
+                .foregroundColor(AladdinSnowballPalette.inkMuted)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.s)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.small)
+                .fill(Color.black.opacity(0.08))
+        )
     }
 
     /// HUB-P1.6 — geocode for screen 14 when ledger still has lat/lon strings.

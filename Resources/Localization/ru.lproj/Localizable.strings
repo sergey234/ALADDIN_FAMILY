@@ -943,6 +943,7 @@
 "driving_stat_km_short" = "км";
 "driving_stat_min_short" = "мин";
 "driving_stat_max_kmh_short" = "макс. км/ч";
+"driving_stat_avg_kmh_short" = "ср. км/ч";
 "map_refresh_my_place" = "Обновить моё место";
 "map_refresh_my_place_toast" = "Обновляем место…";
 "map_location_refining_toast" = "Уточняем место…";
@@ -970,8 +971,8 @@
 "where_phone_setup_share_cta" = "Показывать меня семье";
 "where_phone_family_share_toggle" = "Показывать меня семье";
 "where_phone_family_share_toggle_hint" = "Семья видит вашу последнюю точку. После выключения новые точки не отправляются, последняя остаётся со временем. В тихой зоне точка не отправляется.";
-"family_trip_ended_push_title" = "Поездка завершена";
-"family_trip_ended_push_body" = "%@ · %.1f км · до %d км/ч";
+"family_trip_ended_push_title" = "🏁 Поездка завершена";
+"family_trip_ended_push_body" = "🚗 %@ · %.1f км · %d мин · макс. %d км/ч";
 "family_trip_map_track_a11y" = "Маршрут поездки";
 "family_trip_empty_honest" = "Трек не записался. Проверьте геолокацию «Всегда» и «Движение и фитнес».";
 /* ═══════════════════════════════════════════════════════════════
@@ -1824,6 +1825,7 @@
 "main_family_trial_ended_dismiss" = "Понятно";
 "main_family_over_capacity_banner" = "Участников %d при лимите %d. Обновите тариф или сократите состав семьи.";
 "main_family_restore_trial_cta" = "Вернуть пробный до %@";
+"main_family_start_trial_cta" = "Включить пробный на 14 дней — до 3 участников";
 "driving_reports_empty_other_member" = "Пока нет поездок у «%@». Они появятся, когда его устройство запишет реальную поездку (GPS + движение).";
 "tariffs_downgrade_trial_confirm_title" = "Перейти на БАЗОВЫЙ?";
 "tariffs_downgrade_trial_confirm_body" = "Пробный оборвётся сейчас. Слоты семьи станут 1. Продолжить?";

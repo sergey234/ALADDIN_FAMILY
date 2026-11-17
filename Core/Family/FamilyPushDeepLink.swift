@@ -17,6 +17,7 @@ enum FamilyPushDeepLink {
     static let pendingOpenMapAtKey = "aladdin.family_push.pending_open_map_at"
     /// P0.4 H1 — trip track to draw after push tap.
     static let pendingTripIdKey = "aladdin.family_push.pending_trip_id"
+    static let pendingTripTappedKey = "aladdin.family_push.pending_trip_tapped"
 
     /// Soft map intents expire quickly so they cannot hijack Antifake return.
     private static let softMapTTL: TimeInterval = 5 * 60
@@ -76,6 +77,7 @@ enum FamilyPushDeepLink {
         }
         if let tripId, !tripId.isEmpty {
             defaults.set(tripId, forKey: pendingTripIdKey)
+            defaults.set(openMap, forKey: pendingTripTappedKey)
         }
         defaults.set(focus.rawValue, forKey: pendingFocusKey)
         defaults.set(openMap, forKey: pendingOpenMapKey)
@@ -85,6 +87,14 @@ enum FamilyPushDeepLink {
         } else {
             defaults.removeObject(forKey: pendingOpenMapAtKey)
         }
+    }
+
+    /// True only when the pending trip came from a push tap (not the silent pre-enqueue at trip end).
+    static func consumePendingTripTapped() -> Bool {
+        let defaults = UserDefaults.standard
+        let tapped = defaults.bool(forKey: pendingTripTappedKey)
+        defaults.removeObject(forKey: pendingTripTappedKey)
+        return tapped
     }
 
     static func consumePendingTripId() -> String? {

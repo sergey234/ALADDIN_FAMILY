@@ -247,3 +247,67 @@ final class FamilyMapAutoShareTests: XCTestCase {
         XCTAssertEqual(pins.first?.name, "Аня")
     }
 }
+
+/// Build 34 — trip metrics from real fix time/speed (Life360-style trip card + push).
+final class DrivingTripAnalyzerTests: XCTestCase {
+    private let t0 = Date(timeIntervalSince1970: 1_800_000_000)
+
+    /// ~100 m north per step.
+    private func point(_ i: Int, seconds: TimeInterval, v: Double? = nil, timed: Bool = true) -> DrivingRoutePoint {
+        DrivingRoutePoint(
+            latitude: 53.0 + Double(i) * 0.0009,
+            longitude: 50.0,
+            t: timed ? t0.addingTimeInterval(seconds) : nil,
+            v: v
+        )
+    }
+
+    func testMaxSpeedUsesRealFixSpacingNotFixed30s() {
+        let pts = (0..<6).map { point($0, seconds: Double($0) * 5) }
+        let m = DrivingTripAnalyzer.analyze(points: pts)
+        XCTAssertEqual(m.maxSpeedKmh, 72, accuracy: 4, "100 m / 5 s ≈ 72 km/h (legacy 30 s rule gave ~12)")
+        XCTAssertEqual(m.distanceKm, 0.5, accuracy: 0.02)
+        XCTAssertTrue(m.events.isEmpty)
+    }
+
+    func testHardBrakingFromDopplerSpeedBecomesEventAndRisk() {
+        let pts = [
+            point(0, seconds: 0, v: 16.7),
+            point(1, seconds: 4, v: 16.7),
+            point(2, seconds: 6, v: 5.0)
+        ]
+        let m = DrivingTripAnalyzer.analyze(points: pts)
+        XCTAssertEqual(m.events.map(\.type), [.braking])
+        XCTAssertEqual(m.harshViolations.map(\.type), [.harshBraking])
+        XCTAssertEqual(m.harshViolations.first?.severity, .high)
+    }
+
+    func testHardAccelerationDetected() {
+        let pts = [point(0, seconds: 0, v: 3), point(1, seconds: 3, v: 13)]
+        let m = DrivingTripAnalyzer.analyze(points: pts)
+        XCTAssertEqual(m.events.map(\.type), [.acceleration])
+    }
+
+    func testLegacyUntimedTripKeepsOldMathAndNoEvents() {
+        let pts = (0..<3).map { point($0, seconds: 0, timed: false) }
+        let m = DrivingTripAnalyzer.analyze(points: pts)
+        XCTAssertEqual(m.maxSpeedKmh, 12, accuracy: 1)
+        XCTAssertTrue(m.events.isEmpty)
+    }
+
+    func testRoutePointDecodesWithoutTimeFields() throws {
+        let data = Data(#"[{"latitude":53.1,"longitude":50.1}]"#.utf8)
+        let pts = try JSONDecoder().decode([DrivingRoutePoint].self, from: data)
+        XCTAssertNil(pts.first?.t)
+        XCTAssertNil(pts.first?.v)
+    }
+
+    func testMotionClassifierDropsBikeKeepsCarAndUnknown() {
+        let end = t0.addingTimeInterval(600)
+        let bike = [DriveActivityClassifier.Segment(start: t0, automotive: false, nonCar: true)]
+        let car = [DriveActivityClassifier.Segment(start: t0, automotive: true, nonCar: false)]
+        XCTAssertTrue(DriveActivityClassifier.isNotDriving(bike, end: end))
+        XCTAssertFalse(DriveActivityClassifier.isNotDriving(car, end: end))
+        XCTAssertFalse(DriveActivityClassifier.isNotDriving([], end: end), "No motion data → keep the trip")
+    }
+}

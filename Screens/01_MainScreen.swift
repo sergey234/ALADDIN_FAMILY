@@ -924,6 +924,20 @@ struct MainScreen: View {
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                     .accessibilityIdentifier("main_family_restore_trial_cta")
+                                } else if subscriptionManager.familyTrialAvailable {
+                                    Button {
+                                        Task { @MainActor in
+                                            await SubscriptionManager.shared.startServerConfirmedFamilyTrial()
+                                        }
+                                    } label: {
+                                        Text(localizationManager.localized("main_family_start_trial_cta"))
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(.secondaryGold)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .disabled(subscriptionManager.isLoading)
+                                    .accessibilityIdentifier("main_family_start_trial_cta")
                                 }
 
                                 // Device QA 2026-11-15: removed visible «QA: цвет trial · slots SSOT» —

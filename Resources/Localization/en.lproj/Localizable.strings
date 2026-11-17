@@ -842,6 +842,7 @@
 "driving_stat_km_short" = "km";
 "driving_stat_min_short" = "min";
 "driving_stat_max_kmh_short" = "max km/h";
+"driving_stat_avg_kmh_short" = "avg km/h";
 "map_refresh_my_place" = "Update my place";
 "map_refresh_my_place_toast" = "Updating place…";
 "map_location_refining_toast" = "Improving location…";
@@ -869,8 +870,8 @@
 "where_phone_setup_share_cta" = "Show me to my family";
 "where_phone_family_share_toggle" = "Show me to my family";
 "where_phone_family_share_toggle_hint" = "Family sees your last location. When off, no new points are sent; the last one stays with its time. Nothing is sent inside a quiet zone.";
-"family_trip_ended_push_title" = "Trip completed";
-"family_trip_ended_push_body" = "%@ · %.1f km · up to %d km/h";
+"family_trip_ended_push_title" = "🏁 Trip completed";
+"family_trip_ended_push_body" = "🚗 %@ · %.1f km · %d min · top %d km/h";
 "family_trip_map_track_a11y" = "Trip route";
 "family_trip_empty_honest" = "Track wasn’t saved. Check Always location and Motion & Fitness.";
 /* ═══════════════════════════════════════════════════════════════
@@ -1939,6 +1940,7 @@
 "main_family_trial_ended_dismiss" = "Got it";
 "main_family_over_capacity_banner" = "%d members with a limit of %d. Upgrade your plan or reduce the family roster.";
 "main_family_restore_trial_cta" = "Restore trial until %@";
+"main_family_start_trial_cta" = "Start 14-day free trial — up to 3 members";
 "driving_reports_empty_other_member" = "No trips for “%@” yet. They appear when that member’s device records a real trip (GPS + motion).";
 "tariffs_downgrade_trial_confirm_title" = "Switch to BASIC?";
 "tariffs_downgrade_trial_confirm_body" = "Your trial will end now. Family slots become 1. Continue?";

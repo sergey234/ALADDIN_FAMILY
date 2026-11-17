@@ -214,6 +214,8 @@ struct WhereIsPhoneScreen: View {
     @State private var mapCoordinate: CLLocationCoordinate2D?
     /// P0.4 H1 — trip polyline after push / deep link.
     @State private var highlightedTripRoute: [CLLocationCoordinate2D] = []
+    /// Trip-ended push tap → Life360-style detail card over the highlighted route.
+    @State private var pushTripDetailReport: DrivingReport?
     @State private var mapPointName: String?
     @State private var mapPointAt: Date?
     @State private var mapPinSource: MapPinSource = .none
@@ -378,6 +380,10 @@ struct WhereIsPhoneScreen: View {
             }
             .sheet(isPresented: $showRoutes) {
                 FamilyMapRoutesSheet(isPresented: $showRoutes, coordinate: mapCoordinate)
+                    .environmentObject(localizationManager)
+            }
+            .sheet(item: $pushTripDetailReport) { report in
+                DrivingTripPlaybackSheet(report: report)
                     .environmentObject(localizationManager)
             }
             .sheet(isPresented: $showCrashConfirm) {
@@ -4567,9 +4573,13 @@ struct WhereIsPhoneScreen: View {
     /// R10: open member sheet from push (SOS / ImOK / battery).
     /// P0.4 H1: focus=.trips + tripId → gold polyline on map.
     private func applyPendingFamilyPushFocusIfNeeded() {
+        let tripTapped = FamilyPushDeepLink.consumePendingTripTapped()
         let tripId = FamilyPushDeepLink.consumePendingTripId()
         if let tripId {
             applyHighlightedTrip(tripId: tripId)
+            if tripTapped, let report = FamilyDrivingTripLedger.report(id: tripId) {
+                pushTripDetailReport = DrivingTripTrackStore.mergeInto(report)
+            }
         }
         guard let pending = FamilyPushDeepLink.consumePendingMember() else {
             if tripId != nil {

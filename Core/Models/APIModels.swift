@@ -386,6 +386,8 @@ struct FamilyStatsResponse: Codable {
     let familyRosterUsed: Int?
     let familyRosterMax: Int?
     let ownerSubscriptionTier: String?
+    /// Владелец ещё не брал пробный (ни на аккаунте, ни на устройстве) — можно включить 14 дней.
+    var trialAvailable: Bool? = nil
 }
 
 // MARK: - Analytics Models
@@ -4487,12 +4489,14 @@ struct TrialDeviceRegisterRequest: Codable {
     let deviceType: String
     let trialInfo: TrialInfo
     let antiAbuse: TrialAntiAbuseSignals?
+    var deviceCheckToken: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case deviceId = "device_id"
         case deviceType = "device_type"
         case trialInfo = "trial_info"
         case antiAbuse = "anti_abuse"
+        case deviceCheckToken = "device_check_token"
     }
 }
 

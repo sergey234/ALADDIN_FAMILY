@@ -18,6 +18,45 @@ import CryptoKit
 // Notification system for trial expiry alerts
 import UserNotifications
 import SwiftUI
+import DeviceCheck
+
+/// Apple DeviceCheck token for the one-trial-per-iPhone gate (server reads/sets bit0).
+/// Never blocks the flow: unsupported device (Simulator), error or 3 s timeout → nil.
+enum DeviceCheckTokenProvider {
+    private final class Once {
+        private let lock = NSLock()
+        private var fired = false
+        func claim() -> Bool {
+            lock.lock(); defer { lock.unlock() }
+            if fired { return false }
+            fired = true
+            return true
+        }
+    }
+
+    static func fetch(timeout: TimeInterval = 3, completion: @escaping (String?) -> Void) {
+        guard DCDevice.current.isSupported else {
+            completion(nil)
+            return
+        }
+        let once = Once()
+        DCDevice.current.generateToken { data, error in
+            guard once.claim() else { return }
+            let token = error == nil ? data?.base64EncodedString() : nil
+            DispatchQueue.main.async { completion(token) }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+            guard once.claim() else { return }
+            completion(nil)
+        }
+    }
+
+    static func token(timeout: TimeInterval = 3) async -> String? {
+        await withCheckedContinuation { continuation in
+            fetch(timeout: timeout) { continuation.resume(returning: $0) }
+        }
+    }
+}
 
 // ✅ Typealias для явного указания структуры JWTPayload из APIModels.swift
 // Используем полное имя структуры из APIModels для избежания конфликтов
@@ -179,6 +218,9 @@ final class SubscriptionManager: ObservableObject {
     /// QA-T01: true after at least one successful `/subscription/status` (or register-trial) this process.
     /// Until then, Main must not paint «Базовый» as the final answer.
     @Published private(set) var hasResolvedSubscriptionFromServer: Bool = false
+    /// `GET /api/family/stats.trialAvailable` && owner tier free: the one-time 14-day trial was never started.
+    @Published private(set) var familyTrialAvailable: Bool = false
+    private var familyTrialAutoStartAttempted = false
 
     /// Throttle для повторных синков при каждом показе главной / `scenePhase` (избегаем лишних GET).
     private var lastVisibilitySubscriptionSyncAt: Date?
@@ -737,6 +779,14 @@ final class SubscriptionManager: ObservableObject {
 
     /// Повторный синк при возврате на главную / из фона. `.task` на MainScreen выполняется только один раз (`hasAppeared`).
     func syncSubscriptionOnMainScreenAppear() async {
+        if isTariffDisplayPending {
+            // «Проверяем тариф…» must never hang (no token / offline / slow MAIN): show cached tier after 5 s.
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                guard let self, self.isTariffDisplayPending else { return }
+                self.markSubscriptionResolvedFromServer(reason: "pending_timeout_5s")
+            }
+        }
         let now = Date()
         if !bypassVisibilitySubscriptionSyncThrottleOnce,
            let last = lastVisibilitySubscriptionSyncAt,
@@ -963,6 +1013,11 @@ final class SubscriptionManager: ObservableObject {
         if !tier.isEmpty {
             dropTrialInheritedFromAnotherAccount(reason: "familyStats", serverOwnerTier: tier)
             FamilyMapLiveAccess.cacheFamilyOwnerTier(tier)
+            markSubscriptionResolvedFromServer(reason: "familyStats")
+        }
+        familyTrialAvailable = stats.trialAvailable == true && tier == "free"
+        if familyTrialAvailable {
+            autoStartFamilyTrialIfServerAllows()
         }
         let trialCap = Self.familyMemberLimitStatic(for: .trial)
         let effectiveCap = cap
@@ -991,6 +1046,27 @@ final class SubscriptionManager: ObservableObject {
         logger.business(
             "🔒 Hybrid-B serverStats applied rosterUsed=\(used) rosterMax=\(effectiveCap) tier=\(stats.ownerSubscriptionTier ?? "?") src=\(source.rawValue)"
         )
+    }
+
+    /// Trial is automatic (no «Пробный» card in Tariffs): when the server says the owner never had it,
+    /// start it silently once per launch; the card CTA stays as fallback if this attempt fails.
+    private func autoStartFamilyTrialIfServerAllows() {
+        guard !familyTrialAutoStartAttempted else { return }
+        familyTrialAutoStartAttempted = true
+        logger.business("🎁 TRIAL_TARIFF_PIPELINE auto_start reason=familyStats_trialAvailable")
+        Task { @MainActor in
+            await self.startServerConfirmedFamilyTrial()
+        }
+    }
+
+    /// Server-confirmed trial start (auto or card CTA): ignores a stale/inherited local trial and refreshes roster cap.
+    @MainActor
+    func startServerConfirmedFamilyTrial() async {
+        await activateTrialIfNeeded(serverConfirmedAvailable: true)
+        if getCurrentLevel() == .trial {
+            familyTrialAvailable = false
+            FamilyLocalStore.notifyFamilyMembersUpdated()
+        }
     }
 
     /// Safe, non-isolated access to current family limit for use in completion handlers, error paths, and non-MainActor contexts.
@@ -1090,9 +1166,9 @@ final class SubscriptionManager: ObservableObject {
 
     /// 🎁 Activate trial period (14 days)
     @MainActor
-    func activateTrialIfNeeded() async {
-        // If trial is already active locally - do nothing.
-        if let trial = trialStatus, trial.isActive {
+    func activateTrialIfNeeded(serverConfirmedAvailable: Bool = false) async {
+        // If trial is already active locally - do nothing (unless server says it was never granted).
+        if !serverConfirmedAvailable, let trial = trialStatus, trial.isActive {
             logger.business("✅ Trial already active")
             // Повторный тап «Пробный» на тарифах: всё равно пересчитать лимиты/UI (см. updateTrialStatus + family cap).
             if let sub = currentSubscription {
@@ -1104,7 +1180,7 @@ final class SubscriptionManager: ObservableObject {
 
         logger.business("🎁 Requesting server-side 14-day trial")
 
-        let localCooldown = localTrialCooldownSeconds()
+        let localCooldown = serverConfirmedAvailable ? 0 : localTrialCooldownSeconds()
         if localCooldown > 0 {
 #if DEBUG
             // QA/Simulator: anti-abuse cooldown блокировал Trial после 3 тапов — сбрасываем и продолжаем.
@@ -1395,6 +1471,7 @@ final class SubscriptionManager: ObservableObject {
         
         let maxAttempts = 3
         var lastError: Error?
+        let deviceCheckToken: String? = isTrial ? await DeviceCheckTokenProvider.token() : nil
         
         for attempt in 1...maxAttempts {
             let isLastAttempt = attempt == maxAttempts
@@ -1437,7 +1514,8 @@ final class SubscriptionManager: ObservableObject {
                             deviceId: request.deviceId,
                             deviceType: request.deviceType,
                             trialInfo: trialInfo,
-                            antiAbuse: nil
+                            antiAbuse: nil,
+                            deviceCheckToken: deviceCheckToken
                         )
                         APIService.shared.registerDeviceWithTrial(request: trialRequest, completion: completion)
                     } else {
@@ -1487,13 +1565,16 @@ final class SubscriptionManager: ObservableObject {
         let deviceId = StableDeviceIdentity.current()
         let deviceType = "ios"
         let antiAbuseSignals = buildTrialAntiAbuseSignals(deviceId: deviceId)
+        let deviceCheckToken = await DeviceCheckTokenProvider.token()
 
         let request = TrialDeviceRegisterRequest(
             deviceId: deviceId,
             deviceType: deviceType,
             trialInfo: trialInfo,
-            antiAbuse: antiAbuseSignals
+            antiAbuse: antiAbuseSignals,
+            deviceCheckToken: deviceCheckToken
         )
+        logger.business("📱 register-device-trial devicecheck_token=\(deviceCheckToken != nil)")
 
         // ✅ ПРОДАКШН: Реальный API вызов через APIService
         logger.business("📡 ВЫЗОВ API: POST /api/auth/register-device-trial")
@@ -2605,6 +2686,7 @@ extension SubscriptionManager {
                 logger.network("✅ Subscription synced with server")
             } else {
                 logger.network("📡 Local data is up to date")
+                markSubscriptionResolvedFromServer(reason: "sync_up_to_date")
             }
 
             let now = Date()

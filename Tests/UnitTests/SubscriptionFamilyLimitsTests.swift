@@ -261,6 +261,34 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
     }
 #endif
 
+    /// Stats with a tier resolve «Проверяем тариф…»; trial CTA only for free owner with trialAvailable.
+    func testFamilyStatsTierResolvesPendingAndGatesTrialCTA() {
+        UserDefaults.standard.set("FAM_TRIAL_GATE", forKey: FamilyLocalStore.familyIdKey)
+        let stats = FamilyStatsResponse(
+            totalMembers: 1,
+            totalDevices: 0,
+            totalThreats: 0,
+            protectionLevel: 95,
+            familyStatus: "protected",
+            familyStatusMessage: nil,
+            familyRosterUsed: 1,
+            familyRosterMax: 3,
+            ownerSubscriptionTier: "trial",
+            trialAvailable: true
+        )
+        subscriptionManager.applyFamilyRosterQuotaFromFamilyStats(stats)
+        XCTAssertTrue(subscriptionManager.hasResolvedSubscriptionFromServer)
+        XCTAssertFalse(subscriptionManager.familyTrialAvailable, "Active trial tier must never show start-trial CTA")
+    }
+
+    func testFamilyStatsDecodesTrialAvailableOptional() throws {
+        let base = #"{"totalMembers":1,"totalDevices":0,"totalThreats":0,"protectionLevel":95,"familyRosterUsed":1,"familyRosterMax":1,"ownerSubscriptionTier":"free""#
+        let withFlag = try JSONDecoder().decode(FamilyStatsResponse.self, from: Data((base + #","trialAvailable":true}"#).utf8))
+        let legacy = try JSONDecoder().decode(FamilyStatsResponse.self, from: Data((base + "}").utf8))
+        XCTAssertEqual(withFlag.trialAvailable, true)
+        XCTAssertNil(legacy.trialAvailable)
+    }
+
     /// Real local trial + stale stats free=1 → keep server gate (no optimistic unlock → 409 1/1).
     func testRealTrialDoesNotInflateStaleServerFreeCap() {
         UserDefaults.standard.set("FAM_HYBRID_TRIAL", forKey: FamilyLocalStore.familyIdKey)

@@ -20,8 +20,8 @@ class SubscriptionLevel(str, Enum):
 
 class TrialInfo(BaseModel):
     """Trial period information"""
-    start_date: datetime
-    end_date: datetime
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     duration_days: int = 14
 
     @property
@@ -123,29 +123,18 @@ class JWTToken(BaseModel):
 
 class DeviceRegisterRequest(BaseModel):
     """Device registration request"""
-    device_id: str = Field(..., alias="deviceId")
-    device_type: str = Field("ios", alias="deviceType")
+    device_id: str = Field(..., alias="device_id")
+    device_type: str = Field("ios", alias="device_type")
 
-    class Config:
-        # Allow population by both field names and aliases (camelCase from iOS)
-        allow_population_by_field_name = True
+    model_config = {"populate_by_name": True}
 
 
 class TrialDeviceRegisterRequest(DeviceRegisterRequest):
     """Trial device registration request"""
-    trial_info: TrialInfo = Field(..., alias="trialInfo")
-    anti_abuse: Optional[Dict[str, Any]] = Field(default=None, alias="antiAbuse")
+    trial_info: TrialInfo = Field(..., alias="trial_info")
+    device_check_token: Optional[str] = Field(None, alias="device_check_token")
 
-
-class TrialAntiAbuseSignals(BaseModel):
-    """Privacy-safe anti-abuse signals from client (no PII)."""
-    install_fingerprint_hash: str = Field(..., alias="installFingerprintHash")
-    velocity_1h: int = Field(0, alias="velocity1h")
-    velocity_24h: int = Field(0, alias="velocity24h")
-    cooldown_seconds: int = Field(0, alias="cooldownSeconds")
-    app_version: str = Field("unknown", alias="appVersion")
-    os_version: str = Field("unknown", alias="osVersion")
-    risk_version: str = Field("unknown", alias="riskVersion")
+    model_config = {"populate_by_name": True}
 
 
 class UpgradeRequest(BaseModel):
