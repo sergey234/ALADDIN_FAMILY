@@ -1936,11 +1936,11 @@
 "main_family_tariff_checking" = "Checking plan…";
 "main_family_header_member_slots" = "%d of %d";
 "main_family_trial_days_left" = "Trial: %d days left";
-"main_family_trial_ended_banner" = "Trial ended · BASIC plan (1 member). You can choose Personal or Family.";
+"main_family_trial_ended_banner" = "Trial ended · Free plan (family of up to 4). Anti-fraud from Personal, the whole family on Family.";
 "main_family_trial_ended_dismiss" = "Got it";
 "main_family_over_capacity_banner" = "%d members with a limit of %d. Upgrade your plan or reduce the family roster.";
 "main_family_restore_trial_cta" = "Restore trial until %@";
-"main_family_start_trial_cta" = "Start 14-day free trial — up to 3 members";
+"main_family_start_trial_cta" = "Start 14-day free trial — up to 6 members";
 "driving_reports_empty_other_member" = "No trips for “%@” yet. They appear when that member’s device records a real trip (GPS + motion).";
 "tariffs_downgrade_trial_confirm_title" = "Switch to BASIC?";
 "tariffs_downgrade_trial_confirm_body" = "Your trial will end now. Family slots become 1. Continue?";
@@ -1957,26 +1957,25 @@
 "tariffs_billing_chooser_body" = "Choose a period for “%@”. Price from App Store when available.";
 "tariffs_billing_autorenew_note" = "Month and year auto-renew. Cancel in Settings → Apple ID → Subscriptions.";
 "tariffs_gates_table_title" = "What’s included · Free / Family / Premium";
-"tariffs_gates_check" = "Check (call, text, video)";
 "tariffs_gates_child_basic" = "Child: pause, limit, bedtime";
 "tariffs_gates_map_last" = "Map: last-point + share location";
 "tariffs_gates_map_live" = "Live map (access while the app is closed)";
 "tariffs_gates_places_more" = "More places & day history";
 "tariffs_gates_members" = "Multiple family members";
-"tariffs_gates_free_note" = "Free: 1 member · 1 last-point · Child/SOS. Antifake Check and Live are not on Free.";
+"tariffs_gates_free_note" = "Free: family of up to 4, live map, SOS. Anti-fraud from Personal.";
 "tariffs_free_included_title" = "What’s included on Free";
 "tariffs_free_excluded_title" = "Not included";
 "tariffs_free_no_charge_note" = "₽0 · no charge · no auto-renew";
-"tariffs_free_features_1" = "1 family member";
+"tariffs_free_features_1" = "Family of up to 4";
 "tariffs_free_features_2" = "Child — internet pause, limit, bedtime";
-"tariffs_free_features_3" = "Map — 1 last-point (single pin, not a track)";
+"tariffs_free_features_3" = "Live family map";
 "tariffs_free_features_4" = "Share your location once with family";
 "tariffs_free_features_5" = "Map places (home / school)";
 "tariffs_free_features_6" = "Family SOS (press & hold)";
 "tariffs_free_features_7" = "Anti-Banner (basic)";
 "tariffs_free_features_8" = "Antifake: 0 checks after the trial";
 "tariffs_free_features_9" = "Live map in real time";
-"tariffs_free_features_10" = "Multiple members & full Family pack";
+"tariffs_free_features_10" = "More than 4 members and anti-fraud";
 "tariffs_gates_check" = "Antifake Check (call/text/video)";
 "main_family_subscription_valid_until" = "Valid until:";
 "main_family_manage" = "Manage";
@@ -3575,6 +3574,8 @@
 "privacy_policy_section_family_location_content_3" = "A route line is built when you are moving or from trip data. We do not keep an all-day trail while you simply stay home. In a quiet zone we do not send your point to the family.";
 "privacy_policy_section_family_location_content_4" = "We do not sell place data or use it for ads. Limit with a quiet zone in ALADDIN. Turn location off fully: iPhone Settings → ALADDIN. The map and GPS can be wrong. ALADDIN does not replace emergency services. Full liability is in the Terms of Use.";
 "privacy_policy_section_family_location_content_5" = "We do not sell place, points, or routes, or give them to advertisers. After you revoke location in iPhone Settings, we do not collect new points.";
+"privacy_policy_section_family_location_content_6" = "Place history is stored on our server so your family can see where a person has been. How long depends on the plan: Free and Personal — 24 hours, Trial and Family — 7 days, Premium — 30 days. If the family owner has Family or Premium, that period applies to every member. We never keep it longer than 30 days. Older points are deleted automatically.";
+"privacy_policy_section_family_location_content_7" = "Only members of the person's family can see their history: parents see everyone, a child sees themselves and their parents. Deleting the account removes all place history and the last point from the server. After leaving a family, the former family no longer sees the history.";
 
 /* Pay-pains F6–F10 */
 
@@ -3925,9 +3926,9 @@
 "connect_device_cta" = "Invite";
 "tariffs_levels_title" = "What’s in each plan";
 "tariffs_levels_devices_fmt" = "Devices: Free %d · Family %d · Premium %d";
-"tariffs_free_simple" = "1 device · basic checks · last place on map · child & SOS";
+"tariffs_free_simple" = "Family of up to 4 · live map · SOS";
 "tariffs_family_simple" = "Several devices · live map · Antifake · places & day history";
-"tariffs_premium_simple" = "Everything in Family · more checks · priority support";
+"tariffs_premium_simple" = "Everything in Family · up to 15 people · priority support";
 "tariffs_col_free" = "Free";
 "tariffs_col_family" = "Family";
 "tariffs_col_premium" = "Premium";
@@ -4099,7 +4100,8 @@
 "tariffs_family_features_1" = "Family map and places";
 "tariffs_family_features_3" = "Child limits and parental controls";
 "tariffs_family_features_4" = "SOS / “help needed”";
-"tariffs_family_features_5" = "Antifake per plan — only when you tap Check";
+"tariffs_family_features_5" = "Anti-fraud for everyone in the family";
+"tariffs_family_scam_alert" = "Alert your family about scam calls";
 "tariffs_family_features_6" = "Trips and quiet zone";
 "tariffs_free" = "BASIC";
 "tariffs_free_period" = "Free";
@@ -4112,13 +4114,20 @@
 "tariffs_period_month" = "per month";
 "tariffs_personal" = "PERSONAL";
 "tariffs_personal_features_1" = "Protection for one device";
-"tariffs_personal_features_3" = "Antifake within plan limits";
+"tariffs_personal_features_3" = "Anti-fraud for you: calls, texts, links, transfers";
+"tariffs_personal_voice_video_limit" = "Voice & video checks — %d per month";
+"tariffs_personal_ai" = "AI safety assistant";
+"tariffs_member_limit_format" = "Up to %d family members";
+"tariffs_upgrade_personal_to_family_cta" = "Protect your whole family — +%@/month";
+"tariffs_upgrade_personal_to_family_cta_plain" = "Protect your whole family — switch to Family";
+"tariffs_upgrade_personal_to_family_note" = "App Store prorates what you’ve already paid";
+"antifake_quota_exhausted_body" = "You’ve used all %d voice & video checks this month. The limit resets on the 1st.";
 "tariffs_personal_features_4" = "Last-point map";
 "tariffs_personal_features_5" = "Basic limits and SOS";
 "tariffs_personal_features_6" = "Only when you act — no background recording";
 "tariffs_premium" = "PREMIUM";
 "tariffs_premium_features_1" = "Everything in Family";
-"tariffs_premium_features_3" = "Unlimited Antifake: text, doc, voice, video, call";
+"tariffs_premium_features_3" = "Unlimited anti-fraud: text, voice, video, call";
 "tariffs_premium_features_4" = "Longer place history";
 "tariffs_premium_features_5" = "Priority family support";
 "tariffs_premium_features_6" = "Higher device limits";
@@ -4221,3 +4230,22 @@
 /* Policy A — Antifake App Trial access (pre-prod 2026-11-16) */
 "antifake_premium_gate_honest_body" = "Authenticity checks require an active App Trial, or Family / Premium. We do not show demo verdicts without real analysis.";
 "faq_antifake_apple_limits_answer" = "ALADDIN checks text, links, audio, and video only when you tap Check or share content via the Share sheet.\n\nWe do not listen to all phone calls in the background — iOS forbids that. We do not hang up automatically or intercept FaceTime or messengers.\n\nCall labels apply only to numbers in our verified database (Call Directory), not every unknown caller.\n\nOn aladdin-ai.ru/antifake — **14-day free trial** or Family/Premium with a code; 25 MB file limit. In the app — active App Trial, Family, or Premium.\n\nResults are assessments (likely fake / uncertain / likely real), not legal verdicts.";
+
+/* L360 stage 3 — family growth nudge (FamilyGrowthNudgeScheduler) */
+"family_growth_nudge_title" = "Add your loved ones";
+"family_growth_nudge_body_d2" = "Safer together: invite your family so they can see the map and call for help.";
+"family_growth_nudge_body_d3" = "Free for up to 4 people. Send an invite in a minute.";
+
+/* L360 stage 4 — server place history (FamilyLocationHistoryView) */
+"family_location_history_title" = "Place history";
+"family_location_history_open_subtitle" = "Where they have been: 24 hours to 30 days by plan";
+"family_location_history_window_24h" = "Last 24 hours";
+"family_location_history_window_7d" = "Last 7 days";
+"family_location_history_window_30d" = "Last 30 days";
+"family_location_history_points_fmt" = "Points on the map: %d";
+"family_location_history_empty" = "No points for this period. They appear when the person has location turned on for ALADDIN.";
+"family_location_history_error" = "Could not load the history. Check your connection and try again.";
+"family_location_history_retry" = "Try again";
+"family_location_history_upsell" = "Want to see further back? Family — 7 days, Premium — 30 days.";
+"family_location_history_upsell_cta" = "Plans";
+"family_location_history_privacy_note" = "Only your family sees the history. Old points are deleted automatically, and right away when the account is deleted.";

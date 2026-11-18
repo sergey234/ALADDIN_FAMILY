@@ -25,6 +25,7 @@ from app.services.antifake_jobs_store import (
     metrics_for_user,
 )
 from app.services.antifake_premium import user_has_antifake_access
+from app.services.antifake_personal_quota import consume_heavy_check, quota_status, refund_heavy_check
 from app.services.antifake_web_premium import (
     apply_web_activation_code,
     user_has_antifake_access_resolved,
@@ -635,6 +636,7 @@ async def _enqueue_media_job(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if len(raw) > MAX_MEDIA_BYTES:
         raise HTTPException(status_code=413, detail="file_too_large")
+    quota_counted = consume_heavy_check(user, db, job_type) if db is not None else False
 
     user_id = int(user["id"])
     job_id = create_job(user_id, job_type)
@@ -690,9 +692,13 @@ async def _enqueue_media_job(
         return _client_verdict({"job_id": job_id, "status": "completed", **verdict}, request)
     except HTTPException:
         fail_job(job_id, "analysis_failed")
+        if quota_counted:
+            refund_heavy_check(user, db)
         raise
     except Exception as exc:
         fail_job(job_id, str(exc))
+        if quota_counted:
+            refund_heavy_check(user, db)
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     finally:
         from app.services.antifake_upload_store import delete_upload
@@ -870,6 +876,15 @@ async def antifake_metrics(
 ):
     _require_premium(current_user, request)
     return metrics_for_user(int(current_user["id"]))
+
+
+@router.get("/quota")
+async def antifake_quota(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Personal monthly heavy-check quota; `personal_monthly_limit` is the plan limit for any user."""
+    return quota_status(current_user, db)
 
 
 def _parse_since_param(raw: Optional[str]) -> Optional[datetime]:

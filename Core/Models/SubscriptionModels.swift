@@ -947,7 +947,7 @@ extension SubscriptionLimits {
     /// Free tier limits
     static var freeLimits: SubscriptionLimits {
         SubscriptionLimits(
-            maxDevices: 1,
+            maxDevices: TariffEntitlements.maxDevices(.free),
             maxAIMessages: 10,
             maxScans: 5,
             maxReports: 3,
@@ -958,7 +958,7 @@ extension SubscriptionLimits {
     /// Trial tier limits
     static var trialLimits: SubscriptionLimits {
         SubscriptionLimits(
-            maxDevices: 3,
+            maxDevices: TariffEntitlements.maxDevices(.trial),
             maxAIMessages: 50,
             maxScans: 100,
             maxReports: 10,
@@ -969,7 +969,7 @@ extension SubscriptionLimits {
     /// Personal tier limits
     static var personalLimits: SubscriptionLimits {
         SubscriptionLimits(
-            maxDevices: 2,
+            maxDevices: TariffEntitlements.maxDevices(.personal),
             maxAIMessages: 100,
             maxScans: 50,
             maxReports: 20,
@@ -980,7 +980,7 @@ extension SubscriptionLimits {
     /// Family tier limits
     static var familyLimits: SubscriptionLimits {
         SubscriptionLimits(
-            maxDevices: 6,
+            maxDevices: TariffEntitlements.maxDevices(.family),
             maxAIMessages: 1000,
             maxScans: 200,
             maxReports: 100,
@@ -991,7 +991,7 @@ extension SubscriptionLimits {
     /// Premium tier limits
     static var premiumLimits: SubscriptionLimits {
         SubscriptionLimits(
-            maxDevices: 10,
+            maxDevices: TariffEntitlements.maxDevices(.premium),
             maxAIMessages: 10000,
             maxScans: 1000,
             maxReports: 500,

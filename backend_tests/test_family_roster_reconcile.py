@@ -13,14 +13,21 @@ from app.services.family_roster_reconcile import (
 
 class TestMaxSlots(unittest.TestCase):
     def test_defaults(self) -> None:
-        self.assertEqual(max_family_slots_for_subscription_level(None), 1)
-        self.assertEqual(max_family_slots_for_subscription_level(""), 1)
-        self.assertEqual(max_family_slots_for_subscription_level("Trial"), 3)
-        self.assertEqual(max_family_slots_for_subscription_level("personal"), 2)
+        self.assertEqual(max_family_slots_for_subscription_level(None), 4)
+        self.assertEqual(max_family_slots_for_subscription_level(""), 4)
+        self.assertEqual(max_family_slots_for_subscription_level("free"), 4)
+        self.assertEqual(max_family_slots_for_subscription_level("Trial"), 6)
+        self.assertEqual(max_family_slots_for_subscription_level("personal"), 4)
         self.assertEqual(max_family_slots_for_subscription_level("family"), 6)
         self.assertEqual(max_family_slots_for_subscription_level("premium"), 15)
         self.assertEqual(max_family_slots_for_subscription_level("FAMILY"), 6)
-        self.assertEqual(max_family_slots_for_subscription_level("unknown_tier"), 1)
+        self.assertEqual(max_family_slots_for_subscription_level("unknown_tier"), 4)
+
+    def test_trial_never_below_free(self) -> None:
+        self.assertGreaterEqual(
+            max_family_slots_for_subscription_level("trial"),
+            max_family_slots_for_subscription_level("free"),
+        )
 
 
 class TestReconcile(unittest.TestCase):

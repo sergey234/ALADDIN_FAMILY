@@ -6,11 +6,11 @@ import SwiftUI
 final class QABatchP0FamilyLimitAndDigestTests: XCTestCase {
 
     func testFamilyMemberLimitSSOT() {
-        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .free), 1)
-        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .trial), 3)
-        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .personal), 2)
+        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .free), 4)
+        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .trial), 6)
+        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .personal), 4)
         XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .family), 6)
-        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .premium), 10)
+        XCTAssertEqual(SubscriptionManager.familyMemberLimitStatic(for: .premium), 15)
     }
 
     /// Palette: каждый платный tier визуально отличим от free/trial (канон Shyam).

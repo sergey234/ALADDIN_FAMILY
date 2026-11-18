@@ -808,6 +808,7 @@ struct ALADDINApp: App {
                 LaunchDiagnostics.appendLifecycleTrace("scenePhase changed -> \(newPhase)")
                 if newPhase == .active {
                     UserDefaults.standard.set(false, forKey: LifecycleKeys.lifecycleCheckpointMarker)
+                    AnalyticsManager.shared.trackAppOpenDayIfNeeded()
                     print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     // Post-call red/green often arms while Phone.app is foreground — present on return.
                     AntifakeCallObserverService.shared.presentPendingSafetyIfNeeded()

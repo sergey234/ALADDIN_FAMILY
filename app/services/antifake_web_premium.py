@@ -89,6 +89,11 @@ def user_has_antifake_access_resolved(
     if level_grants_antifake(eff):
         return True
 
+    from app.services.antifake_family_entitlement import family_owner_grants_antifake
+
+    if family_owner_grants_antifake(db, uid):
+        return True
+
     from app.services.antifake_web_trial import web_trial_grants_access
 
     return web_trial_grants_access(user, db, client=client)

@@ -52,6 +52,13 @@ class AnalyticsManager {
      * ✅ BUILD 102: Убраны parameters ?? [:] и parameters?.description для предотвращения создания Dictionary в background thread
      */
     func trackEvent(_ eventName: String, parameters: [String: Any]? = nil) {
+        if let growthEvent = SubscriptionEvent(rawValue: eventName),
+           Self.forwardedGrowthEvents.contains(growthEvent) {
+            let safeMetadata = Self.growthMetadata(from: parameters)
+            Task { @MainActor in
+                SubscriptionManager.shared.trackEvent(growthEvent, metadata: safeMetadata)
+            }
+        }
         // ✅ BUILD 112: Гарантируем выполнение на Main Thread внутри метода
         // Это делает вызов из любого потока безопасным для Dictionary.resize
         DispatchQueue.main.async { [weak self] in
@@ -74,6 +81,54 @@ class AnalyticsManager {
         }
     }
     
+    // MARK: - Growth events → MAIN `/api/subscription/events/batch`
+
+    /// Only these reach the server; subscription/purchase events are tracked by `SubscriptionManager` itself.
+    static let forwardedGrowthEvents: Set<SubscriptionEvent> = [
+        .familyCreated, .familyInviteSent, .familyMemberJoined, .appOpenDay,
+        .paywallShown, .paywallUpgradeTap, .abAssignment, .antifakeQuotaHit,
+        .referralInviteTap, .referralLinkOpen, .referralSignupAttach, .referralQualify,
+        .referralGrant, .referralScreenOpen, .referralCaregiverBlocked, .referralLevelUp
+    ]
+
+    /// No PII: names, phones, invite codes, coordinates never pass — only these keys, short string values.
+    static let growthMetadataKeys: Set<String> = [
+        "source", "method", "tier", "status", "days", "code_len", "day_index",
+        "variant", "experiment", "product_id", "plan", "program", "kind"
+    ]
+
+    static func growthMetadata(from parameters: [String: Any]?) -> [String: String] {
+        guard let parameters else { return [:] }
+        var safe: [String: String] = [:]
+        for (key, value) in parameters where growthMetadataKeys.contains(key) {
+            let text: String
+            switch value {
+            case let string as String: text = string
+            case let int as Int: text = String(int)
+            case let bool as Bool: text = bool ? "true" : "false"
+            default: continue
+            }
+            safe[key] = String(text.prefix(64))
+        }
+        return safe
+    }
+
+    /// `app_open_day` at most once per calendar day; `day_index` = days since the first open on this install.
+    func trackAppOpenDayIfNeeded(defaults: UserDefaults = .standard, now: Date = Date()) {
+        let firstOpenKey = "analytics_first_open_day_v1"
+        let lastOpenKey = "analytics_last_open_day_v1"
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: now)
+        if let last = defaults.object(forKey: lastOpenKey) as? Date, calendar.isDate(last, inSameDayAs: today) {
+            return
+        }
+        let firstOpen = (defaults.object(forKey: firstOpenKey) as? Date) ?? today
+        defaults.set(firstOpen, forKey: firstOpenKey)
+        defaults.set(today, forKey: lastOpenKey)
+        let dayIndex = calendar.dateComponents([.day], from: calendar.startOfDay(for: firstOpen), to: today).day ?? 0
+        trackEvent("app_open_day", parameters: ["day_index": max(0, dayIndex)])
+    }
+
     // MARK: - User Properties
     
     /**

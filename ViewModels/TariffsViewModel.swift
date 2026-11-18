@@ -147,6 +147,15 @@ class TariffsViewModel: ObservableObject {
         }
     }
 
+    /// Monthly Family − Personal from StoreKit (same currency); `nil` until both products load.
+    func personalToFamilyUpgradeDelta() -> String? {
+        guard let personal = storeManager.product(for: .individual),
+              let family = storeManager.product(for: .family) else { return nil }
+        let delta = family.price - personal.price
+        guard delta > 0 else { return nil }
+        return delta.formatted(family.priceFormatStyle)
+    }
+
     func discountBadge(
         for tariff: TariffsScreen.TariffType,
         period: StoreManager.BillingPeriod
@@ -253,9 +262,8 @@ class TariffsViewModel: ObservableObject {
     // MARK: - Purchase Tariff
     
     /**
-     * Купить выбранный тариф
-     * В России → открывает PaymentQRScreen (обрабатывается в UI)
-     * За границей → использует IAP (App Store)
+     * Купить выбранный тариф через IAP (App Store).
+     * В сборке App Store другой оплаты нет; оплата на сайте приходит в приложение кодом активации.
      */
     func purchaseSelectedTariff() async {
         // ✅ ЭТАП 2: Проверка токена перед покупкой (для синхронизации с сервером)

@@ -392,6 +392,23 @@ struct AntifakeMetricsResponse: Codable, Equatable, Sendable {
     }
 }
 
+/// GET `/api/antifake/quota` (l360 1Б.3). `personalMonthlyLimit` is the plan limit, shown on the Personal card.
+struct AntifakeQuotaResponse: Codable, Equatable, Sendable {
+    let limited: Bool
+    let limit: Int?
+    let used: Int
+    let resetsAt: String?
+    let personalMonthlyLimit: Int
+
+    enum CodingKeys: String, CodingKey {
+        case limited
+        case limit
+        case used
+        case resetsAt = "resets_at"
+        case personalMonthlyLimit = "personal_monthly_limit"
+    }
+}
+
 enum SecurityVerdictParsers {
     static let iso8601: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()

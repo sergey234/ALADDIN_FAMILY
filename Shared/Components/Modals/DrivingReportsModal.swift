@@ -1022,7 +1022,7 @@ struct DrivingReportsModal: View {
     // MARK: - W3 Q02–Q06 weekly strip + PDF
 
     private func weeklyIncidentStrip(stats: DrivingStats?) -> some View {
-        let entitled = FamilyMapLiveAccess.isEntitled
+        let entitled = FamilyMapLiveAccess.hasDrivingInsights
         let counts = incidentCounts(from: stats, entitled: entitled)
         return VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("drive_weekly_title"))

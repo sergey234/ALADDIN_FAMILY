@@ -58,8 +58,10 @@ try:
 except ImportError:
     reconcile_sole_child_roster_for_owner = None  # type: ignore[misc, assignment]
 
+    _FALLBACK_LEVEL_MAX = {"trial": 6, "free": 4, "personal": 4, "family": 6, "premium": 15}
+
     def max_family_slots_for_subscription_level(level: Optional[str]) -> int:  # type: ignore[misc]
-        return 1
+        return _FALLBACK_LEVEL_MAX.get(str(level or "").strip().lower(), _FALLBACK_LEVEL_MAX["free"])
 
 # ✅ RATE LIMITING: Импорт slowapi для защиты от злоупотреблений
 from slowapi import Limiter
@@ -4180,4 +4182,33 @@ async def family_where_phone(
         return list_where_phone(user_id=user_id)
 
     return await asyncio.to_thread(load_sync)
+
+
+@router.get("/location-history")
+@limiter.limit("60/minute")
+async def family_location_history(
+    request: Request,
+    member_id: str = Query(..., min_length=1, max_length=64),
+    current_user: dict = Depends(get_current_user),
+):
+    """One member's points within the plan window (24 h / 7 days / 30 days). A child sees self and parents."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.database.database import SessionLocal
+        from app.services.family_location_history import history_for_member
+
+        db = SessionLocal()
+        try:
+            return history_for_member(db, user_id, member_id)
+        finally:
+            db.close()
+
+    result = await asyncio.to_thread(load_sync)
+    if not result.get("ok"):
+        err = result.get("error")
+        if err == "no_family":
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="family_membership_required")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="member_not_found")
+    return result
 

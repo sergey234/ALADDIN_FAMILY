@@ -298,6 +298,9 @@
 		A3000041 /* Core/Navigation/NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000040 /* Core/Navigation/NavigationManager.swift */; };
 		A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000042 /* Core/Accessibility/AccessibilityManager.swift */; };
 		A3000045 /* Core/Store/StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000044 /* Core/Store/StoreManager.swift */; };
+		A360E002 /* Core/Store/TariffEntitlements.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E001 /* Core/Store/TariffEntitlements.swift */; };
+		A360E004 /* Core/Family/FamilyGrowthNudgeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */; };
+		A360E006 /* Screens/FamilyLocationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E005 /* Screens/FamilyLocationHistoryView.swift */; };
 		A3000047 /* Core/Localization/LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000046 /* Core/Localization/LocalizationManager.swift */; };
 		A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* Core/Analytics/AnalyticsManager.swift */; };
 		A3000051 /* ViewModels/FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */; };
@@ -1253,6 +1256,9 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		A3000040 /* Core/Navigation/NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Navigation/NavigationManager.swift; sourceTree = "<group>"; };
 		A3000042 /* Core/Accessibility/AccessibilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Accessibility/AccessibilityManager.swift; sourceTree = "<group>"; };
 		A3000044 /* Core/Store/StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Store/StoreManager.swift; sourceTree = "<group>"; };
+		A360E001 /* Core/Store/TariffEntitlements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Store/TariffEntitlements.swift; sourceTree = "<group>"; };
+		A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/FamilyGrowthNudgeScheduler.swift; sourceTree = "<group>"; };
+		A360E005 /* Screens/FamilyLocationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens/FamilyLocationHistoryView.swift; sourceTree = "<group>"; };
 		A3000046 /* Core/Localization/LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Localization/LocalizationManager.swift; sourceTree = "<group>"; };
 		A3000048 /* Core/Analytics/AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Analytics/AnalyticsManager.swift; sourceTree = "<group>"; };
 		A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyRegistrationViewModel.swift; sourceTree = "<group>"; };
@@ -2519,6 +2525,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A3000040 /* Core/Navigation/NavigationManager.swift */,
 				A3000042 /* Core/Accessibility/AccessibilityManager.swift */,
 				A3000044 /* Core/Store/StoreManager.swift */,
+				A360E001 /* Core/Store/TariffEntitlements.swift */,
+				A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */,
+				A360E005 /* Screens/FamilyLocationHistoryView.swift */,
 				A3000046 /* Core/Localization/LocalizationManager.swift */,
 				C182ABADC8EA112F1D9DFCB0 /* ContentManager.swift */,
 				938C819786E3023646B7E8C1 /* ContentModels.swift */,
@@ -3541,6 +3550,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */,
 				5EB01F422ECB092A00168BE9 /* URLHelper.swift in Sources */,
 				A3000045 /* Core/Store/StoreManager.swift in Sources */,
+				A360E002 /* Core/Store/TariffEntitlements.swift in Sources */,
+				A360E004 /* Core/Family/FamilyGrowthNudgeScheduler.swift in Sources */,
+				A360E006 /* Screens/FamilyLocationHistoryView.swift in Sources */,
 				5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */,
 				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
 				5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */,

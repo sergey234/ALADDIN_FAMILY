@@ -49,6 +49,7 @@ class StoreManager: ObservableObject {
     }
 
     enum ProductID: String, CaseIterable {
+        /// Legacy: not in App Store Connect, never loaded or sold. Kept because free-tier mappings reference it.
         case basic = "ai.aladdin.subscription.basic.v2"
         case individual = "ai.aladdin.subscription.individual.v2"
         case family = "ai.aladdin.subscription.family"
@@ -99,35 +100,27 @@ class StoreManager: ObservableObject {
             }
         }
         
+        /// `basic.v2` is not in App Store Connect; kept only for legacy mappings (never sold).
+        var tariffType: TariffType {
+            switch self {
+            case .basic: return .free
+            case .individual, .individualYearly: return .personal
+            case .family, .familyYearly: return .family
+            case .premium, .premiumYearly: return .premium
+            }
+        }
+
         var displayName: String {
-            switch self {
-            case .basic: return "Базовый"
-            case .individual, .individualYearly: return "Индивидуальный"
-            case .family, .familyYearly: return LocalizationManager.shared.localized("tariff_plan_family_title")
-            case .premium, .premiumYearly: return "Премиум"
-            }
+            tariffType.title(localizationManager: LocalizationManager.shared)
         }
-        
+
         var description: String {
-            switch self {
-            case .basic: return "1 устройство, базовая защита"
-            case .individual, .individualYearly: return "1 устройство, полная защита, AI помощник"
-            case .family, .familyYearly: return "До 6 участников, родительский контроль, live-карта"
-            case .premium, .premiumYearly: return "До 15 участников, все функции, приоритетная поддержка"
-            }
+            features.first ?? displayName
         }
-        
+
+        /// Same lines as the tariff cards (`TariffsScreen.TariffType.features`).
         var features: [String] {
-            switch self {
-            case .basic:
-                return ["1 устройство", "Базовая защита", "Ограниченная аналитика"]
-            case .individual, .individualYearly:
-                return ["До 2 участников", "Полная защита", "Расширенная аналитика", "AI помощник"]
-            case .family, .familyYearly:
-                return ["До 6 участников", "Live-карта семьи", "Родительский контроль", "AI помощник"]
-            case .premium, .premiumYearly:
-                return ["До 10 участников", "Все функции Family", "Приоритетная поддержка", "Companion Premium"]
-            }
+            tariffType.features(localizationManager: LocalizationManager.shared)
         }
     }
     

@@ -203,7 +203,16 @@ class APIService: ObservableObject {
         request: FamilyInviteCreateRequest,
         completion: @escaping (Result<FamilyInviteResponse, Error>) -> Void
     ) {
-        networkManager.post(endpoint: AppConfig.Endpoint.familyInviteCreate, body: request, requiresAuth: true, completion: completion)
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyInviteCreate,
+            body: request,
+            requiresAuth: true
+        ) { (result: Result<FamilyInviteResponse, Error>) in
+            if case .success = result {
+                AnalyticsManager.shared.trackEvent("family_invite_sent", parameters: ["source": "invite_create"])
+            }
+            completion(result)
+        }
     }
 
     /// JOB13 — upload composed 1200×630 invite OG JPEG for social link previews.
@@ -4553,6 +4562,23 @@ class APIService: ObservableObject {
     /// GET `/api/antifake/metrics` — user job stats (B2-12).
     func getAntifakeMetrics(completion: @escaping (Result<AntifakeMetricsResponse, Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.antifakeMetrics, completion: completion)
+    }
+
+    /// GET `/api/antifake/quota` — Personal monthly voice/video/document/call quota (l360 1Б.3).
+    func getAntifakeQuota(completion: @escaping (Result<AntifakeQuotaResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeQuota, completion: completion)
+    }
+
+    /// GET `/api/family/location-history?member_id=` — place history within the plan window (l360 stage 4).
+    func getFamilyLocationHistory(
+        memberId: String,
+        completion: @escaping (Result<FamilyLocationHistoryResponse, Error>) -> Void
+    ) {
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyLocationHistory,
+            queryParams: ["member_id": memberId],
+            completion: completion
+        )
     }
 
     /// GET `/api/antifake/call-directory` — identified/blocked numbers for CallKit (af-m2 / C-09).

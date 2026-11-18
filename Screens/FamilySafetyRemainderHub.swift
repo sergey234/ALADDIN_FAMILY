@@ -301,21 +301,28 @@ final class FamilyMapLiveLocationController: NSObject, ObservableObject, CLLocat
     }
 }
 
-/// Live map entitlement: trial · family · premium — own plan **or** the family owner's plan
-/// (invited members usually have a free account of their own). Free/Personal = last-point + share only.
+/// Live map: every plan (`TariffEntitlements.hasLiveMap`).
+/// Driving insights: trial · family · premium — own plan **or** the family owner's plan
+/// (invited members usually have a free account of their own).
 enum FamilyMapLiveAccess {
     private static let ownerTierKey = "family_owner_subscription_tier_v1"
-    private static let familyGrantingTiers: Set<String> = ["trial", "trial_premium", "family", "premium"]
 
     @MainActor
     static var isEntitled: Bool {
         if SubscriptionManager.shared.trialStatus?.isActive == true { return true }
-        switch SubscriptionManager.shared.getCurrentLevel() {
-        case .trial, .family, .premium:
-            return true
-        case .free, .personal:
-            return ownerTierGrantsLiveMap(UserDefaults.standard.string(forKey: ownerTierKey))
-        }
+        if TariffEntitlements.hasLiveMap(SubscriptionManager.shared.getCurrentLevel()) { return true }
+        return ownerTierGrantsLiveMap(cachedOwnerTier)
+    }
+
+    @MainActor
+    static var hasDrivingInsights: Bool {
+        if SubscriptionManager.shared.trialStatus?.isActive == true { return true }
+        if TariffEntitlements.hasDrivingInsights(SubscriptionManager.shared.getCurrentLevel()) { return true }
+        return ownerTierGrantsLiveMap(cachedOwnerTier)
+    }
+
+    static var cachedOwnerTier: String? {
+        UserDefaults.standard.string(forKey: ownerTierKey)
     }
 
     /// `/api/family/stats.ownerSubscriptionTier` — refreshed on every stats load (expiry included).
@@ -324,8 +331,7 @@ enum FamilyMapLiveAccess {
     }
 
     static func ownerTierGrantsLiveMap(_ tier: String?) -> Bool {
-        guard let tier = tier?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else { return false }
-        return familyGrantingTiers.contains(tier)
+        TariffEntitlements.ownerTierSharesFamilyPerks(tier)
     }
 }
 

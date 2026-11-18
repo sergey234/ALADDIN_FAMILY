@@ -1,8 +1,9 @@
 import Foundation
 
-/// Central gate for Antifake Hub / deepfakes category (af-2-08, G-03).
-/// Policy A: active App Trial (server SSOT `trial_end` or live trialStatus) unlocks Hub
-/// the same way as Family/Premium. DEBUG bypass is ASC/local only — not proof of API access.
+/// Central gate for Antifake Hub (af-2-08, G-03).
+/// Own Personal, Family, Premium or Trial — same as MAIN `PREMIUM_LEVELS`; invited members also get it
+/// from the family owner's Family/Premium/Trial (`antifake_family_entitlement.py`). Rules: `TariffEntitlements`.
+/// DEBUG bypass is ASC/local only — not proof of API access.
 @MainActor
 enum AntifakeAccessPolicy {
     /// Production: gate ON. DEBUG/UITest: unlock Hub for ASC screenshots & local QA.
@@ -46,9 +47,13 @@ enum AntifakeAccessPolicy {
             return true
         }
 
+        // Trial is decided above (local DEBUG override must not unlock it).
+        let level = subs.getCurrentLevel()
+        if level != .trial, TariffEntitlements.canUseAntifake(level) { return true }
         let manager = tariffManager ?? TariffManager.shared
-        if manager.currentTariff == .premium { return true }
-        return manager.isCategoryAvailable(.deepfakes)
+        let tariffLevel = TariffEntitlements.level(for: manager.currentTariff)
+        if tariffLevel != .trial, TariffEntitlements.canUseAntifake(tariffLevel) { return true }
+        return TariffEntitlements.ownerTierSharesFamilyPerks(FamilyMapLiveAccess.cachedOwnerTier)
     }
 
     static func isHubAvailable(

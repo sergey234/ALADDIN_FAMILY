@@ -1910,6 +1910,43 @@ struct WhereIsPhoneScreen: View {
         .accessibilityIdentifier("where_phone_history_30d")
     }
 
+    private func memberLocationHistoryLink(_ member: HubMemberCard) -> some View {
+        NavigationLink(
+            destination: FamilyLocationHistoryView(memberId: member.id, memberName: member.name) {
+                selectedMember = nil
+                if let leave = onLeaveToNavigate {
+                    leave(.tariffs)
+                } else {
+                    navigationManager.navigateTo(.tariffs)
+                }
+            }
+        ) {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "point.topleft.down.curvedto.point.bottomright.up")
+                    .foregroundColor(.secondaryGold)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localizationManager.localized("family_location_history_title"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("family_location_history_open_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.92))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.28))
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("where_phone_member_location_history")
+    }
+
     /// Real saved places only — no invented “today stops” timeline without events API.
     private func densTodayPlaceNames() -> [String] {
         let key = "geofences_settings"
@@ -2989,7 +3026,7 @@ struct WhereIsPhoneScreen: View {
                         densPlacesDayCard
                         memberWeeklyTripsCard
                         memberDrivingLocksCard
-                        densLocationHistoryCard
+                        memberLocationHistoryLink(member)
 
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             Text(localizationManager.localized("map_member_quiet_zone"))
@@ -3600,7 +3637,7 @@ struct WhereIsPhoneScreen: View {
 
     /// S19a — Speeding / distraction / hard accel. Locked without entitlement; never invent counts.
     private var memberDrivingLocksCard: some View {
-        let entitled = FamilyMapLiveAccess.isEntitled
+        let entitled = FamilyMapLiveAccess.hasDrivingInsights
         return VStack(alignment: .leading, spacing: Spacing.s) {
             if !entitled {
                 /// JOB04 CapCut · H16 GoldLock · member drive unlock · UI 96×96 (второй слот).

@@ -7,7 +7,7 @@
 "NSContactsUsageDescription" = "ALADDIN needs contacts access to help manage family member information securely.";
 "NSLocationWhenInUseUsageDescription" = "ALADDIN uses location while you use the app to set family places and share location in an emergency (SOS).";
 "FamilyMap" = "Precise location puts your avatar on the family map in the right place, not just somewhere in the city.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN needs location while the app is closed so your family map stays up to date, place alerts (home, school, work) can work, and car trips are recorded with distance and speed. Precise GPS runs only while you are driving. We do not keep an all-day trail when you are not moving. In a quiet zone we do not send your point to the family.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN needs location while the app is closed so your family map stays up to date, place alerts (home, school, work) can work, and car trips are recorded with distance and speed. Precise GPS runs only while you are driving. We do not keep an all-day trail when you are not moving. In a quiet zone we do not send your point to the family. Your family can see your place history for 24 hours to 30 days, depending on the plan.";
 "NSFaceIDUsageDescription" = "ALADDIN uses Face ID for secure authentication.";
 "NSSpeechRecognitionUsageDescription" = "ALADDIN turns speech into text for notes and voice input.";
 "NSMotionUsageDescription" = "ALADDIN uses motion to help send a family urgent safety signal on a hard impact when you enable it.";

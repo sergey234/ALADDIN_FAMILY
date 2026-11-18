@@ -1821,11 +1821,11 @@
 "main_family_tariff_checking" = "Проверяем тариф…";
 "main_family_header_member_slots" = "%d из %d";
 "main_family_trial_days_left" = "Пробный: ещё %d дн.";
-"main_family_trial_ended_banner" = "Пробный закончился · тариф БАЗОВЫЙ (1 участник). Можно выбрать Личный или Семейный.";
+"main_family_trial_ended_banner" = "Пробный закончился · Бесплатный тариф (семья до 4 человек). Антифрод — с Личного, вся семья — на Семейном.";
 "main_family_trial_ended_dismiss" = "Понятно";
 "main_family_over_capacity_banner" = "Участников %d при лимите %d. Обновите тариф или сократите состав семьи.";
 "main_family_restore_trial_cta" = "Вернуть пробный до %@";
-"main_family_start_trial_cta" = "Включить пробный на 14 дней — до 3 участников";
+"main_family_start_trial_cta" = "Включить пробный на 14 дней — до 6 участников";
 "driving_reports_empty_other_member" = "Пока нет поездок у «%@». Они появятся, когда его устройство запишет реальную поездку (GPS + движение).";
 "tariffs_downgrade_trial_confirm_title" = "Перейти на БАЗОВЫЙ?";
 "tariffs_downgrade_trial_confirm_body" = "Пробный оборвётся сейчас. Слоты семьи станут 1. Продолжить?";
@@ -1843,26 +1843,25 @@
 "tariffs_billing_chooser_body" = "Выберите период для «%@». Цена с App Store, если доступна.";
 "tariffs_billing_autorenew_note" = "Месяц и год — подписка с автопродлением. Отмена в Настройки → Apple ID → Подписки.";
 "tariffs_gates_table_title" = "Что входит · Free / Family / Premium";
-"tariffs_gates_check" = "Проверить (звонок, текст, видео)";
 "tariffs_gates_child_basic" = "Ребёнок: пауза, лимит, bedtime";
 "tariffs_gates_map_last" = "Карта: last-point + отправить место";
 "tariffs_gates_map_live" = "Живая карта (доступ при закрытом приложении)";
 "tariffs_gates_places_more" = "Больше мест и история дня";
 "tariffs_gates_members" = "Несколько участников семьи";
-"tariffs_gates_free_note" = "Free: 1 участник · 1 last-point · ребёнок/SOS. Antifake «Проверить» и Live — не на Free.";
+"tariffs_gates_free_note" = "Бесплатно: семья до 4, живая карта, SOS. Антифрод — с Личного.";
 "tariffs_free_included_title" = "Что входит на Free";
 "tariffs_free_excluded_title" = "Что не входит";
 "tariffs_free_no_charge_note" = "0 ₽ · без оплаты · без автопродления";
-"tariffs_free_features_1" = "1 участник в семье";
+"tariffs_free_features_1" = "Семья до 4 человек";
 "tariffs_free_features_2" = "Ребёнок — пауза интернета, лимит, bedtime";
-"tariffs_free_features_3" = "Карта — 1 last-point (одна последняя точка, не трек)";
+"tariffs_free_features_3" = "Живая карта семьи";
 "tariffs_free_features_4" = "Отправить своё место семье (разово)";
 "tariffs_free_features_5" = "Места на карте (дом / школа)";
 "tariffs_free_features_6" = "SOS семье (удержание кнопки)";
 "tariffs_free_features_7" = "Анти-Баннер (базовый)";
 "tariffs_free_features_8" = "Antifake: 0 проверок после пробного периода";
 "tariffs_free_features_9" = "Live-карта в реальном времени";
-"tariffs_free_features_10" = "Несколько участников и полный Family-пакет";
+"tariffs_free_features_10" = "Больше 4 человек и антифрод";
 "tariffs_gates_check" = "Проверить Antifake (звонок/текст/видео)";
 "main_family_subscription_valid_until" = "Действует до:";
 "main_family_manage" = "Управлять";
@@ -3486,6 +3485,8 @@
 "privacy_policy_section_family_location_content_3" = "Линия маршрута строится при движении или из данных поездки. Мы не копим след за весь день, когда вы просто дома. В тихой зоне точку семье не отправляем.";
 "privacy_policy_section_family_location_content_4" = "Место не продаём и не отдаём в рекламу. Ограничить: тихая зона в ALADDIN. Полностью отключить геолокацию: Настройки iPhone → ALADDIN. Карта и GPS могут ошибаться. ALADDIN не заменяет экстренные службы. Полная ответственность в Условиях использования.";
 "privacy_policy_section_family_location_content_5" = "Место, точки и маршруты не продаём и не передаём рекламодателям. После отзыва геолокации в Настройках iPhone новые точки не собираем.";
+"privacy_policy_section_family_location_content_6" = "История мест хранится на нашем сервере, чтобы семья могла посмотреть, где человек был. Срок зависит от тарифа: бесплатный и Личный — 24 часа, пробный и Семейный — 7 дней, Премиум — 30 дней. Если у владельца семьи Семейный или Премиум, этот срок действует для всех её участников. Дольше 30 дней не храним никогда. Старые точки удаляются автоматически.";
+"privacy_policy_section_family_location_content_7" = "Историю человека видят только участники его семьи: родители — всех, ребёнок — себя и родителей. При удалении аккаунта вся история мест и последняя точка удаляются с сервера. После выхода из семьи бывшая семья историю больше не видит.";
 
 /* Pay-pains F6–F10 */
 
@@ -3836,9 +3837,9 @@
 "connect_device_cta" = "Пригласить";
 "tariffs_levels_title" = "Что входит в тарифы";
 "tariffs_levels_devices_fmt" = "Устройства: бесплатно %d · семья %d · премиум %d";
-"tariffs_free_simple" = "1 устройство · базовая проверка · карта последней точки · ребёнок и SOS";
+"tariffs_free_simple" = "Семья до 4 · живая карта · SOS";
 "tariffs_family_simple" = "Несколько устройств · живая карта · Antifake · места и история дня";
-"tariffs_premium_simple" = "Всё из Family · расширенные проверки · приоритетная поддержка";
+"tariffs_premium_simple" = "Всё из Семейного · до 15 человек · приоритетная поддержка";
 "tariffs_col_free" = "Бесплат.";
 "tariffs_col_family" = "Семья";
 "tariffs_col_premium" = "Премиум";
@@ -4009,7 +4010,8 @@
 "tariffs_family_features_1" = "Карта семьи и места";
 "tariffs_family_features_3" = "Лимиты и контроль ребёнка";
 "tariffs_family_features_4" = "SOS / «нужна помощь»";
-"tariffs_family_features_5" = "Antifake по тарифу — только по вашему действию";
+"tariffs_family_features_5" = "Антифрод для каждого в семье";
+"tariffs_family_scam_alert" = "Оповещение родных о звонке мошенника";
 "tariffs_family_features_6" = "Поездки и тихая зона";
 "tariffs_free" = "БАЗОВЫЙ";
 "tariffs_free_period" = "Бесплатно";
@@ -4022,13 +4024,20 @@
 "tariffs_period_month" = "в месяц";
 "tariffs_personal" = "ЛИЧНЫЙ";
 "tariffs_personal_features_1" = "Защита одного устройства";
-"tariffs_personal_features_3" = "Antifake по лимиту тарифа";
+"tariffs_personal_features_3" = "Антифрод для себя: звонки, SMS, ссылки, переводы";
+"tariffs_personal_voice_video_limit" = "Проверка голоса и видео — %d в месяц";
+"tariffs_personal_ai" = "ИИ-помощник по безопасности";
+"tariffs_member_limit_format" = "До %d участников в семье";
+"tariffs_upgrade_personal_to_family_cta" = "Защитить всю семью — +%@ в месяц";
+"tariffs_upgrade_personal_to_family_cta_plain" = "Защитить всю семью — перейти на Семейный";
+"tariffs_upgrade_personal_to_family_note" = "Остаток оплаты App Store пересчитает сам";
+"antifake_quota_exhausted_body" = "%d проверок голоса и видео в этом месяце уже использованы. Лимит обновится 1-го числа.";
 "tariffs_personal_features_4" = "Карта последней точки";
 "tariffs_personal_features_5" = "Базовые лимиты и SOS";
 "tariffs_personal_features_6" = "Только по вашему действию — без фоновой записи";
 "tariffs_premium" = "ПРЕМИУМ";
-"tariffs_premium_features_1" = "Всё из семейного тарифа";
-"tariffs_premium_features_3" = "Безлимит Antifake: текст, документ, голос, видео, звонок";
+"tariffs_premium_features_1" = "Всё из Семейного";
+"tariffs_premium_features_3" = "Антифрод без лимита: текст, голос, видео, звонок";
 "tariffs_premium_features_4" = "Длиннее история мест";
 "tariffs_premium_features_5" = "Приоритетная поддержка семьи";
 "tariffs_premium_features_6" = "Расширенные лимиты устройств";
@@ -4191,3 +4200,22 @@
 /* Policy A — Antifake App Trial access (pre-prod 2026-11-16) */
 "antifake_premium_gate_honest_body" = "Проверка подлинности доступна на активном пробном периоде приложения, а также в тарифах Family и Premium. Мы не показываем демо-вердикты без реального анализа.";
 "faq_antifake_apple_limits_answer" = "ALADDIN проверяет текст, ссылки, аудио и видео только когда вы сами нажимаете «Проверить» или делитесь контентом через «Поделиться».\n\nМы не слушаем все телефонные звонки в фоне — iOS это запрещает. Не кладём трубку автоматически и не перехватываем FaceTime или мессенджеры.\n\nМетки на звонках — только для номеров из проверенной базы (Call Directory), не для всех незнакомых.\n\nНа сайте aladdin-ai.ru/antifake — **14 дней бесплатно** или Family/Premium по коду; лимит файлов 25 МБ. В приложении — активный App Trial, Family или Premium.\n\nРезультат — оценка (похоже на подделку / неясно / похоже на подлинное), не юридическое заключение.";
+
+/* L360 stage 3 — family growth nudge (FamilyGrowthNudgeScheduler) */
+"family_growth_nudge_title" = "Добавьте близких в семью";
+"family_growth_nudge_body_d2" = "Пригласите родных: вы будете видеть друг друга на карте и сможете позвать на помощь одной кнопкой.";
+"family_growth_nudge_body_d3" = "Бесплатно — до 4 человек в семье. Отправьте приглашение за минуту.";
+
+/* L360 stage 4 — server place history (FamilyLocationHistoryView) */
+"family_location_history_title" = "История мест";
+"family_location_history_open_subtitle" = "Где был человек: от 24 часов до 30 дней по тарифу";
+"family_location_history_window_24h" = "Последние 24 часа";
+"family_location_history_window_7d" = "Последние 7 дней";
+"family_location_history_window_30d" = "Последние 30 дней";
+"family_location_history_points_fmt" = "Точек на карте: %d";
+"family_location_history_empty" = "За этот период точек нет. Они появляются, когда у человека включена геолокация для ALADDIN.";
+"family_location_history_error" = "Не удалось загрузить историю. Проверьте интернет и попробуйте ещё раз.";
+"family_location_history_retry" = "Повторить";
+"family_location_history_upsell" = "Хотите видеть дольше? Семейный — 7 дней, Премиум — 30 дней.";
+"family_location_history_upsell_cta" = "Тарифы";
+"family_location_history_privacy_note" = "Историю видит только ваша семья. Старые точки удаляются автоматически, при удалении аккаунта — сразу.";

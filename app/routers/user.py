@@ -99,6 +99,9 @@ def _delete_user_rows_sync(user_id: int) -> None:
             ("DELETE FROM family_chat_reactions WHERE user_id = :uid", {"uid": user_id}),
             ("DELETE FROM family_chat_messages WHERE sender_user_id = :uid", {"uid": user_id}),
             ("DELETE FROM antifake_jobs WHERE user_id = :uid", {"uid": user_id}),
+            ("DELETE FROM location_history WHERE user_id = :uid", {"uid": user_id}),
+            ("DELETE FROM family_where_phone_signal WHERE user_id = :uid", {"uid": user_id}),
+            ("DELETE FROM family_where_phone_point WHERE user_id = :uid", {"uid": user_id}),
         ):
             try:
                 with db.begin_nested():

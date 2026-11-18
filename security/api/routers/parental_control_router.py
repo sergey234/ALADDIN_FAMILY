@@ -339,7 +339,11 @@ async def report_location(
             }
         )
         db.commit()
-        logger.info(f"📍 Location reported for user {user_id}: {request.lat}, {request.lon}")
+        logger.info(f"📍 Location reported for user {user_id}")
+
+        from app.services.family_location_history import enforce_after_write
+
+        enforce_after_write(db, int(user_id))
         
         # ✅ STAGE 4: Проверка геозон и триггер уведомлений
         check_geofence_triggers(user_id, request.lat, request.lon, db)

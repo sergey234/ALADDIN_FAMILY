@@ -72,6 +72,7 @@ private let logger = MasterLogger.shared
         if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
             if let detail = json["detail"] as? String { return detail }
             if let message = json["message"] as? String { return message }
+            if let quota = AntifakeMonthlyQuota.encodedDetail(fromJSON: json) { return quota }
             if let detail = json["detail"] as? [String: Any] {
                 if let code = detail["error_code"] as? String, code == "family_roster_full" {
                     let used = (detail["roster_used"] as? Int)
@@ -1191,7 +1192,8 @@ private let logger = MasterLogger.shared
                            retryAfter)
 
                     self?.lastError = errorMessage
-                    completion(.failure(NetworkError.tooManyRequests(errorMessage)))
+                    let quotaDetail = data.flatMap(AntifakeMonthlyQuota.encodedDetail(from:))
+                    completion(.failure(NetworkError.tooManyRequests(quotaDetail ?? errorMessage)))
                     return
                 }
 

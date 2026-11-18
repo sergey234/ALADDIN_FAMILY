@@ -660,6 +660,7 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                 switch result {
                 case .success(let response):
+                    AnalyticsManager.shared.trackEvent("family_created", parameters: ["source": "registration"])
                     self?.familyID = response.family_id
                     self?.recoveryCode = response.recovery_code
                     self?.familyInviteQRPayload = response.qr_code_data
@@ -1087,6 +1088,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                         return
                     }
 
+                    AnalyticsManager.shared.trackEvent("family_member_joined", parameters: ["source": "invite_code"])
                     self?.familyID = data.family_id
                     self?.lastJoinedMemberId = data.your_member_id
 

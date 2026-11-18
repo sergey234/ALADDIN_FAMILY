@@ -49,11 +49,11 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
     }
     
     func testFamilyMemberLimitForAllTiers() {
-        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .free), 1)
-        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .trial), 3)
-        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .personal), 2)
+        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .free), 4)
+        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .trial), 6)
+        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .personal), 4)
         XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .family), 6)
-        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .premium), 10)
+        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .premium), 15)
     }
     
     func testCanAddFamilyMemberUnderLimit() {
@@ -88,11 +88,11 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         )
         subscriptionManager.updateSubscriptionStatus(testStatus)
         
-        let (allowed, message, upgrade) = subscriptionManager.canAddFamilyMember(currentCount: 3)
+        let (allowed, message, upgrade) = subscriptionManager.canAddFamilyMember(currentCount: 6)
         XCTAssertFalse(allowed)
         XCTAssertNotNil(message)
         XCTAssertTrue(upgrade)
-        XCTAssertTrue(message!.contains("3"))
+        XCTAssertTrue(message!.contains("6"))
     }
     
     func testCanAddFamilyMemberFreeTier() {
@@ -107,11 +107,12 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         )
         subscriptionManager.updateSubscriptionStatus(testStatus)
         
-        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 1)
+        XCTAssertTrue(subscriptionManager.canAddFamilyMember(currentCount: 3).0)
+        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 4)
         XCTAssertFalse(allowed) // At limit for free
     }
 
-    /// JWT may still report `free` while trial dates are active — roster cap must be 3, not 1.
+    /// JWT may still report `free` while trial dates are active — roster cap must be the trial cap (6), not free (4).
     func testFreePlanWithActiveTrialInfoUsesTrialFamilyCap() {
         let trial = TrialInfo(
             startDate: Date().addingTimeInterval(-86_400),
@@ -129,8 +130,8 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
             lastUpdated: Date()
         )
         subscriptionManager.updateSubscriptionStatus(testStatus)
-        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 3)
-        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 2)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 6)
+        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 5)
         XCTAssertTrue(allowed)
     }
     
@@ -162,9 +163,9 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
             lastUpdated: Date()
         )
         subscriptionManager.updateSubscriptionStatus(testStatus)
-        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 3)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 6)
 
-        UserDefaults.standard.set(3, forKey: "family_roster_used_last")
+        UserDefaults.standard.set(6, forKey: "family_roster_used_last")
         UserDefaults.standard.set(FamilyQuotaSource.persistedCache.rawValue, forKey: "family_quota_source_last")
         UserDefaults.standard.synchronize()
 
@@ -452,8 +453,8 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         subscriptionManager.updateSubscriptionStatus(status)
         XCTAssertEqual(
             subscriptionManager.currentFamilyLimit,
-            1,
-            "DEBUG QA trial paints UI only; tariffFallback cap stays free=1"
+            TariffEntitlements.familyMemberLimit(.free),
+            "DEBUG QA trial paints UI only; tariffFallback cap stays the free cap"
         )
         XCTAssertTrue(subscriptionManager.showsDebugQALocalTrialBanner)
     }

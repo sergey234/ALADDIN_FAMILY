@@ -2,7 +2,7 @@
   {
     "id": "free",
     "name": "Free",
-    "devices": 1,
+    "devices": 4,
     "protection": "16 / 100",
     "pricing": {
       "currency": "RUB",
@@ -14,14 +14,15 @@
           "monthly": 0,
           "discountPercent": 0,
           "savings": 0,
-          "note": "Для мониторинга одного устройства"
+          "note": "Для семьи до 4 человек"
         }
       ]
     },
     "perks": [
-      "Базовые уведомления о угрозах",
-      "Статистика для 1 устройства",
-      "AI советник в демо-режиме"
+      "Семья до 4 человек",
+      "Живая карта семьи",
+      "SOS и места на карте (дом / школа)",
+      "Ребёнок: пауза интернета, лимит, отбой"
     ]
   },
   {
@@ -31,7 +32,59 @@
     "protection": "50 / 100",
     "pricing": {
       "currency": "RUB",
-      "defaultMonths": 12,
+      "defaultMonths": 1,
+      "periods": [
+        {
+          "months": 1,
+          "label": "1 мес",
+          "total": 100,
+          "monthly": 100,
+          "discountPercent": 0,
+          "savings": 0
+        },
+        {
+          "months": 3,
+          "label": "3 мес",
+          "total": 270,
+          "monthly": 90,
+          "discountPercent": 10,
+          "savings": 30
+        },
+        {
+          "months": 6,
+          "label": "6 мес",
+          "total": 510,
+          "monthly": 85,
+          "discountPercent": 15,
+          "savings": 90
+        },
+        {
+          "months": 12,
+          "label": "12 мес",
+          "total": 960,
+          "monthly": 80,
+          "discountPercent": 20,
+          "savings": 240,
+          "note": "Специальная цена на год"
+        }
+      ]
+    },
+    "perks": [
+      "Антифрод для себя: звонки, SMS, ссылки, переводы",
+      "Проверка голоса и видео — 30 в месяц",
+      "До 4 участников в семье",
+      "ИИ-помощник по безопасности",
+      "Только по вашему действию — без фоновой записи"
+    ]
+  },
+  {
+    "id": "family",
+    "name": "Family",
+    "devices": 6,
+    "protection": "92 / 100",
+    "pricing": {
+      "currency": "RUB",
+      "defaultMonths": 1,
       "periods": [
         {
           "months": 1,
@@ -60,29 +113,31 @@
         {
           "months": 12,
           "label": "12 мес",
-          "total": 2780,
-          "monthly": 231,
+          "total": 2784,
+          "monthly": 232,
           "discountPercent": 20,
-          "savings": 700,
-          "note": "Специальная цена на год"
+          "savings": 696
         }
       ]
     },
     "perks": [
-      "VPN защита и фильтрация сайтов",
-      "Мониторинг 4 устройств",
-      "Умные уведомления и отчёты",
-      "Обучение безопасности для взрослых"
+      "Карта семьи и места",
+      "До 6 участников в семье",
+      "Антифрод для каждого в семье",
+      "Оповещение родных о звонке мошенника",
+      "Лимиты и контроль ребёнка",
+      "SOS / «нужна помощь»",
+      "Поездки и тихая зона"
     ]
   },
   {
-    "id": "family",
-    "name": "Family",
-    "devices": 6,
-    "protection": "92 / 100",
+    "id": "premium",
+    "name": "Premium",
+    "devices": 15,
+    "protection": "100 / 100",
     "pricing": {
       "currency": "RUB",
-      "defaultMonths": 12,
+      "defaultMonths": 1,
       "periods": [
         {
           "months": 1,
@@ -119,62 +174,10 @@
       ]
     },
     "perks": [
-      "AI помощник для детей",
-      "Родительский контроль и геолокация",
-      "Ограничения экранного времени",
-      "Уведомления об обходах блокировок",
-      "138 функций защиты семьи"
-    ]
-  },
-  {
-    "id": "premium",
-    "name": "Premium",
-    "devices": 10,
-    "protection": "100 / 100",
-    "pricing": {
-      "currency": "RUB",
-      "defaultMonths": 12,
-      "periods": [
-        {
-          "months": 1,
-          "label": "1 мес",
-          "total": 990,
-          "monthly": 990,
-          "discountPercent": 0,
-          "savings": 0
-        },
-        {
-          "months": 3,
-          "label": "3 мес",
-          "total": 2673,
-          "monthly": 891,
-          "discountPercent": 10,
-          "savings": 297
-        },
-        {
-          "months": 6,
-          "label": "6 мес",
-          "total": 5049,
-          "monthly": 841,
-          "discountPercent": 15,
-          "savings": 891
-        },
-        {
-          "months": 12,
-          "label": "12 мес",
-          "total": 9504,
-          "monthly": 792,
-          "discountPercent": 20,
-          "savings": 2376
-        }
-      ]
-    },
-    "perks": [
-      "Все функции Family",
-      "IoT защита и расширенный VPN",
-      "Безлимитные устройства в семье",
-      "Приоритетная поддержка 24/7"
+      "Всё из Семейного",
+      "До 15 участников в семье",
+      "Антифрод без лимита: текст, голос, видео, звонок",
+      "Приоритетная поддержка семьи"
     ]
   }
 ]
-

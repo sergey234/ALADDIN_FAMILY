@@ -101,6 +101,24 @@ enum SubscriptionEvent: String, Codable {
     case offlineMode = "offline_mode"
     case syncCompleted = "sync_completed"
     case syncFailed = "sync_failed"
+
+    // Growth / activation (l360 1.x) — forwarded from `AnalyticsManager.trackEvent`
+    case familyCreated = "family_created"
+    case familyInviteSent = "family_invite_sent"
+    case familyMemberJoined = "family_member_joined"
+    case appOpenDay = "app_open_day"
+    case paywallShown = "paywall_shown"
+    case paywallUpgradeTap = "paywall_upgrade_tap"
+    case abAssignment = "ab_assignment"
+    case antifakeQuotaHit = "antifake_quota_hit"
+    case referralInviteTap = "referral_a_invite_tap"
+    case referralLinkOpen = "referral_a_link_open"
+    case referralSignupAttach = "referral_a_signup_attach"
+    case referralQualify = "referral_a_qualify"
+    case referralGrant = "referral_a_grant"
+    case referralScreenOpen = "referral_a_screen_open"
+    case referralCaregiverBlocked = "referral_a_caregiver_blocked"
+    case referralLevelUp = "referral_a_level_up"
 }
 
 struct SubscriptionEventData: Codable {
@@ -807,21 +825,9 @@ final class SubscriptionManager: ObservableObject {
         bumpSubscriptionDisplayEpoch()
     }
 
-    /// Family member limit by tariff level (aligned with prod `subscription_limits.py` / `family_roster_reconcile.py`: free=1, trial=3, personal=2, family=6, premium=15)
-    /// Single source of truth used by all add flows
+    /// Family member limit by tariff level — numbers live in `TariffEntitlements`.
     nonisolated static func familyMemberLimitStatic(for level: SubscriptionLevel) -> Int {
-        switch level {
-        case .free:
-            return 1
-        case .trial:
-            return 3
-        case .personal:
-            return 2
-        case .family:
-            return 6
-        case .premium:
-            return 15
-        }
+        TariffEntitlements.familyMemberLimit(level)
     }
 
     func familyMemberLimit(for level: SubscriptionLevel) -> Int {
@@ -1038,6 +1044,11 @@ final class SubscriptionManager: ObservableObject {
         }
         publishFamilyQuotaSnapshot(used: used, maxSlots: effectiveCap, source: source, familyId: familyId)
         bumpSubscriptionDisplayEpoch()
+        FamilyGrowthNudgeScheduler.shared.reconcile(
+            rosterUsed: used,
+            familyId: familyId,
+            isCreator: FamilyLocalStore.isCurrentAccountFamilyCreator()
+        )
         VisualLogger.shared.log(
             "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(effectiveCap) tier=\(stats.ownerSubscriptionTier ?? "?") src=\(source.rawValue)",
             level: .info,
@@ -1074,8 +1085,8 @@ final class SubscriptionManager: ObservableObject {
     /// Marked nonisolated to satisfy Swift 6 concurrency rules when called from APIService completion blocks.
     nonisolated static var currentFamilyLimit: Int {
         let fromDefaults = UserDefaults.standard.integer(forKey: "family_limit")
-        // Hybrid-B: default free=1 (never imply trial/personal 3/2 before server stats).
-        return fromDefaults > 0 ? fromDefaults : 1
+        // Hybrid-B: default = free cap (never imply a paid/trial cap before server stats).
+        return fromDefaults > 0 ? fromDefaults : TariffEntitlements.familyMemberLimit(.free)
     }
 
     /// 🔑 Get current JWT token for API requests

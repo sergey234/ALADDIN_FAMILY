@@ -18,6 +18,7 @@ struct TariffsScreen: View {
     @State private var billingChooserTariff: TariffType? = nil
     /// W-pre-C: confirm before ending trial via Базовый.
     @State private var showDowngradeFromTrialConfirm = false
+    @State private var showcaseVariant = TariffShowcaseExperiment.variant()
     
     // Сохраняем выбранный тариф в AppStorage
     @AppStorage("selected_tariff_type") private var selectedTariffRaw: String = "family"
@@ -67,35 +68,35 @@ struct TariffsScreen: View {
             case .free: return freeIncludedFeatures(localizationManager: localizationManager) + [
                 localizationManager.localized("tariffs_antifake_free")
             ]
-            case .personal: return [
-                localizationManager.localized("tariffs_personal_features_1"),
-                familyMemberLimitFeatureText(for: .personal, localizationManager: localizationManager),
-                localizationManager.localized("tariffs_personal_features_3"),
-                localizationManager.localized("tariffs_personal_features_4"),
-                localizationManager.localized("tariffs_personal_features_5"),
-                localizationManager.localized("tariffs_personal_features_6"),
-                localizationManager.localized("tariffs_antifake_paid")
-            ]
+            case .personal:
+                var items = [
+                    localizationManager.localized("tariffs_personal_features_3"),
+                    familyMemberLimitFeatureText(for: .personal, localizationManager: localizationManager),
+                    localizationManager.localized("tariffs_personal_ai"),
+                    localizationManager.localized("tariffs_personal_features_6")
+                ]
+                if TariffEntitlements.antifakeMonthlyHeavyQuota(.personal) != nil,
+                   let quota = AntifakeMonthlyQuota.serverPersonalLimit {
+                    items.insert(
+                        String(format: localizationManager.localized("tariffs_personal_voice_video_limit"), quota),
+                        at: 1
+                    )
+                }
+                return items
             case .family: return [
                 localizationManager.localized("tariffs_family_features_1"),
                 familyMemberLimitFeatureText(for: .family, localizationManager: localizationManager),
+                localizationManager.localized("tariffs_family_features_5"),
+                localizationManager.localized("tariffs_family_scam_alert"),
                 localizationManager.localized("tariffs_family_features_3"),
                 localizationManager.localized("tariffs_family_features_4"),
-                localizationManager.localized("tariffs_family_features_5"),
-                localizationManager.localized("tariffs_family_features_6"),
-                localizationManager.localized("tariffs_antifake_paid"),
-                localizationManager.localized("tariffs_antifake_action_only")
+                localizationManager.localized("tariffs_family_features_6")
             ]
             case .premium: return [
                 localizationManager.localized("tariffs_premium_features_1"),
                 familyMemberLimitFeatureText(for: .premium, localizationManager: localizationManager),
                 localizationManager.localized("tariffs_premium_features_3"),
-                localizationManager.localized("tariffs_premium_features_4"),
-                localizationManager.localized("tariffs_premium_features_5"),
-                localizationManager.localized("tariffs_premium_features_6"),
-                localizationManager.localized("tariffs_premium_features_7"),
-                localizationManager.localized("tariffs_premium_features_8"),
-                localizationManager.localized("tariffs_antifake_paid")
+                localizationManager.localized("tariffs_premium_features_5")
             ]
             }
         }
@@ -122,9 +123,9 @@ struct TariffsScreen: View {
             (1...7).map { localizationManager.localized("tariffs_free_features_\($0)") }
         }
 
-        /// Явно не входит — Antifake Check, Live, большая семья.
+        /// Явно не входит — Antifake Check и большая семья (живая карта есть на всех тарифах).
         static func freeExcludedFeatures(localizationManager: LocalizationManager) -> [String] {
-            (8...10).map { localizationManager.localized("tariffs_free_features_\($0)") }
+            [8, 10].map { localizationManager.localized("tariffs_free_features_\($0)") }
         }
 
         private func freeIncludedFeatures(localizationManager: LocalizationManager) -> [String] {
@@ -132,11 +133,10 @@ struct TariffsScreen: View {
         }
 
         private func familyMemberLimitFeatureText(for level: SubscriptionLevel, localizationManager: LocalizationManager) -> String {
-            let limit = SubscriptionManager.familyMemberLimitStatic(for: level)
-            if localizationManager.currentLanguage == .russian {
-                return "До \(limit) участников в семейном доступе"
-            }
-            return "Up to \(limit) family members in shared access"
+            String(
+                format: localizationManager.localized("tariffs_member_limit_format"),
+                SubscriptionManager.familyMemberLimitStatic(for: level)
+            )
         }
     }
     
@@ -183,12 +183,15 @@ struct TariffsScreen: View {
                             activationCodeButton
                         }
                         
+                        if SubscriptionManager.shared.getCurrentLevel() == .personal {
+                            personalToFamilyUpgradeCard
+                        }
+
                         // Trial A: no «Пробный» card — trial starts after onboarding via activateTrialIfNeeded.
-                        // Tariffs C: paid cards first, honest comparison table below.
-                        tariffCard(.free)
-                        tariffCard(.personal)
-                        tariffCard(.family)
-                        tariffCard(.premium)
+                        // Card order is the `tariff_showcase_v1` A/B; comparison table below.
+                        ForEach(TariffShowcaseExperiment.order(for: showcaseVariant), id: \.self) { tariff in
+                            tariffCard(tariff)
+                        }
 
                         honestGatesComparisonTable
                             .padding(.horizontal, Spacing.screenPadding)
@@ -245,6 +248,12 @@ struct TariffsScreen: View {
         .id("tariffs_lang_\(localizationManager.currentLanguage.rawValue)")
         // ✅ КРИТИЧНО: Загружаем продукты при открытии экрана тарифов
         .task {
+            AnalyticsManager.shared.trackEvent("paywall_shown", parameters: [
+                "source": "tariffs_screen",
+                "variant": showcaseVariant,
+                "tier": SubscriptionManager.shared.getCurrentLevel().rawValue
+            ])
+            AntifakeMonthlyQuota.refreshServerPersonalLimit()
             print("🔄 [TariffsScreen] Экран открыт, проверяем продукты...")
             let productsCount = await viewModel.getProductsCount()
             print("🔄 [TariffsScreen] Продуктов загружено: \(productsCount)")
@@ -310,6 +319,34 @@ struct TariffsScreen: View {
         }
     }
 
+    /// Personal subscribers: upgrade inside the subscription group (App Store prorates level 1 → 2).
+    private var personalToFamilyUpgradeCard: some View {
+        let title: String = {
+            if let delta = viewModel.personalToFamilyUpgradeDelta() {
+                return String(format: localizationManager.localized("tariffs_upgrade_personal_to_family_cta"), delta)
+            }
+            return localizationManager.localized("tariffs_upgrade_personal_to_family_cta_plain")
+        }()
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            PrimaryButton(title) {
+                HapticFeedback.impact(.medium)
+                AnalyticsManager.shared.trackEvent("paywall_upgrade_tap", parameters: [
+                    "source": "personal_upsell",
+                    "plan": TariffType.family.rawValue
+                ])
+                billingChooserTariff = .family
+            }
+            Text(localizationManager.localized("tariffs_upgrade_personal_to_family_note"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("tariffs_personal_to_family_upgrade")
+    }
+
     /// Free / Family / Premium — что реально открыто (как гейты продукта). Под Premium.
     private var honestGatesComparisonTable: some View {
         let freeN = SubscriptionManager.familyMemberLimitStatic(for: .free)
@@ -361,7 +398,7 @@ struct TariffsScreen: View {
             )
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_map_live"),
-                free: false, family: true, premium: true
+                free: TariffEntitlements.hasLiveMap(.free), family: true, premium: true
             )
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_places_more"),
@@ -369,7 +406,7 @@ struct TariffsScreen: View {
             )
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_members"),
-                free: false, family: true, premium: true
+                free: freeN > 1, family: true, premium: true
             )
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_sos"),
@@ -377,15 +414,11 @@ struct TariffsScreen: View {
             )
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_trips"),
-                free: false, family: true, premium: true
+                free: TariffEntitlements.hasDrivingInsights(.free), family: true, premium: true
             )
             gatesRow(
                 feature: localizationManager.localized("tariffs_gates_antifake_limit"),
-                free: false, family: false, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_history_long"),
-                free: false, family: false, premium: true
+                free: false, family: true, premium: true
             )
         }
         .padding(Spacing.m)
@@ -745,7 +778,10 @@ struct TariffsScreen: View {
                         }
 
                         ToastManager.shared.showSuccess(
-                            localizationManager.localized("tariffs_trial_activated_slots", 3)
+                            localizationManager.localized(
+                                "tariffs_trial_activated_slots",
+                                TariffEntitlements.familyMemberLimit(.trial)
+                            )
                         )
 
                         // Registration только после свеже выданного trial, если на сервере реально нет семьи.

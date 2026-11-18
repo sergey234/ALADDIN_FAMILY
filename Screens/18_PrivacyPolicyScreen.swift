@@ -625,7 +625,9 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_family_location_content_2"),
                 localizationManager.localized("privacy_policy_section_family_location_content_3"),
                 localizationManager.localized("privacy_policy_section_family_location_content_4"),
-                localizationManager.localized("privacy_policy_section_family_location_content_5")
+                localizationManager.localized("privacy_policy_section_family_location_content_5"),
+                localizationManager.localized("privacy_policy_section_family_location_content_6"),
+                localizationManager.localized("privacy_policy_section_family_location_content_7")
             ]
         case .purposes:
             return [

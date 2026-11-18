@@ -318,6 +318,7 @@ struct AppConfig {
         /// Last place signal and last shared point for the family. One row per person.
         static let familyWherePhone = "/api/family/where-phone"
         static let familyWherePhonePoint = "/api/family/where-phone/point"
+        static let familyLocationHistory = "/api/family/location-history"
 
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"
@@ -367,6 +368,7 @@ struct AppConfig {
         static let antifakeCallAnalyze = "/api/antifake/call/analyze"
         static func antifakeJob(id: String) -> String { "/api/antifake/jobs/\(id)" }
         static let antifakeMetrics = "/api/antifake/metrics"
+        static let antifakeQuota = "/api/antifake/quota"
         static let antifakeCallDirectory = "/api/antifake/call-directory"
         static let antifakeSettings = "/api/antifake/settings"
         static let antifakeReport = "/api/antifake/report"

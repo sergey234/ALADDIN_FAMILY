@@ -31,6 +31,9 @@ struct PremiumGateDetail: Decodable, Equatable, Sendable {
 enum PremiumGateHandler {
 
     static func outcome(httpStatus: Int, data: Data?) -> PremiumGateOutcome {
+        if httpStatus == 429, let quota = data.flatMap(AntifakeMonthlyQuota.encodedDetail(from:)) {
+            return .other(.tooManyRequests(quota))
+        }
         guard httpStatus == 403 else {
             return .other(NetworkError.from(httpStatusCode: httpStatus))
         }
@@ -180,6 +183,14 @@ enum AntifakeCheckFailureHandler {
         }
 
         let networkError = NetworkError.from(error)
+        if case .tooManyRequests(let detail) = networkError,
+           let limit = AntifakeMonthlyQuota.limit(fromEncoded: detail) {
+            AnalyticsManager.shared.trackEvent("antifake_quota_hit", parameters: ["source": "antifake_check"])
+            return AntifakeCheckFailurePresentation(
+                requiresPremiumUpgrade: true,
+                errorMessage: String(format: localizationManager.localized("antifake_quota_exhausted_body"), limit)
+            )
+        }
         let message: String
         switch networkError {
         case .unauthorized:
@@ -221,6 +232,54 @@ enum AntifakeCheckFailureHandler {
     private static func isFileTooLarge(_ detail: String?) -> Bool {
         guard let lowered = detail?.lowercased() else { return false }
         return lowered.contains("file_too_large") || lowered.contains("file too large")
+    }
+}
+
+/// MAIN 429 `{"detail":{"error":"monthly_quota_exceeded","limit":30,...}}` (Personal voice/video/document/call).
+/// Carried through `NetworkError.tooManyRequests("monthly_quota_exceeded|<limit>")`.
+enum AntifakeMonthlyQuota {
+    static let errorCode = "monthly_quota_exceeded"
+    private static let personalLimitKey = "antifake_personal_monthly_limit_v1"
+
+    /// Plan limit last reported by MAIN; `nil` until the quota endpoint is live (card line stays hidden).
+    static var serverPersonalLimit: Int? {
+        let value = UserDefaults.standard.integer(forKey: personalLimitKey)
+        return value > 0 ? value : nil
+    }
+
+    @MainActor
+    static func refreshServerPersonalLimit() {
+        guard AppConfig.authToken != nil else { return }
+        APIService.shared.getAntifakeQuota { result in
+            switch result {
+            case .success(let quota):
+                UserDefaults.standard.set(max(0, quota.personalMonthlyLimit), forKey: personalLimitKey)
+            case .failure(let error):
+                if case .notFound = NetworkError.from(error) {
+                    UserDefaults.standard.removeObject(forKey: personalLimitKey)
+                }
+            }
+        }
+    }
+
+    static func encodedDetail(from data: Data) -> String? {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return encodedDetail(fromJSON: root)
+    }
+
+    static func encodedDetail(fromJSON root: [String: Any]) -> String? {
+        let detail = (root["detail"] as? [String: Any]) ?? root
+        guard (detail["error"] as? String) == errorCode else { return nil }
+        let limit = (detail["limit"] as? Int) ?? (detail["limit"] as? NSNumber)?.intValue
+            ?? TariffEntitlements.personalMonthlyHeavyChecksDefault
+        return "\(errorCode)|\(limit)"
+    }
+
+    static func limit(fromEncoded detail: String?) -> Int? {
+        guard let detail, detail.hasPrefix(errorCode) else { return nil }
+        let parts = detail.split(separator: "|")
+        if parts.count > 1, let limit = Int(parts[1]), limit > 0 { return limit }
+        return TariffEntitlements.personalMonthlyHeavyChecksDefault
     }
 }
 

@@ -11,10 +11,11 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+# iOS mirror: Core/Store/TariffEntitlements.familyMemberLimit. Trial must not be below free.
 _DEFAULT_LEVEL_MAX: dict[str, int] = {
-    "trial": 3,
-    "free": 1,
-    "personal": 2,
+    "trial": 6,
+    "free": 4,
+    "personal": 4,
     "family": 6,
     "premium": 15,
 }
