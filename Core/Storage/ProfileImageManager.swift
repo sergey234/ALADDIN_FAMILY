@@ -30,6 +30,11 @@ class ProfileImageManager {
         }
         return documentsPath.appendingPathComponent(fileName)
     }
+
+    /// Path to the on-disk JPEG for notification attachments (copy before attaching — iOS may move the file).
+    func fileURLForNotificationAttachment(for category: UserCategory) -> URL {
+        fileURL(for: category)
+    }
     
     private init() {}
     

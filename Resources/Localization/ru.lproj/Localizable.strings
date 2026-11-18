@@ -973,6 +973,7 @@
 "where_phone_family_share_toggle_hint" = "Семья видит вашу последнюю точку. После выключения новые точки не отправляются, последняя остаётся со временем. В тихой зоне точка не отправляется.";
 "family_trip_ended_push_title" = "🏁 Поездка завершена";
 "family_trip_ended_push_body" = "🚗 %@ · %.1f км · %d мин · макс. %d км/ч";
+"family_trip_ended_push_body_life360" = "🏁 Поездка на %.1f км\n🚗 Максимальная скорость: %d км/ч";
 "family_trip_map_track_a11y" = "Маршрут поездки";
 "family_trip_empty_honest" = "Трек не записался. Проверьте геолокацию «Всегда» и «Движение и фитнес».";
 /* ═══════════════════════════════════════════════════════════════
@@ -3838,8 +3839,8 @@
 "tariffs_levels_title" = "Что входит в тарифы";
 "tariffs_levels_devices_fmt" = "Устройства: бесплатно %d · семья %d · премиум %d";
 "tariffs_free_simple" = "Семья до 4 · живая карта · SOS";
-"tariffs_family_simple" = "Несколько устройств · живая карта · Antifake · места и история дня";
-"tariffs_premium_simple" = "Всё из Семейного · до 15 человек · приоритетная поддержка";
+"tariffs_family_simple" = "Семья до 6 · живая карта · Антифейк · история мест 7 дней";
+"tariffs_premium_simple" = "Всё из Семейного · до 15 · история мест 30 дней · приоритет";
 "tariffs_col_free" = "Бесплат.";
 "tariffs_col_family" = "Семья";
 "tariffs_col_premium" = "Премиум";
@@ -4219,3 +4220,9 @@
 "family_location_history_upsell" = "Хотите видеть дольше? Семейный — 7 дней, Премиум — 30 дней.";
 "family_location_history_upsell_cta" = "Тарифы";
 "family_location_history_privacy_note" = "Историю видит только ваша семья. Старые точки удаляются автоматически, при удалении аккаунта — сразу.";
+
+/* L360 — site expiry reminders + tariff history gate + trip push */
+"tariffs_gates_history_places" = "История мест (24ч / 7д / 30д)";
+"site_sub_expiry_push_title" = "Подписка с сайта скоро закончится";
+"site_sub_expiry_push_body_7d" = "Осталась неделя до %@. Продлите на сайте, чтобы не потерять доступ.";
+"site_sub_expiry_push_body_3d" = "Через 3 дня, %@, доступ по коду с сайта закончится. Продлите оплату.";

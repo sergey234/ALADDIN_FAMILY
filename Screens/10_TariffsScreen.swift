@@ -417,6 +417,10 @@ struct TariffsScreen: View {
                 free: TariffEntitlements.hasDrivingInsights(.free), family: true, premium: true
             )
             gatesRow(
+                feature: localizationManager.localized("tariffs_gates_history_places"),
+                free: true, family: true, premium: true
+            )
+            gatesRow(
                 feature: localizationManager.localized("tariffs_gates_antifake_limit"),
                 free: false, family: true, premium: true
             )

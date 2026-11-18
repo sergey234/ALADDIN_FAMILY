@@ -48,13 +48,22 @@ enum FamilyMapAutoTripTracker {
             return
         }
 
+        // GPS often reports speed=0/-1 while moving (SLC / cell). Prefer instrumented speed when
+        // valid; otherwise derive from displacement. Cap teleports (SLC jumps) so they never
+        // open a fake trip.
         let speedKmh: Double
-        if location.speed >= 0 {
+        if location.speed >= 0, location.speed * 3.6 >= 1 {
             speedKmh = location.speed * 3.6
         } else if let last = lastSample {
             let dt = location.timestamp.timeIntervalSince(last.timestamp)
-            guard dt > 0.5 else { return }
-            speedKmh = (location.distance(from: last) / dt) * 3.6
+            guard dt > 0.8 else { return }
+            let derived = (location.distance(from: last) / dt) * 3.6
+            if derived > 160 {
+                print("TRIP_AUTO drop teleport speed=\(Int(derived)) dt=\(Int(dt))s")
+                lastSample = location
+                return
+            }
+            speedKmh = derived
         } else {
             lastSample = location
             return

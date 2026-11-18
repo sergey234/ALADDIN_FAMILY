@@ -265,6 +265,7 @@ final class ActivationCodeViewModel: ObservableObject {
             )
         }
         UserDefaults.standard.set(expiresAt, forKey: "subscription_expires_at_iso")
+        SiteSubscriptionExpiryReminderScheduler.shared.reschedule(expiresAtISO: expiresAt)
     }
     
     private func mapTariffType(from tariffId: String) -> TariffType? {

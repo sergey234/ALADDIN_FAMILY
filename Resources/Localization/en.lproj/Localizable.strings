@@ -872,6 +872,7 @@
 "where_phone_family_share_toggle_hint" = "Family sees your last location. When off, no new points are sent; the last one stays with its time. Nothing is sent inside a quiet zone.";
 "family_trip_ended_push_title" = "🏁 Trip completed";
 "family_trip_ended_push_body" = "🚗 %@ · %.1f km · %d min · top %d km/h";
+"family_trip_ended_push_body_life360" = "🏁 Trip of %.1f km\n🚗 Top speed: %d km/h";
 "family_trip_map_track_a11y" = "Trip route";
 "family_trip_empty_honest" = "Track wasn’t saved. Check Always location and Motion & Fitness.";
 /* ═══════════════════════════════════════════════════════════════
@@ -3927,8 +3928,8 @@
 "tariffs_levels_title" = "What’s in each plan";
 "tariffs_levels_devices_fmt" = "Devices: Free %d · Family %d · Premium %d";
 "tariffs_free_simple" = "Family of up to 4 · live map · SOS";
-"tariffs_family_simple" = "Several devices · live map · Antifake · places & day history";
-"tariffs_premium_simple" = "Everything in Family · up to 15 people · priority support";
+"tariffs_family_simple" = "Family of 6 · live map · Antifake · 7-day place history";
+"tariffs_premium_simple" = "Everything in Family · up to 15 · 30-day place history · priority";
 "tariffs_col_free" = "Free";
 "tariffs_col_family" = "Family";
 "tariffs_col_premium" = "Premium";
@@ -4249,3 +4250,9 @@
 "family_location_history_upsell" = "Want to see further back? Family — 7 days, Premium — 30 days.";
 "family_location_history_upsell_cta" = "Plans";
 "family_location_history_privacy_note" = "Only your family sees the history. Old points are deleted automatically, and right away when the account is deleted.";
+
+/* L360 — site expiry reminders + tariff history gate + trip push */
+"tariffs_gates_history_places" = "Place history (24h / 7d / 30d)";
+"site_sub_expiry_push_title" = "Your site subscription is ending soon";
+"site_sub_expiry_push_body_7d" = "One week left until %@. Renew on the site so you keep access.";
+"site_sub_expiry_push_body_3d" = "In 3 days (%@) your site-code access ends. Renew payment.";

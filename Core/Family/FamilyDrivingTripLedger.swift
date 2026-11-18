@@ -1,6 +1,7 @@
 import CoreLocation
 import CoreMotion
 import Foundation
+import UserNotifications
 
 /// Локальный SSOT завершённых поездок (per member).
 /// Серверный `/api/reports/driving/stats` сейчас отдаёт mock — клиент **не** использует его.
@@ -181,6 +182,7 @@ enum FamilyDrivingTripLedger {
     }
 
     /// P0.4 H1 — Life360-style trip completed push → map + polyline.
+    /// Lock-screen parity: name as title, 🏁 km + 🚗 max speed, avatar attachment, time-sensitive.
     @MainActor
     private static func notifyTripEnded(_ report: DrivingReport) {
         let loc = LocalizationManager.shared
@@ -192,12 +194,11 @@ enum FamilyDrivingTripLedger {
             }
             return raw
         }()
-        let title = loc.localized("family_trip_ended_push_title")
+        // Life360: title = person name; body = flag+distance / car+max speed (two lines).
+        let title = displayName
         let body = String(
-            format: loc.localized("family_trip_ended_push_body"),
-            displayName,
+            format: loc.localized("family_trip_ended_push_body_life360"),
             report.distance,
-            max(report.durationMinutes, 1),
             Int(report.maxSpeed.rounded())
         )
         let deepLink = FamilyPushDeepLink.mapURL(
@@ -205,6 +206,8 @@ enum FamilyDrivingTripLedger {
             focus: .trips,
             tripId: report.id
         )
+        let avatarURL = Self.notificationAvatarFileURL()
+        let tripSound = Self.tripEndedNotificationSound()
         NotificationManager.shared.sendLocalNotification(
             title: title,
             body: body,
@@ -217,7 +220,10 @@ enum FamilyDrivingTripLedger {
                 "deepLink": deepLink
             ],
             delay: 0.2,
-            identifier: "family_trip_ended_\(report.id)"
+            sound: tripSound,
+            identifier: "family_trip_ended_\(report.id)",
+            attachmentFileURL: avatarURL,
+            timeSensitive: true
         )
         FamilyPushDeepLink.enqueue(
             memberId: report.userId,
@@ -226,6 +232,33 @@ enum FamilyDrivingTripLedger {
             openMap: false,
             tripId: report.id
         )
+    }
+
+    /// Map/profile photo for the lock-screen thumbnail (same file as the family map avatar).
+    private static func notificationAvatarFileURL() -> URL? {
+        let source = ProfileImageManager.shared.fileURLForNotificationAttachment(for: .main)
+        guard FileManager.default.fileExists(atPath: source.path) else { return nil }
+        // UNNotificationAttachment may delete/move the file — copy into tmp.
+        let dest = FileManager.default.temporaryDirectory
+            .appendingPathComponent("trip_avatar_\(UUID().uuidString).jpg")
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: source, to: dest)
+            return dest
+        } catch {
+            print("TRIP_AUTO avatar attach copy failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Custom `trip_ended.caf` in the app bundle when present; otherwise system default.
+    private static func tripEndedNotificationSound() -> UNNotificationSound {
+        if Bundle.main.url(forResource: "trip_ended", withExtension: "caf") != nil {
+            return UNNotificationSound(named: UNNotificationSoundName("trip_ended.caf"))
+        }
+        return .default
     }
 
     /// Reverse-geocode start/end when labels still look like coordinates.

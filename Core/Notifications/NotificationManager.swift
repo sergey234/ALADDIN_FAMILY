@@ -213,7 +213,9 @@ class NotificationManager: NSObject, ObservableObject {
         delay: TimeInterval = 0,
         sound: UNNotificationSound = .default,
         badge: NSNumber? = nil,
-        identifier: String? = nil
+        identifier: String? = nil,
+        attachmentFileURL: URL? = nil,
+        timeSensitive: Bool = false
     ) {
         let notificationType = userInfo["type"] as? String ?? ""
         let notificationCenter = UNUserNotificationCenter.current()
@@ -234,15 +236,37 @@ class NotificationManager: NSObject, ObservableObject {
                 print("🔕 Уведомление категории \(category.rawValue) пропущено (выключено в настройках)")
                 return
             }
-            
+
+            let urgent = Self.isUrgentNotificationType(notificationType, category: category)
+            // QA-02: quiet hours mute sound (urgent Need Help / crash keep sound).
+            let inQuiet = Self.isInQuietHoursWindow(settings: settings)
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
-            content.sound = sound
+            if inQuiet && !urgent {
+                content.sound = nil
+            } else if settings.soundEnabled || urgent {
+                content.sound = (sound != .default)
+                    ? sound
+                    : Self.soundForNotification(type: notificationType, category: category)
+            } else {
+                content.sound = nil
+            }
             content.categoryIdentifier = category.rawValue
             content.userInfo = userInfo
             if let badge {
                 content.badge = badge
+            }
+            if timeSensitive, #available(iOS 15.0, *) {
+                content.interruptionLevel = .timeSensitive
+            }
+            if let attachmentFileURL,
+               let attachment = try? UNNotificationAttachment(
+                identifier: "avatar",
+                url: attachmentFileURL,
+                options: [UNNotificationAttachmentOptionsTypeHintKey: "public.jpeg"]
+               ) {
+                content.attachments = [attachment]
             }
 
             // Persist security events locally to survive temporary backend/API failures.
@@ -344,6 +368,48 @@ class NotificationManager: NSObject, ObservableObject {
         case .general, .subscription, .trial, .mnemo, .familyHabit:
             return true
         }
+    }
+
+    /// Need Help / crash / SOS — keep sound in quiet hours (QA-02 exception).
+    private static func isUrgentNotificationType(_ type: String, category: NotificationCategory) -> Bool {
+        let t = type.lowercased()
+        if t.contains("need_help") || t.contains("crash") || t.contains("sos")
+            || t.contains("urgent") || t == "family_alert"
+            || t == "family_trip_ended" {
+            return true
+        }
+        return category == .security && (t.contains("threat") || t.contains("bypass"))
+    }
+
+    private static func isInQuietHoursWindow(settings: NotificationSettings) -> Bool {
+        guard settings.quietHoursEnabled || settings.quietModeEnabled else { return false }
+        let partsStart = settings.quietHoursStart.split(separator: ":").compactMap { Int($0) }
+        let partsEnd = settings.quietHoursEnd.split(separator: ":").compactMap { Int($0) }
+        let startMin = (partsStart.first ?? 22) * 60 + (partsStart.count > 1 ? partsStart[1] : 0)
+        let endMin = (partsEnd.first ?? 8) * 60 + (partsEnd.count > 1 ? partsEnd[1] : 0)
+        let now = Date()
+        let cal = Calendar.current
+        let curMin = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
+        if startMin == endMin { return true }
+        if startMin < endMin {
+            return curMin >= startMin && curMin < endMin
+        }
+        return curMin >= startMin || curMin < endMin
+    }
+
+    /// QA-02b: different sounds by purpose (critical vs default until custom .caf assets ship).
+    private static func soundForNotification(type: String, category: NotificationCategory) -> UNNotificationSound {
+        if isUrgentNotificationType(type, category: category) {
+            return .defaultCritical
+        }
+        let t = type.lowercased()
+        if t.contains("geofence") || t.contains("place") || category == .family {
+            return .default
+        }
+        if t.contains("driving") || t.contains("trip") || t.contains("speed") {
+            return .default
+        }
+        return .default
     }
 
     // MARK: - Local security event persistence
@@ -1196,23 +1262,19 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             recordNotificationSent()
         }
 
-        let currentHour = Calendar.current.component(.hour, from: now)
-        let quietStart = Int(notificationSettings.quietHoursStart.split(separator: ":").first ?? "22") ?? 22
-        let quietEnd = Int(notificationSettings.quietHoursEnd.split(separator: ":").first ?? "8") ?? 8
-        let inQuietWindow = currentHour >= quietStart || currentHour < quietEnd
-        // Quiet hours toggle OR legacy quiet mode both mute banners in the window.
-        let isQuietHours = !isSmoke
-            && (notificationSettings.quietHoursEnabled || notificationSettings.quietModeEnabled)
-            && inQuietWindow
+        // Reuse `notificationType` from above (do not redeclare — Xcode invalid redeclaration).
+        let category = NotificationCategory(rawValue: notification.request.content.categoryIdentifier) ?? .general
+        let urgent = Self.isUrgentNotificationType(notificationType, category: category)
+        let isQuietHours = !isSmoke && Self.isInQuietHoursWindow(settings: notificationSettings)
 
         Task { @MainActor in
             self.onNotificationReceived?(notification)
         }
 
-        if isQuietHours {
+        if isQuietHours && !urgent {
             return [.badge]
         } else {
-            return notificationSettings.soundEnabled ? [.banner, .sound, .badge] : [.banner, .badge]
+            return notificationSettings.soundEnabled || urgent ? [.banner, .sound, .badge] : [.banner, .badge]
         }
     }
 
