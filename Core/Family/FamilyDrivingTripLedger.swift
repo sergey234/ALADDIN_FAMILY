@@ -253,7 +253,8 @@ enum FamilyDrivingTripLedger {
         }
     }
 
-    /// Custom `trip_ended.caf` in the app bundle when present; otherwise system default.
+    /// Custom `trip_ended.caf` at bundle root (Copy Bundle Resources). Source: Mixkit Digital quick tone.
+    /// See `Resources/Sounds/TRIP_ENDED_SOUND_SOURCE.txt`. Falls back to system default if missing.
     private static func tripEndedNotificationSound() -> UNNotificationSound {
         if Bundle.main.url(forResource: "trip_ended", withExtension: "caf") != nil {
             return UNNotificationSound(named: UNNotificationSoundName("trip_ended.caf"))

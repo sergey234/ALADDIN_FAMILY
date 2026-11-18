@@ -302,6 +302,7 @@
 		A360E004 /* Core/Family/FamilyGrowthNudgeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */; };
 		A360E006 /* Screens/FamilyLocationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E005 /* Screens/FamilyLocationHistoryView.swift */; };
 		A360E008 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E007 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift */; };
+		A360S002 /* trip_ended.caf in Resources */ = {isa = PBXBuildFile; fileRef = A360S001 /* trip_ended.caf */; };
 		A3000047 /* Core/Localization/LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000046 /* Core/Localization/LocalizationManager.swift */; };
 		A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* Core/Analytics/AnalyticsManager.swift */; };
 		A3000051 /* ViewModels/FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */; };
@@ -1261,6 +1262,7 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/FamilyGrowthNudgeScheduler.swift; sourceTree = "<group>"; };
 		A360E005 /* Screens/FamilyLocationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens/FamilyLocationHistoryView.swift; sourceTree = "<group>"; };
 		A360E007 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/SiteSubscriptionExpiryReminderScheduler.swift; sourceTree = "<group>"; };
+		A360S001 /* trip_ended.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; name = trip_ended.caf; path = Resources/Sounds/trip_ended.caf; sourceTree = "<group>"; };
 		A3000046 /* Core/Localization/LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Localization/LocalizationManager.swift; sourceTree = "<group>"; };
 		A3000048 /* Core/Analytics/AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Analytics/AnalyticsManager.swift; sourceTree = "<group>"; };
 		A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyRegistrationViewModel.swift; sourceTree = "<group>"; };
@@ -2499,6 +2501,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				IPLS000F90000300C7D34B /* InfoPlist.strings */,
 				AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */,
 				W5F20000 /* Audio */,
+				A360S001 /* trip_ended.caf */,
 				W5F20021 /* Localization */,
 				W5F20031 /* HeroAssets */,
 				W5F20041 /* Companion */,
@@ -3205,6 +3208,7 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */,
 				378E2880F83D48D7BE7D5737 /* aladdin_cert_backup.cer in Resources */,
 				W5F20010 /* Audio in Resources */,
+				A360S002 /* trip_ended.caf in Resources */,
 				W5F20020 /* Localization in Resources */,
 				W5F20042 /* Companion in Resources */,
 				W5F20052 /* Wellness in Resources */,
