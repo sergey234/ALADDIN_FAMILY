@@ -517,7 +517,7 @@ SELECT COUNT(DISTINCT user_id) FROM subscription_event_ingest WHERE event_type='
 | Было в пуше ALADDIN | заголовок «🏁 Поездка завершена», одна строка с именем; звук `.default`; **без** аватара; не Time Sensitive |
 | Life360 | заголовок = имя; 🏁 расстояние; 🚗 макс. скорость; аватар; «НЕОТЛОЖНЫЕ»; свой звук |
 
-Доработка в коде (этот же день): формат пуша как у Life360 + аватар с карты + Time Sensitive + звук `trip_ended.caf`; детектор считает скорость по смещению, если GPS дал 0/−1 (с отсечением телепортов). **`trip_ended.caf` в бандле:** Mixkit «Digital quick tone» → `Resources/Sounds/trip_ended.caf` (+ Copy Bundle Resources); источник: `Resources/Sounds/TRIP_ENDED_SOUND_SOURCE.txt` · каталог https://mixkit.co/free-sound-effects/notification/
+Доработка в коде (этот же день): формат пуша как у Life360 + аватар с карты + Time Sensitive + звук `trip_ended.caf`; детектор считает скорость по смещению, если GPS дал 0/−1 (с отсечением телепортов). **`trip_ended.caf`:** Mixkit «Happy bells notification» (`mixkit-happy-bells-notification-937.wav`). Прежний Digital quick tone → `place_arrival.caf` (геозоны / прибытие в место). Источники: `Resources/Sounds/*_SOUND_SOURCE.txt`.
 
 Проверки (`l360-verify`):
 - `verify_localization_manager_integrity.sh` → OK (21788 = HEAD; `LocalizationManager.swift` не тронут).

@@ -253,7 +253,7 @@ enum FamilyDrivingTripLedger {
         }
     }
 
-    /// Custom `trip_ended.caf` at bundle root (Copy Bundle Resources). Source: Mixkit Digital quick tone.
+    /// Custom `trip_ended.caf` at bundle root (Copy Bundle Resources). Source: Mixkit Happy bells notification.
     /// See `Resources/Sounds/TRIP_ENDED_SOUND_SOURCE.txt`. Falls back to system default if missing.
     private static func tripEndedNotificationSound() -> UNNotificationSound {
         if Bundle.main.url(forResource: "trip_ended", withExtension: "caf") != nil {

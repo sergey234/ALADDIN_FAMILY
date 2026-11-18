@@ -397,16 +397,30 @@ class NotificationManager: NSObject, ObservableObject {
         return curMin >= startMin || curMin < endMin
     }
 
-    /// QA-02b: different sounds by purpose (critical vs default until custom .caf assets ship).
+    /// QA-02b: custom CAF when present; else system default / critical.
     private static func soundForNotification(type: String, category: NotificationCategory) -> UNNotificationSound {
         if isUrgentNotificationType(type, category: category) {
+            // Trip-ended uses its own CAF via explicit `sound:` arg; other urgent stay critical.
+            if type.lowercased() == "family_trip_ended",
+               Bundle.main.url(forResource: "trip_ended", withExtension: "caf") != nil {
+                return UNNotificationSound(named: UNNotificationSoundName("trip_ended.caf"))
+            }
             return .defaultCritical
         }
         let t = type.lowercased()
-        if t.contains("geofence") || t.contains("place") || category == .family {
+        if t.contains("geofence") || t.contains("place") {
+            if Bundle.main.url(forResource: "place_arrival", withExtension: "caf") != nil {
+                return UNNotificationSound(named: UNNotificationSoundName("place_arrival.caf"))
+            }
             return .default
         }
         if t.contains("driving") || t.contains("trip") || t.contains("speed") {
+            if Bundle.main.url(forResource: "trip_ended", withExtension: "caf") != nil {
+                return UNNotificationSound(named: UNNotificationSoundName("trip_ended.caf"))
+            }
+            return .default
+        }
+        if category == .family {
             return .default
         }
         return .default
