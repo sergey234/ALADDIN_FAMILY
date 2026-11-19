@@ -64,7 +64,8 @@ enum FamilyDrivingTripLedger {
 
     // MARK: - Finish → ledger
 
-    /// Auto trips below this are GPS noise / parking shuffles: no ledger row, no push.
+    /// Auto trips below this are GPS noise / parking shuffles / traffic-light scraps:
+    /// no ledger row, **no** `notifyTripEnded` push (hybrid dwell plan).
     static let minAutoTripKm: Double = 0.5
     static let minAutoTripSeconds: TimeInterval = 120
 
@@ -99,11 +100,13 @@ enum FamilyDrivingTripLedger {
         let endedAt = points.last?.t ?? Date()
 
         let rawDuration = endedAt.timeIntervalSince(startedAt)
+        // Gate push + ledger: short segments never call notifyTripEnded below.
         if tripId.hasPrefix("auto_"),
            metrics.distanceKm < minAutoTripKm || rawDuration < minAutoTripSeconds {
             print(
-                "TRIP_AUTO drop id=\(tripId) — too short km=\(String(format: "%.2f", metrics.distanceKm)) " +
-                "sec=\(Int(rawDuration)) points=\(points.count)"
+                "TRIP_AUTO drop id=\(tripId) reason=min_distance_or_duration " +
+                "km=\(String(format: "%.2f", metrics.distanceKm)) " +
+                "sec=\(Int(rawDuration)) points=\(points.count) (no push)"
             )
             DrivingTripTrackStore.remove(tripId: tripId)
             clearMeta(tripId: tripId)
