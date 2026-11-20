@@ -1049,6 +1049,11 @@ final class SubscriptionManager: ObservableObject {
             familyId: familyId,
             isCreator: FamilyLocalStore.isCurrentAccountFamilyCreator()
         )
+        FamilyYesterdayNudgeScheduler.shared.reconcile(
+            rosterUsed: used,
+            familyId: familyId,
+            isCreator: FamilyLocalStore.isCurrentAccountFamilyCreator()
+        )
         VisualLogger.shared.log(
             "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(effectiveCap) tier=\(stats.ownerSubscriptionTier ?? "?") src=\(source.rawValue)",
             level: .info,

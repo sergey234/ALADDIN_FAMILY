@@ -51,6 +51,14 @@ struct ActivationCodeScreen: View {
         )) {
             Button(localizationManager.localized("common_ok")) {}
         }
+        .onAppear {
+            if viewModel.code.isEmpty,
+               let pending = navigationManager.pendingSiteActivationCode,
+               !pending.isEmpty {
+                viewModel.code = pending
+                navigationManager.pendingSiteActivationCode = nil
+            }
+        }
     }
     
     private var infoCard: some View {

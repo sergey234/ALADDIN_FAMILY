@@ -511,7 +511,26 @@ struct ALADDINApp: App {
                         return
                     }
 
+                    // Site payment code: `aladdin://activate?code=ALDN-…` → ActivationCodeScreen
+                    if url.scheme?.lowercased() == "aladdin",
+                       (url.host?.lowercased() == "activate" || url.path.lowercased().contains("activate")),
+                       let siteCode = PromoCodeLinkParser.extractCode(from: url),
+                       siteCode.uppercased().hasPrefix("ALDN") {
+                        navigationManager.pendingSiteActivationCode = siteCode
+                        if hasCompletedOnboarding {
+                            navigationManager.navigateTo(.activationCode)
+                        }
+                        return
+                    }
+
                     if let promoCode = PromoCodeLinkParser.extractCode(from: url) {
+                        if promoCode.uppercased().hasPrefix("ALDN") {
+                            navigationManager.pendingSiteActivationCode = promoCode
+                            if hasCompletedOnboarding {
+                                navigationManager.navigateTo(.activationCode)
+                            }
+                            return
+                        }
                         navigationManager.pendingPromoCode = promoCode
                         if hasCompletedOnboarding {
                             navigationManager.navigateTo(.promoActivation)
@@ -631,7 +650,12 @@ struct ALADDINApp: App {
                         navigationManager.navigateToSimpleHome()
                     }
                 }
-                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToTariffs"))) { _ in
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToTariffs"))) { note in
+                    if (note.userInfo?["renew"] as? Bool) == true
+                        || UserDefaults.standard.bool(forKey: "pending_site_renew_hint_v1") {
+                        navigationManager.showSiteRenewHint = true
+                        UserDefaults.standard.set(false, forKey: "pending_site_renew_hint_v1")
+                    }
                     navigationManager.navigateTo(.tariffs)
                 }
         }

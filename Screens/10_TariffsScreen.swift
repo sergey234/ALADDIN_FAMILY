@@ -180,6 +180,9 @@ struct TariffsScreen: View {
 
                         // External activation is unavailable in the App Store binary.
                         if AppStoreBuildPolicy.allowsAlternativePayments && AppConfig.isRussianRegion {
+                            if navigationManager.showSiteRenewHint {
+                                siteRenewHintCard
+                            }
                             activationCodeButton
                         }
                         
@@ -1016,6 +1019,35 @@ struct TariffsScreen: View {
         .padding(Spacing.cardPadding)
         .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    // MARK: - Site renew hint (push 7/3 → Tariffs)
+
+    private var siteRenewHintCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack {
+                Text(localizationManager.localized("site_sub_renew_hint_title"))
+                    .font(.headline)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                Button {
+                    navigationManager.showSiteRenewHint = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.textSecondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(localizationManager.localized("common_close"))
+            }
+            Text(localizationManager.localized("site_sub_renew_hint_body"))
+                .font(.subheadline)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("site_sub_renew_hint_card")
     }
 
     // MARK: - Activation Code Button

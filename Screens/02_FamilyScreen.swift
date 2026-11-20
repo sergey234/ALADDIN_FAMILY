@@ -2957,40 +2957,44 @@ private struct PostAdminAddDeviceCoordinatorSheet: View {
     @State private var showAddDeviceForm: Bool = false
 
     var body: some View {
-        Group {
-            if showAddDeviceForm {
-                AddDeviceView(
-                    preselectedOwnerMemberId: pending.memberId,
-                    preselectedOwnerDisplayName: pending.displayName,
-                    onDeviceAdded: {
-                        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
-                        NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
-                        onCloseFlow()
-                    }
-                )
-                .environmentObject(localizationManager)
-            } else {
-                PostAdminAddDeviceOfferSheet(
-                    memberDisplayName: pending.displayName,
-                    onAddDevice: {
-                        VisualLogger.shared.log(
-                            "👉 POST_ADMIN_ADD_DEVICE CTA add_device tapped",
-                            level: .info,
-                            category: "ONBOARDING"
-                        )
-                        showAddDeviceForm = true
-                    },
-                    onOpenDevicesTab: onNavigateDevicesTab,
-                    onLater: {
-                        VisualLogger.shared.log(
-                            "⏰ POST_ADMIN_ADD_DEVICE later tapped",
-                            level: .info,
-                            category: "ONBOARDING"
-                        )
-                        onCloseFlow()
-                    }
-                )
-                .environmentObject(localizationManager)
+        // Same pattern as post-reg device guide: no white system sheet void.
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+            Group {
+                if showAddDeviceForm {
+                    AddDeviceView(
+                        preselectedOwnerMemberId: pending.memberId,
+                        preselectedOwnerDisplayName: pending.displayName,
+                        onDeviceAdded: {
+                            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+                            NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                            onCloseFlow()
+                        }
+                    )
+                    .environmentObject(localizationManager)
+                } else {
+                    PostAdminAddDeviceOfferSheet(
+                        memberDisplayName: pending.displayName,
+                        onAddDevice: {
+                            VisualLogger.shared.log(
+                                "👉 POST_ADMIN_ADD_DEVICE CTA add_device tapped",
+                                level: .info,
+                                category: "ONBOARDING"
+                            )
+                            showAddDeviceForm = true
+                        },
+                        onOpenDevicesTab: onNavigateDevicesTab,
+                        onLater: {
+                            VisualLogger.shared.log(
+                                "⏰ POST_ADMIN_ADD_DEVICE later tapped",
+                                level: .info,
+                                category: "ONBOARDING"
+                            )
+                            onCloseFlow()
+                        }
+                    )
+                    .environmentObject(localizationManager)
+                }
             }
         }
     }

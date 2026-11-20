@@ -8,7 +8,7 @@ final class SiteSubscriptionExpiryReminderScheduler {
 
     static let dayOffsets = [7, 3]
     static let identifierPrefix = "site.sub.expiry."
-    static let deepLink = "aladdin://tariffs"
+    static let deepLink = "aladdin://tariffs?renew=1"
     private static let expiresKey = "subscription_expires_at_iso"
 
     private let center = UNUserNotificationCenter.current()

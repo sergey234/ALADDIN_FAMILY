@@ -112,12 +112,12 @@
         <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-nav-menu" aria-label="Меню">☰</button>
         <nav class="site-nav" id="site-nav-menu" aria-label="Основная навигация">
         <a href="/index.html" class="site-nav__link" data-nav="home" data-i18n="nav.home">Главная</a>
-        <a href="/antifake.html" class="site-nav__link site-nav__link--cta" data-nav="antifake" data-i18n="nav.antifake">Antifake Premium</a>
-        <a href="/speech.html" class="site-nav__link" data-nav="speech" data-i18n="nav.speech">Речь</a>
-        <a href="/family-status.html" class="site-nav__link" data-nav="family" data-i18n="nav.family">Семья</a>
+        <a href="/index.html#pillars" class="site-nav__link" data-nav="family" data-i18n="nav.family_map">Карта семьи</a>
+        <a href="/antifake.html" class="site-nav__link site-nav__link--cta" data-nav="antifake" data-i18n="nav.antifake">Антифейк</a>
         <a href="/index.html#pay" class="site-nav__link" data-nav="pay" data-i18n="nav.tariffs">Тарифы</a>
         <a href="/help-faq.html" class="site-nav__link" data-nav="faq" data-i18n="nav.faq">FAQ</a>
         <a href="/blog/" class="site-nav__link" data-nav="blog" data-i18n="nav.blog">Блог</a>
+        <a href="/speech.html" class="site-nav__link" data-nav="speech" data-i18n="nav.speech" style="opacity:0.75">Диктофон</a>
         </nav>
         <div class="site-header__actions">
           <nav class="lang-switch lang-switch--embedded" aria-label="Language switcher">
@@ -274,6 +274,7 @@
           },
           perks: [
             'Всё из Семейного',
+            'До 15 участников в семье',
             'Антифрод без лимита: текст, голос, видео, звонок',
             'Приоритетная поддержка семьи'
           ]
@@ -667,6 +668,7 @@
           tariffId: payload.tariff,
           userAlias: payload.alias.trim(),
           pin: payload.pin.trim(),
+          telegramUsername: (payload.telegramUsername || '').trim() || null,
           paymentMethod: payload.paymentMethod,
           periodMonths: priceInfo.months,
           amount: priceInfo.total,
@@ -720,15 +722,27 @@
           }
           
           if (window.debugLog) {
-            window.debugLog(`✅ Платёж создан! ID: ${paymentIdValue}`, 'success');
+            window.debugLog(`✅ Счёт создан (ещё не оплачен). ID: ${paymentIdValue}`, 'success');
           }
           
           // ✅ Сохраняем alias и pin в localStorage для автоматического получения кода
           localStorage.setItem('payment_alias', payload.alias.trim());
           localStorage.setItem('payment_pin', payload.pin.trim());
           localStorage.setItem('payment_id', paymentIdValue);
-          
-          // Редирект на success.html
+
+          const referralParam = window.referralCode ? `&referralCode=${encodeURIComponent(window.referralCode)}` : '';
+          const redirectUrl = data.redirectUrl || data.redirect_url || '';
+
+          // Platega / PSP: сначала касса, success.html только после оплаты (return URL)
+          if (redirectUrl) {
+            if (window.debugLog) {
+              window.debugLog(`🔄 Переход на кассу оплаты: ${redirectUrl}`, 'info');
+            }
+            window.location.href = redirectUrl;
+            return;
+          }
+
+          // Редирект на success.html (manual / fallback без PSP)
           if (payload.paymentMethod === 'manual_transfer') {
             localStorage.setItem('manualTransferData', JSON.stringify({
               cardNumber: data.cardNumber || '',
@@ -736,14 +750,13 @@
               amount: priceInfo.total,
               paymentId: paymentIdValue
             }));
-            
-            // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Передаем referral_code в URL, если есть
-            const referralParam = window.referralCode ? `&referralCode=${encodeURIComponent(window.referralCode)}` : '';
             window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}&method=manual_transfer&amount=${priceInfo.total || ''}${referralParam}`;
           } else {
-            // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Передаем referral_code в URL, если есть
-            const referralParam = window.referralCode ? `&referralCode=${encodeURIComponent(window.referralCode)}` : '';
-            window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}${referralParam}`;
+            // Нет redirectUrl — не маскируем как «оплачено»
+            if (window.debugLog) {
+              window.debugLog('⚠️ Нет redirectUrl от кассы — success без оплаты', 'warn');
+            }
+            window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}&awaiting=1${referralParam}`;
           }
         } catch (error) {
           if (window.debugLog) {
@@ -1126,22 +1139,25 @@
   <header class="hero" id="hero">
     <div class="hero__veil" aria-hidden="true"></div>
     <div class="hero__content">
-      <div class="hero__badge" data-i18n="hero.badge">Вторая рука семьи — от звонков и обмана</div>
-      <h1 data-i18n="hero.title">ALADDIN AI — защита семьи от звонков и обмана</h1>
-      <p data-i18n="hero.p1">На iPhone ставите приложение. Смс и звонок можно проверить здесь.</p>
+      <div class="hero__badge" data-i18n="hero.badge">Карта семьи · антифейк · спокойствие</div>
+      <h1 data-i18n="hero.title">Где близкие — и кто звонит</h1>
+      <p data-i18n="hero.p1">Одна карта для семьи, пуши «дома» и «школа», поездки и сигнал при аварии. Плюс проверка смс и звонка — без скрытой слежки.</p>
       <div class="hero__ctas">
         <a class="cta primary" href="https://apps.apple.com/app/id6809577681" data-i18n="hero.cta.parents">Скачать на iPhone</a>
         <a class="cta cta--sapphire" href="/antifake.html" data-i18n="hero.cta.antifake">Проверить смс или звонок</a>
       </div>
       <p class="hero__ready" style="margin:16px 0 0">
-        <span data-i18n="hero.ready" style="display:block;margin:0 0 6px;color:rgba(245,247,250,0.62);font-size:14px">Уже готовы?</span>
-        <a class="hero__secondary-link" style="margin-top:0" href="#pay" data-i18n="hero.cta.pay">Оплатить подписку на сайте</a>
+        <span data-i18n="hero.ready" style="display:block;margin:0 0 6px;color:rgba(245,247,250,0.62);font-size:14px">Уже оплатили?</span>
+        <a class="hero__secondary-link" style="margin-top:0" href="#pay" data-i18n="hero.cta.pay">Оплатить на сайте</a>
         <span aria-hidden="true" style="margin:0 10px;color:rgba(245,200,110,0.75)">·</span>
         <a class="hero__secondary-link" style="margin-top:0" href="#activate" data-i18n="hero.cta.code">Ввести код</a>
       </p>
     </div>
     <aside class="product-in-frame" aria-label="Экран приложения ALADDIN AI">
-      <p class="product-in-frame__caption" data-i18n="pif.caption">В приложении · 10 экранов</p>
+      <p class="product-in-frame__caption" style="text-transform:none;letter-spacing:0;font-size:14px;line-height:1.4">
+        <span data-i18n="pif.caption">Наше мобильное приложение Aladdin на iPhone</span><br>
+        <a href="https://apps.apple.com/app/id6809577681" data-i18n="pif.download" style="color:inherit">Скачать</a>
+      </p>
       <div class="iphone-frame" data-pif-frame>
         <div class="iphone-frame__notch" aria-hidden="true"></div>
         <div class="iphone-frame__screen">
@@ -1183,7 +1199,26 @@
     })();
   </script>
 
-  <section class="benefits" id="start-fork" style="padding-top:8px">
+  <section class="benefits" id="pillars" style="padding-top:24px" aria-label="Три опоры ALADDIN">
+    <h2 data-i18n="pillars.title">Три опоры ALADDIN</h2>
+    <p class="section-subtitle" data-i18n="pillars.sub">Как у семейных локаторов — плюс антифейк. Без магазина «железа».</p>
+    <div class="benefits__grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:1100px;margin:24px auto 0;padding:0 16px">
+      <article class="benefit-card" style="padding:20px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(245,200,110,0.25)">
+        <h3 data-i18n="pillars.map.title" style="color:var(--gold);margin:0 0 8px">Карта семьи</h3>
+        <p data-i18n="pillars.map.body" style="margin:0;line-height:1.55;color:rgba(255,255,255,0.85)">Видите, где близкие. Места «дом» и «школа». История мест — по тарифу.</p>
+      </article>
+      <article class="benefit-card" style="padding:20px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(76,111,255,0.3)">
+        <h3 data-i18n="pillars.drive.title" style="color:var(--accent);margin:0 0 8px">Поездки и авария</h3>
+        <p data-i18n="pillars.drive.body" style="margin:0;line-height:1.55;color:rgba(255,255,255,0.85)">Конец поездки — короткий пуш. Если похоже на аварию — спросим вас, потом напишем семье.</p>
+      </article>
+      <article class="benefit-card" style="padding:20px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12)">
+        <h3 data-i18n="pillars.af.title" style="margin:0 0 8px">Антифейк и 60+</h3>
+        <p data-i18n="pillars.af.body" style="margin:0;line-height:1.55;color:rgba(255,255,255,0.85)">Смс, ссылка, звонок. Для старших: после звонка — «просили деньги?» или «всё спокойно».</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="benefits" id="start-fork" style="padding-top:32px">
     <h2>Что сделать?</h2>
     <p class="section-subtitle">Сначала дело. Потом скачать на iPhone или проверить на сайте.</p>
     <p style="text-align:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
@@ -1196,7 +1231,7 @@
     <div class="section-subtitle" style="text-align:center;max-width:640px;margin:16px auto 0">
       <p data-i18n="trio.title"><strong>Сказать. Прочитать. Проверить.</strong></p>
       <p data-i18n="trio.say">Диктофон записывает ваши слова в заметку.</p>
-      <p data-i18n="trio.read">«Речь» читает этот текст вслух. Удобно себе и старшим.</p>
+      <p data-i18n="trio.read">«Диктофон» на сайте делает из записи текст. Его можно прочитать и прослушать.</p>
       <p data-i18n="trio.check">Защита смотрит то же сообщение и говорит, не обман ли это.</p>
       <p data-i18n="trio.why.say">Чтобы не забыть договорённость: скажите и получите текст.</p>
       <p data-i18n="trio.why.check">Чтобы не нажать опасную ссылку: проверьте сообщение.</p>
@@ -1466,148 +1501,154 @@
       </p>
     </div>
     
-    <!-- Компактная таблица сравнения -->
-    <div class="comparison-compact">
-      <h3 style="text-align: center; margin-bottom: 32px; color: var(--gold);" data-i18n="compare.title">📊 Сравнение функций защиты</h3>
-      <div class="comparison-table-compact">
-        <table>
-          <thead>
-            <tr>
-              <th data-i18n="compare.category">Категория</th>
-              <th>FREE</th>
-              <th>PERSONAL</th>
-              <th>FAMILY</th>
-              <th>PREMIUM</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong data-i18n="compare.threats">🛡️ Защита от угроз</strong>
-                <small data-i18n="compare.threats.small">100 функций</small>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 16%; background: #ef4444;"></div>
-                </div>
-                <span class="progress-text">16/100 (16%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 50%; background: #f59e0b;"></div>
-                </div>
-                <span class="progress-text">50/100 (50%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 92%; background: #10b981;"></div>
-                </div>
-                <span class="progress-text">92/100 (92%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
-                </div>
-                <span class="progress-text">100/100 (100%)</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong data-i18n="compare.parental">👨‍👩‍👧 Родительский контроль</strong>
-                <small data-i18n="compare.parental.small">32 функции</small>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 25%; background: #ef4444;"></div>
-                </div>
-                <span class="progress-text">8/32 (25%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 54%; background: #f59e0b;"></div>
-                </div>
-                <span class="progress-text">17/32 (54%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 90%; background: #10b981;"></div>
-                </div>
-                <span class="progress-text">28/32 (90%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
-                </div>
-                <span class="progress-text">32/32 (100%)</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong data-i18n="compare.additional">⚙️ Дополнительные</strong>
-                <small data-i18n="compare.additional.small">6 функций</small>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 33%; background: #ef4444;"></div>
-                </div>
-                <span class="progress-text">2/6 (33%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 33%; background: #f59e0b;"></div>
-                </div>
-                <span class="progress-text">2/6 (33%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 67%; background: #10b981;"></div>
-                </div>
-                <span class="progress-text">4/6 (67%)</span>
-              </td>
-              <td>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
-                </div>
-                <span class="progress-text">6/6 (100%)</span>
-              </td>
-            </tr>
-            <tr class="comparison-total">
-              <td>
-                <strong data-i18n="compare.total">📊 ВСЕГО</strong>
-                <small data-i18n="compare.total.small">138 функций</small>
-              </td>
-              <td>
-                <strong class="total-count">26</strong>
-                <span class="total-percent">19%</span>
-              </td>
-              <td>
-                <strong class="total-count">69</strong>
-                <span class="total-percent">50%</span>
-              </td>
-              <td>
-                <strong class="total-count">124</strong>
-                <span class="total-percent">90%</span>
-              </td>
-              <td>
-                <strong class="total-count">138</strong>
-                <span class="total-percent">100%</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <div style="text-align: center; margin-top: 32px;">
-        <button type="button" class="cta secondary" id="showFullComparison" data-i18n="compare.full.btn" onclick="window.openComparisonModal();" style="font-size: 16px; padding: 14px 28px; cursor: pointer; pointer-events: auto; z-index: 1; position: relative;">
-          📋 Подробное сравнение всех 138 функций
-        </button>
-      </div>
-    </div>
-    
-    <!-- Карточки тарифов (для выбора) -->
-    <div class="tariffs__grid" data-tariff-list style="margin-top: 48px;">
+    <!-- Карточки тарифов сначала — сравнение свёрнуто ниже -->
+    <div class="tariffs__grid" data-tariff-list style="margin-top: 24px;">
       <!-- заполнится из JSON -->
     </div>
+
+    <details class="compare-accordion" id="compare-details">
+      <summary class="compare-accordion__summary">
+        <span class="compare-accordion__title" data-i18n="compare.accordion.title">Подробное сравнение по тарифам</span>
+        <span class="compare-accordion__hint" data-i18n="compare.accordion.hint">Нажмите, чтобы открыть</span>
+      </summary>
+      <div class="comparison-compact compare-accordion__body">
+        <p class="section-subtitle" style="text-align:center;max-width:640px;margin:0 auto 24px" data-i18n="compare.accordion.lead">Кратко по категориям. Полный список удобнее смотреть в приложении после активации.</p>
+        <div class="comparison-table-compact">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="compare.category">Категория</th>
+                <th>FREE</th>
+                <th>PERSONAL</th>
+                <th>FAMILY</th>
+                <th>PREMIUM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong data-i18n="compare.threats">🛡️ Защита от угроз</strong>
+                  <small data-i18n="compare.threats.small">100 функций</small>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 16%; background: #ef4444;"></div>
+                  </div>
+                  <span class="progress-text">16/100 (16%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 50%; background: #f59e0b;"></div>
+                  </div>
+                  <span class="progress-text">50/100 (50%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 92%; background: #10b981;"></div>
+                  </div>
+                  <span class="progress-text">92/100 (92%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
+                  </div>
+                  <span class="progress-text">100/100 (100%)</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong data-i18n="compare.parental">👨‍👩‍👧 Родительский контроль</strong>
+                  <small data-i18n="compare.parental.small">32 функции</small>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 25%; background: #ef4444;"></div>
+                  </div>
+                  <span class="progress-text">8/32 (25%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 54%; background: #f59e0b;"></div>
+                  </div>
+                  <span class="progress-text">17/32 (54%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 90%; background: #10b981;"></div>
+                  </div>
+                  <span class="progress-text">28/32 (90%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
+                  </div>
+                  <span class="progress-text">32/32 (100%)</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong data-i18n="compare.additional">⚙️ Дополнительные</strong>
+                  <small data-i18n="compare.additional.small">6 функций</small>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 33%; background: #ef4444;"></div>
+                  </div>
+                  <span class="progress-text">2/6 (33%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 33%; background: #f59e0b;"></div>
+                  </div>
+                  <span class="progress-text">2/6 (33%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 67%; background: #10b981;"></div>
+                  </div>
+                  <span class="progress-text">4/6 (67%)</span>
+                </td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
+                  </div>
+                  <span class="progress-text">6/6 (100%)</span>
+                </td>
+              </tr>
+              <tr class="comparison-total">
+                <td>
+                  <strong data-i18n="compare.total">📊 ВСЕГО</strong>
+                  <small data-i18n="compare.total.small">по тарифу</small>
+                </td>
+                <td>
+                  <strong class="total-count">26</strong>
+                  <span class="total-percent">19%</span>
+                </td>
+                <td>
+                  <strong class="total-count">69</strong>
+                  <span class="total-percent">50%</span>
+                </td>
+                <td>
+                  <strong class="total-count">124</strong>
+                  <span class="total-percent">90%</span>
+                </td>
+                <td>
+                  <strong class="total-count">138</strong>
+                  <span class="total-percent">100%</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="text-align: center; margin-top: 28px; display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
+          <button type="button" class="cta secondary" id="showFullComparison" data-i18n="compare.full.btn" onclick="window.openComparisonModal();" style="font-size: 16px; padding: 14px 28px; cursor: pointer;">
+            Открыть полный список
+          </button>
+          <a class="cta primary" href="https://apps.apple.com/app/id6809577681" data-i18n="compare.app.cta">Смотреть в приложении</a>
+        </div>
+        <p class="section-subtitle" style="text-align:center;margin-top:16px" data-i18n="compare.app.note">В приложении список живой и понятнее, чем длинная таблица на сайте.</p>
+      </div>
+    </details>
   </section>
 
   <section class="pay-form" id="pay">
@@ -1641,6 +1682,7 @@
               <li><strong>Выберите тариф</strong> — Free, Personal, Family или Premium</li>
               <li><strong>Придумайте alias</strong> — это ваш псевдоним (например: "familySmith" или "myAlias2024"). Нужен для восстановления кода активации, если вы его потеряете. Запомните его!</li>
               <li><strong>Придумайте PIN</strong> — это код из 4-6 цифр (например: 1234 или 567890). Нужен вместе с alias для восстановления кода активации. Сохраните в надёжном месте!</li>
+              <li><strong>Оставьте ник из Telegram.</strong> Это поможет в случае непредвиденной ситуации.</li>
               <li><strong>Выберите способ оплаты</strong> — QR/СБП, карта «Мир», SberPay, Tinkoff Pay или прямой перевод</li>
               <li><strong>Нажмите "Перейти к оплате"</strong> — вас перенаправит на страницу оплаты банка</li>
               <li><strong>После оплаты</strong> — вы получите код активации (например: ALDN-1234-5678-ABCD)</li>
@@ -1654,6 +1696,7 @@
                 <li><strong>Alias + PIN</strong> — для восстановления кода активации подписки (ALDN-XXXX-XXXX-XXXX) после оплаты</li>
                 <li><strong>Код восстановления семьи</strong> (FAM-XXXX-XXXX-XXXX) — для восстановления доступа к семье в приложении, если вы потеряли устройство или переустановили приложение</li>
               </ul>
+              <p style="margin: 12px 0 0 0;">Ник из Telegram помогает найти заказ, если с оплатой что-то пошло не так.</p>
             </div>
             <p style="margin-top: 16px;"><strong>💡 Важно:</strong> Сохраните alias и PIN! Если потеряете код активации, вы сможете восстановить его на сайте, указав alias и PIN.</p></div>
           </div>
@@ -1687,6 +1730,11 @@
           <span data-i18n="pay.pin">PIN (код доступа)</span>
           <input type="password" name="pin" pattern="[0-9]{4,6}" required placeholder="4-6 цифр" data-i18n-placeholder="pin.placeholder" inputmode="numeric">
           <small data-i18n="pin.hint">Придумайте PIN-код (4-6 цифр). Он нужен вместе с alias для восстановления кода активации. Запомните или сохраните его в надёжном месте!</small>
+        </label>
+        <label style="color: var(--gold);">
+          <span data-i18n="pay.telegram">Ник в Telegram</span>
+          <input type="text" name="telegramUsername" maxlength="64" placeholder="@family_smith" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <small data-i18n="telegram.hint">Оставьте свой ник из Telegram. Это поможет в случае непредвиденной ситуации.</small>
         </label>
         <label style="color: var(--gold);">
           <span data-i18n="pay.tariff">Тариф</span>
@@ -1747,8 +1795,9 @@
   <section class="trust" id="trust">
     <div class="trust__badges">
       <div>
-        <strong>138</strong>
-        <span data-i18n="trust.functions">функций безопасности</span>
+        <strong data-i18n="trust.appstore.label">App Store</strong>
+        <span data-i18n="trust.appstore">Скачайте ALADDIN на iPhone</span>
+        <p style="margin:8px 0 0"><a class="hero__secondary-link" href="https://apps.apple.com/app/id6809577681" data-i18n="trust.appstore.cta">Открыть в App Store</a></p>
       </div>
       <div>
         <strong>AI Shield</strong>
@@ -1776,9 +1825,13 @@
 
   <section class="testimonials" id="reviews">
     <h2 data-i18n="reviews.title">Отзывы семей</h2>
+    <p class="section-subtitle" data-i18n="reviews.sub">Отзывы семей с нашего сайта. Больше — в приложении и в App Store.</p>
     <div class="testimonials__carousel" data-testimonials>
       <!-- заполнится динамически -->
     </div>
+    <p style="text-align:center;margin-top:20px">
+      <a class="cta secondary" href="https://apps.apple.com/app/id6809577681" data-i18n="reviews.app.cta">Открыть приложение</a>
+    </p>
   </section>
 
   <section class="faq" id="faq">
@@ -1846,7 +1899,7 @@
       <div id="fullComparisonModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 data-i18n="modal.title">📊 Подробное сравнение всех 138 функций защиты</h2>
+            <h2 data-i18n="modal.title">Подробное сравнение функций по тарифам</h2>
             <button class="modal-close" id="closeModal" onclick="window.closeComparisonModal(); return false;" type="button">&times;</button>
           </div>
           <div class="modal-body">
@@ -2000,7 +2053,7 @@
         protection: 92,
         parental: 28,
         additional: 4,
-        description: "Высокий уровень защиты: 92 функции защиты от угроз (включая IoT), 28 функций родительского контроля, защита для всей семьи до 6 участников."
+        description: "Высокий уровень защиты: 92 функции защиты от угроз (включая IoT), 28 функций родительского контроля, защита для всей семьи до 6 человек."
       },
       premium: {
         total: 138,
@@ -2061,7 +2114,7 @@
           </div>
           ${periodButtons}
           <p class="tariff-label">${tariff.devices} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.devices'))||'устройств'} • ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.protection'))||'защита'} ${tariff.protection}</p>
-          <p class="tariff-functions-count"><strong>${funcs.total}/138 ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.functions'))||'функций'}</strong> (${funcs.protection} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.threats'))||'защита от угроз'}, ${funcs.parental} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.parental'))||'родительский контроль'}, ${funcs.additional} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.additional'))||'дополнительные'})</p>
+          <p class="tariff-functions-count"><strong>${funcs.total} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.functions'))||'функций'}</strong> (${funcs.protection} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.threats'))||'защита от угроз'}, ${funcs.parental} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.parental'))||'родительский контроль'}, ${funcs.additional} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.additional'))||'дополнительные'})</p>
           <ul>${tariff.perks.map(perk => '<li>' + perk + '</li>').join('')}</ul>
           <details class="tariff-functions-details">
             <summary>📋 ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t("tariff.view.all"))||"Посмотреть все"} ${funcs.total} ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t("tariff.functions"))||"функций"}</summary>
@@ -2070,7 +2123,7 @@
               <p><strong>🛡️ ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.threats',lang))||'Защита от угроз'}:</strong> ${funcs.protection}/100 ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.functions',lang))||'функций'}</p>
               <p><strong>👨‍👩‍👧 ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.parental',lang))||'Родительский контроль'}:</strong> ${funcs.parental}/32 ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.functions',lang))||'функций'}</p>
               <p><strong>⚙️ ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.additional',lang))||'Дополнительные'}:</strong> ${funcs.additional}/6 ${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.functions',lang))||'функций'}</p>
-              <p><em>${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.full.list',lang))||'Полный список всех 138 функций доступен в приложении после активации.'}</em></p>
+              <p><em>${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t('tariff.full.list',lang))||'Полный список удобнее смотреть в приложении после активации.'}</em></p>
             </div>
           </details>
           <button class="cta secondary" data-select-tariff="${tariff.id}">${(window.ALADDIN_I18N&&window.ALADDIN_I18N.t("tariff.select"))||"Выбрать"}</button>
@@ -2997,6 +3050,7 @@
           tariffId: payload.tariff,
           userAlias: payload.alias.trim(),
           pin: payload.pin.trim(),
+          telegramUsername: (payload.telegramUsername || '').trim() || null,
           paymentMethod: payload.paymentMethod,
           periodMonths: priceInfo.months,
           amount: priceInfo.total

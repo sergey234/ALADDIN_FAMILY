@@ -302,6 +302,9 @@
 		A360E004 /* Core/Family/FamilyGrowthNudgeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */; };
 		A360E006 /* Screens/FamilyLocationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E005 /* Screens/FamilyLocationHistoryView.swift */; };
 		A360E008 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E007 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift */; };
+		A360E00A /* Core/Family/FamilyYesterdayNudgeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E009 /* Core/Family/FamilyYesterdayNudgeScheduler.swift */; };
+		A360E00C /* Core/Family/ShareArrivedHomeOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E00B /* Core/Family/ShareArrivedHomeOffer.swift */; };
+		A360E00E /* Core/Family/TeenTrustMemoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360E00D /* Core/Family/TeenTrustMemoSheet.swift */; };
 		A360S002 /* trip_ended.caf in Resources */ = {isa = PBXBuildFile; fileRef = A360S001 /* trip_ended.caf */; };
 		A360S004 /* place_arrival.caf in Resources */ = {isa = PBXBuildFile; fileRef = A360S003 /* place_arrival.caf */; };
 		A3000047 /* Core/Localization/LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000046 /* Core/Localization/LocalizationManager.swift */; };
@@ -1263,6 +1266,9 @@ FVPFNL01F90000100C7D34C /* FamilyScamCallFunnel.swift in Sources */ = {isa = PBX
 		A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/FamilyGrowthNudgeScheduler.swift; sourceTree = "<group>"; };
 		A360E005 /* Screens/FamilyLocationHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens/FamilyLocationHistoryView.swift; sourceTree = "<group>"; };
 		A360E007 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/SiteSubscriptionExpiryReminderScheduler.swift; sourceTree = "<group>"; };
+		A360E009 /* Core/Family/FamilyYesterdayNudgeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/FamilyYesterdayNudgeScheduler.swift; sourceTree = "<group>"; };
+		A360E00B /* Core/Family/ShareArrivedHomeOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/ShareArrivedHomeOffer.swift; sourceTree = "<group>"; };
+		A360E00D /* Core/Family/TeenTrustMemoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Family/TeenTrustMemoSheet.swift; sourceTree = "<group>"; };
 		A360S001 /* trip_ended.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; name = trip_ended.caf; path = Resources/Sounds/trip_ended.caf; sourceTree = "<group>"; };
 		A360S003 /* place_arrival.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; name = place_arrival.caf; path = Resources/Sounds/place_arrival.caf; sourceTree = "<group>"; };
 		A3000046 /* Core/Localization/LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Localization/LocalizationManager.swift; sourceTree = "<group>"; };
@@ -2537,6 +2543,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A360E003 /* Core/Family/FamilyGrowthNudgeScheduler.swift */,
 				A360E005 /* Screens/FamilyLocationHistoryView.swift */,
 				A360E007 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift */,
+				A360E009 /* Core/Family/FamilyYesterdayNudgeScheduler.swift */,
+				A360E00B /* Core/Family/ShareArrivedHomeOffer.swift */,
+				A360E00D /* Core/Family/TeenTrustMemoSheet.swift */,
 				A3000046 /* Core/Localization/LocalizationManager.swift */,
 				C182ABADC8EA112F1D9DFCB0 /* ContentManager.swift */,
 				938C819786E3023646B7E8C1 /* ContentModels.swift */,
@@ -3565,6 +3574,9 @@ FVPFNL01F90000100C7D34B /* FamilyScamCallFunnel.swift */ = {isa = PBXFileReferen
 				A360E004 /* Core/Family/FamilyGrowthNudgeScheduler.swift in Sources */,
 				A360E006 /* Screens/FamilyLocationHistoryView.swift in Sources */,
 				A360E008 /* Core/Family/SiteSubscriptionExpiryReminderScheduler.swift in Sources */,
+				A360E00A /* Core/Family/FamilyYesterdayNudgeScheduler.swift in Sources */,
+				A360E00C /* Core/Family/ShareArrivedHomeOffer.swift in Sources */,
+				A360E00E /* Core/Family/TeenTrustMemoSheet.swift in Sources */,
 				5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */,
 				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
 				5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */,

@@ -2,6 +2,7 @@ import Foundation
 import CoreMotion
 import CoreLocation
 import Combine
+import UIKit
 
 /// Абстракция для `NetworkProtectionViewModel` (вариант B: сначала локальный мониторинг, затем сервер).
 @MainActor
@@ -65,7 +66,7 @@ class CrashDetectionManager: NSObject, ObservableObject {
     
     @Published var isMonitoring: Bool = false
     @Published var crashDetected: Bool = false
-    @Published var countdownSeconds: Int = 10
+    @Published var countdownSeconds: Int = 180
     @Published var lastGForce: Double = 0.0
     @Published var lastError: Error?
     
@@ -84,6 +85,9 @@ class CrashDetectionManager: NSObject, ObservableObject {
     
     // Конфигурация
     private static let sensitivityDefaultsKey = "aladdin_crash_detection_sensitivity_v1"
+    private static let lastAutoFamilyAlertKey = "crash_auto_family_last_at_v1"
+    private static let autoFamilyCooldownSeconds: TimeInterval = 30 * 60
+    static let crashDetectedNotification = Notification.Name("aladdin.crash.detected")
     private var sensitivity: CrashDetectionSensitivity = {
         if let raw = UserDefaults.standard.string(forKey: CrashDetectionManager.sensitivityDefaultsKey),
            let parsed = CrashDetectionSensitivity(rawValue: raw) {
@@ -91,7 +95,8 @@ class CrashDetectionManager: NSObject, ObservableObject {
         }
         return .medium
     }()
-    private let countdownDuration: Int = 10 // Обратный отсчет в секундах
+    /// ~3 min silence window (Life360-style ~5 min) before auto family alert — not 112.
+    private let countdownDuration: Int = 180
     private let updateInterval: TimeInterval = 0.1 // Интервал обновления (100ms)
     private let dataSendInterval: Int = 50 // Отправка данных каждые 5 секунд (50 * 0.1 сек) - оптимизация производительности
     private let speedThreshold: Double = 50.0 // Минимальная скорость для активации мониторинга (km/h)
@@ -369,7 +374,7 @@ class CrashDetectionManager: NSObject, ObservableObject {
         print("✅ CrashDetectionManager: Мониторинг остановлен")
     }
     
-    /// Отменить вызов экстренных служб
+    /// «Всё в порядке» / отмена — семье не пишем.
     func cancelEmergencyCall() {
         guard crashDetected else { return }
         
@@ -378,7 +383,7 @@ class CrashDetectionManager: NSObject, ObservableObject {
         crashDetected = false
         countdownSeconds = countdownDuration
         
-        print("✅ CrashDetectionManager: Вызов экстренных служб отменен")
+        print("✅ CrashDetectionManager: crash cancelled — no family alert")
     }
     
     // MARK: - Private Methods
@@ -495,10 +500,11 @@ class CrashDetectionManager: NSObject, ObservableObject {
         startCountdown()
     }
     
-    /// Запустить обратный отсчет перед вызовом экстренных служб
+    /// Обратный отсчёт ~3 мин; тишина → семье (не 112).
     private func startCountdown() {
         countdownSeconds = countdownDuration
         countdownTimer?.invalidate()
+        NotificationCenter.default.post(name: Self.crashDetectedNotification, object: nil)
         
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
             guard let self = self else {
@@ -511,31 +517,40 @@ class CrashDetectionManager: NSObject, ObservableObject {
                     self.countdownSeconds -= 1
                 } else {
                     timer.invalidate()
-                    await self.callEmergencyServices()
+                    await self.notifyFamilyAfterSilence()
                 }
             }
         }
     }
     
-    /// Вызвать экстренные службы
-    func callEmergencyServices() async {
-        print("🚨 CrashDetectionManager: Вызов экстренных служб...")
-        
-        // Получить текущее местоположение
-        guard let location = try? await locationManager.getCurrentLocation() else {
-            print("❌ CrashDetectionManager: Не удалось получить местоположение для вызова")
+    /// Канон П.5: молчит до 0 → `FamilyMapFamilyAlert.sendNeedHelp`. Не авто-112.
+    func notifyFamilyAfterSilence() async {
+        guard crashDetected else { return }
+        let now = Date().timeIntervalSince1970
+        let last = UserDefaults.standard.double(forKey: Self.lastAutoFamilyAlertKey)
+        if last > 0, now - last < Self.autoFamilyCooldownSeconds {
+            print("⚠️ CrashDetectionManager: auto family alert blocked (30 min cooldown)")
+            crashDetected = false
+            countdownSeconds = countdownDuration
             return
         }
-        
-        // В реальном приложении здесь будет вызов API 112
-        // Сейчас логируем
-        print("📞 CrashDetectionManager: Вызов 112")
-        print("📍 Местоположение: \(location.coordinate.latitude), \(location.coordinate.longitude)")
-        print("⚠️ Серьезность: \(lastGForce >= 5.0 ? "Критическая" : "Высокая")")
-        
-        // Сбросить состояние
+        print("🚨 CrashDetectionManager: silence expired → notify family")
+        UserDefaults.standard.set(now, forKey: Self.lastAutoFamilyAlertKey)
+        await FamilyMapFamilyAlert.sendNeedHelp(localization: LocalizationManager.shared)
         crashDetected = false
         countdownSeconds = countdownDuration
+    }
+    
+    /// Ручной вызов 112 (только с кнопки пользователя).
+    func callEmergencyServices() async {
+        print("📞 CrashDetectionManager: user requested 112 (manual)")
+        if let location = try? await locationManager.getCurrentLocation() {
+            print("📍 \(location.coordinate.latitude), \(location.coordinate.longitude)")
+        }
+        if let url = URL(string: "tel://112"), UIApplication.shared.canOpenURL(url) {
+            await UIApplication.shared.open(url)
+        }
+        cancelEmergencyCall()
     }
     
     /// Отправить данные сенсоров на сервер

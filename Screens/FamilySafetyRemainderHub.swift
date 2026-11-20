@@ -1779,6 +1779,7 @@ struct FamilyMapRoutesSheet: View {
 struct FamilyCrashConfirmSheet: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @ObservedObject private var crashManager = CrashDetectionManager.shared
     @State private var isSending = false
     @State private var statusText: String?
 
@@ -1792,10 +1793,22 @@ struct FamilyCrashConfirmSheet: View {
                     .font(AladdinFamilyType.title2())
                     .foregroundColor(.textPrimary)
                     .multilineTextAlignment(.center)
-                Text(localizationManager.localized("crash_limits_body"))
-                    .font(AladdinFamilyType.subheadline())
-                    .foregroundColor(.white.opacity(0.92))
-                    .multilineTextAlignment(.center)
+                if crashManager.crashDetected {
+                    Text(String(format: localizationManager.localized("crash_detection_countdown"),
+                                  crashManager.countdownSeconds))
+                        .font(.title3.monospacedDigit().weight(.bold))
+                        .foregroundColor(.secondaryGold)
+                        .accessibilityIdentifier("crash_confirm_countdown")
+                    Text(localizationManager.localized("crash_detection_family_silence_hint"))
+                        .font(AladdinFamilyType.subheadline())
+                        .foregroundColor(.white.opacity(0.92))
+                        .multilineTextAlignment(.center)
+                } else {
+                    Text(localizationManager.localized("crash_limits_body"))
+                        .font(AladdinFamilyType.subheadline())
+                        .foregroundColor(.white.opacity(0.92))
+                        .multilineTextAlignment(.center)
+                }
                 if isSending {
                     ProgressView()
                         .tint(Color.secondaryGold)
@@ -1821,6 +1834,7 @@ struct FamilyCrashConfirmSheet: View {
                 .accessibilityIdentifier("crash_confirm_yes")
                 Button {
                     guard !isSending else { return }
+                    crashManager.cancelEmergencyCall()
                     isPresented = false
                 } label: {
                     Text(localizationManager.localized("crash_confirm_no"))
@@ -1839,8 +1853,12 @@ struct FamilyCrashConfirmSheet: View {
             .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
             .navigationBarItems(trailing: Button(localizationManager.localized("common_close")) {
                 guard !isSending else { return }
+                crashManager.cancelEmergencyCall()
                 isPresented = false
             })
+            .onChange(of: crashManager.crashDetected) { still in
+                if !still, !isSending { isPresented = false }
+            }
         }
     }
 
@@ -1859,6 +1877,7 @@ struct FamilyCrashConfirmSheet: View {
             let timedOut = await withTimeout(seconds: 3) {
                 await FamilyMapFamilyAlert.sendNeedHelp(localization: localizationManager)
             }
+            crashManager.cancelEmergencyCall()
             if timedOut {
                 // Local ack already fired inside ImOk/NeedHelp; queue for network retry.
                 FamilyMapFamilyAlert.enqueueNeedHelpOffline(localization: localizationManager)

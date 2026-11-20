@@ -103,6 +103,7 @@ enum GeofenceEventStore {
                 pushTitleKey = "geofence_home_push_title"
                 pushBodyKey = "geofence_home_push_body"
                 typeKey = "geofence_home_arrival"
+                ShareArrivedHomeOffer.noteHomeArrivalIfEligible()
             } else {
                 pushTitleKey = "geofence_place_push_title"
                 pushBodyKey = "geofence_place_arrived_body"
@@ -290,4 +291,5 @@ enum GeofenceEventStore {
 extension Notification.Name {
     static let geofenceDayEventsDidChange = Notification.Name("geofenceDayEventsDidChange")
     static let familyPresenceDidChange = Notification.Name("familyPresenceDidChange")
+    static let shareArrivedHomeOffer = ShareArrivedHomeOffer.offerNotification
 }

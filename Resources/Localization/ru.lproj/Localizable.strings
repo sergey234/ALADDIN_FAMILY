@@ -61,7 +61,7 @@
 "onboarding_terms_of_service_link" = "Пользовательское соглашение";
 "onboarding_terms_consent" = "Я принимаю пользовательское соглашение";
 "onboarding_have_code" = "Код App Store";
-"onboarding_have_code_hint" = "Открывает экран кода App Store";
+"onboarding_have_code_hint" = "Пошагово: как активировать код в App Store";
 "onboarding_recover" = "ВОССТАНОВИТЬ";
 "child_content_retry_accessibility_hint" = "Повторить загрузку контента";
 "parent_dashboard_open_unified_limits_hint" = "Открывает единый экран дневных лимитов";
@@ -1526,9 +1526,17 @@
 
 "crash_detection_monitoring_active" = "Мониторинг активен";
 "crash_detection_crash_detected" = "Обнаружена авария!";
-"crash_detection_countdown" = "Вызов 112 через %d сек";
+"crash_detection_countdown" = "Сообщим семье через %d сек";
 "crash_detection_cancel" = "Отменить";
 "crash_detection_call_112" = "Вызвать 112";
+"crash_detection_family_silence_hint" = "Если не ответите — напишем семье. «Всё в порядке» — отменяет.";
+"crash_alert_title" = "Это авария?";
+"crash_alert_call_services_question" = "Если молчать — семья получит сигнал. Можно отменить.";
+"crash_alert_false_positive_warning" = "Ложные срабатывания бывают — нажмите «Всё в порядке», если всё хорошо.";
+"crash_alert_im_ok" = "Всё в порядке";
+"crash_alert_cancel" = "Отмена";
+"crash_alert_call_112" = "Вызвать 112";
+"crash_alert_notify_family" = "Сообщить семье сейчас";
 "crash_detection_sensitivity" = "Чувствительность";
 "crash_detection_sensitivity_low" = "Низкая";
 "crash_detection_sensitivity_medium" = "Средняя";
@@ -4226,3 +4234,33 @@
 "site_sub_expiry_push_title" = "Подписка с сайта скоро закончится";
 "site_sub_expiry_push_body_7d" = "Осталась неделя до %@. Продлите на сайте, чтобы не потерять доступ.";
 "site_sub_expiry_push_body_3d" = "Через 3 дня, %@, доступ по коду с сайта закончится. Продлите оплату.";
+
+/* L360 growth UX — yesterday push, renew hint, teen memo, share home (no OB_* changes) */
+"family_yesterday_push_title" = "Где был %@ вчера?";
+"family_yesterday_push_body" = "Откройте историю мест — так спокойнее, когда близкие не рядом.";
+"site_sub_renew_hint_title" = "Продлить подписку с сайта";
+"site_sub_renew_hint_body" = "Оплатите на aladdin-ai.ru и введите новый код в «Тарифах».";
+"trust_teen_memo_title" = "Что видит семья на карте";
+"trust_teen_memo_body" = "Вы договорились в семье: родители видят место и «пришёл / ушёл», если геолокация разрешена. В тихой зоне точку не показывают. Полностью отключить — в Настройках iPhone → ALADDIN.";
+"share_arrived_home_title" = "Вы дома";
+"share_arrived_home_body" = "Можно коротко сказать в WhatsApp или чате — без лишних звонков.";
+"share_arrived_home_action" = "Поделиться";
+"share_arrived_home_message" = "Я дома. Это видно в ALADDIN.";
+"share_arrived_home_dismiss" = "Не сейчас";
+
+/* App Store promo / redeem help (friend codes from App Store Connect) */
+"appstore_redeem_help_title" = "Как активировать код App Store";
+"appstore_redeem_help_intro" = "Код для друзей из App Store Connect вводится не в ALADDIN, а в приложении App Store. Пункт меню часто называется «Активировать код».";
+"appstore_redeem_help_step1" = "1. Закройте ALADDIN.";
+"appstore_redeem_help_step2" = "2. Откройте приложение App Store (синяя иконка «A»).";
+"appstore_redeem_help_step3" = "3. Внизу откройте любую вкладку App Store (например «Сегодня»).";
+"appstore_redeem_help_step4" = "4. Вверху справа нажмите кружок с вашим фото или буквами.";
+"appstore_redeem_help_step5" = "5. Откроется страница «Учётная запись».";
+"appstore_redeem_help_step6" = "6. Пролистайте список и найдите «Активировать код» (иногда «Погасить код» или «Погасить подарочную карту или код»).";
+"appstore_redeem_help_step7" = "7. Если откроется камера — нажмите «Ввести код вручную».";
+"appstore_redeem_help_step8" = "8. Введите код и подтвердите.";
+"appstore_redeem_help_open_store" = "Открыть App Store";
+"appstore_redeem_help_close" = "Понятно";
+"appstore_redeem_help_card_title" = "Код из App Store (для друзей)";
+"appstore_redeem_help_card_body" = "Если код выдали из App Store Connect — активируйте его в App Store, не здесь. Здесь — только бонусные коды команды ALADDIN.";
+"appstore_redeem_help_card_cta" = "Как активировать в App Store";

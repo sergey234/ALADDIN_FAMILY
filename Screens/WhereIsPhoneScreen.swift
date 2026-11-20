@@ -142,6 +142,13 @@ struct WhereIsPhoneScreen: View {
     @State private var showRoutes = false
     @State private var showInvisibleHatSheet = false
     @State private var showCrashConfirm = false
+    /// P.1 — place history after «yesterday» push (`aladdin://family/location-history`).
+    @State private var pendingHistoryMemberId: String?
+    @State private var pendingHistoryMemberName: String = ""
+    @State private var showPendingLocationHistory = false
+    @State private var showShareArrivedHome = false
+    @State private var showSystemShareHome = false
+    @State private var showTeenTrustMemo = false
     /// JOB11–12 + mid tips · Safety SOS pager (0 intro · 1…4 mid · 5 release).
     @State private var sosEduPage: Int = 0
     @State private var shareDuration: FamilyMapShareDuration =
@@ -392,6 +399,51 @@ struct WhereIsPhoneScreen: View {
                 FamilyCrashConfirmSheet(isPresented: $showCrashConfirm)
                     .environmentObject(localizationManager)
             }
+            .sheet(isPresented: $showPendingLocationHistory) {
+                NavigationView {
+                    FamilyLocationHistoryView(
+                        memberId: pendingHistoryMemberId ?? "",
+                        memberName: pendingHistoryMemberName.isEmpty
+                            ? localizationManager.localized("family_location_history_title")
+                            : pendingHistoryMemberName
+                    ) {
+                        showPendingLocationHistory = false
+                        if let leave = onLeaveToNavigate {
+                            leave(.tariffs)
+                        } else {
+                            navigationManager.navigateTo(.tariffs)
+                        }
+                    }
+                }
+                .environmentObject(localizationManager)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: FamilyPushDeepLink.navigateToLocationHistoryName)) { _ in
+                openPendingLocationHistoryIfNeeded()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: CrashDetectionManager.crashDetectedNotification)) { _ in
+                showCrashConfirm = true
+            }
+            .onReceive(CrashDetectionManager.shared.$crashDetected) { detected in
+                if detected { showCrashConfirm = true }
+                else if showCrashConfirm { showCrashConfirm = false }
+            }
+            .sheet(isPresented: $showShareArrivedHome) {
+                shareArrivedHomeSheet
+            }
+            .sheet(isPresented: $showSystemShareHome) {
+                ShareSheet(activityItems: [
+                    localizationManager.localized("share_arrived_home_message")
+                ]) {
+                    showSystemShareHome = false
+                }
+            }
+            .sheet(isPresented: $showTeenTrustMemo) {
+                TeenTrustMemoSheet(isPresented: $showTeenTrustMemo)
+                    .environmentObject(localizationManager)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .shareArrivedHomeOffer)) { _ in
+                showShareArrivedHome = true
+            }
     }
 
     private func applySecondarySheets<Content: View>(_ content: Content) -> some View {
@@ -529,6 +581,10 @@ struct WhereIsPhoneScreen: View {
                 pinPreviewDone = true
                 if pinSizeRaw != "L" { pinSizeRaw = "L" }
                 applyPendingFamilyPushFocusIfNeeded()
+                openPendingLocationHistoryIfNeeded()
+                if TeenTrustMemoSheet.shouldPresent() {
+                    showTeenTrustMemo = true
+                }
             }
             .onDisappear {
                 liveLocation.stop()
@@ -4647,6 +4703,65 @@ struct WhereIsPhoneScreen: View {
         FamilyPushDeepLink.clearFocus()
     }
 
+    private func openPendingLocationHistoryIfNeeded() {
+        let key = FamilyPushDeepLink.pendingLocationHistoryMemberIdKey
+        let memberId = (UserDefaults.standard.string(forKey: key) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !memberId.isEmpty else { return }
+        UserDefaults.standard.removeObject(forKey: key)
+        let members = FamilyLocalStore.loadPersistedMembers()
+        let name = members.first(where: { $0.canonicalId == memberId || $0.id == memberId })?.name
+            ?? localizationManager.localized("family_location_history_title")
+        pendingHistoryMemberId = memberId
+        pendingHistoryMemberName = name
+        showPendingLocationHistory = true
+        sheetExpansion = 0.55
+        hubTab = .location
+    }
+
+    private var shareArrivedHomeSheet: some View {
+        VStack(spacing: Spacing.m) {
+            Text(localizationManager.localized("share_arrived_home_title"))
+                .font(.title3.weight(.semibold))
+                .foregroundColor(.textPrimary)
+            Text(localizationManager.localized("share_arrived_home_body"))
+                .font(.body)
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+            Button {
+                showShareArrivedHome = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    showSystemShareHome = true
+                }
+            } label: {
+                Text(localizationManager.localized("share_arrived_home_action"))
+                    .font(.headline)
+                    .foregroundColor(.backgroundDark)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.secondaryGold)
+                    .cornerRadius(CornerRadius.medium)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("share_arrived_home_action")
+            Button {
+                showShareArrivedHome = false
+            } label: {
+                Text(localizationManager.localized("share_arrived_home_dismiss"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("share_arrived_home_dismiss")
+        }
+        .padding(Spacing.l)
+        .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
+        .modifier(ShareArrivedHomeSheetDetentsModifier())
+        .accessibilityIdentifier("share_arrived_home_sheet")
+    }
+
     private func applyHighlightedTrip(tripId: String) {
         let pts = DrivingTripTrackStore.load(tripId: tripId)
         guard pts.count >= 2 else {
@@ -5534,6 +5649,18 @@ struct FamilyMapLocalEvent: Identifiable, Codable, Equatable {
         start = try c.decode(Date.self, forKey: .start)
         end = try c.decode(Date.self, forKey: .end)
         audienceIds = try c.decodeIfPresent([String].self, forKey: .audienceIds) ?? []
+    }
+}
+
+/// Share «я дома» sheet height — `presentationDetents` only on iOS 16+ (deployment 15.2).
+private struct ShareArrivedHomeSheetDetentsModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.presentationDetents([.medium])
+        } else {
+            content
+        }
     }
 }
 

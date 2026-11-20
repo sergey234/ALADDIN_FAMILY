@@ -18,6 +18,9 @@ enum FamilyPushDeepLink {
     /// P0.4 H1 — trip track to draw after push tap.
     static let pendingTripIdKey = "aladdin.family_push.pending_trip_id"
     static let pendingTripTappedKey = "aladdin.family_push.pending_trip_tapped"
+    /// P.1 — open place history for member after «yesterday» push.
+    static let pendingLocationHistoryMemberIdKey = "aladdin.family_push.pending_location_history_member"
+    static let navigateToLocationHistoryName = Notification.Name("NavigateToFamilyLocationHistory")
 
     /// Soft map intents expire quickly so they cannot hijack Antifake return.
     private static let softMapTTL: TimeInterval = 5 * 60
@@ -205,6 +208,16 @@ enum FamilyPushDeepLink {
             return true
         case "invite":
             NotificationCenter.default.post(name: NSNotification.Name("NavigateToFamily"), object: nil)
+            return true
+        case "location-history":
+            if let memberId, !memberId.isEmpty {
+                UserDefaults.standard.set(memberId, forKey: pendingLocationHistoryMemberIdKey)
+            }
+            NotificationCenter.default.post(name: navigateToLocationHistoryName, object: nil, userInfo: [
+                "member_id": memberId as Any
+            ])
+            enqueue(memberId: memberId, displayName: displayName, focus: .location)
+            postOpenMap()
             return true
         default:
             enqueue(memberId: memberId, displayName: displayName, focus: .map)

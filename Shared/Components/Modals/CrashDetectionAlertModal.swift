@@ -31,15 +31,22 @@ struct CrashDetectionAlertModal: View {
                     .font(.system(size: 60))
                     .foregroundColor(.white)
 
-                Text(localizationManager.localized("crash_alert_title"))
+                Text(localizationManager.localized("crash_confirm_title"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
 
-                Text(localizationManager.localized("crash_alert_call_services_question"))
+                Text(String(format: localizationManager.localized("crash_detection_countdown"),
+                              crashDetectionManager.countdownSeconds))
+                    .font(.title2.monospacedDigit().weight(.bold))
+                    .foregroundColor(.yellow)
+                    .accessibilityIdentifier("crash_detection_countdown_label")
+
+                Text(localizationManager.localized("crash_detection_family_silence_hint"))
                     .font(.body)
                     .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
 
                 Text(localizationManager.localized("crash_alert_false_positive_warning"))
                     .font(.caption)
@@ -48,12 +55,12 @@ struct CrashDetectionAlertModal: View {
                     .padding(.top, 4)
 
                 VStack(spacing: 12) {
-                    // crash-02 — «я ок» снимает тревогу без диспетчера
                     Button(action: {
+                        crashDetectionManager.cancelEmergencyCall()
                         isPresented = false
                         HapticFeedback.notification(.success)
                     }) {
-                        Text(localizationManager.localized("crash_alert_im_ok"))
+                        Text(localizationManager.localized("crash_confirm_no"))
                             .font(.headline.weight(.bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -63,34 +70,33 @@ struct CrashDetectionAlertModal: View {
                     }
                     .accessibilityIdentifier("crash_alert_im_ok")
 
-                    HStack(spacing: 20) {
-                        Button(localizationManager.localized("crash_alert_cancel")) {
+                    Button {
+                        Task { @MainActor in
+                            await FamilyMapFamilyAlert.sendNeedHelp(localization: localizationManager)
+                            crashDetectionManager.cancelEmergencyCall()
                             isPresented = false
                         }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(10)
+                    } label: {
+                        Text(localizationManager.localized("crash_confirm_yes"))
+                            .font(.headline.weight(.semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color.blue.opacity(0.45))
+                            .cornerRadius(10)
+                    }
+                    .accessibilityIdentifier("crash_alert_notify_family")
 
-                        Button(localizationManager.localized("crash_alert_call_112")) {
-                            callEmergencyServices()
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.white.opacity(0.2))
-                        .cornerRadius(10)
+                    Button(localizationManager.localized("crash_detection_call_112")) {
+                        Task { await crashDetectionManager.callEmergencyServices() }
+                        isPresented = false
                     }
-                    
-                    Button(localizationManager.localized("crash_alert_notify_family")) {
-                        notifyEmergencyContacts()
-                    }
-                    .foregroundColor(.white)
+                    .foregroundColor(.white.opacity(0.9))
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.blue.opacity(0.3))
+                    .frame(height: 44)
+                    .background(Color.white.opacity(0.15))
                     .cornerRadius(10)
+                    .accessibilityIdentifier("crash_alert_call_112")
                 }
                 .padding(.horizontal)
             }
@@ -99,6 +105,9 @@ struct CrashDetectionAlertModal: View {
         .onAppear {
             loadEmergencyContacts()
             getCurrentLocation()
+        }
+        .onChange(of: crashDetectionManager.crashDetected) { still in
+            if !still { isPresented = false }
         }
         .sheet(isPresented: $showSMSComposer) {
             if MFMessageComposeViewController.canSendText() {

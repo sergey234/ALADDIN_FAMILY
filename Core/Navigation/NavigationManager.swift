@@ -27,6 +27,10 @@ class NavigationManager: ObservableObject {
     @Published var pendingFamilyInviteCode: String? = nil
     @Published var pendingFamilyInvitePayload: String? = nil
     @Published var pendingPromoCode: String? = nil
+    /// Site ALDN code from `aladdin://activate?code=` (prefill ActivationCodeScreen).
+    @Published var pendingSiteActivationCode: String? = nil
+    /// Show renew hint on Tariffs after tap on site expiry push (7/3 days).
+    @Published var showSiteRenewHint: Bool = false
 
     /// Child content catalog category + age when navigating via mnemo deep link / push.
     @Published var childContentCategory: String = ChildCategoryKey.games

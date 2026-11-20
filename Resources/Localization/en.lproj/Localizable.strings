@@ -60,8 +60,8 @@
 "onboarding_data_consent" = "I agree to data processing";
 "onboarding_terms_of_service_link" = "Terms of Service";
 "onboarding_terms_consent" = "I agree to the Terms of Service";
-"onboarding_have_code" = "Redeem App Store code";
-"onboarding_have_code_hint" = "Opens the App Store code screen";
+"onboarding_have_code" = "App Store code";
+"onboarding_have_code_hint" = "Step-by-step: how to redeem a code in the App Store";
 "onboarding_recover" = "RECOVER";
 "child_content_retry_accessibility_hint" = "Retry loading child content";
 "parent_dashboard_open_unified_limits_hint" = "Opens the unified daily limits screen";
@@ -1396,9 +1396,17 @@
 
 "crash_detection_monitoring_active" = "Monitoring active";
 "crash_detection_crash_detected" = "Crash detected!";
-"crash_detection_countdown" = "Calling 112 in %d sec";
+"crash_detection_countdown" = "We’ll tell your family in %d sec";
 "crash_detection_cancel" = "Cancel";
 "crash_detection_call_112" = "Call 112";
+"crash_detection_family_silence_hint" = "If you don’t respond, we’ll message your family. “I’m fine” cancels.";
+"crash_alert_title" = "Was this a crash?";
+"crash_alert_call_services_question" = "If you stay silent, your family gets an alert. You can cancel.";
+"crash_alert_false_positive_warning" = "False alerts happen — tap “I’m fine” if you’re OK.";
+"crash_alert_im_ok" = "I’m fine";
+"crash_alert_cancel" = "Cancel";
+"crash_alert_call_112" = "Call 112";
+"crash_alert_notify_family" = "Tell family now";
 "crash_detection_sensitivity" = "Sensitivity";
 "crash_detection_sensitivity_low" = "Low";
 "crash_detection_sensitivity_medium" = "Medium";
@@ -4256,3 +4264,33 @@
 "site_sub_expiry_push_title" = "Your site subscription is ending soon";
 "site_sub_expiry_push_body_7d" = "One week left until %@. Renew on the site so you keep access.";
 "site_sub_expiry_push_body_3d" = "In 3 days (%@) your site-code access ends. Renew payment.";
+
+/* L360 growth UX — yesterday push, renew hint, teen memo, share home (no OB_* changes) */
+"family_yesterday_push_title" = "Where was %@ yesterday?";
+"family_yesterday_push_body" = "Open place history — peace of mind when family is apart.";
+"site_sub_renew_hint_title" = "Renew your site subscription";
+"site_sub_renew_hint_body" = "Pay on aladdin-ai.ru, then enter the new code under Plans.";
+"trust_teen_memo_title" = "What the family sees on the map";
+"trust_teen_memo_body" = "Your family agreed: parents can see your place and arrived/left alerts if location is allowed. In a quiet zone your pin is hidden. To turn it all off: iPhone Settings → ALADDIN.";
+"share_arrived_home_title" = "You're home";
+"share_arrived_home_body" = "You can share a short note in WhatsApp or chat — no extra calls.";
+"share_arrived_home_action" = "Share";
+"share_arrived_home_message" = "I'm home. You can see it in ALADDIN.";
+"share_arrived_home_dismiss" = "Not now";
+
+/* App Store promo / redeem help (friend codes from App Store Connect) */
+"appstore_redeem_help_title" = "How to redeem an App Store code";
+"appstore_redeem_help_intro" = "Friend codes from App Store Connect are entered in the App Store app, not in ALADDIN. The menu item is often called “Redeem Code”.";
+"appstore_redeem_help_step1" = "1. Close ALADDIN.";
+"appstore_redeem_help_step2" = "2. Open the App Store app (blue “A” icon).";
+"appstore_redeem_help_step3" = "3. At the bottom, open any App Store tab (for example Today).";
+"appstore_redeem_help_step4" = "4. At the top right, tap the circle with your photo or initials.";
+"appstore_redeem_help_step5" = "5. The Account page opens.";
+"appstore_redeem_help_step6" = "6. Scroll and find “Redeem Code” (sometimes “Redeem Gift Card or Code”).";
+"appstore_redeem_help_step7" = "7. If the camera opens, tap “Enter Code Manually”.";
+"appstore_redeem_help_step8" = "8. Enter the code and confirm.";
+"appstore_redeem_help_open_store" = "Open App Store";
+"appstore_redeem_help_close" = "Got it";
+"appstore_redeem_help_card_title" = "App Store code (for friends)";
+"appstore_redeem_help_card_body" = "If the code came from App Store Connect, redeem it in the App Store — not here. This screen is only for ALADDIN team bonus codes.";
+"appstore_redeem_help_card_cta" = "How to redeem in the App Store";
