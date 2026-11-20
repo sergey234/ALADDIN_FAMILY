@@ -1582,7 +1582,9 @@ enum FamilyMapsPreference {
 
     static func ensureSeeded(language: LocalizationManager.Language) {
         if UserDefaults.standard.bool(forKey: userChoseKey) {
-            UserDefaults.standard.set(true, forKey: seededKey)
+            if !UserDefaults.standard.bool(forKey: seededKey) {
+                UserDefaults.standard.set(true, forKey: seededKey)
+            }
             return
         }
         // One-shot locale seed (v2). Overwrites previous hard-coded «yandex» if user never picked.

@@ -1,0 +1,31 @@
+---
+description: Never write UserDefaults from code reachable during SwiftUI rendering (body / computed props / getters) — iOS ≤16 @AppStorage infinite loop, watchdog 0x8BADF00D
+globs: "**/*.swift"
+alwaysApply: false
+---
+
+# Не писать в UserDefaults из кода, который вызывается при отрисовке
+
+Инцидент build 35 (2026-11-20): iPhone X, iOS 16.7, крупный шрифт → после онбординга вечное зависание и kill `0x8BADF00D`. 
+Причина: `GeofenceEventStore.todayEvents()` вызывался из `body` (`SimpleHomeScreen.whereDoorSubtitle`) и внутри делал `purge` → `UserDefaults.set` **каждый раз**. 
+На iOS ≤16 `@AppStorage` перерисовывает view при **любой** записи в `UserDefaults` (не только своего ключа) → бесконечный цикл. На iOS 17+ не воспроизводится — поэтому на новых телефонах «всё работает».
+
+## Запрещено
+
+- `UserDefaults.*.set` / `removeObject` / `save()` внутри `body`, computed-свойств view, `ViewBuilder`-функций и **любых функций, которые они вызывают** (load/read/stats/subtitle-хелперы, `ensureSeeded`, `purge`, «mirror в standard»).
+- Read-методы стора с побочной записью без проверки «изменилось ли».
+
+## Как правильно
+
+1. Чтение в render-пути — **только чтение**.
+2. Миграции / purge / seed / mirror — в `onAppear`, `.task`, `init` стора, app launch или фоне.
+3. Если запись в read-методе неизбежна — **только при изменении**:
+   ```swift
+   guard kept.count != all.count else { return }
+   save(kept)
+   ```
+4. Новый стор с read из `body` → unit-тест: наблюдать `UserDefaults.didChangeNotification` при чтении → **0 записей** (образец: `UX36W5GeoHybridTests.testGeofenceReads_doNotWriteUserDefaultsWhenNothingToPurge`).
+
+## Проверка на iOS ≤16
+
+Симулятор iOS 15.2 + `xcrun simctl ui <udid> content_size accessibility-extra-extra-extra-large` (включает list-режим SimpleHome). CPU приложения в простое ≈ 0%; 100% = цикл.

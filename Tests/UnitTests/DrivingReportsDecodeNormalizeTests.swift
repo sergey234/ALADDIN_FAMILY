@@ -2,6 +2,7 @@ import XCTest
 @testable import ALADDIN
 
 /// Contract: GET /api/reports/driving must feed `[DrivingReport]` decoder.
+@MainActor
 final class DrivingReportsDecodeNormalizeTests: XCTestCase {
 
     func testRawArrayPassthrough() throws {

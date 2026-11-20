@@ -28,6 +28,7 @@ final class QABatchP0FamilyLimitAndDigestTests: XCTestCase {
         XCTAssertNotEqual(trial, premium)
     }
 
+    @MainActor
     func testIsFamilyMemberLimitErrorDetectsRUAndEN() {
         let ru = NSError(
             domain: "API",

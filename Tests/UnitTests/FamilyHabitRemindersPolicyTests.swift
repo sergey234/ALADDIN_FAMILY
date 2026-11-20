@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class FamilyHabitRemindersPolicyTests: XCTestCase {
     private let testDefaultsSuite = "FamilyHabitRemindersPolicyTests.\(UUID().uuidString)"
 
@@ -258,6 +259,7 @@ final class FamilyHabitRemindersPolicyTests: XCTestCase {
 
 // MARK: - fhc-01 Custom habit model
 
+@MainActor
 final class FamilyHabitCustomReminderTests: XCTestCase {
     private func makeDefaults() -> UserDefaults {
         let suite = "FamilyHabitCustomReminderTests.\(UUID().uuidString)"

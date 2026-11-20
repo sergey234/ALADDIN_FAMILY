@@ -47,6 +47,7 @@ final class UX36W4ReliabilityTests: XCTestCase {
         XCTAssertFalse(out.contains("Setting up message protection"))
     }
 
+    @MainActor
     func testStreamFallbackIncludes504AndTimeout() {
         let gateway = NSError(domain: "CompanionStream", code: 504, userInfo: nil)
         XCTAssertTrue(CompanionStreamingService.shouldFallbackStreamToChat(gateway))

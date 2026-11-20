@@ -271,7 +271,10 @@ enum ScreenTimeUsageStore {
     static func loadParentalTimeStats() -> [String: String]? {
         if let ag = defaults.dictionary(forKey: parentalTimeStatsKey) as? [String: String], !ag.isEmpty {
             // Mirror into main standard so older readers still see data.
-            UserDefaults.standard.set(ag, forKey: parentalTimeStatsKey)
+            // Only on change: called from SwiftUI body; an unconditional write loops @AppStorage on iOS ≤16.
+            if UserDefaults.standard.dictionary(forKey: parentalTimeStatsKey) as? [String: String] != ag {
+                UserDefaults.standard.set(ag, forKey: parentalTimeStatsKey)
+            }
             return ag
         }
         return UserDefaults.standard.dictionary(forKey: parentalTimeStatsKey) as? [String: String]

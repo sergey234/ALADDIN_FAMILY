@@ -266,11 +266,15 @@ enum GeofenceEventStore {
         return ResolvedPlaceName(displayName: generic, needsStreetFallback: false, coordinate: nil)
     }
 
+    /// Write only on change: reads run inside SwiftUI `body`, and on iOS ≤16 any UserDefaults
+    /// write re-invalidates every `@AppStorage` view → infinite layout loop (watchdog kill).
     private static func purgeOlderThanRetention() {
         let cal = Calendar.current
         guard let cutoff = cal.date(byAdding: .day, value: -retentionDays, to: Date()) else { return }
         let start = cal.startOfDay(for: cutoff)
-        let kept = load().filter { $0.createdAt >= start }
+        let all = load()
+        let kept = all.filter { $0.createdAt >= start }
+        guard kept.count != all.count else { return }
         save(kept)
     }
 
