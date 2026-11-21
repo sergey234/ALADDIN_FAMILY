@@ -13,9 +13,14 @@
   "invite_token": "<optional token from QR JSON>",
   "role": "parent|child|…",
   "age_group": "<строка как сегодня с клиента>",
-  "personal_letter": "<A-Z>",
+  "display_name": "<имя в семье RU/EN, 2–24>",
+  "personal_letter": "<A-Z, optional legacy>",
   "device_type": "smartphone|tablet|…"
 }
+
+**Гибрид имени (2026-11-21):** предпочтительно `display_name`; `personal_letter` optional для старых клиентов.
+Уникальность — `lower(trim(name))` в семье; дубль → `display_name_taken` (не `personal_letter_taken` для name-path).
+Канон плана: `docs/FAMILY_JOIN_NAME_HYBRID_PLAN_2026-11-21.md`.
 ```
 
 **Требование:** реализовать **`POST /api/family/join`** (рядом с существующим GET compat или вместо заглушки), который:

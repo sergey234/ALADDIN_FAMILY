@@ -28,6 +28,8 @@ struct MainScreenWithRegistration: View {
     @State private var appleAuthErrorMessage: String? = nil
     @State private var magicLinkEmail: String = ""
     @State private var magicLinkStatusMessage: String? = nil
+    /// Hybrid name step (replaces letter grid).
+    @State private var registrationDisplayNameDraft: String = ""
     /// W11-A / Device QA: hide «Семья под защитой» glass — go straight to consent/role.
     @State private var suppressPayPainsAuthGlass: Bool = {
         UserDefaults.standard.bool(forKey: "family_registration_auto_start")
@@ -115,7 +117,7 @@ struct MainScreenWithRegistration: View {
                     registrationVM.startRegistration()
                     return
                 }
-                try? await Task.sleep(nanoseconds: 500_000_000)
+                // F2-11: no 0.5s empty shell — start immediately.
                 print("🚨 Вызываю startRegistration()...")
                 registrationVM.startRegistration()
                 print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
@@ -393,30 +395,14 @@ struct MainScreenWithRegistration: View {
             }
             
     private var letterSelectionView: some View {
-                VStack(spacing: 30) {
-                    Text(localizationManager.localized("registration_select_letter"))
-                        .font(AladdinFamilyType.title2())
-                        .foregroundColor(.white)
-                    
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                        ForEach(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"], id: \.self) { letter in
-                            Button(action: {
-                                registrationVM.onLetterSelected(letter)
-                            }) {
-                                Text(letter)
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 50, height: 50)
-                                    .background(Color.white.opacity(0.15))
-                                    .cornerRadius(12)
-                            }
-                        }
-                    }
-                }
-                .padding(30)
-                .background(Color.black.opacity(0.3))
-                .cornerRadius(20)
+        FamilyRegistrationDisplayNameStep(
+            name: $registrationDisplayNameDraft,
+            onContinue: {
+                registrationVM.onDisplayNameSelected(registrationDisplayNameDraft)
             }
+        )
+        .environmentObject(localizationManager)
+    }
             
     private var loadingOrErrorView: some View {
         Group {
@@ -678,6 +664,65 @@ struct MainScreenWithRegistration: View {
         case .elderly:
             return localizationManager.localized("age_group_elderly_short")
         }
+    }
+}
+
+// MARK: - Display name step (replaces letter grid)
+
+private struct FamilyRegistrationDisplayNameStep: View {
+    @Binding var name: String
+    let onContinue: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    private var normalized: String {
+        FamilyRegistrationViewModel.normalizeFamilyDisplayName(name)
+    }
+
+    private var canContinue: Bool {
+        FamilyRegistrationViewModel.isValidFamilyDisplayName(normalized)
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text(localizationManager.localized("registration_select_display_name"))
+                .font(AladdinFamilyType.title2())
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(localizationManager.localized("invitation_display_name_hint"))
+                .font(AladdinFamilyType.subheadline())
+                .foregroundColor(.white.opacity(0.75))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            TextField(localizationManager.localized("invitation_display_name_placeholder"), text: $name)
+                .font(AladdinFamilyType.body())
+                .foregroundColor(.white)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.15))
+                )
+                .disableAutocorrection(true)
+
+            Button(action: onContinue) {
+                Text(localizationManager.localized("onboarding_continue"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(canContinue ? Color.green : Color.gray.opacity(0.5))
+                    )
+            }
+            .disabled(!canContinue)
+        }
+        .padding(30)
+        .background(Color.black.opacity(0.35))
+        .cornerRadius(20)
+        .padding(.horizontal, 20)
     }
 }
 

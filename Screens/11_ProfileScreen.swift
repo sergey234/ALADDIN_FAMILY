@@ -712,43 +712,58 @@ struct ProfileScreen: View {
     
     @ViewBuilder
     private var familyInviteSection: some View {
-        if FamilyAccessPolicy.isCaregiver() {
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                sectionTitle(localizationManager.localized("profile_family_invite_section_title"))
+        // Family only: invite (caregiver) + join by FAM/QR (everyone). No promo/referral here.
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            sectionTitle(localizationManager.localized("profile_family_invite_section_title"))
+
+            VStack(spacing: Spacing.s) {
+                if FamilyAccessPolicy.isCaregiver() {
+                    Button(action: {
+                        HapticFeedback.impact(.medium)
+                        FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_family_top"])
+                        navigationManager.navigateTo(.addMemberOptions)
+                    }) {
+                        profileActionCard(
+                            icon: "👨‍👩‍👧‍👦",
+                            title: localizationManager.localized("profile_invite_family_members"),
+                            subtitle: localizationManager.localized("profile_invite_family_members_desc")
+                        )
+                    }
+                }
 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_family_top"])
-                    navigationManager.navigateTo(.addMemberOptions)
+                    navigationManager.navigateTo(.invitationCode)
                 }) {
                     profileActionCard(
-                        icon: "👨‍👩‍👧‍👦",
-                        title: localizationManager.localized("profile_invite_family_members"),
-                        subtitle: localizationManager.localized("profile_invite_family_members_desc")
+                        icon: "🔑",
+                        title: localizationManager.localized("profile_join_family"),
+                        subtitle: localizationManager.localized("profile_join_family_desc")
                     )
                 }
-                .padding(.horizontal, Spacing.screenPadding)
             }
+            .padding(.horizontal, Spacing.screenPadding)
         }
     }
 
     private var friendsAndBonusSection: some View {
+        // Growth only: referral (share your code) + team promo (redeem ALADDIN code). Not family FAM.
         VStack(alignment: .leading, spacing: Spacing.s) {
             sectionTitle(localizationManager.localized("profile_friends_bonus_section_title"))
 
             VStack(spacing: Spacing.s) {
                 if FamilyAccessPolicy.isCaregiver() {
-                        Button(action: {
-                            HapticFeedback.selection()
-                            FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_referral"])
-                            showReferralScreen = true
-                        }) {
-                            profileActionCard(
-                                icon: "🎁",
-                                title: localizationManager.localized("profile_invite_friends"),
-                                subtitle: localizationManager.localized("profile_invite_discount")
-                            )
-                        }
+                    Button(action: {
+                        HapticFeedback.selection()
+                        FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile_referral"])
+                        showReferralScreen = true
+                    }) {
+                        profileActionCard(
+                            icon: "🎁",
+                            title: localizationManager.localized("profile_invite_friends"),
+                            subtitle: localizationManager.localized("profile_invite_discount")
+                        )
+                    }
                 }
 
                 Button(action: {

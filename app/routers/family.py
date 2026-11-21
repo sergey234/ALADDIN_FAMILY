@@ -389,6 +389,126 @@ def _api_error(
     return detail
 
 
+# --- Hybrid name (2026-11-21): display_name first-class; personal_letter legacy optional ---
+_DISPLAY_NAME_MIN = 2
+_DISPLAY_NAME_MAX = 24
+
+
+def _normalize_family_display_name(raw: Optional[str]) -> Optional[str]:
+    if raw is None:
+        return None
+    collapsed = " ".join(str(raw).strip().split())
+    return collapsed or None
+
+
+def _validate_family_display_name(raw: str) -> str:
+    name = _normalize_family_display_name(raw)
+    if not name or len(name) < _DISPLAY_NAME_MIN or len(name) > _DISPLAY_NAME_MAX:
+        raise HTTPException(
+            status_code=400,
+            detail=_api_error(
+                "display_name_invalid",
+                f"display_name must be {_DISPLAY_NAME_MIN}–{_DISPLAY_NAME_MAX} characters",
+                "enter_family_display_name",
+            ),
+        )
+    if not all(ch.isalpha() or ch.isspace() or ch == "-" for ch in name):
+        raise HTTPException(
+            status_code=400,
+            detail=_api_error(
+                "display_name_invalid",
+                "display_name allows letters, spaces, and hyphen only",
+                "enter_family_display_name",
+            ),
+        )
+    return name
+
+
+def _legacy_letter_from_display_name(name: str) -> str:
+    """In-memory registration still wants A–Z; Cyrillic → Latin placeholder."""
+    for ch in name:
+        if "A" <= ch.upper() <= "Z":
+            return ch.upper()
+        if ch.isalpha():
+            return "X"
+    return "X"
+
+
+def _resolve_member_stored_name(
+    *,
+    role: str,
+    display_name: Optional[str],
+    personal_letter: Optional[str],
+) -> Tuple[str, str]:
+    """
+    Returns (stored_name_for_family_members, letter_for_legacy_create_family).
+    New clients: display_name. Old clients: ROLE + LETTER.
+    """
+    normalized = _normalize_family_display_name(display_name)
+    if normalized:
+        name = _validate_family_display_name(normalized)
+        return name, _legacy_letter_from_display_name(name)
+
+    letter = (personal_letter or "").strip().upper()
+    if len(letter) != 1 or not letter.isalpha():
+        raise HTTPException(
+            status_code=400,
+            detail=_api_error(
+                "display_name_required",
+                "display_name or personal_letter required",
+                "enter_family_display_name",
+            ),
+        )
+    role_key = (role or "").strip().upper() or "MEMBER"
+    return f"{role_key} {letter}", letter
+
+
+def _assert_member_name_available(db, family_id: str, stored_name: str) -> None:
+    dup = db.execute(
+        text(
+            """
+            SELECT 1 FROM family_members
+            WHERE family_id = :fid AND lower(trim(name)) = lower(:name)
+            LIMIT 1
+            """
+        ),
+        {"fid": family_id, "name": stored_name},
+    ).fetchone()
+    if dup:
+        raise HTTPException(
+            status_code=409,
+            detail=_api_error(
+                "display_name_taken",
+                "Display name already used in this family",
+                "choose_another_display_name",
+                display_name=stored_name,
+            ),
+        )
+
+
+def _family_taken_names(db, family_id: str, limit: int = 40) -> List[str]:
+    rows = db.execute(
+        text(
+            """
+            SELECT name FROM family_members
+            WHERE family_id = :fid
+            ORDER BY name ASC
+            LIMIT :lim
+            """
+        ),
+        {"fid": family_id, "lim": limit},
+    ).fetchall()
+    out: List[str] = []
+    for row in rows:
+        raw = row[0] if row is not None else None
+        if raw is None:
+            continue
+        s = str(raw).strip()
+        if s:
+            out.append(s)
+    return out
+
+
 def _ensure_family_invites_table(db) -> None:
     global _family_invites_initialized
     if _family_invites_initialized:
@@ -1167,16 +1287,13 @@ async def get_family_stats(
 # ============================================
 
 class CreateFamilyRequest(BaseModel):
-    """Запрос на создание семьи БЕЗ персональных данных"""
+    """Запрос на создание семьи. Имя в семье (display_name) предпочтительно; letter — legacy."""
     role: str  # "parent", "child", "elderly", "other" (FamilyRole enum)
     age_group: str  # "1-6", "7-12", "13-17", "18-23", "24-55", "55+" (AgeGroup enum)
-    personal_letter: str  # Одна буква (например, "V") - для анонимной идентификации
+    personal_letter: Optional[str] = None  # Legacy A–Z; optional when display_name set
+    display_name: Optional[str] = None  # Family nickname RU/EN (2–24)
     device_type: str  # "iOS", "Android", и т.д.
     device_check_token: Optional[str] = None  # Apple DeviceCheck (one trial per iPhone)
-    
-    # ⚠️ ВАЖНО: НЕ собираем персональные данные!
-    # ❌ НЕТ email, password, телефон, имя, фамилия
-    # ✅ Только анонимные данные: role, age_group, personal_letter, device_type
 
 class CreateFamilyResponse(BaseModel):
     """Ответ на создание семьи"""
@@ -1317,7 +1434,8 @@ class JoinFamilyRequest(BaseModel):
     invite_token: Optional[str] = None
     role: str
     age_group: str
-    personal_letter: str
+    personal_letter: Optional[str] = None  # Legacy; optional when display_name set
+    display_name: Optional[str] = None  # Preferred family nickname RU/EN
     device_type: str
 
 
@@ -1354,6 +1472,7 @@ class FamilyInvitePreflightResponse(BaseModel):
     can_join: bool
     message: Optional[str] = None
     error: Optional[str] = None
+    taken_names: Optional[List[str]] = None
 
 
 class FamilyJoinInnerResponse(BaseModel):
@@ -1552,32 +1671,19 @@ async def create_family_endpoint(
     current_user: dict = Depends(get_current_user),
 ):
     """
-    Создание семьи БЕЗ персональных данных.
-    
-    ⚠️ ВАЖНО: МЫ НЕ СОБИРАЕМ ПЕРСОНАЛЬНЫЕ ДАННЫЕ!
-    - ❌ НЕ требует email, password, телефон
-    - ✅ Принимает только анонимные данные: role, age_group, personal_letter, device_type
-    - ✅ Возвращает только анонимные данные: family_id, qr_code_data, short_code
-    
-    Принимает:
-    - role: роль в семье ("parent", "child", "elderly", "other")
-    - age_group: возрастная группа ("1-6", "7-12", "13-17", "18-23", "24-55", "55+")
-    - personal_letter: буква для идентификации (одна буква, например, "V")
-    - device_type: тип устройства ("iOS", "Android", и т.д.)
-    
-    Возвращает:
-    - family_id: уникальный анонимный ID семьи
-    - qr_code_data: данные для QR кода
-    - short_code: короткий код для присоединения
-    - creator_member_id: ID создателя семьи
-    - expires_at: время истечения кодов (ISO format)
+    Создание семьи. Предпочтительно display_name (имя в семье); personal_letter — legacy.
     """
-    # ✅ STRUCTURED LOGGING: Логирование запроса
+    stored_name, legacy_letter = _resolve_member_stored_name(
+        role=create_request.role,
+        display_name=create_request.display_name,
+        personal_letter=create_request.personal_letter,
+    )
     logger.info(
         "family_create_requested",
         role=create_request.role,
         age_group=create_request.age_group,
-        personal_letter=create_request.personal_letter,
+        personal_letter=legacy_letter,
+        has_display_name=bool(_normalize_family_display_name(create_request.display_name)),
         device_type=create_request.device_type,
         timestamp=datetime.now().isoformat()
     )
@@ -1593,11 +1699,11 @@ async def create_family_endpoint(
         }
         normalized_age_group = age_group_map.get(create_request.age_group, create_request.age_group)
 
-        # ✅ Вызов функции генерации family_id/MEM_*/short_code (БЕЗ персональных данных)
+        # ✅ Вызов функции генерации family_id/MEM_*/short_code (legacy letter derived if needed)
         result = create_family(
             role=create_request.role,
             age_group=normalized_age_group,
-            personal_letter=create_request.personal_letter,
+            personal_letter=legacy_letter,
             device_type=create_request.device_type
         )
         
@@ -1624,7 +1730,7 @@ async def create_family_endpoint(
                     ),
                     {"family_id": response.family_id, "owner_user_id": user_id},
                 )
-                # Creator becomes first family member
+                # Creator becomes first family member (display_name or legacy ROLE LETTER)
                 db.execute(
                     text(
                         """
@@ -1637,7 +1743,7 @@ async def create_family_endpoint(
                         "id": response.creator_member_id,
                         "family_id": response.family_id,
                         "user_id": user_id,
-                        "name": f"{create_request.role.upper()} {create_request.personal_letter.upper()}",
+                        "name": stored_name,
                         "role": create_request.role,
                         "last_active": _iso_utc_timestamp(),
                     },
@@ -1794,6 +1900,7 @@ async def preflight_family_invite_endpoint(
                 expires_at=(invite or {}).get("expires_at", ""),
                 can_join=True,
                 message="family_invite_valid",
+                taken_names=_family_taken_names(db, family_id),
             )
         finally:
             gen.close()
@@ -2135,27 +2242,12 @@ async def join_family_post(
             if role not in allowed_roles:
                 raise HTTPException(status_code=400, detail="Invalid role")
 
-            letter = (body.personal_letter or "").strip().upper()
-            if len(letter) != 1 or not letter.isalpha():
-                raise HTTPException(status_code=400, detail="personal_letter must be a single letter")
-
-            display_name = f"{role.upper()} {letter}"
-
-            dup_name = db.execute(
-                text(
-                    """
-                    SELECT 1 FROM family_members
-                    WHERE family_id = :fid AND lower(trim(name)) = lower(:name)
-                    LIMIT 1
-                    """
-                ),
-                {"fid": canonical_fid, "name": display_name},
-            ).fetchone()
-            if dup_name:
-                raise HTTPException(
-                    status_code=409,
-                    detail=_api_error("personal_letter_taken", "Personal letter already used", "choose_another_letter"),
-                )
+            display_name, _legacy_letter = _resolve_member_stored_name(
+                role=role,
+                display_name=body.display_name,
+                personal_letter=body.personal_letter,
+            )
+            _assert_member_name_available(db, canonical_fid, display_name)
 
             owner_level = _owner_subscription_level_for_family(db, canonical_fid)
             _acquire_family_roster_write_lock(db, canonical_fid)

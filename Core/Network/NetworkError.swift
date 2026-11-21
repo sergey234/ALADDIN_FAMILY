@@ -325,6 +325,10 @@ enum NetworkError: Error, LocalizedError {
             key = "family_invite_error_family_full"
         case "personal_letter_taken":
             key = "family_invite_error_letter_taken"
+        case "display_name_taken":
+            key = "family_invite_error_display_name_taken"
+        case "display_name_invalid", "display_name_required":
+            key = "invitation_display_name_invalid"
         case "device_pairing_used", "pairing_token_already_used":
             key = "device_pairing_error_used"
         case "device_pairing_not_found", "pairing_not_found_expired_or_used":

@@ -2,22 +2,17 @@ import SwiftUI
 import UIKit
 
 /**
- * 🔢 Invitation Code Input Modal
- * Модальное окно для ввода кода приглашения
- * 
- * Пользователь вводит Recovery Code: FAM-A1B2-C3D4-E5F6
- * Система распознаёт семью и присоединяет пользователя
+ * Invitation Code Input Modal — join existing family (hybrid name, no letter step).
+ * Dark family chrome; role + age + display name (RU/EN).
  */
 
 struct InvitationCodeInputModal: View {
-    
-    // MARK: - Properties
-    
+
     @Binding var isPresented: Bool
     let initialCode: String?
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
-    
+
     @State private var code: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
@@ -25,172 +20,53 @@ struct InvitationCodeInputModal: View {
     @State private var rawInvitePayload: String?
     @State private var selectedRole: FamilyRole?
     @State private var selectedAgeGroup: AgeGroup?
-    @State private var selectedLetter: String?
+    @State private var displayName: String = ""
+    @State private var roleExpanded = true
+    @State private var ageExpanded = false
     @State private var joinPollAttempts: Int = 0
     @State private var autoBindState: CurrentDeviceAutoBindState = .idle
     @State private var autoBindMessage: String?
-    
+
     init(isPresented: Binding<Bool>, initialCode: String? = nil) {
         self._isPresented = isPresented
         self.initialCode = initialCode
     }
-    
-    // ViewModel для регистрации
+
     @StateObject private var registrationVM = FamilyRegistrationViewModel()
     private let apiService = APIService.shared
-    
-    // MARK: - Body
-    
+
+    private let panelBg = Color.white.opacity(0.10)
+    private let fieldBg = Color.white.opacity(0.12)
+    private let textPrimary = Color.white
+    private let textSecondary = Color.white.opacity(0.72)
+
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                // Заголовок
-                VStack(spacing: 8) {
-                    Image(systemName: "textformat.123")
-                        .font(.system(size: 50))
-                        .foregroundColor(.green)
-                    
-                    Text(localizationManager.localized("invitation_code_enter_title"))
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.primary)
-                    
-                    Text(localizationManager.localized("invitation_code_enter_subtitle"))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Text(localizationManager.localized("invitation_code_family_hint"))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .padding(.top, 20)
-                
-                // Поле ввода
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text(localizationManager.localized("invitation_code_field_label"))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-
-                        Spacer()
-
-                        Button(localizationManager.localized("invitation_paste_code_button")) {
-                            if let pasted = UIPasteboard.general.string {
-                                applyInviteInput(pasted)
-                            }
-                        }
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.green)
-                    }
-                    
-                    TextField("FAM-XXXX-XXXX-XXXX", text: $code)
-                        .font(.system(size: 16, weight: .medium, design: .monospaced))
-                        .padding(16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.gray.opacity(0.1))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(code.isEmpty ? Color.clear : (code.isValidRecoveryCode ? Color.green : Color.red), lineWidth: 2)
-                                )
-                        )
-                        .autocapitalization(.allCharacters)
-                        .disableAutocorrection(true)
-                        .onChange(of: code) { newValue in
-                            applyInviteInput(newValue)
-                        }
-                    
-                    if let error = errorMessage {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .padding(.horizontal, 4)
-                    } else if let preflight = preflightMessage {
-                        Text(preflight)
-                            .font(.caption)
-                            .foregroundColor(.green)
-                            .padding(.horizontal, 4)
-                    } else if isLikelyDevicePin(code) {
-                        Text(localizationManager.localized("family_invite_wrong_flow_device_code"))
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                            .padding(.horizontal, 4)
-                    } else if !code.isEmpty && !code.isValidRecoveryCode {
-                        Text(localizationManager.localized("invitation_code_format_hint"))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 4)
-                    }
-                }
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(localizationManager.localized("invitation_profile_section_title"))
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.secondary)
-
-                    Picker(localizationManager.localized("invitation_role_picker_label"), selection: $selectedRole) {
-                        Text(localizationManager.localized("invitation_picker_placeholder")).tag(Optional<FamilyRole>.none)
-                        ForEach(FamilyRole.selectableRoles) { role in
-                            Text(roleTitle(role)).tag(Optional(role))
-                        }
-                    }
-                    .pickerStyle(.menu)
-
-                    Picker(localizationManager.localized("invitation_age_picker_label"), selection: $selectedAgeGroup) {
-                        Text(localizationManager.localized("invitation_picker_placeholder")).tag(Optional<AgeGroup>.none)
-                        ForEach(AgeGroup.allCases) { age in
-                            Text(ageTitle(age)).tag(Optional(age))
-                        }
-                    }
-                    .pickerStyle(.menu)
-
-                    Picker(localizationManager.localized("invitation_letter_picker_label"), selection: $selectedLetter) {
-                        Text(localizationManager.localized("invitation_picker_placeholder")).tag(Optional<String>.none)
-                        ForEach(Self.availableLetters, id: \.self) { letter in
-                            Text(letter).tag(Optional(letter))
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-                .padding(16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.gray.opacity(0.08))
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.04, green: 0.06, blue: 0.12),
+                        Color(red: 0.08, green: 0.12, blue: 0.22)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
+                .ignoresSafeArea()
 
-                // Кнопка присоединения
-                Button(action: {
-                    joinFamily()
-                }) {
-                    HStack {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Text(localizationManager.localized("invitation_join_family_button"))
-                                .font(.system(size: 16, weight: .semibold))
+                ScrollView {
+                    VStack(spacing: 20) {
+                        headerBlock
+                        codeBlock
+                        profileBlock
+                        joinButton
+                        if autoBindState != .idle {
+                            autoBindStatusCard
                         }
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(canSubmit ? Color.green : Color.gray)
-                    )
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 28)
                 }
-                .disabled(!canSubmit)
-
-                if autoBindState != .idle {
-                    autoBindStatusCard
-                }
-                
-                Spacer()
             }
-            .padding(.horizontal, 20)
             .navigationTitle(localizationManager.localized("invitation_join_navigation_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -198,31 +74,263 @@ struct InvitationCodeInputModal: View {
                     Button(localizationManager.localized("common_cancel")) {
                         dismissInvitationFlow()
                     }
+                    .foregroundColor(.white)
                 }
             }
+            .toolbarBackground(Color(red: 0.04, green: 0.06, blue: 0.12), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
+        .navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
-            if let pendingPayload = navigationManager.pendingFamilyInvitePayload,
-               let invite = FamilyInviteCodeParser.parse(pendingPayload) {
-                rawInvitePayload = pendingPayload
-                code = invite.displayCode
-                navigationManager.pendingFamilyInvitePayload = nil
-                navigationManager.pendingFamilyInviteCode = nil
-            } else if let pendingCode = navigationManager.pendingFamilyInviteCode,
-                      let invite = FamilyInviteCodeParser.parse(pendingCode) {
-                rawInvitePayload = pendingCode
-                code = invite.displayCode
-                navigationManager.pendingFamilyInviteCode = nil
-            } else if let initialCode = initialCode,
-                      let invite = FamilyInviteCodeParser.parse(initialCode) {
-                rawInvitePayload = initialCode
-                code = invite.displayCode
-            }
+            seedInviteFromNavigationOrInitial()
             preflightInviteIfPossible()
         }
     }
 
-    private static let availableLetters = (65...90).compactMap { UnicodeScalar($0).map(String.init) }
+    private var headerBlock: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "person.3.fill")
+                .font(.system(size: 40))
+                .foregroundColor(Color(red: 0.35, green: 0.78, blue: 0.55))
+                .padding(.top, 12)
+
+            Text(localizationManager.localized("invitation_code_enter_title"))
+                .font(AladdinFamilyType.title2())
+                .foregroundColor(textPrimary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(localizationManager.localized("invitation_code_enter_subtitle"))
+                .font(AladdinFamilyType.subheadline())
+                .foregroundColor(textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(localizationManager.localized("invitation_code_family_hint"))
+                .font(AladdinFamilyType.caption())
+                .foregroundColor(textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var codeBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(localizationManager.localized("invitation_code_field_label"))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(textSecondary)
+                Spacer()
+                Button(localizationManager.localized("invitation_paste_code_button")) {
+                    if let pasted = UIPasteboard.general.string {
+                        applyInviteInput(pasted)
+                    }
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundColor(Color(red: 0.45, green: 0.85, blue: 0.60))
+            }
+
+            TextField("FAM-XXXX-XXXX-XXXX", text: $code)
+                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                .foregroundColor(textPrimary)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(fieldBg)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(
+                                    code.isEmpty
+                                        ? Color.white.opacity(0.15)
+                                        : (code.isValidRecoveryCode ? Color.green : Color.red.opacity(0.85)),
+                                    lineWidth: 2
+                                )
+                        )
+                )
+                .autocapitalization(.allCharacters)
+                .disableAutocorrection(true)
+                .onChange(of: code) { newValue in
+                    errorMessage = nil
+                    applyInviteInput(newValue)
+                }
+
+            statusLines
+        }
+    }
+
+    @ViewBuilder
+    private var statusLines: some View {
+        if let error = errorMessage {
+            Text(error)
+                .font(.caption)
+                .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.45))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 4)
+        } else if let preflight = preflightMessage {
+            Text(preflight)
+                .font(.caption)
+                .foregroundColor(Color(red: 0.45, green: 0.85, blue: 0.60))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 4)
+        } else if isLikelyDevicePin(code) {
+            Text(localizationManager.localized("family_invite_wrong_flow_device_code"))
+                .font(.caption)
+                .foregroundColor(.orange)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 4)
+        } else if !code.isEmpty && !code.isValidRecoveryCode {
+            Text(localizationManager.localized("invitation_code_format_hint"))
+                .font(.caption)
+                .foregroundColor(textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 4)
+        }
+    }
+
+    private var profileBlock: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(localizationManager.localized("invitation_profile_section_title"))
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(textSecondary)
+
+            accordionHeader(
+                step: "1",
+                title: localizationManager.localized("invitation_role_picker_label"),
+                subtitle: selectedRole.map(roleTitle) ?? localizationManager.localized("invitation_picker_placeholder"),
+                expanded: roleExpanded
+            ) {
+                roleExpanded.toggle()
+                if roleExpanded { ageExpanded = false }
+            }
+            if roleExpanded {
+                VStack(spacing: 8) {
+                    ForEach(FamilyRole.selectableRoles) { role in
+                        choiceRow(title: roleTitle(role), selected: selectedRole == role) {
+                            selectedRole = role
+                            errorMessage = nil
+                            roleExpanded = false
+                            ageExpanded = true
+                        }
+                    }
+                }
+            }
+
+            accordionHeader(
+                step: "2",
+                title: localizationManager.localized("invitation_age_picker_label"),
+                subtitle: selectedAgeGroup.map(ageTitle) ?? localizationManager.localized("invitation_picker_placeholder"),
+                expanded: ageExpanded
+            ) {
+                ageExpanded.toggle()
+                if ageExpanded { roleExpanded = false }
+            }
+            if ageExpanded {
+                VStack(spacing: 8) {
+                    ForEach(AgeGroup.allCases) { age in
+                        choiceRow(title: ageTitle(age), selected: selectedAgeGroup == age) {
+                            selectedAgeGroup = age
+                            errorMessage = nil
+                            ageExpanded = false
+                        }
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("3 · " + localizationManager.localized("invitation_display_name_label"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(textPrimary)
+                Text(localizationManager.localized("invitation_display_name_hint"))
+                    .font(.caption)
+                    .foregroundColor(textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                TextField(localizationManager.localized("invitation_display_name_placeholder"), text: $displayName)
+                    .font(AladdinFamilyType.body())
+                    .foregroundColor(textPrimary)
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(fieldBg)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            )
+                    )
+                    .disableAutocorrection(true)
+                    .onChange(of: displayName) { _ in
+                        errorMessage = nil
+                    }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(panelBg)
+        )
+    }
+
+    private func accordionHeader(step: String, title: String, subtitle: String, expanded: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text("\(step) · \(title)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(textPrimary)
+                Spacer()
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundColor(textSecondary)
+                    .lineLimit(1)
+                Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(textSecondary)
+            }
+            .padding(.vertical, 6)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func choiceRow(title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .foregroundColor(textPrimary)
+                Spacer()
+                if selected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color(red: 0.45, green: 0.85, blue: 0.60))
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(selected ? Color.white.opacity(0.16) : Color.white.opacity(0.06))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var joinButton: some View {
+        Button(action: { joinFamily() }) {
+            HStack {
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                } else {
+                    Text(localizationManager.localized("invitation_join_family_button"))
+                        .font(.system(size: 16, weight: .semibold))
+                }
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(canSubmit ? Color.green : Color.gray.opacity(0.55))
+            )
+        }
+        .disabled(!canSubmit)
+    }
 
     private enum CurrentDeviceAutoBindState: Equatable {
         case idle
@@ -231,11 +339,27 @@ struct InvitationCodeInputModal: View {
         case failed
     }
 
+    private var normalizedDisplayName: String {
+        displayName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    }
+
+    private var isDisplayNameValid: Bool {
+        let n = normalizedDisplayName
+        guard n.count >= 2, n.count <= 24 else { return false }
+        return n.unicodeScalars.allSatisfy { scalar in
+            CharacterSet.letters.contains(scalar)
+                || CharacterSet.whitespaces.contains(scalar)
+                || scalar == "-"
+        }
+    }
+
     private var canSubmit: Bool {
         code.isValidRecoveryCode &&
         selectedRole != nil &&
         selectedAgeGroup != nil &&
-        selectedLetter != nil &&
+        isDisplayNameValid &&
         !isLoading &&
         autoBindState == .idle
     }
@@ -252,7 +376,7 @@ struct InvitationCodeInputModal: View {
                 }
                 Text(autoBindMessage ?? localizationManager.localized("family_join_autobind_progress"))
                     .font(.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -277,7 +401,7 @@ struct InvitationCodeInputModal: View {
                         dismissInvitationFlow()
                     }
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(textSecondary)
                 }
             }
         }
@@ -285,8 +409,27 @@ struct InvitationCodeInputModal: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.08))
+                .fill(panelBg)
         )
+    }
+
+    private func seedInviteFromNavigationOrInitial() {
+        if let pendingPayload = navigationManager.pendingFamilyInvitePayload,
+           let invite = FamilyInviteCodeParser.parse(pendingPayload) {
+            rawInvitePayload = pendingPayload
+            code = invite.displayCode
+            navigationManager.pendingFamilyInvitePayload = nil
+            navigationManager.pendingFamilyInviteCode = nil
+        } else if let pendingCode = navigationManager.pendingFamilyInviteCode,
+                  let invite = FamilyInviteCodeParser.parse(pendingCode) {
+            rawInvitePayload = pendingCode
+            code = invite.displayCode
+            navigationManager.pendingFamilyInviteCode = nil
+        } else if let initialCode = initialCode,
+                  let invite = FamilyInviteCodeParser.parse(initialCode) {
+            rawInvitePayload = initialCode
+            code = invite.displayCode
+        }
     }
 
     private func isLikelyDevicePin(_ value: String) -> Bool {
@@ -294,7 +437,6 @@ struct InvitationCodeInputModal: View {
         return trimmed.count == 6 && trimmed.allSatisfy { $0.isNumber }
     }
 
-    /// При маршруте через `NavigationManager` (`.invitationCode` + `isPresented: .constant(true)`) binding не закрывает экран — нужен `goBack()`.
     private func dismissInvitationFlow() {
         if navigationManager.currentScreen == .invitationCode {
             navigationManager.goBack(reason: "invitation_code_cancel")
@@ -318,22 +460,25 @@ struct InvitationCodeInputModal: View {
             code = invite.displayCode
         }
         preflightMessage = nil
+        preflightInviteIfPossible()
     }
-    
-    // MARK: - Join Family
-    
+
     private func joinFamily() {
         guard code.isValidRecoveryCode else {
             errorMessage = localizationManager.localized("invitation_invalid_code")
             return
         }
         guard let role = selectedRole,
-              let ageGroup = selectedAgeGroup,
-              let letter = selectedLetter else {
+              let ageGroup = selectedAgeGroup else {
             errorMessage = localizationManager.localized("invitation_join_profile_required")
             return
         }
+        guard isDisplayNameValid else {
+            errorMessage = localizationManager.localized("invitation_display_name_invalid")
+            return
+        }
 
+        let name = normalizedDisplayName
         isLoading = true
         joinPollAttempts = 0
         errorMessage = nil
@@ -341,7 +486,7 @@ struct InvitationCodeInputModal: View {
 
         registrationVM.selectedRole = role
         registrationVM.selectedAgeGroup = ageGroup
-        registrationVM.selectedLetter = letter
+        registrationVM.selectedDisplayName = name
 
         guard let invitePayload = FamilyInviteCodeParser.parse(rawInvitePayload ?? code) else {
             isLoading = false
@@ -366,7 +511,7 @@ struct InvitationCodeInputModal: View {
                     }
                 case .failure(let error):
                     self.isLoading = false
-                    self.errorMessage = error.localizedDescription
+                    self.errorMessage = self.humanizedJoinError(error)
                 }
             }
         }
@@ -384,14 +529,30 @@ struct InvitationCodeInputModal: View {
                 switch result {
                 case .success:
                     self.preflightMessage = self.localizationManager.localized("invitation_code_preflight_ok")
+                    self.errorMessage = nil
                 case .failure(let error):
                     self.preflightMessage = nil
-                    self.errorMessage = error.localizedDescription
+                    self.errorMessage = self.humanizedJoinError(error)
                 }
             }
         }
     }
-    
+
+    private func humanizedJoinError(_ error: Error) -> String {
+        if let networkError = error as? NetworkError {
+            let text = networkError.localizedDescription
+            if text.lowercased().contains("not found") || text.contains("Не найдено") {
+                return localizationManager.localized("invitation_code_not_found_friendly")
+            }
+            return text
+        }
+        let text = error.localizedDescription
+        if text.lowercased().contains("not found") {
+            return localizationManager.localized("invitation_code_not_found_friendly")
+        }
+        return text
+    }
+
     private func checkJoinStatus() {
         if registrationVM.isLoading {
             joinPollAttempts += 1
@@ -401,13 +562,12 @@ struct InvitationCodeInputModal: View {
                 errorMessage = localizationManager.localized("invitation_join_family_failed")
                 return
             }
-            // Если все еще грузится, проверяем еще раз через секунду
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.checkJoinStatus()
             }
             return
         }
-        
+
         if let error = registrationVM.errorMessage {
             self.errorMessage = error
             self.isLoading = false
@@ -451,11 +611,11 @@ struct InvitationCodeInputModal: View {
                 case .success:
                     FamilyLocalStore.notifyFamilyMembersUpdated()
                     NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
-                    autoBindState = .bound
-                    autoBindMessage = localizationManager.localized("family_join_autobind_success")
+                    self.autoBindState = .bound
+                    self.autoBindMessage = self.localizationManager.localized("family_join_autobind_success")
                 case .failure:
-                    autoBindState = .failed
-                    autoBindMessage = localizationManager.localized("family_join_autobind_failed")
+                    self.autoBindState = .failed
+                    self.autoBindMessage = self.localizationManager.localized("family_join_autobind_failed")
                 }
             }
         }
@@ -488,25 +648,5 @@ struct InvitationCodeInputModal: View {
         case .adult: return localizationManager.localized("invitation_age_adult")
         case .senior: return localizationManager.localized("invitation_age_senior")
         }
-    }
-}
-
-// MARK: - String Extension
-
-extension String {
-    var isValidRecoveryCode: Bool {
-        FamilyInviteCodeParser.parse(self)?.displayCode == self.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-    }
-}
-
-// MARK: - Preview
-
-struct InvitationCodeInputModal_Previews: PreviewProvider {
-    @State static var isPresented = true
-    
-    static var previews: some View {
-        InvitationCodeInputModal(isPresented: $isPresented)
-            .environmentObject(NavigationManager())
-            .environmentObject(LocalizationManager.shared)
     }
 }

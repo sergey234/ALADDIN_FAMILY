@@ -110,9 +110,45 @@ def _delete_user_rows_sync(user_id: int) -> None:
                 # Optional tables / schema drift — core deletes below must still run.
                 pass
 
+        # Membership wipe must succeed in one pass (join blocked by already_in_another_family otherwise).
         db.execute(text("DELETE FROM family_members WHERE user_id = :uid"), {"uid": user_id})
+        try:
+            with db.begin_nested():
+                db.execute(
+                    text(
+                        """
+                        DELETE FROM family_members
+                        WHERE CAST(user_id AS TEXT) = :uid_text
+                        """
+                    ),
+                    {"uid_text": uid_text},
+                )
+        except Exception:
+            pass
+        try:
+            with db.begin_nested():
+                db.execute(
+                    text(
+                        """
+                        DELETE FROM family_invites
+                        WHERE family_id IN (
+                            SELECT id FROM families WHERE owner_user_id = :uid
+                        )
+                        """
+                    ),
+                    {"uid": user_id},
+                )
+        except Exception:
+            pass
         db.execute(text("DELETE FROM families WHERE owner_user_id = :uid"), {"uid": user_id})
         db.execute(text("DELETE FROM users WHERE id = :uid"), {"uid": user_id})
+        left = db.execute(
+            text("SELECT COUNT(*) FROM family_members WHERE user_id = :uid"),
+            {"uid": user_id},
+        ).scalar()
+        if left and int(left) > 0:
+            db.rollback()
+            raise RuntimeError("family_members_wipe_incomplete")
         db.commit()
     except Exception:
         db.rollback()

@@ -8,6 +8,7 @@ struct PromoActivationScreen: View {
     @State private var isRedeeming = false
     @State private var statusMessage: String?
     @State private var isSuccess = false
+    @State private var showAppStoreRedeemHelp = false
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("promo_bonus_active_until") private var promoBonusActiveUntil: String = ""
 
@@ -39,6 +40,7 @@ struct PromoActivationScreen: View {
                         header
                         accessStatusCard
                         inputCard
+                        appStoreFriendCodeCard
                         explanationCard
                     }
                     .padding(20)
@@ -46,9 +48,49 @@ struct PromoActivationScreen: View {
             }
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showAppStoreRedeemHelp) {
+            AppStoreRedeemCodeHelpSheet()
+                .environmentObject(localizationManager)
+        }
         .onAppear {
             if code.isEmpty, let pending = navigationManager.pendingPromoCode {
-                code = normalizeCode(pending)
+                let normalized = normalizeCode(pending)
+                if routeFamilyInviteIfNeeded(normalized) {
+                    return
+                }
+                code = normalized
+            }
+        }
+        .onChange(of: code) { newValue in
+            let normalized = normalizeCode(newValue)
+            guard !normalized.isEmpty else { return }
+            // Smart door: FAM never stays on promo — route to family join.
+            if routeFamilyInviteIfNeeded(normalized) {
+                statusMessage = localizationManager.localized("promo_routing_to_family_join")
+                isSuccess = false
+            }
+        }
+    }
+
+    private var appStoreFriendCodeCard: some View {
+        card {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(localizationManager.localized("appstore_redeem_help_card_title"))
+                    .font(.headline)
+                    .foregroundColor(.white)
+                Text(localizationManager.localized("appstore_redeem_help_card_body"))
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    showAppStoreRedeemHelp = true
+                } label: {
+                    Text(localizationManager.localized("appstore_redeem_help_card_cta"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("promo_appstore_redeem_help_cta")
             }
         }
     }
@@ -199,6 +241,9 @@ struct PromoActivationScreen: View {
     private func redeem() {
         let cleanCode = normalizeCode(code)
         guard !cleanCode.isEmpty else { return }
+        if routeFamilyInviteIfNeeded(cleanCode) {
+            return
+        }
         if let localError = localPromoInputError(for: cleanCode) {
             code = cleanCode
             isSuccess = false
@@ -240,13 +285,25 @@ struct PromoActivationScreen: View {
             .filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
     }
 
+    /// FAM / family QR → join flow (not team promo). Require parse or FAM-… long enough (avoid routing on "FAM" alone while typing).
+    @discardableResult
+    private func routeFamilyInviteIfNeeded(_ cleanCode: String) -> Bool {
+        let looksLikeFamilyInvite =
+            FamilyInviteCodeParser.parse(cleanCode) != nil
+            || (cleanCode.hasPrefix("FAM-") && cleanCode.count >= 12)
+        guard looksLikeFamilyInvite else { return false }
+        guard navigationManager.currentScreen != .invitationCode else { return true }
+        navigationManager.pendingFamilyInviteCode = cleanCode
+        navigationManager.pendingPromoCode = nil
+        navigationManager.navigateTo(.invitationCode)
+        return true
+    }
+
     private func localPromoInputError(for cleanCode: String) -> String? {
         if cleanCode.hasPrefix("MEM_") {
             return localizationManager.localized("promo_error_member_id")
         }
-        if FamilyInviteCodeParser.parse(cleanCode) != nil || cleanCode.hasPrefix("FAM") {
-            return localizationManager.localized("promo_error_family_invite_code")
-        }
+        // Family invite handled by routeFamilyInviteIfNeeded before redeem.
         if cleanCode.filter({ $0.isNumber }).count == 6,
            cleanCode.range(of: #"^[0-9-]+$"#, options: .regularExpression) != nil {
             return localizationManager.localized("promo_error_device_code")
@@ -286,5 +343,115 @@ struct PromoActivationScreen: View {
             return localizationManager.localized("promo_error_backend_not_ready")
         }
         return localizationManager.localized("promo_error_generic")
+    }
+}
+
+/// Пошаговая инструкция: коды App Store Connect («для друзей») → App Store → «Активировать код».
+struct AppStoreRedeemCodeHelpSheet: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+
+    private let stepKeys = [
+        "appstore_redeem_help_step1",
+        "appstore_redeem_help_step2",
+        "appstore_redeem_help_step3",
+        "appstore_redeem_help_step4",
+        "appstore_redeem_help_step5",
+        "appstore_redeem_help_step6",
+        "appstore_redeem_help_step7",
+        "appstore_redeem_help_step8"
+    ]
+
+    var body: some View {
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+                    .accessibilityLabel(localizationManager.localized("appstore_redeem_help_close"))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(localizationManager.localized("appstore_redeem_help_title"))
+                            .font(AladdinFamilyType.title2())
+                            .foregroundColor(.secondaryGold)
+                            .accessibilityAddTraits(.isHeader)
+
+                        Text(localizationManager.localized("appstore_redeem_help_intro"))
+                            .font(.body)
+                            .foregroundColor(.white.opacity(0.85))
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(stepKeys, id: \.self) { key in
+                                Text(localizationManager.localized(key))
+                                    .font(.body)
+                                    .foregroundColor(.white.opacity(0.92))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white.opacity(0.08))
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                        )
+                    }
+                    .padding(20)
+                }
+
+                VStack(spacing: 12) {
+                    Button {
+                        openAppStore()
+                    } label: {
+                        Text(localizationManager.localized("appstore_redeem_help_open_store"))
+                            .font(.bodyBold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.primaryBlue)
+                            .cornerRadius(14)
+                    }
+                    .accessibilityIdentifier("appstore_redeem_help_open_store")
+
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text(localizationManager.localized("appstore_redeem_help_close"))
+                            .font(.body.weight(.semibold))
+                            .foregroundColor(.white.opacity(0.75))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 24)
+            }
+        }
+    }
+
+    private func openAppStore() {
+        // Opens App Store; user then follows steps (Account → Activate / Redeem code).
+        let candidates = [
+            URL(string: "itms-apps://apps.apple.com"),
+            URL(string: "https://apps.apple.com")
+        ].compactMap { $0 }
+        guard let url = candidates.first(where: { UIApplication.shared.canOpenURL($0) }) ?? candidates.first else { return }
+        UIApplication.shared.open(url)
     }
 }

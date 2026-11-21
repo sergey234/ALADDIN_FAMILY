@@ -246,7 +246,10 @@ class FamilyRegistrationViewModel: ObservableObject {
     
     @Published var selectedRole: FamilyRole?
     @Published var selectedAgeGroup: AgeGroup?
+    /// Legacy letter step (old clients / tests). Prefer `selectedDisplayName`.
     @Published var selectedLetter: String?
+    /// Hybrid name: family nickname RU/EN (replaces letter UX).
+    @Published var selectedDisplayName: String?
     
     @Published var familyID: String?
     @Published var recoveryCode: String?
@@ -394,31 +397,58 @@ class FamilyRegistrationViewModel: ObservableObject {
     }
     
     @MainActor func onLetterSelected(_ letter: String) {
-        selectedLetter = letter
-        showLetterModal = false
-        
-        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #1: Сохраняем имя пользователя на основе выбранной буквы
-        // Формируем имя: "Родитель A", "Ребенок B", "Подросток C", "Пожилой D" и т.д.
-        if let role = selectedRole {
+        // Legacy path / unit tests: single letter → "Role Letter" nickname.
+        let trimmed = letter.trimmingCharacters(in: .whitespacesAndNewlines)
+        selectedLetter = trimmed.uppercased()
+        if trimmed.count == 1 {
             let roleName: String
-            switch role {
+            switch selectedRole {
             case .parent: roleName = LocalizationManager.shared.localized("family_role_parent_label")
             case .child: roleName = LocalizationManager.shared.localized("family_role_child_label")
             case .teenager: roleName = LocalizationManager.shared.localized("family_role_teen_label")
             case .elderly: roleName = LocalizationManager.shared.localized("family_role_elderly_label")
+            case .none: roleName = LocalizationManager.shared.localized("family_role_parent_label")
             }
-            let userName = "\(roleName) \(letter)"
-            if !UserDefaults.standard.bool(forKey: "admin_add_mode") {
-                UserDefaults.standard.set(userName, forKey: "current_user_name")
-                UserDefaults.standard.synchronize()
-                logger.business("✅ User name saved: \(userName)")
-            } else {
-                logger.business("🛡️ ADMIN-ADD: skipping current_user_name overwrite (\(userName))")
-            }
+            onDisplayNameSelected("\(roleName) \(trimmed.uppercased())")
+        } else {
+            onDisplayNameSelected(trimmed)
         }
-        
-        // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, создание семьи происходит сразу
+    }
+
+    @MainActor func onDisplayNameSelected(_ rawName: String) {
+        let name = Self.normalizeFamilyDisplayName(rawName)
+        guard Self.isValidFamilyDisplayName(name) else {
+            errorMessage = LocalizationManager.shared.localized("invitation_display_name_invalid")
+            registrationErrorKind = .nonRetryable
+            return
+        }
+        selectedDisplayName = name
+        showLetterModal = false
+
+        if !UserDefaults.standard.bool(forKey: "admin_add_mode") {
+            UserDefaults.standard.set(name, forKey: "current_user_name")
+            UserDefaults.standard.set(name, forKey: "user_display_name")
+            UserDefaults.standard.synchronize()
+            logger.business("✅ User display name saved: \(name)")
+        } else {
+            logger.business("🛡️ ADMIN-ADD: skipping current_user_name overwrite (\(name))")
+        }
+
         createFamily()
+    }
+
+    static func normalizeFamilyDisplayName(_ raw: String) -> String {
+        raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+    }
+
+    static func isValidFamilyDisplayName(_ name: String) -> Bool {
+        guard name.count >= 2, name.count <= 24 else { return false }
+        return name.unicodeScalars.allSatisfy { scalar in
+            CharacterSet.letters.contains(scalar)
+                || CharacterSet.whitespaces.contains(scalar)
+                || scalar == "-"
+        }
     }
     
     // MARK: - Create Family
@@ -446,9 +476,7 @@ class FamilyRegistrationViewModel: ObservableObject {
         }
         
         guard let role = selectedRole,
-              let ageGroup = selectedAgeGroup,
-              let letter = selectedLetter else {
-            // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Логирование если данные отсутствуют
+              let ageGroup = selectedAgeGroup else {
             if selectedRole == nil {
                 VisualLogger.shared.log("❌ ПОДРОСТОК: selectedRole = nil!", level: .error, category: "FAMILY")
                 MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: selectedRole = nil!")
@@ -457,17 +485,27 @@ class FamilyRegistrationViewModel: ObservableObject {
                 VisualLogger.shared.log("❌ ПОДРОСТОК: selectedAgeGroup = nil!", level: .error, category: "FAMILY")
                 MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: selectedAgeGroup = nil!")
             }
-            if selectedLetter == nil {
-                VisualLogger.shared.log("❌ ПОДРОСТОК: selectedLetter = nil!", level: .error, category: "FAMILY")
-                MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: selectedLetter = nil!")
-            }
             return
         }
+
+        let displayName: String = {
+            if let n = selectedDisplayName, Self.isValidFamilyDisplayName(n) { return n }
+            if let letter = selectedLetter, !letter.isEmpty {
+                return Self.normalizeFamilyDisplayName(letter)
+            }
+            return ""
+        }()
+        guard Self.isValidFamilyDisplayName(displayName) else {
+            VisualLogger.shared.log("❌ display_name missing/invalid", level: .error, category: "FAMILY")
+            errorMessage = LocalizationManager.shared.localized("invitation_display_name_invalid")
+            return
+        }
+        selectedDisplayName = displayName
         
         // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Логирование перед созданием
         if role == .teenager {
-            VisualLogger.shared.log("✅ ПОДРОСТОК: Данные готовы - role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), letter=\(letter)", level: .success, category: "FAMILY")
-            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Данные готовы - role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), letter=\(letter)")
+            VisualLogger.shared.log("✅ ПОДРОСТОК: Данные готовы - role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), name=\(displayName)", level: .success, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Данные готовы - role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), name=\(displayName)")
         }
         
         // ✅ СОХРАНЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ
@@ -491,19 +529,12 @@ class FamilyRegistrationViewModel: ObservableObject {
         let request = CreateFamilyRequest(
             role: role.serverValue,  // ✅ ИСПРАВЛЕНО: Подросток → "child" для сервера
             age_group: ageGroup.serverValue,  // ✅ Преобразуем в формат сервера
-            personal_letter: letter,
+            personal_letter: nil,
+            display_name: displayName,
             device_type: getDeviceType()
         )
 
-        let userName: String
-        let roleName: String
-        switch role {
-        case .parent: roleName = LocalizationManager.shared.localized("family_role_parent_label")
-        case .child: roleName = LocalizationManager.shared.localized("family_role_child_label")
-        case .teenager: roleName = LocalizationManager.shared.localized("family_role_teen_label")
-        case .elderly: roleName = LocalizationManager.shared.localized("family_role_elderly_label")
-        }
-        userName = "\(roleName) \(letter)"
+        let userName = displayName
 
         // ✅ UPDATED: Uses single source SubscriptionManager.canAddFamilyMember (no more duplicate logic)
         // This unifies admin_add_mode with FamilyScreen and eliminates bypass.
@@ -1049,9 +1080,17 @@ class FamilyRegistrationViewModel: ObservableObject {
     
     func joinFamily(withCode code: String) {
         guard let role = selectedRole,
-              let ageGroup = selectedAgeGroup,
-              let letter = selectedLetter else {
+              let ageGroup = selectedAgeGroup else {
             errorMessage = LocalizationManager.shared.localized("invitation_join_profile_required")
+            return
+        }
+        let displayName: String = {
+            if let n = selectedDisplayName, Self.isValidFamilyDisplayName(n) { return n }
+            if let letter = selectedLetter, Self.isValidFamilyDisplayName(letter) { return letter }
+            return ""
+        }()
+        guard Self.isValidFamilyDisplayName(displayName) else {
+            errorMessage = LocalizationManager.shared.localized("invitation_display_name_invalid")
             return
         }
 
@@ -1060,11 +1099,15 @@ class FamilyRegistrationViewModel: ObservableObject {
             return
         }
 
-        joinFamilySanitized(with: invitePayload, role: role, ageGroup: ageGroup, letter: letter)
+        joinFamilySanitized(with: invitePayload, role: role, ageGroup: ageGroup, displayName: displayName)
     }
 
-    private func joinFamilySanitized(with invitePayload: FamilyInviteCodeParser.Payload, role: FamilyRole, ageGroup: AgeGroup, letter: String) {
+    private func joinFamilySanitized(with invitePayload: FamilyInviteCodeParser.Payload, role: FamilyRole, ageGroup: AgeGroup, displayName: String) {
         isLoading = true
+        if !UserDefaults.standard.bool(forKey: "admin_add_mode") {
+            UserDefaults.standard.set(displayName, forKey: "current_user_name")
+            UserDefaults.standard.set(displayName, forKey: "user_display_name")
+        }
 
         let request = JoinFamilyRequest(
             family_id: invitePayload.familyId,
@@ -1072,7 +1115,8 @@ class FamilyRegistrationViewModel: ObservableObject {
             invite_token: invitePayload.inviteToken,
             role: role.serverValue,  // ✅ ИСПРАВЛЕНО: Подросток → "child" для сервера
             age_group: ageGroup.serverValue,  // ✅ ИСПРАВЛЕНО: Используем serverValue
-            personal_letter: letter,
+            personal_letter: nil,
+            display_name: displayName,
             device_type: getDeviceType()
         )
         
@@ -1631,7 +1675,8 @@ class FamilyRegistrationViewModel: ObservableObject {
 struct CreateFamilyRequest: Codable {
     let role: String
     let age_group: String
-    let personal_letter: String
+    let personal_letter: String?
+    let display_name: String?
     let device_type: String
     var device_check_token: String? = nil
 }
@@ -1643,7 +1688,8 @@ struct JoinFamilyRequest: Codable {
     let invite_token: String?
     let role: String
     let age_group: String
-    let personal_letter: String
+    let personal_letter: String?
+    let display_name: String?
     let device_type: String
 }
 
@@ -1676,6 +1722,7 @@ struct FamilyInvitePreflightResponse: Codable {
     let can_join: Bool
     let message: String?
     let error: String?
+    let taken_names: [String]?
 }
 
 

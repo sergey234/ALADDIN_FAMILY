@@ -1,0 +1,25 @@
+# ALADDIN invite / promo web fallbacks.
+# Do not apply directly on production without owner GO.
+#
+# Goal:
+# - /promo/<code> opens landing/promo.html, then aladdin://promo?code=<code>
+# - /family/invite/<code> opens landing/family-invite.html, then family join in app
+# - /invite/<code> keeps the old referral/friend invite fallback
+
+location ~ ^/promo/ {
+    try_files /promo.html =404;
+}
+
+location ~ ^/family/invite/ {
+    try_files /family-invite.html =404;
+}
+
+location ~ ^/invite/ {
+    try_files /invite.html =404;
+}
+
+# Optional admin page for promo creation.
+# Protect this route with existing admin auth and network policy before enabling.
+location = /admin/promo.html {
+    try_files /admin/promo.html =404;
+}
