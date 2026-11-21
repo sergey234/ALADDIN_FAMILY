@@ -504,9 +504,6 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized("map_privacy_zone_title"))
                     .font(AladdinFamilyType.title2())
                     .foregroundColor(.secondaryGold)
-                Text(localizationManager.localized("map_privacy_zone_hint"))
-                    .font(AladdinFamilyType.subheadline())
-                    .foregroundColor(.white.opacity(0.85))
 
                 Toggle(isOn: Binding(
                     get: { familyAutoShareEnabled },
@@ -535,6 +532,12 @@ struct WhereIsPhoneScreen: View {
                     print("WHERE_PHONE quiet enabled=\(value)")
                 }
                 .accessibilityIdentifier("where_phone_quiet_zone_toggle")
+
+                Text(localizationManager.localized("map_privacy_zone_hint"))
+                    .font(AladdinFamilyType.caption())
+                    .foregroundColor(.white.opacity(0.75))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("where_phone_quiet_zone_hint")
 
                 if quietZoneEnabled {
                     Slider(value: $quietMeters, in: 50...500, step: 25)
@@ -2094,9 +2097,6 @@ struct WhereIsPhoneScreen: View {
             Text(localizationManager.localized("map_invite_banner_title"))
                 .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
-            Text(localizationManager.localized("map_create_circle_teaser"))
-                .font(AladdinFamilyType.subheadline())
-                .foregroundColor(.textSecondary)
             actionButton("map_invite_banner_cta", id: "where_phone_invite_banner") {
                 showInviteRole = true
             }
@@ -2888,7 +2888,7 @@ struct WhereIsPhoneScreen: View {
                 .padding(Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
-                Text(localizationManager.localized("map_bt_soon_title") + " — " + localizationManager.localized("map_bt_soon_body"))
+                Text(localizationManager.localized("map_bt_soon_title") + " – " + localizationManager.localized("map_bt_soon_body"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
 
@@ -3111,12 +3111,7 @@ struct WhereIsPhoneScreen: View {
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.textPrimary)
                                 .padding(.top, Spacing.s)
-                            Picker(localizationManager.localized("map_share_duration"), selection: $shareDuration) {
-                                ForEach(FamilyMapShareDuration.allCases) { dur in
-                                    Text(localizationManager.localized(dur.titleKey)).tag(dur)
-                                }
-                            }
-                            .pickerStyle(.segmented)
+                            shareDurationChips
                             if let exp = shareExpiresAt, FamilyMapShareSessionStore.isActive {
                                 let minsLeft = max(1, Int(ceil(exp.timeIntervalSinceNow / 60)))
                                 Text(
@@ -4375,19 +4370,43 @@ struct WhereIsPhoneScreen: View {
         }
     }
 
+    /// Light-on-dark chips (Settings pattern) — system `.segmented` is unreadable on storm glass.
+    private var shareDurationChips: some View {
+        HStack(spacing: Spacing.xs) {
+            ForEach(FamilyMapShareDuration.allCases) { dur in
+                let selected = shareDuration == dur
+                Button {
+                    HapticFeedback.selection()
+                    shareDuration = dur
+                    FamilyMapShareSessionStore.selectedHours = dur.rawValue
+                } label: {
+                    Text(localizationManager.localized(dur.titleKey))
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .foregroundColor(selected ? .black : .white.opacity(0.92))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.small)
+                                .fill(selected ? Color.secondaryGold.opacity(0.95) : Color.white.opacity(0.12))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(localizationManager.localized(dur.titleKey))
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+    }
+
     private var shareCard: some View {
         card(symbol: "mappin.circle.fill", titleKey: "map_share_activity_title") {
             Text(localizationManager.localized("map_share_activity_hint"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
 
-            Picker(localizationManager.localized("map_share_duration"), selection: $shareDuration) {
-                ForEach(FamilyMapShareDuration.allCases) { dur in
-                    Text(localizationManager.localized(dur.titleKey)).tag(dur)
-                }
-            }
-            .pickerStyle(.segmented)
-            .accessibilityIdentifier("where_phone_share_duration")
+            shareDurationChips
+                .accessibilityIdentifier("where_phone_share_duration")
 
             if let exp = shareExpiresAt, FamilyMapShareSessionStore.isActive {
                 let minsLeft = max(1, Int(ceil(exp.timeIntervalSinceNow / 60)))
@@ -4801,7 +4820,7 @@ struct WhereIsPhoneScreen: View {
     private func personLine(name: String, at: Date) -> String {
         String(
             format: localizationManager.localized("where_phone_person_time"),
-            name,
+            friendlyPointName(name),
             WherePhoneTime.ago(since: at, localization: localizationManager)
         )
     }

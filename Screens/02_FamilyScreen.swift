@@ -34,7 +34,7 @@ struct FamilyScreen: View {
     @State private var familySyncContextBanner: String? = nil
     @State private var pendingRemovalMember: FamilyMemberData? = nil
     @State private var deletingMemberIds: Set<String> = []
-    /// fsl-15 — перерисовка карточек после «я в порядке»
+    /// fsl-15 – перерисовка карточек после «я в порядке»
     @State private var presenceRefreshTick: Int = 0
     // Quick-add sheet was removed; we use navigation to AddMemberOptionsScreen
     
@@ -100,7 +100,7 @@ struct FamilyScreen: View {
     @State private var showFamilyGroups: Bool = false
     @State private var showLeaveFamilyConfirm: Bool = false
     @State private var leaveFamilyBanner: String? = nil
-    /// Pay-pains S3: вар.1 — три окна ПК, полная сетка по «Показать все».
+    /// Pay-pains S3: вар.1 – три окна ПК, полная сетка по «Показать все».
     @State private var payPainsShowAllParentalCards: Bool = false
     /// Pay-pains S5: блок «Вместе» свёрнут по умолчанию.
     @State private var payPainsTogetherExpanded: Bool = false
@@ -208,7 +208,7 @@ struct FamilyScreen: View {
         return familyBypassLegacyChild.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Карточка «Защита от обхода»: сервер — источник истины; при сбое API — локальный журнал `ParentalControlManager`.
+    /// Карточка «Защита от обхода»: сервер – источник истины; при сбое API – локальный журнал `ParentalControlManager`.
     private func refreshBypassCardFromServer() {
         let raw = familyBypassEffectiveChildId
         let childKey: String? = raw.isEmpty ? nil : raw
@@ -250,7 +250,7 @@ struct FamilyScreen: View {
             return
         }
         lastFamilyOperationTime = Date()
-        // ✅ ШАГ 1: При переходе в профиль родителя/ребёнка — сохраняем информацию для принудительного обновления при возврате
+        // ✅ ШАГ 1: При переходе в профиль родителя/ребёнка – сохраняем информацию для принудительного обновления при возврате
         print("🚨 navigateToMemberScreen triggered for \(role) — will force refresh on return")
         UserDefaults.standard.set(true, forKey: "needs_family_refresh_on_return")
         UserDefaults.standard.synchronize()
@@ -383,7 +383,7 @@ struct FamilyScreen: View {
         return !deduplicateFamilyMembers(decoded).isEmpty
     }
 
-    /// Синхронная гидратация из UserDefaults до первого кадра — убирает flash «Список пуст» при 1 member в кэше.
+    /// Синхронная гидратация из UserDefaults до первого кадра – убирает flash «Список пуст» при 1 member в кэше.
     private func hydrateFamilyMembersFromStorageImmediate() {
         UserDefaults.standard.synchronize()
         guard FamilyLocalStore.validatePersistedRosterAgainstCurrentFamily() else {
@@ -423,7 +423,7 @@ struct FamilyScreen: View {
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
         UserDefaults.standard.synchronize()
 
-        // Кэш ростера мог остаться от другой семьи / экрана чата при пустом `family_id` — иначе на 1–5 с показывается «чужой» ребёнок, пока не придёт sync.
+        // Кэш ростера мог остаться от другой семьи / экрана чата при пустом `family_id` – иначе на 1–5 с показывается «чужой» ребёнок, пока не придёт sync.
         if !FamilyLocalStore.validatePersistedRosterAgainstCurrentFamily() {
             familyMembers = []
         }
@@ -431,7 +431,7 @@ struct FamilyScreen: View {
         // ✅ OPTIMIZATION: Update admin status early
         updateAdminStatus()
         
-        // 1) Гидратация из кэша ПЕРЕД API: раньше вызывали sync (async) и сразу читали UD — пока sync не
+        // 1) Гидратация из кэша ПЕРЕД API: раньше вызывали sync (async) и сразу читали UD – пока sync не
         //    завершился, диск часто содержал старый список и перетирал in-memory список после add (новый участник пропадал).
         // 2) Не «сжимаем» список из UserDefaults, если в памяти уже больше участников (save мог отложиться из-за debounce).
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
@@ -497,7 +497,7 @@ struct FamilyScreen: View {
                 return
             }
 
-            // Без `family_id` на сервере это только плейсхолдер «владелец устройства» — всегда родитель.
+            // Без `family_id` на сервере это только плейсхолдер «владелец устройства» – всегда родитель.
             // Иначе случайный `current_user_role=child` (детский режим / старый UD) рисовал «ребёнка» в блоке «Участники семьи».
             let userName = UserDefaults.standard.string(forKey: currentUserNameKey) ?? localizationManager.localized("family_you")
             let role: FamilyMemberCard.FamilyRole = .parent
@@ -550,7 +550,7 @@ struct FamilyScreen: View {
 
     /// Лёгкая перезагрузка только из локального storage без API sync.
     /// Нужна после локального добавления участника, чтобы UI обновлялся мгновенно.
-    // ✅ FIXED: reloadFamilyMembersFromStorageOnly — now respects guards and only cleans if needed
+    // ✅ FIXED: reloadFamilyMembersFromStorageOnly – now respects guards and only cleans if needed
     private func reloadFamilyMembersFromStorageOnly() {
         let now = Date()
         guard !isFamilyLoadInProgress && !isFamilySyncInProgress && now.timeIntervalSince(lastFamilyOperationTime) >= 0.3 else {
@@ -655,7 +655,7 @@ struct FamilyScreen: View {
                     // Обновление счётчиков not-seen теперь выполняется НИЖЕ и только при полном ответе, не при partial subset
 
                     // Не перетираем локальный непустой список пустым серверным ответом,
-                    // но phantom UUID placeholder (без MEM_*) при fid=none — удаляем.
+                    // но phantom UUID placeholder (без MEM_*) при fid=none – удаляем.
                     if members.isEmpty && !self.familyMembers.isEmpty {
                         if FamilyLocalStore.clearPhantomLocalRosterIfNeeded(members: &self.familyMembers) {
                             VisualLogger.shared.log(
@@ -752,7 +752,7 @@ struct FamilyScreen: View {
                     }
 
                     // ✅ SIMPLIFIED MERGE: локальные записи (в т.ч. только локальные id), затем перезапись данными сервера по ключу MEM_*.
-                    // Не подменяем роль «первого в списке» на .parent — это давало детям роль родителя после сортировки и ломало delete/isMe.
+                    // Не подменяем роль «первого в списке» на .parent – это давало детям роль родителя после сортировки и ломало delete/isMe.
                     var mergedById: [String: FamilyMemberData] = [:]
                     if skipCrossFamilyMerge {
                         for item in convertedMembers {
@@ -842,12 +842,12 @@ struct FamilyScreen: View {
                         print("🛡️ [partial subset] Защита сработала: сохраняем \(mergedMembers.count) участников вместо \(convertedMembers.count) от сервера")
                     }
 
-                    // 🔥 НОВОЕ: Агрессивная дедупликация ВСЕГДА (даже при partial subset) — теперь local=9 → ~2
+                    // 🔥 НОВОЕ: Агрессивная дедупликация ВСЕГДА (даже при partial subset) – теперь local=9 → ~2
                     // Это ключевой фикс: partial subset больше не оставляет 9 дублей.
                     finalMembers = self.deduplicateFamilyMembers(finalMembers)
                     let finalIds = Set(finalMembers.map { $0.id })
 
-                    // FINAL v3: Apply merged server+local list, then cleanup (must bypass sync guards — this runs while isFamilySyncInProgress).
+                    // FINAL v3: Apply merged server+local list, then cleanup (must bypass sync guards – this runs while isFamilySyncInProgress).
                     let finalAfterCleanup = self.deduplicateFamilyMembers(finalMembers)
                     self.familyMembers = finalAfterCleanup
                     self.cleanupFamilyMembers(serverIds: serverIdSet, allowDuringFamilySync: true)
@@ -890,7 +890,7 @@ struct FamilyScreen: View {
                             self.syncFamilyMembersFromAPI()
                         }
                     } else {
-                        // Полный ответ ИЛИ после максимума ретраев — сбрасываем счётчик и баннер
+                        // Полный ответ ИЛИ после максимума ретраев – сбрасываем счётчик и баннер
                         UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
                         if showSyncBanner { 
                             showSyncBanner = false 
@@ -961,7 +961,7 @@ struct FamilyScreen: View {
                     )
                     self.updateAdminStatus()  // ✅ OPTIMIZATION: Refresh cached admin status after sync
                     self.clearDeleteButtonCache(reason: "after_sync")  // Invalidate only after real data change
-                    // Broadcast after sync flag clears — save during sync skips notify to avoid CPU loop.
+                    // Broadcast after sync flag clears – save during sync skips notify to avoid CPU loop.
                     DispatchQueue.main.async {
                         FamilyLocalStore.notifyFamilyMembersUpdated()
                     }
@@ -1008,7 +1008,7 @@ struct FamilyScreen: View {
             return
         }
 
-        // Improved duplicate check using canonical logic (your_member_id or serverId) — fixes infinite self-duplicates
+        // Improved duplicate check using canonical logic (your_member_id or serverId) – fixes infinite self-duplicates
         let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
         let isDuplicate = familyMembers.contains { existingMember in
             let sameCanonical = (existingMember.id == member.id || 
@@ -1019,7 +1019,7 @@ struct FamilyScreen: View {
         }
         
         if !isDuplicate {
-            // ✅ Важное улучшение: если участник уже имеет serverMemberId — используем его
+            // ✅ Важное улучшение: если участник уже имеет serverMemberId – используем его
             var memberToAdd = member
             if memberToAdd.serverMemberId == nil && memberToAdd.id.hasPrefix("MEM_") {
                 memberToAdd.serverMemberId = memberToAdd.id
@@ -1049,7 +1049,7 @@ struct FamilyScreen: View {
             }
             UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
             UserDefaults.standard.synchronize()
-            // saveNotSeenCounters() встроено в saveFamilyMembers() — вызываем его ниже
+            // saveNotSeenCounters() встроено в saveFamilyMembers() – вызываем его ниже
 
             // Локальное сохранение оставляем как кэш для мгновенного UI,
             // затем сразу дожимаем серверную запись и повторный fetch.
@@ -1243,7 +1243,7 @@ struct FamilyScreen: View {
                     let lower = errorMsg.lowercased()
                     let isSelfRemoval = lower.contains("self-removal") || lower.contains("self removal")
                     
-                    // ✅ Self-removal: не портим локальный ростер — откатываем optimistic и тянем правду с сервера.
+                    // ✅ Self-removal: не портим локальный ростер – откатываем optimistic и тянем правду с сервера.
                     if isSelfRemoval {
                         optimisticallyRemovedIds.remove(memberToRemove.id)
                         VisualLogger.shared.log(
@@ -1253,7 +1253,7 @@ struct FamilyScreen: View {
                         )
                         self.reconcileOrSyncAfterRemove()
                         removeMemberErrorMessage = localizationManager.currentLanguage == .russian
-                            ? "Сервер считает этого участника вашей учётной записью. Список обновлён — удаление другого профиля выполняйте с того устройства или обратитесь в поддержку."
+                            ? "Сервер считает этого участника вашей учётной записью. Список обновлён – удаление другого профиля выполняйте с того устройства или обратитесь в поддержку."
                             : "The server treats this member as your account. Refresh the list; remove another profile from that device or contact support."
                         HapticFeedback.notification(.warning)
                         deletingMemberIds.remove(memberToRemove.id)
@@ -1336,7 +1336,7 @@ struct FamilyScreen: View {
     private func resolveServerMemberIdForRemoval(_ member: FamilyMemberData, apiService: APIService) async -> String? {
         let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
         
-        // 0) Быстрый путь: serverMemberId или MEM_* — обязательно сверяем с your_member_id (иначе сервер вернёт Self-removal).
+        // 0) Быстрый путь: serverMemberId или MEM_* – обязательно сверяем с your_member_id (иначе сервер вернёт Self-removal).
         if let sid = member.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), !sid.isEmpty {
             if !myMemberId.isEmpty, sid == myMemberId {
                 print("❌ [resolve] SELF-REMOVAL BLOCKED (serverMemberId == your_member_id) for \(member.name)")
@@ -1418,7 +1418,7 @@ struct FamilyScreen: View {
     }
     
     // Сохранение участников семьи в UserDefaults
-    // ✅ FIXED: saveFamilyMembers — reduced logging + debounce protection
+    // ✅ FIXED: saveFamilyMembers – reduced logging + debounce protection
     // No more excessive synchronize() or prints on every call. This was flooding console + blocking UI.
     private func saveFamilyMembers(allowDuringFamilySync: Bool = false) {
         // Strong guard against re-entrancy + debounce (minimum 300ms between operations)
@@ -1466,20 +1466,20 @@ struct FamilyScreen: View {
             UserDefaults.standard.set(countersData, forKey: "family_not_seen_counters")
         }
 
-        // synchronize() ONLY when necessary — moved here from cleanup to reduce spam
+        // synchronize() ONLY when necessary – moved here from cleanup to reduce spam
         UserDefaults.standard.synchronize()
 
         #if DEBUG
         print("✅ Stored \(familyMembers.count) family members in UserDefaults")
         #endif
 
-        // Notify other screens; skip during server sync — we already mutated `familyMembers` in memory.
+        // Notify other screens; skip during server sync – we already mutated `familyMembers` in memory.
         if !allowDuringFamilySync {
             FamilyLocalStore.notifyFamilyMembersUpdated()
         }
     }
     
-    // 🔥 FINAL v3: Агрессивная дедупликация + cleanup — server truth всегда
+    // 🔥 FINAL v3: Агрессивная дедупликация + cleanup – server truth всегда
     // Seed при 0 → 1 (current as .parent). Force role=.parent for creator. Удаляет local-only IDs.
     // Решает "4 вместо 3", role=child/elderly для current user, "no changes skip save", extra MEM_*.
     private func deduplicateFamilyMembers(_ members: [FamilyMemberData]) -> [FamilyMemberData] {
@@ -1524,7 +1524,7 @@ struct FamilyScreen: View {
         return deduped
     }
     
-    // ✅ FINAL SIMPLIFIED: cleanupFamilyMembers — no more magic, only explicit desync handling
+    // ✅ FINAL SIMPLIFIED: cleanupFamilyMembers – no more magic, only explicit desync handling
     // This replaces complex notSeenCounters + aggressive pruning with simple, predictable logic.
     private func cleanupFamilyMembers(serverIds: Set<String> = [], allowDuringFamilySync: Bool = false) {
         // Strong debounce - prevent cascade calls
@@ -1635,7 +1635,7 @@ struct FamilyScreen: View {
                 newIsCreator = (myMemberId == creatorStored)
                 newIsParent = FamilyRosterAccess.canManageRoster(members: familyMembers)
             } else {
-                // Без сохранённого creator_id не используем «первый в списке» — порядок после сортировки недетерминирован и ломал роли/кнопки.
+                // Без сохранённого creator_id не используем «первый в списке» – порядок после сортировки недетерминирован и ломал роли/кнопки.
                 newIsCreator = false
                 newIsParent = FamilyRosterAccess.canManageRoster(members: familyMembers)
             }
@@ -1823,7 +1823,7 @@ struct FamilyScreen: View {
                 .font(.caption.weight(.semibold))
                 .foregroundColor(Color.secondaryGold)
             Text(
-                "\(localizationManager.localized("family_roster_device_id_prefix")) \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · \(localizationManager.localized("family_roster_device_role_prefix")) \(roleLabel) · \(localizationManager.localized("family_roster_device_parents_count")) \(parents) · \(localizationManager.localized("family_roster_device_can_manage")) \(rosterYesNo)"
+                "\(localizationManager.localized("family_roster_device_id_prefix")) \(myId.isEmpty ? "–" : String(myId.prefix(14)))… · \(localizationManager.localized("family_roster_device_role_prefix")) \(roleLabel) · \(localizationManager.localized("family_roster_device_parents_count")) \(parents) · \(localizationManager.localized("family_roster_device_can_manage")) \(rosterYesNo)"
             )
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.78))
@@ -1882,7 +1882,7 @@ struct FamilyScreen: View {
     }
     
     // MARK: - Visibility rules for delete (trash) button
-    // Удаление из UI: только родитель/пожилой (canManageFamilyRoster). «Себя» определяем только по совпадению с your_member_id — без флага «создатель» для чужой строки.
+    // Удаление из UI: только родитель/пожилой (canManageFamilyRoster). «Себя» определяем только по совпадению с your_member_id – без флага «создатель» для чужой строки.
 
     /// Создатель семьи для правил удаления: `family_creator_member_id` с `createFamily`, иначе первый родитель/пожилой в списке (join без creator в API).
     private func resolvedFamilyCreatorMemberForDeletionRules() -> FamilyMemberData? {
@@ -1970,7 +1970,7 @@ struct FamilyScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон — Storm Mesh family light (Batch 1c, режим C)
+            // Фон – Storm Mesh family light (Batch 1c, режим C)
             StormMeshBackground(variant: .family)
             
             VStack(spacing: 0) {
@@ -2018,7 +2018,7 @@ struct FamilyScreen: View {
                         }
                         .accessibilityLabel(localizationManager.localized("family_notification_settings"))
                         
-                        // Toolbar «+»: родитель/пожилой (в т.ч. fallback по роли при рассинх id); тариф — на экране добавления или алерт при жёстком лимите
+                        // Toolbar «+»: родитель/пожилой (в т.ч. fallback по роли при рассинх id); тариф – на экране добавления или алерт при жёстком лимите
                         Button(action: {
                             logger.buttonTap("Add Member", screen: "Family")
                             guard canManageFamilyRoster || needsCreateFamilyOnServer else {
@@ -2124,7 +2124,7 @@ struct FamilyScreen: View {
                                 .accessibilityLabel(localizationManager.localized("family_protection_accessibility"))
                                 .accessibilityAddTraits(.isHeader)
                             
-                            // Improved stats: capacity "X of Y (Plan)" + progress — same SSOT as Main (`effectiveFamilyDisplay`).
+                            // Improved stats: capacity "X of Y (Plan)" + progress – same SSOT as Main (`effectiveFamilyDisplay`).
                             let display2 = subscriptionManager.effectiveFamilyDisplay(localRosterCount: familyMembers.count)
                             let currentCount2 = display2.slotsUsed
                             let limit2 = display2.slotsMax
@@ -2169,7 +2169,7 @@ struct FamilyScreen: View {
                             .accessibilityElement(children: .contain)
                             .accessibilityLabel(localizationManager.localized("family_statistics_accessibility"))
                             
-                            // Same SSOT as Main chip — never show 1/1 while Main shows 1/3 (or vice versa).
+                            // Same SSOT as Main chip – never show 1/1 while Main shows 1/3 (or vice versa).
                             let display3 = subscriptionManager.effectiveFamilyDisplay(localRosterCount: familyMembers.count)
                             let currentCount3 = display3.slotsUsed
                             let limit3 = display3.slotsMax
@@ -2244,7 +2244,7 @@ struct FamilyScreen: View {
                                             navigationManager.navigateTo(.tariffs)
                                         }
                                         .font(.system(size: 14, weight: .semibold))
-                                        // S80: dark ink on gold — not pure black wash on family list.
+                                        // S80: dark ink on gold – not pure black wash on family list.
                                         .foregroundColor(Color(red: 0.04, green: 0.07, blue: 0.16))
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 8)
@@ -2482,7 +2482,7 @@ struct FamilyScreen: View {
                                     }
                                 }
                             }
-                            // Пустое состояние — CTA «Создать семью» или «Добавить первого участника»
+                            // Пустое состояние – CTA «Создать семью» или «Добавить первого участника»
                             else if isFamilyRosterHydrating
                                 || isFamilyLoadInProgress
                                 || isFamilySyncInProgress
@@ -2559,7 +2559,7 @@ struct FamilyScreen: View {
                         }
 
                         if PayPainsUIFlags.usesNewPayPainsFamily {
-                            // S2: ПК под участниками. Пустая семья + мастер — без стены карточек (S1).
+                            // S2: ПК под участниками. Пустая семья + мастер – без стены карточек (S1).
                             let showPayPainsShelves = !familyMembers.isEmpty || payPainsMasterDismissed
                             if showPayPainsShelves {
                                 if canManageFamilyRoster {
@@ -2715,7 +2715,7 @@ struct FamilyScreen: View {
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showPostRegistrationDeviceGuide) {
-            // P6: no white system sheet void — StormMesh + glass card (Удобный режим).
+            // P6: no white system sheet void – StormMesh + glass card (Удобный режим).
             ZStack {
                 StormMeshBackground(variant: .neutral)
                 PostRegistrationDeviceGuideModal(
@@ -2748,7 +2748,7 @@ struct FamilyScreen: View {
             .environmentObject(localizationManager)
         }
         .sheet(item: $postAdminDevicePending, onDismiss: {
-            // Свайп вниз или системное закрытие: как «Позже» — не оставляем зависшие pending-ключи.
+            // Свайп вниз или системное закрытие: как «Позже» – не оставляем зависшие pending-ключи.
             clearPendingPostAdminAddDeviceKeys()
         }) { pending in
             PostAdminAddDeviceCoordinatorSheet(
@@ -2880,7 +2880,7 @@ struct FamilyScreen: View {
             unicornBalance = UnicornRewardsStore.readBalance(for: UnicornRewardsStore.resolveActiveChildId())
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
-            // Reload local cache only — do NOT schedule API sync here (was causing sync→save→notify CPU loop).
+            // Reload local cache only – do NOT schedule API sync here (was causing sync→save→notify CPU loop).
             guard !isFamilyLoadInProgress && !isFamilySyncInProgress else {
                 #if DEBUG
                 print("🔄 [FamilyMembersUpdated] Skipping reload - already in progress")
@@ -3161,7 +3161,7 @@ private struct PostRegistrationDeviceGuideModal: View {
 
 extension FamilyScreen {
 
-    /// Демо-строки карточек родительского контроля — всегда из `localizationManager`, не из «замороженного» init `@State`.
+    /// Демо-строки карточек родительского контроля – всегда из `localizationManager`, не из «замороженного» init `@State`.
     fileprivate func refreshParentalControlDemoStrings() {
         timeRemaining = localizationManager.localized("family_time_remaining_placeholder")
         locationStatus = localizationManager.localized("parental_location_home")
@@ -3367,7 +3367,7 @@ extension FamilyScreen {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("family_open_groups")
 
-                // S46 — leave family on this device (not group labels; not self-remove API).
+                // S46 – leave family on this device (not group labels; not self-remove API).
                 Button {
                     HapticFeedback.notification(.warning)
                     showLeaveFamilyConfirm = true
@@ -3876,7 +3876,7 @@ struct FamilyParentalControlCard: View {
                 }
                 .frame(height: 20)
                 
-                // Иконка (уменьшена) — Wave C AliveGlyph / Classic emoji
+                // Иконка (уменьшена) – Wave C AliveGlyph / Classic emoji
                 Group {
                     if let aliveIcon {
                         AliveGlyph(id: aliveIcon, size: 28) {
@@ -4232,7 +4232,7 @@ struct FamilyTimeControlModal: View {
     @AppStorage("parental_instagram_limit") private var instagramLimit: String = "30 min"
     @AppStorage("parental_tiktok_limit") private var tiktokLimit: String = "20 min"
     
-    // Статистика — только если есть реальные данные в UserDefaults (без mock fallback)
+    // Статистика – только если есть реальные данные в UserDefaults (без mock fallback)
     @State private var hasRealTimeStats = false
     @State private var totalTimeUsedLabel = ""
     @State private var totalTimeLimitLabel = ""
@@ -4390,7 +4390,7 @@ struct FamilyTimeControlModal: View {
         .withVisualLogger()
     }
     
-    /// Usage stats: DeviceActivity / store / server — all tracked apps; never invent mock minutes.
+    /// Usage stats: DeviceActivity / store / server – all tracked apps; never invent mock minutes.
     private func loadTimeStatistics() {
         Task {
             let fromDevice = await ParentalControlManager.shared.fetchRealScreenTimeStats()
@@ -4546,7 +4546,7 @@ private enum FamilyDefaultClock {
             ParentalScreenTimeFormat.storageValue(hours: hours),
             forKey: "parental_screen_time_limit"
         )
-        // Usage unknown until DeviceActivity report — do not invent remaining.
+        // Usage unknown until DeviceActivity report – do not invent remaining.
         UserDefaults.standard.set("", forKey: "parental_screen_time_remaining")
     }
 
@@ -4652,10 +4652,10 @@ struct FamilyMonitoringModal: View {
     @State private var appsUsedCount: Int = 0
     @State private var contactsCount: Int = 0
     
-    @State private var topSite: String = "—"
+    @State private var topSite: String = "–"
     @State private var topSiteVisits: Int = 0
-    @State private var topApp: String = "—"
-    @State private var topAppTime: String = "—"
+    @State private var topApp: String = "–"
+    @State private var topAppTime: String = "–"
     @State private var activeContacts: Int = 0
     
     @State private var isLoadingMonitoringDetail = false
@@ -4868,15 +4868,15 @@ struct FamilyMonitoringModal: View {
                         topSite = first.site
                         topSiteVisits = first.visits
                     } else {
-                        topSite = "—"
+                        topSite = "–"
                         topSiteVisits = 0
                     }
                     if let app = detail.topApps.first {
                         topApp = app.name
                         topAppTime = formatMonitoringUsageMinutes(app.usageMinutes)
                     } else {
-                        topApp = "—"
-                        topAppTime = "—"
+                        topApp = "–"
+                        topAppTime = "–"
                     }
                 case .failure:
                     break
@@ -4985,7 +4985,7 @@ struct FamilyLocationModal: View {
                     isEnabled: $isSOSEnabled
                 )
 
-                // Точность геозоны — аккуратно ниже кнопки SOS
+                // Точность геозоны – аккуратно ниже кнопки SOS
                 Text("\(localizationManager.localized("parental_location_accuracy_50m"))"
                      + (locationLastUpdate.isEmpty ? "" : " • \(locationLastUpdate)"))
                     .font(.captionSmall)
@@ -5114,7 +5114,7 @@ struct FamilyLocationModal: View {
             break
         }
         
-        // WAVE3 L12 — Always только из экрана мест (consent / CTA), не при открытии Location modal.
+        // WAVE3 L12 – Always только из экрана мест (consent / CTA), не при открытии Location modal.
         
         // Запуск Significant-Change Location Service
         if isLocationEnabledState && locationManager.hasRequiredAuthorization(forBackground: true) {
@@ -5142,7 +5142,7 @@ struct FamilyLocationModal: View {
         print("🔍 FamilyLocationModal: Загрузка статистики геолокации...")
 
         locationStatus = localizationManager.localized("family_location_waiting_gps")
-        locationLastUpdate = "—"
+        locationLastUpdate = "–"
         refreshGeofencesSummaryFromStore()
 
         // Живой GPS + город (reverse geocode) + «рядом с Домом» при совпадении зоны
@@ -5182,7 +5182,7 @@ struct FamilyLocationModal: View {
                 }
             } catch let error as LocationManagerError {
                 await MainActor.run {
-                    // ProdQA S21: keep last good coords/city if we already had them — never say «unavailable» over a known fix.
+                    // ProdQA S21: keep last good coords/city if we already had them – never say «unavailable» over a known fix.
                     if !self.applyCachedLocationStatusIfAny() {
                         self.locationStatus = error.localizedDescription
                         self.locationLastUpdate = localizationManager.localized("family_location_unavailable_hint")
@@ -5239,7 +5239,7 @@ struct FamilyLocationModal: View {
         return true
     }
 
-    /// Real saved places only — no Lenin/Pushkin demo names.
+    /// Real saved places only – no Lenin/Pushkin demo names.
     private func refreshGeofencesSummaryFromStore() {
         let key = "geofences_settings"
         guard let data = UserDefaults.standard.data(forKey: key),
@@ -5808,7 +5808,7 @@ struct FamilyAdditionalModal: View {
                 if !name.isEmpty {
                     deviceName = name
                 }
-                // status/lastActive — лучший локальный сигнал без mock батареи.
+                // status/lastActive – лучший локальный сигнал без mock батареи.
                 deviceStatus = member.lastActive.isEmpty
                     ? localizationManager.localized("remote_lock_status_unknown")
                     : member.lastActive
@@ -5870,7 +5870,7 @@ struct FamilyModalBaseView<Content: View>: View {
     
     var body: some View {
         ZStack {
-            // S18 Snowball — family modal chrome
+            // S18 Snowball – family modal chrome
             AladdinSnowballPalette.canvasGradient
                 .ignoresSafeArea()
             StormMeshBackground(variant: .family)
@@ -7207,7 +7207,7 @@ struct ScheduleSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     
-    // ✅ Динамический DateFormatter — локаль зависит от языка приложения (для корректного отображения времени)
+    // ✅ Динамический DateFormatter – локаль зависит от языка приложения (для корректного отображения времени)
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
@@ -7295,7 +7295,7 @@ struct ScheduleSettingsModal: View {
                     }
                 }
                 
-                // Время начала и окончания (светлая капсула — цифры читаемы на тёмном фоне)
+                // Время начала и окончания (светлая капсула – цифры читаемы на тёмном фоне)
                 VStack(spacing: Spacing.m) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         Text(localizationManager.localized("schedule_access_from"))
@@ -7404,7 +7404,7 @@ struct SleepTimeSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     
-    // ✅ Динамический DateFormatter — локаль зависит от языка приложения
+    // ✅ Динамический DateFormatter – локаль зависит от языка приложения
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
@@ -7443,7 +7443,7 @@ struct SleepTimeSettingsModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.l) {
-                // Время сна (светлая капсула — цифры читаемы на тёмном фоне)
+                // Время сна (светлая капсула – цифры читаемы на тёмном фоне)
                 VStack(spacing: Spacing.m) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         Text(localizationManager.localized("bedtime_block_from"))
@@ -7558,7 +7558,7 @@ struct AppLimitsSettingsModal: View {
     // Сохранение лимитов приложений в UserDefaults
     private let limitsKey = "app_limits_settings"
     
-    // ✅ Динамический DateFormatter — локаль зависит от языка приложения
+    // ✅ Динамический DateFormatter – локаль зависит от языка приложения
     private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
@@ -7800,7 +7800,7 @@ struct AppLimitsSettingsModal: View {
 
 struct GeofencesSettingsModal: View {
     @Binding var isPresented: Bool
-    /// S30 — optional prefill from map chips (home/school/work/other).
+    /// S30 – optional prefill from map chips (home/school/work/other).
     var preferredNameKey: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -7814,9 +7814,9 @@ struct GeofencesSettingsModal: View {
     @State private var newGeofenceAddress = ""
     @State private var newGeofenceRadius: Double = 100
     @State private var isResolvingPlace = false
-    /// WAVE3 L6 — GPS pin from “use current location” (avoids geocode miss on coord fallback).
+    /// WAVE3 L6 – GPS pin from “use current location” (avoids geocode miss on coord fallback).
     @State private var pendingSetupCoordinate: CLLocationCoordinate2D? = nil
-    /// L16 A3 — «Мои места для семьи»
+    /// L16 A3 – «Мои места для семьи»
     @State private var adultSelfShareEnabled = GeofenceAdultSelfShareStore.isEnabled
     @State private var showValidationAlert = false
     @State private var validationAlertMessage = ""
@@ -7852,7 +7852,7 @@ struct GeofencesSettingsModal: View {
         return (fromGeofences + presets).filter { seen.insert($0).inserted }
     }
 
-    // Загрузка геозон из UserDefaults — без демо «ул. Ленина / Пушкина»
+    // Загрузка геозон из UserDefaults – без демо «ул. Ленина / Пушкина»
     private func loadGeofences() {
         placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
         noShowSchedules = GeofenceNoShowMonitor.loadSchedules()
@@ -7982,7 +7982,7 @@ struct GeofencesSettingsModal: View {
                     .accessibilityIdentifier("geofences_empty_state")
                 }
 
-                // geo-04 — согласие: уведомления о местах, не слежка
+                // geo-04 – согласие: уведомления о местах, не слежка
                 if !placesConsentAccepted {
                     VStack(alignment: .leading, spacing: Spacing.s) {
                         Text(localizationManager.localized("geofence_consent_title"))
@@ -8008,7 +8008,7 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
-                // L16 A3 — взрослый: «Мои места для семьи»
+                // L16 A3 – взрослый: «Мои места для семьи»
                 if placesConsentAccepted {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Toggle(isOn: $adultSelfShareEnabled) {
@@ -8039,7 +8039,7 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
-                // WAVE3 G — Срочный сигнал семье + D1 Critical Alerts
+                // WAVE3 G – Срочный сигнал семье + D1 Critical Alerts
                 if AppStoreBuildPolicy.allowsHealthKitIntegration {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Toggle(isOn: Binding(
@@ -8206,7 +8206,7 @@ struct GeofencesSettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                 }
 
-                // F8 / S30: частые точки — дом/школа/работа/другое + адресный поиск в форме
+                // F8 / S30: частые точки – дом/школа/работа/другое + адресный поиск в форме
                 if placesConsentAccepted,
                    locationManager.authorizationStatus == .authorizedAlways
                     || locationManager.authorizationStatus == .authorizedWhenInUse {
@@ -8317,7 +8317,7 @@ struct GeofencesSettingsModal: View {
                         )
                         .cornerRadius(CornerRadius.medium)
                         
-                        // S30 — адрес + MKLocalSearchCompleter подсказки
+                        // S30 – адрес + MKLocalSearchCompleter подсказки
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             ZStack(alignment: .topLeading) {
                                 if newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -8515,7 +8515,7 @@ struct GeofencesSettingsModal: View {
                     }
                 }
 
-                // geo-02 — No Show: место + время + дни
+                // geo-02 – No Show: место + время + дни
                 if placesConsentAccepted {
                     noShowSection
                 }
@@ -8559,7 +8559,7 @@ struct GeofencesSettingsModal: View {
         showAddForm = true
     }
 
-    /// S30 — pick Apple Maps suggestion → real address + pin for save.
+    /// S30 – pick Apple Maps suggestion → real address + pin for save.
     @MainActor
     private func selectAddressSuggestion(_ completion: MKLocalSearchCompletion) async {
         isResolvingPlace = true
@@ -8589,7 +8589,7 @@ struct GeofencesSettingsModal: View {
         }
     }
 
-    /// WAVE3 L6 — geocode (or refuse) before save; no silent places without coords.
+    /// WAVE3 L6 – geocode (or refuse) before save; no silent places without coords.
     @MainActor
     private func addGeofenceWithResolvedCoords() async {
         HapticFeedback.impact(.medium)
@@ -8654,7 +8654,7 @@ struct GeofencesSettingsModal: View {
         }
     }
 
-    /// WAVE3 L6/L14 — pin from current GPS with precise accuracy for setup only.
+    /// WAVE3 L6/L14 – pin from current GPS with precise accuracy for setup only.
     @MainActor
     private func fillAddressFromCurrentLocation() async {
         isResolvingPlace = true
@@ -8991,7 +8991,7 @@ struct LocationHistoryDetailModal: View {
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                // Частые места — только при реальной статистике (не фейковые «32 визита»)
+                // Частые места – только при реальной статистике (не фейковые «32 визита»)
                 if !frequentPlaces.isEmpty {
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("location_frequent_places"))
@@ -9019,7 +9019,7 @@ struct LocationHistoryDetailModal: View {
                     Divider()
                 }
                 
-                // geo-03 — события мест за 7 дней (не GPS-трек)
+                // geo-03 – события мест за 7 дней (не GPS-трек)
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("location_events_7d"))
                         .font(.bodyBold)
@@ -9076,7 +9076,7 @@ struct LocationHistoryDetailModal: View {
     }
     
     private func loadLocationData() {
-        // geo-03 — enter/exit до 7 дней; без демо-ленты
+        // geo-03 – enter/exit до 7 дней; без демо-ленты
         let dayFmt = DateFormatter()
         dayFmt.locale = localizationManager.locale
         dayFmt.dateStyle = .short
@@ -9177,7 +9177,7 @@ struct WeeklyReportDetailModal: View {
         }
     }
     
-    private var emDash: String { "—" }
+    private var emDash: String { "–" }
     
     private func weeklyReportDetailBody(latest: ParentalReportItem) -> some View {
         let content = latest.content
@@ -9395,7 +9395,7 @@ struct SuspiciousActivityDetailModal: View {
                                 .font(.body)
                                 .foregroundColor(.textPrimary)
                             
-                            Text(warning.time.isEmpty ? "—" : warning.time)
+                            Text(warning.time.isEmpty ? "–" : warning.time)
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
@@ -10542,7 +10542,7 @@ struct FamilyParentalControlSettingsModal: View {
 
                 CompanionPersonalitySection()
 
-                // ProdQA S06 — parent custom blocked sites
+                // ProdQA S06 – parent custom blocked sites
                 ParentalCustomBlockedSitesSection()
                     .environmentObject(localizationManager)
                 
@@ -10938,7 +10938,7 @@ struct FamilyBypassProtectionModal: View {
         return legacySelectedChild
     }
 
-    /// Параметр для `/dns/config`: UUID или серверный `MEM_…` (как в прод-логах); иначе — без `childId`.
+    /// Параметр для `/dns/config`: UUID или серверный `MEM_…` (как в прод-логах); иначе – без `childId`.
     private var dnsConfigChildId: String? {
         DNSProtectionManager.dnsConfigQueryChildId(from: effectiveChildId)
     }
@@ -11108,7 +11108,7 @@ struct FamilyBypassProtectionModal: View {
                     }
                     .padding(.top, Spacing.s)
 
-                    // Статистика за неделю — ниже детального блока
+                    // Статистика за неделю – ниже детального блока
                     HStack {
                         Text(localizationManager.localized("bypass_attempts_week"))
                             .font(.caption)

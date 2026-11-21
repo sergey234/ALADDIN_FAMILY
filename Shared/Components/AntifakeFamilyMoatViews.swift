@@ -37,12 +37,7 @@ struct AntifakeFamilyReportsSection: View {
                             .foregroundColor(.white.opacity(0.75))
                             .multilineTextAlignment(.leading)
 
-                        if !isExpanded {
-                            Text(localizationManager.localized("antifake_family_reports_collapsed_hint"))
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.6))
-                                .multilineTextAlignment(.leading)
-                        }
+                        // Collapsed hint removed — chevron is enough (copy cleanup 2026-11-21).
                     }
 
                     Spacer(minLength: Spacing.s)

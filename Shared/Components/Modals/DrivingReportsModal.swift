@@ -606,7 +606,7 @@ struct DrivingReportsModal: View {
                 tripMetricChip(
                     value: report.maxSpeed > 0
                         ? String(format: "%.0f", min(report.maxSpeed, 140))
-                        : "—",
+                        : "–",
                     label: localizationManager.localized("driving_stat_max_kmh_short")
                 )
                 tripMetricChip(
@@ -687,7 +687,10 @@ struct DrivingReportsModal: View {
         let before = CMMotionActivityManager.authorizationStatus()
         print("WHERE_PHONE motion tap before=\(before.rawValue) available=\(CMMotionActivityManager.isActivityAvailable())")
         guard CMMotionActivityManager.isActivityAvailable() else {
+            // Device: stay silent. Simulator: short toast without the word "Simulator".
+            #if targetEnvironment(simulator)
             ToastManager.shared.showInfo(localizationManager.localized("driving_motion_unavailable"))
+            #endif
             print("WHERE_PHONE motion tap → unavailable")
             return
         }
@@ -1489,7 +1492,7 @@ enum FamilyDrivingWeeklyReportPDF {
                 scoreN += 1
             }
             riskTotal += m.risks.knownTotal
-            let score = m.stats.totalTrips > 0 ? m.stats.formattedAverageSafetyScore : "—"
+            let score = m.stats.totalTrips > 0 ? m.stats.formattedAverageSafetyScore : "–"
             let row = [
                 truncate(m.name, 16),
                 "\(m.stats.totalTrips)",
@@ -1510,7 +1513,7 @@ enum FamilyDrivingWeeklyReportPDF {
 
         y += 12
         y = drawLine(at: y)
-        let avgScore = scoreN > 0 ? String(format: "%.1f/10", scoreSum / Double(scoreN)) : "—"
+        let avgScore = scoreN > 0 ? String(format: "%.1f/10", scoreSum / Double(scoreN)) : "–"
         y = drawTableRow(
             [
                 localization.localized("drive_pdf_family_total"),
@@ -1541,7 +1544,7 @@ enum FamilyDrivingWeeklyReportPDF {
         y = drawText(periodLabel, at: y + 2, font: .systemFont(ofSize: 12, weight: .medium))
         y += 10
         y = drawText(
-            "\(localization.localized("drive_trips")): \(member.stats.totalTrips)  ·  \(localization.localized("drive_total_km")): \(String(format: "%.1f", member.stats.totalDistance))  ·  \(localization.localized("driving_reports_safety_score")): \(member.stats.totalTrips > 0 ? member.stats.formattedAverageSafetyScore : "—")",
+            "\(localization.localized("drive_trips")): \(member.stats.totalTrips)  ·  \(localization.localized("drive_total_km")): \(String(format: "%.1f", member.stats.totalDistance))  ·  \(localization.localized("driving_reports_safety_score")): \(member.stats.totalTrips > 0 ? member.stats.formattedAverageSafetyScore : "–")",
             at: y,
             font: .systemFont(ofSize: 11)
         )
@@ -1961,11 +1964,11 @@ struct DrivingTripPlaybackSheet: View {
                             tripMetricTile(String(format: "%.1f", report.distance), "driving_stat_km_short")
                             tripMetricTile("\(max(report.durationMinutes, 1))", "driving_stat_min_short")
                             tripMetricTile(
-                                report.maxSpeed > 0 ? String(format: "%.0f", min(report.maxSpeed, 140)) : "—",
+                                report.maxSpeed > 0 ? String(format: "%.0f", min(report.maxSpeed, 140)) : "–",
                                 "driving_stat_max_kmh_short"
                             )
                             tripMetricTile(
-                                report.averageSpeed > 0 ? String(format: "%.0f", report.averageSpeed) : "—",
+                                report.averageSpeed > 0 ? String(format: "%.0f", report.averageSpeed) : "–",
                                 "driving_stat_avg_kmh_short"
                             )
                         }
