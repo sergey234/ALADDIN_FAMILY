@@ -111,7 +111,7 @@ struct NotificationsScreen: View {
                     .padding(Spacing.l)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .background(AladdinSnowballPalette.canvasGradient.ignoresSafeArea())
+                .background(StormMeshBackground(variant: .neutral).ignoresSafeArea())
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {

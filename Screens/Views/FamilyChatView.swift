@@ -114,7 +114,10 @@ struct FamilyChatView: View {
                     .cornerRadius(20)
                     .frame(maxWidth: .infinity)
 
-                Button(action: sendMessage) {
+                Button(action: {
+                    HapticFeedback.impact(.light)
+                    sendMessage()
+                }) {
                     Image(systemName: "paperplane.fill")
                         .font(.title2)
                         .foregroundColor(.white)

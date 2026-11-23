@@ -949,22 +949,19 @@ struct AddDeviceView: View {
                             HStack {
                                 if isLoading {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: Color.backgroundDark))
                                 } else {
                                     Text(localizationManager.localized("devices_add_device_button"))
                                         .font(.bodyBold)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.55)
+                                        .allowsTightening(true)
                                 }
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(isFormValid ? Color.backgroundDark : Color.textSecondary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Spacing.m)
-                            .background(
-                                LinearGradient(
-                                    colors: isFormValid ? [Color.primaryBlue, Color.secondaryBlue] : [Color.gray, Color.gray.opacity(0.5)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .background(isFormValid ? Color.secondaryGold : Color.backgroundMedium)
                             .cornerRadius(CornerRadius.medium)
                         }
                         .aladdinTapFeedback(.medium)

@@ -670,7 +670,7 @@ struct MainScreen: View {
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.secondaryGold)
                                         .multilineTextAlignment(.center)
-                                        .lineLimit(1)
+                                        .lineLimit(2)
                                         .minimumScaleFactor(0.85)
                                     Text(localizationManager.localized("main_simple_version_subtitle"))
                                         .font(.system(size: 10))

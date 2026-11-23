@@ -24,63 +24,12 @@ struct ProfileEditView: View {
     
     // MARK: - Body
     
+    private var hasChanges: Bool {
+        name != storedName || alias != storedAlias
+    }
+
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Фон
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                    .ignoresSafeArea()
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(localizationManager.localized("profile_edit_background_accessibility"))
-                
-                ScrollView(.vertical, showsIndicators: true) {
-                    VStack(spacing: 20) {
-                        // Аватар
-                        avatarSection
-                        
-                        // Поля редактирования
-                        editFields
-                        
-                        // Кнопки действий
-                        actionButtons
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 100)
-                }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("profile_edit_form_accessibility"))
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text(localizationManager.localized("profile_edit_title"))
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("profile_edit_cancel")) {
-                        dismiss()
-                    }
-                    .foregroundColor(.blue)
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("profile_edit_save")) {
-                        saveProfile()
-                    }
-                    .foregroundColor(.blue)
-                    .font(.system(size: 16, weight: .semibold))
-                }
-            }
-        }
+        profileEditNavigation
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(selectedImage: $pendingCropImage)
         }
@@ -124,211 +73,184 @@ struct ProfileEditView: View {
             alias = storedAlias
         }
     }
+
+    @ViewBuilder
+    private var profileEditNavigation: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                profileEditForm
+            }
+        } else {
+            NavigationView {
+                profileEditForm
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+        }
+    }
+
+    private var profileEditForm: some View {
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+                .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localizationManager.localized("profile_edit_background_accessibility"))
+
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 24) {
+                    avatarSection
+                    editFields
+                    resetPasswordRow
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 40)
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(localizationManager.localized("profile_edit_form_accessibility"))
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .modifier(StormHiddenNavBarModifier())
+        .aladdinToolbar {
+            ToolbarItem(placement: .principal) {
+                Text(localizationManager.localized("profile_edit_title"))
+                    .font(AladdinFamilyType.body(weight: .semibold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(localizationManager.localized("profile_edit_cancel")) {
+                    dismiss()
+                }
+                .font(AladdinFamilyType.body())
+                .foregroundColor(.white)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(localizationManager.localized("profile_edit_save")) {
+                    saveProfile()
+                }
+                .font(AladdinFamilyType.body(weight: .semibold))
+                .foregroundColor(hasChanges ? Color.secondaryGold : Color.white.opacity(0.35))
+                .disabled(!hasChanges)
+            }
+        }
+    }
     
     // MARK: - Avatar Section
     
     private var avatarSection: some View {
-        VStack(spacing: 16) {
-            Text(localizationManager.localized("profile_edit_photo_title"))
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityAddTraits(.isHeader)
-            
+        VStack(spacing: 12) {
             Button(action: {
                 showImagePicker = true
             }) {
                 ZStack {
                     Circle()
-                        .fill(LinearGradient(
-                            colors: [.blue, .blue.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 120, height: 120)
-                        .overlay(
-                            Group {
-                                if let selectedImage = selectedImage {
-                                    Image(uiImage: selectedImage)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 120, height: 120)
-                                        .clipShape(Circle())
-                                } else {
-                                    Text(avatarInitial)
-                                        .font(.system(size: 40, weight: .bold))
-                                        .foregroundColor(.white)
-                                }
-                            }
-                        )
-                    
-                    // Кнопка редактирования
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            Circle()
-                                .fill(Color.blue)
-                                .frame(width: 32, height: 32)
-                                .overlay(
-                                    Image(systemName: "camera.fill")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.white)
-                                )
-                        }
+                        .fill(Color.black.opacity(0.35))
+                        .frame(width: 96, height: 96)
+                    if let selectedImage {
+                        Image(uiImage: selectedImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 96, height: 96)
+                            .clipShape(Circle())
+                    } else if hasName {
+                        Text(avatarInitial)
+                            .font(AladdinFamilyType.title2())
+                            .foregroundColor(.white)
+                    } else {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 72))
+                            .foregroundColor(.white.opacity(0.75))
                     }
-                    .frame(width: 120, height: 120)
                 }
             }
-            .accessibilityLabel(localizationManager.localized("profile_edit_change_photo_accessibility"))
-            
-            Text(localizationManager.localized("profile_edit_photo_hint"))
-                .font(.caption)
-                .foregroundColor(.secondary)
+            .accessibilityLabel(localizationManager.localized("profile_edit_avatar_a11y"))
+
+            Button(action: {
+                showImagePicker = true
+            }) {
+                Text(localizationManager.localized("profile_edit_photo_hint"))
+                    .font(AladdinFamilyType.body())
+                    .foregroundColor(Color.secondaryGold)
+            }
+            .accessibilityLabel(localizationManager.localized("profile_edit_photo_hint"))
         }
-        .padding(16)
-        .background(cardBackground)
-        .cardShadow()
+        .frame(maxWidth: .infinity)
     }
     
     // MARK: - Edit Fields
     
     private var editFields: some View {
         VStack(spacing: 16) {
-            Text(localizationManager.localized("profile_edit_info_title"))
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityAddTraits(.isHeader)
-            
-            VStack(spacing: 16) {
-                // Имя
-                editField(
-                    title: localizationManager.localized("profile_edit_name_label"),
-                    text: $name,
-                    placeholder: localizationManager.localized("profile_edit_name_placeholder"),
-                    icon: "person.fill"
-                )
-                
-                editField(
-                    title: localizationManager.localized("profile_edit_email_label"),
-                    text: $alias,
-                    placeholder: localizationManager.localized("profile_edit_email_placeholder"),
-                    icon: "character.textbox"
-                )
-                
-            }
+            nameField
+            emailField
         }
-        .padding(16)
-        .background(cardBackground)
-        .cardShadow()
     }
-    
-    // MARK: - Action Buttons
-    
-    private var actionButtons: some View {
-        VStack(spacing: 16) {
-            // Сохранить изменения
-            Button(action: {
-                saveProfile()
-            }) {
-                HStack(spacing: 12) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 16))
-                    
-                    Text(localizationManager.localized("profile_edit_save_changes"))
-                        .font(.body)
-                        .fontWeight(.bold)
-                }
+
+    private var nameField: some View {
+        fieldShell(title: localizationManager.localized("profile_edit_name_label"), value: name) {
+            TextField(localizationManager.localized("profile_edit_name_placeholder"), text: $name)
+                .font(AladdinFamilyType.body())
                 .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(LinearGradient(
-                            colors: [.blue, .blue.opacity(0.7)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ))
-                )
-            }
-            .accessibilityLabel(localizationManager.localized("profile_edit_save_changes_accessibility"))
-            
-            // Сбросить пароль
-            Button(action: {
-                resetPassword()
-            }) {
-                HStack(spacing: 12) {
-                    Image(systemName: "key.fill")
-                        .font(.system(size: 16))
-                    
-                    Text(localizationManager.localized("profile_edit_reset_password"))
-                        .font(.body)
-                        .fontWeight(.bold)
-                }
-                .foregroundColor(.blue)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.blue.opacity(0.1))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.blue, lineWidth: 1)
-                        )
-                )
-            }
-            .accessibilityLabel(localizationManager.localized("profile_edit_reset_password_accessibility"))
+                .textContentType(.name)
+                .textFieldStyle(.plain)
         }
-        .padding(16)
-        .background(cardBackground)
-        .cardShadow()
+    }
+
+    private var emailField: some View {
+        fieldShell(title: localizationManager.localized("profile_edit_email_label"), value: alias) {
+            TextField(localizationManager.localized("profile_edit_email_placeholder"), text: $alias)
+                .font(AladdinFamilyType.body())
+                .foregroundColor(.white)
+                .keyboardType(.emailAddress)
+                .textContentType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .textFieldStyle(.plain)
+        }
+    }
+
+    private var resetPasswordRow: some View {
+        Button(action: resetPassword) {
+            HStack(spacing: 8) {
+                Text(localizationManager.localized("profile_edit_reset_password"))
+                    .font(AladdinFamilyType.body())
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(AladdinFamilyType.caption(weight: .semibold))
+            }
+            .foregroundColor(Color.secondaryGold)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.black.opacity(0.35))
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localizationManager.localized("profile_edit_reset_password_accessibility"))
     }
     
     // MARK: - Helper Views
     
-    private func editField(
-        title: String,
-        text: Binding<String>,
-        placeholder: String,
-        icon: String,
-        keyboardType: UIKeyboardType = .default
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private func fieldShell<Content: View>(title: String, value: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.body)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-            
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.blue)
-                    .frame(width: 20)
-                
-                TextField(placeholder, text: text)
-                    .font(.body)
-                    .foregroundColor(.primary)
-                    .keyboardType(keyboardType)
-                    .textFieldStyle(PlainTextFieldStyle())
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.3))
-            )
+                .font(AladdinFamilyType.body(weight: .semibold))
+                .foregroundColor(.white)
+            content()
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.black.opacity(0.35))
+                )
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(text.wrappedValue)")
-    }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(Color.gray.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
+        .accessibilityLabel("\(title): \(value)")
     }
     
     // MARK: - Actions
@@ -337,13 +259,9 @@ struct ProfileEditView: View {
         // Сохранение профиля в @AppStorage
         storedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         storedAlias = alias.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        print("✅ Profile saved: name=\(storedName), alias=\(storedAlias)")
-        
-        // Сохраняем фото профиля, если оно было выбрано
+
         if let image = selectedImage {
             _ = ProfileImageManager.shared.saveProfileImage(image, for: .main)
-            print("✅ Profile image saved")
         }
         
         dismiss()
@@ -353,12 +271,14 @@ struct ProfileEditView: View {
         showPasswordResetSheet = true
     }
     
+    private var hasName: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     private var avatarInitial: String {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let first = trimmed.first {
-            return String(first).uppercased()
-        }
-        return localizationManager.localized("profile_edit_initial_placeholder")
+        guard let first = trimmed.first else { return "" }
+        return String(first).uppercased()
     }
 }
 
@@ -402,6 +322,34 @@ struct ImagePicker: UIViewControllerRepresentable {
                 }
             }
         }
+    }
+}
+
+/// Тёмная прозрачная шапка есть только с iOS 16. На 15.2 шапка остаётся системной.
+struct StormHiddenNavBarModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content
+                .toolbarColorScheme(.dark, for: .navigationBar)
+                .toolbarBackground(.hidden, for: .navigationBar)
+        } else {
+            content
+        }
+    }
+}
+
+// После скрытой шапки обычный `.toolbar` в Xcode 16.3 подходит под два метода сразу.
+private struct ALADDINToolbar<Items: ToolbarContent>: ViewModifier {
+    var items: Items
+
+    func body(content: Content) -> some View {
+        content.toolbar { items }
+    }
+}
+
+extension View {
+    func aladdinToolbar<Items: ToolbarContent>(@ToolbarContentBuilder content: () -> Items) -> some View {
+        modifier(ALADDINToolbar(items: content()))
     }
 }
 

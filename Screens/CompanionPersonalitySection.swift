@@ -40,6 +40,7 @@ struct CompanionPersonalitySection: View {
                         ForEach(availablePresets, id: \.self) { preset in
                             let selected = personalityPreset == preset
                             Button {
+                                HapticFeedback.selection()
                                 personalityPreset = preset
                             } label: {
                                 Text(localizationManager.localized("companion_preset_\(preset)"))
@@ -94,6 +95,7 @@ struct CompanionPersonalitySection: View {
                 }
 
                 Button {
+                    HapticFeedback.impact(.medium)
                     Task { await save() }
                 } label: {
                     HStack {

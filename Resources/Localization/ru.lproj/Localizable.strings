@@ -10,7 +10,7 @@
 
 "app.name" = "ALADDIN AI";
 "app.tagline" = "AI Защита Семьи";
-"common.ok" = "OK";
+"common.ok" = "Понятно";
 "common.cancel" = "Отмена";
 "common.done" = "Готово";
 "common.save" = "Сохранить";
@@ -55,7 +55,7 @@
 "onboarding_page7_desc" = "Можно проверить звонок, новости, сообщения, видео, голос, смс, текст и ссылку.";
 "onboarding_page8_title" = "Присоединяйтесь к ALADDIN!";
 "onboarding_page8_desc" = "Спокойствие близких - бесценно. Защита начинается сегодня!";
-"onboarding_data_collection_info" = "Мы собираем только обезличенные данные для обеспечения безопасности.";
+"onboarding_data_collection_info" = "Правовая информация!";
 "onboarding_privacy_policy_link" = "Политика конфиденциальности";
 "onboarding_data_consent" = "Я согласен с обработкой данных";
 "onboarding_terms_of_service_link" = "Пользовательское соглашение";
@@ -65,7 +65,7 @@
 "onboarding_recover" = "ВОССТАНОВИТЬ";
 "child_content_retry_accessibility_hint" = "Повторить загрузку контента";
 "parent_dashboard_open_unified_limits_hint" = "Открывает единый экран дневных лимитов";
-"parent_dashboard_report_export_csv_hint" = "Экспортирует отчёт в формате CSV";
+"parent_dashboard_report_export_csv_hint" = "Сохраняет отчёт таблицей";
 "parent_dashboard_report_export_pdf_hint" = "Экспортирует отчёт в формате PDF";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -159,7 +159,7 @@
 "family.role.teenager" = "Подросток";
 "family.role.elderly" = "Люди 60+";
 "family.incomplete_server_roster_hint" = "По тарифу можно больше участников, а с сервера пришёл один – данные семьи неполные. Обратитесь в поддержку или дождитесь исправления на сервере.";
-"delete_account_error_gateway" = "Сервер вернул защитную оболочку без подтверждения удаления (mock-real-protection). Удаление не подтверждено – нужно исправить ответ DELETE /api/user/delete на бэкенде.";
+"delete_account_error_gateway" = "Не удалось удалить аккаунт. Попробуйте позже или напишите в поддержку.";
 
 /* ═══════════════════════════════════════════════════════════════
  * Network Protection
@@ -210,13 +210,13 @@
 "network_protection_auto_select_server" = "Автоматический выбор сервера";
 "network_protection_auto_connect_wifi" = "Автоподключение на Wi-Fi";
 "network_protection_auto_connect_mobile" = "Автоподключение на мобильной сети";
-"network_protection_kill_switch" = "Kill Switch";
-"network_protection_dns_leak_protection" = "Защита от утечки DNS";
+"network_protection_kill_switch" = "Блокировка интернета, если защита выключилась";
+"network_protection_dns_leak_protection" = "Запросы сайтов не уходят мимо защиты";
 "network_protection_connection_section" = "ПОДКЛЮЧЕНИЕ";
 "network_protection_auto_wifi" = "Автоподключение на Wi-Fi";
 "network_protection_auto_mobile" = "Автоподключение на мобильной сети";
 "network_protection_security_section" = "БЕЗОПАСНОСТЬ";
-"network_protection_dns_leak" = "Защита от утечки DNS";
+"network_protection_dns_leak" = "Запросы сайтов не уходят мимо защиты";
 "network_protection_battery_saving_section" = "ЭКОНОМИЯ БАТАРЕИ";
 "network_protection_auto_disconnect" = "Автоотключение";
 "network_protection_auto_disconnect_desc" = "Автоматически отключать защиту сети при низком заряде батареи";
@@ -229,7 +229,7 @@
 "antivirus_scan_choose_file_accessibility_hint" = "Открывает выбор одного файла. Проверяется только выбранный файл.";
 "antivirus_scan_legal_disclaimer" = "Проверяется только выбранный вами файл. Полный обход хранилища телефона недоступен. Локальные эвристики; облачная проверка – только для файлов до %d МБ и при доступном сервере.";
 "antivirus_scan_picker_error" = "Не удалось выбрать файл. Попробуйте ещё раз.";
-"crash_detection_simulator_banner" = "Симулятор: данные движения приблизительные. Реальное обнаружение ДТП проверяйте на iPhone. В сборке DEBUG доступен синтетический тест.";
+"crash_detection_simulator_banner" = "На этом экране данные движения приблизительные. Проверяйте на iPhone.";
 "antivirus_toast_server_check_unavailable" = "Проверка на сервере сейчас недоступна. Учтите результат локальных проверок.";
 "antivirus_toast_large_file_local_only" = "Файл больше %d МБ – на сервер он не отправлялся; показан результат локальных проверок.";
 "network_protection_help_ad_blocking_question" = "Как работает блокировка рекламы?";
@@ -242,14 +242,14 @@
 "network_protection_help_threat_protection_answer" = "Защита от угроз блокирует опасные сайты и вредоносное ПО до того, как они нанесут вред.";
 "network_protection_help_incognito_question" = "Как работает детекция инкогнито?";
 "network_protection_help_incognito_answer" = "Детекция инкогнито обнаруживает использование режима инкогнито в браузерах.";
-"network_protection_help_tor_question" = "Как работает детекция Tor?";
-"network_protection_help_tor_answer" = "Детекция Tor блокирует использование анонимной сети Tor и .onion сайтов.";
+"network_protection_help_tor_question" = "Как мы закрываем скрытый обход?";
+"network_protection_help_tor_answer" = "Закрываем обход защиты через скрытую сеть.";
 "network_protection_help_proxy_question" = "Как работает детекция прокси?";
-"network_protection_help_proxy_answer" = "Детекция прокси находит и блокирует использование прокси-серверов (HTTP, HTTPS, SOCKS).";
-"network_protection_help_kill_switch_question" = "Как работает Kill Switch?";
-"network_protection_help_kill_switch_answer" = "Kill Switch автоматически блокирует интернет-соединение, если защита сети отключается.";
-"network_protection_help_dns_leak_question" = "Как работает защита от утечки DNS?";
-"network_protection_help_dns_leak_answer" = "Защита от утечки DNS предотвращает утечку DNS-запросов за пределы защищенного соединения.";
+"network_protection_help_proxy_answer" = "Блокируем прокси, через которые можно обойти защиту.";
+"network_protection_help_kill_switch_question" = "Что будет, если защита выключится?";
+"network_protection_help_kill_switch_answer" = "Интернет закроется, если защита выключилась.";
+"network_protection_help_dns_leak_question" = "Куда уходят запросы сайтов?";
+"network_protection_help_dns_leak_answer" = "Запросы сайтов не уходят мимо защиты.";
 "network_protection_disconnect_action" = "Отключить защиту сети";
 "network_protection_connect_action" = "Включить защиту сети";
 "network_protection_toggle_hint" = "Переключить защиту сети";
@@ -328,7 +328,7 @@
 "profile.subtitle" = "Личные данные и безопасность";
 "profile.personal.data" = "ЛИЧНЫЕ ДАННЫЕ";
 "profile.name.placeholder" = "Имя";
-"profile.email.placeholder" = "Email";
+"profile.email.placeholder" = "Почта";
 "profile.phone.placeholder" = "Телефон";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -413,8 +413,8 @@
 "device_detail_info_type" = "Тип";
 "device_detail_info_model" = "Модель";
 "device_detail_info_system" = "Система";
-"device_detail_info_ip" = "IP адрес";
-"device_detail_info_mac" = "MAC адрес";
+"device_detail_info_ip" = "IP-адрес";
+"device_detail_info_mac" = "MAC-адрес";
 "device_detail_tab_accessibility" = "Вкладка: %@";
 "device_detail_tab_selected_hint" = "Вкладка %@ выбрана";
 "device_detail_tab_switch_hint" = "Переключиться на вкладку %@";
@@ -507,7 +507,7 @@
 "child_seed_creativity_2" = "Цвет и композиция";
 "child_seed_creativity_3" = "Мини-проект своими руками";
 "child_seed_programming_1" = "Логика алгоритмов";
-"child_seed_programming_2" = "Swift Start";
+"child_seed_programming_2" = "Первые шаги в коде";
 "child_seed_programming_3" = "Визуальное программирование";
 "child_seed_social_1" = "Безопасное общение";
 "child_seed_social_2" = "Цифровой этикет";
@@ -636,8 +636,8 @@
 "child_study_test_progress_prefix" = "Вопрос:";
 "child_study_score_prefix" = "Результат:";
 "child_study_retry_test" = "Пройти тест заново";
-"child_study_checkpoint_passed" = "Checkpoint пройден";
-"child_study_checkpoint_failed" = "Checkpoint не пройден";
+"child_study_checkpoint_passed" = "Проверка пройдена";
+"child_study_checkpoint_failed" = "Проверка не пройдена";
 "child_study_lesson_page_1" = "Урок: всегда читай условие задачи до конца и выделяй ключевые слова.";
 "child_study_lesson_page_2" = "Урок: разбивай сложную задачу на шаги и решай по одному шагу.";
 "child_study_lesson_page_3" = "Урок: перед ответом проверь себя и сравни с условием.";
@@ -781,7 +781,7 @@
 "child_daily_journey_v3_reflection_prompt" = "Рефлексия: что сработало сегодня и какой следующий шаг?";
 "child_daily_journey_v3_reflection_action" = "Зафиксировать рефлексию";
 "child_daily_journey_v3_reflection_done" = "Рефлексия сохранена";
-"child_creative_output_v2_title" = "Creative Output v2: проектные артефакты";
+"child_creative_output_v2_title" = "Мои проекты";
 "child_creative_output_v2_progress_prefix" = "Артефактов сегодня:";
 "child_creative_output_v2_none" = "Пока без артефактов";
 "child_creative_output_v2_action_prototype" = "Добавить прототип";
@@ -811,8 +811,8 @@
 "child_daily_journey_v2_corrective_action" = "Применить корректирующий темп";
 "child_adaptive_loop_v2_title" = "План восстановления";
 "child_adaptive_loop_v2_confidence_message" = "Ты справишься. Ошибки – это часть обучения, не повод останавливаться.";
-"child_adaptive_loop_v2_recovery_plan" = "Шаги: 1) короткий retry, 2) более простой шаг с подсказкой, 3) возврат к основной задаче.";
-"child_adaptive_loop_v2_action" = "Запустить мягкий recovery";
+"child_adaptive_loop_v2_recovery_plan" = "Шаги: 1) короткая новая попытка, 2) более простой шаг с подсказкой, 3) возврат к основной задаче.";
+"child_adaptive_loop_v2_action" = "Попробовать ещё раз";
 "child_daily_tip_kids" = "Всегда мой руки перед едой!";
 "child_daily_tip_school" = "Читай минимум 20 минут каждый день!";
 "child_daily_tip_teen" = "Проверяй настройки приватности в соцсетях!";
@@ -840,10 +840,10 @@
 "device_detail_threat_time_5_min" = "5 мин назад";
 "device_detail_threat_time_15_min" = "15 мин назад";
 "device_detail_threat_time_1_hour" = "1 час назад";
-"main_demo_mode_message" = "Демо режим - используйте performRealLogin() для реальной авторизации";
+"main_demo_mode_message" = "Сервис временно недоступен. Попробуйте позже.";
 "common_cancel" = "Отмена";
 "common_error" = "Ошибка";
-"common_ok" = "OK";
+"common_ok" = "Понятно";
 
 /* ═══════════════════════════════════════════════════════════════
  * ФОРМА ДОБАВЛЕНИЯ УСТРОЙСТВА
@@ -877,7 +877,7 @@
  * ═══════════════════════════════════════════════════════════════ */
 
 "dark_web_error_critical" = "Критическая ошибка: %@";
-"dark_web_error_service_unavailable" = "Сервис мониторинга Dark Web временно недоступен";
+"dark_web_error_service_unavailable" = "Проверка утечек временно недоступна.";
 "dark_web_error_temporary" = "Временная ошибка подключения: %@";
 "dark_web_error_try_later" = "Не удается подключиться к сервису. Попробуйте позже.";
 "dark_web_retry_scan" = "Повторить сканирование";
@@ -983,7 +983,7 @@
 "auth.login" = "Войти";
 "auth.register" = "Зарегистрироваться";
 "auth.forgot.password" = "Забыли пароль?";
-"auth.email.placeholder" = "Email";
+"auth.email.placeholder" = "Почта";
 "auth.password.placeholder" = "Пароль";
 "auth.confirm.password" = "Подтвердите пароль";
 "auth.name.placeholder" = "Имя и Фамилия";
@@ -1046,8 +1046,8 @@
 "device.detail.type" = "Тип";
 "device.detail.model" = "Модель";
 "device.detail.system" = "Система";
-"device.detail.ip" = "IP адрес";
-"device.detail.mac" = "MAC адрес";
+"device.detail.ip" = "IP-адрес";
+"device.detail.mac" = "MAC-адрес";
 
 /* ═══════════════════════════════════════════════════════════════
  * РЕФЕРАЛЬНАЯ ПРОГРАММА
@@ -1166,17 +1166,17 @@
 
 "error.network" = "Ошибка сети. Проверьте подключение к интернету.";
 "error.unknown" = "Произошла неизвестная ошибка.";
-"error.invalid.credentials" = "Неверный email или пароль.";
+"error.invalid.credentials" = "Неверная почта или пароль.";
 "error.password.mismatch" = "Пароли не совпадают.";
 
 /* ═══════════════════════════════════════════════════════════════
  * ОШИБКИ STOREKIT / IN-APP PURCHASE
  * ═══════════════════════════════════════════════════════════════ */
 
-"store.error.simulator.not.supported" = "In-App Purchase недоступен в симуляторе. Используйте реальное устройство.";
+"store.error.simulator.not.supported" = "Покупки недоступны в симуляторе. Нужен настоящий iPhone.";
 "store.error.verification.failed" = "Не удалось проверить покупку";
 "store.error.product.not.found" = "Продукт не найден";
-"store.error.store.not.ready" = "StoreKit не готов. Пожалуйста, подождите.";
+"store.error.store.not.ready" = "App Store ещё загружается. Подождите пару секунд.";
 "store.error.purchase.in.progress" = "Покупка уже выполняется. Пожалуйста, подождите.";
 "store.error.products.not.loaded" = "Продукты не загружены. Проверьте подключение к интернету и попробуйте снова.";
 "store.error.tariffs.not.loaded" = "Не удалось загрузить тарифы. Проверьте подключение к интернету и попробуйте снова.";
@@ -1204,7 +1204,7 @@
 
 "success.saved" = "Данные сохранены!";
 "success.purchase" = "Подписка успешно оформлена!";
-"success.email.sent" = "Письмо отправлено на ваш email.";
+"success.email.sent" = "Письмо отправлено на вашу почту.";
 
 /* ═══════════════════════════════════════════════════════════════
  * 42 КОМПОНЕНТА - АГЕНТЫ (19)
@@ -1243,7 +1243,7 @@
 "component.malware_detection_agent.desc" = "Только файл, который вы сами выбрали";
 "component.mobile_security_agent.title" = "Безопасность мобильных устройств";
 "component.mobile_security_agent.desc" = "Защита смартфонов и планшетов";
-"component.iot_security_agent.title" = "IoT‑защита";
+"component.iot_security_agent.title" = "Защита умных устройств";
 "component.iot_security_agent.desc" = "Мониторинг и защита устройств умного дома";
 "component.network_security_agent.title" = "Безопасность сети";
 "component.network_security_agent.desc" = "Защита сетевых подключений";
@@ -1257,7 +1257,7 @@
 "component.anti_tracker_agent.desc" = "Блокировка отслеживания";
 
 /* Мониторинг */
-"component.dark_web_monitoring_agent.title" = "Мониторинг Dark Web";
+"component.dark_web_monitoring_agent.title" = "Проверка утечек";
 "component.dark_web_monitoring_agent.desc" = "Отслеживание утечек данных";
 "component.russian_identity_theft_protection_agent.title" = "Защита от кражи личности (РФ)";
 "component.russian_identity_theft_protection_agent.desc" = "Защита по 152-ФЗ РФ";
@@ -1359,7 +1359,7 @@
 "incident_response.high" = "Высокая";
 "incident_response.critical" = "Критическая";
 "incident_response.minutes" = "мин";
-"incident_response.sla_time" = "Время реакции SLA";
+"incident_response.sla_time" = "Время ответа";
 "incident_response.auto_actions" = "Автодействия";
 "incident_response.block" = "Блокировать";
 
@@ -1401,7 +1401,7 @@
 "component_anti_tracker_agent_description" = "Блокировка рекламных трекеров";
 
 /* Компоненты - Мониторинг */
-"component_dark_web_monitoring_agent_title" = "Мониторинг Dark Web";
+"component_dark_web_monitoring_agent_title" = "Проверка утечек";
 "component_dark_web_monitoring_agent_description" = "Отслеживание утечек данных";
 "component_russian_identity_theft_protection_agent_title" = "Защита от кражи личности (РФ)";
 "component_russian_identity_theft_protection_agent_description" = "Защита от мошенничества с документами";
@@ -1443,9 +1443,9 @@
 "emergency_notifications_template_security" = "Безопасность";
 "emergency_notifications_template_placeholder" = "Введите текст сообщения";
 "emergency_notifications_channels_title" = "Каналы доставки";
-"emergency_notifications_channel_push" = "Push-уведомления";
+"emergency_notifications_channel_push" = "Уведомления";
 "emergency_notifications_channel_sms" = "SMS";
-"emergency_notifications_channel_email" = "Email";
+"emergency_notifications_channel_email" = "Почта";
 "emergency_notifications_channel_call" = "Звонок";
 "emergency_notifications_repeat_title" = "Частота повторов";
 "emergency_notifications_repeat_minutes" = "раз в минуту";
@@ -1483,8 +1483,8 @@
 /* Family Notifications */
 "family_notification_settings" = "Настройки уведомлений";
 "family_notifications_channels_title" = "Каналы доставки";
-"family_notifications_channel_push" = "Push-уведомления";
-"family_notifications_channel_email" = "Email";
+"family_notifications_channel_push" = "Уведомления";
+"family_notifications_channel_email" = "Почта";
 "family_notifications_channel_sms" = "SMS";
 "family_notifications_frequency_title" = "Частота";
 "family_notifications_frequency_instant" = "Мгновенно";
@@ -1601,8 +1601,8 @@
 "parent_dashboard_metric_remaining" = "Остаток времени сегодня (мин)";
 "parent_dashboard_metric_filtered_items" = "Отфильтровано в каталоге";
 "parent_dashboard_report_export_title" = "Экспорт отчёта";
-"parent_dashboard_report_export_subtitle" = "Поделиться снимком метрик и трендов с экрана (CSV или PDF).";
-"parent_dashboard_report_export_csv" = "CSV";
+"parent_dashboard_report_export_subtitle" = "Поделиться снимком показателей с экрана: таблица или PDF.";
+"parent_dashboard_report_export_csv" = "Таблица";
 "parent_dashboard_report_export_pdf" = "PDF";
 "parent_dashboard_report_file_title" = "Отчёт родительской панели ALADDIN";
 "parent_dashboard_report_generated" = "Сформировано";
@@ -1798,7 +1798,7 @@
 "common_done" = "Готово";
 "main_aladdin_title" = "ALADDIN";
 "main_ai_protection" = "AI защита семьи";
-"main_antivirus_title" = "Защита Aladdin";
+"main_antivirus_title" = "Защита ALADDIN";
 "main_antivirus_subtitle" = "Сеть и проверка файлов";
 "main_tariffs" = "Тарифы";
 "main_tariffs_subtitle" = "Выбор плана";
@@ -1809,12 +1809,12 @@
 "main_family_header_title" = "Семья";
 "main_family_title" = "Вся семья под защитой";
 "main_family_user_id" = "ID:";
-"main_member_id_not_found_debug" = "member_id не найден";
+"main_member_id_not_found_debug" = "Не удалось определить участника семьи. Войдите ещё раз.";
 "main_family_info" = "Участников: %d • Устройств: %d";
 "main_family_network_protection_info" = "Угроз по данным защиты устройств: %d";
 "main_toggle_short_on" = "вкл.";
 "main_toggle_short_off" = "выкл.";
-"main_family_safari_cb_status" = "Safari Content Blocker: %@";
+"main_family_safari_cb_status" = "Блокировщик рекламы в Safari: %@";
 "main_family_last_refresh_caption" = "Семья: обновлено %@";
 "main_family_network_protection_hint" = "Подробнее об отличиях счётчиков – в отчётах и уведомлениях.";
 "notifications_statistics_subtitle" = "Счётчики относятся к ленте уведомлений ниже (поддержка/справка).";
@@ -1836,10 +1836,10 @@
 "main_family_restore_trial_cta" = "Вернуть пробный до %@";
 "main_family_start_trial_cta" = "Включить пробный на 14 дней – до 6 участников";
 "driving_reports_empty_other_member" = "Пока нет поездок у «%@». Они появятся, когда его устройство запишет реальную поездку (GPS + движение).";
-"tariffs_downgrade_trial_confirm_title" = "Перейти на БАЗОВЫЙ?";
+"tariffs_downgrade_trial_confirm_title" = "Перейти на Бесплатный?";
 "tariffs_downgrade_trial_confirm_body" = "Пробный оборвётся сейчас. Слоты семьи станут 1. Продолжить?";
 "tariffs_downgrade_trial_confirm_cancel" = "Отмена";
-"tariffs_downgrade_trial_confirm_continue" = "Перейти на БАЗОВЫЙ";
+"tariffs_downgrade_trial_confirm_continue" = "Перейти на Бесплатный";
 "family_member_capacity_with_plan_fmt" = "%d из %d участников";
 "family_members_label" = "Участники";
 "family_members_accessibility_fmt" = "Семья: %@";
@@ -1851,34 +1851,34 @@
 "tariffs_billing_chooser_title" = "Как оплатить?";
 "tariffs_billing_chooser_body" = "Выберите период для «%@». Цена с App Store, если доступна.";
 "tariffs_billing_autorenew_note" = "Месяц и год – подписка с автопродлением. Отмена в Настройки → Apple ID → Подписки.";
-"tariffs_gates_table_title" = "Что входит · Free / Family / Premium";
-"tariffs_gates_child_basic" = "Ребёнок: пауза, лимит, bedtime";
-"tariffs_gates_map_last" = "Карта: last-point + отправить место";
-"tariffs_gates_map_live" = "Живая карта (доступ при закрытом приложении)";
-"tariffs_gates_places_more" = "Больше мест и история дня";
-"tariffs_gates_members" = "Несколько участников семьи";
-"tariffs_gates_free_note" = "Бесплатно: семья до 4, живая карта, SOS. Антифрод – с Личного.";
-"tariffs_free_included_title" = "Что входит на Free";
+"tariffs_gates_table_title" = "Что входит · Бесплатный / Личный / Семейный / Премиум";
+"tariffs_gates_child_basic" = "Ребёнок: пауза, лимит, отбой";
+"tariffs_gates_map_last" = "Последнее место и «я здесь»";
+"tariffs_gates_map_live" = "Живая карта";
+"tariffs_gates_places_more" = "Больше мест на карте";
+"tariffs_gates_members" = "Человек в семье";
+"tariffs_gates_free_note" = "Бесплатный: семья до 4, живая карта, SOS. Проверка на обман – с Личного.";
+"tariffs_free_included_title" = "Что входит бесплатно";
 "tariffs_free_excluded_title" = "Что не входит";
 "tariffs_free_no_charge_note" = "0 ₽ · без оплаты · без автопродления";
 "tariffs_free_features_1" = "Семья до 4 человек";
-"tariffs_free_features_2" = "Ребёнок – пауза интернета, лимит, bedtime";
+"tariffs_free_features_2" = "Ребёнок: пауза интернета, лимит, отбой";
 "tariffs_free_features_3" = "Живая карта семьи";
 "tariffs_free_features_4" = "Отправить своё место семье (разово)";
 "tariffs_free_features_5" = "Места на карте (дом / школа)";
 "tariffs_free_features_6" = "SOS семье (удержание кнопки)";
 "tariffs_free_features_7" = "Анти-Баннер (базовый)";
-"tariffs_free_features_8" = "Antifake: 0 проверок после пробного периода";
-"tariffs_free_features_9" = "Live-карта в реальном времени";
-"tariffs_free_features_10" = "Больше 4 человек и антифрод";
-"tariffs_gates_check" = "Проверить Antifake (звонок/текст/видео)";
+"tariffs_free_features_8" = "Проверка на обман: 0 после пробного периода";
+"tariffs_free_features_9" = "Живая карта";
+"tariffs_free_features_10" = "Больше 4 человек и проверка на обман";
+"tariffs_gates_check" = "Проверка на обман: звонок, текст, видео";
 "main_family_subscription_valid_until" = "Действует до:";
 "main_family_manage" = "Управлять";
 "main_family_add_member" = "Добавить участника";
 "family_roster_manage_denied_banner_title" = "Управление составом недоступно";
 "family_roster_manage_denied_banner_body" = "Приложение не видит вас как родителя или участника с ролью «Люди 60+» в этом списке. Выйдите из аккаунта и войдите снова, откройте раздел «Семья» повторно или дождитесь окончания синхронизации. Если проблема останется – обратитесь в поддержку.";
 "family_identity_repair_banner_title" = "Профиль в семье на этом устройстве";
-"family_identity_repair_banner_body" = "Ваше место в списке семьи могло разойтись с аккаунтом. Нажмите «Восстановить», чтобы выровнять member ID и роль по локальному списку, затем приложение обновит данные с сервера.";
+"family_identity_repair_banner_body" = "Ваше место в списке семьи могло разойтись с аккаунтом. Нажмите «Восстановить», затем приложение обновит данные.";
 "family_identity_repair_button" = "Восстановить";
 "family_identity_repair_section_title" = "Семья";
 "family_identity_repair_section_body" = "Если участники есть, но раздел «Семья» ведёт себя странно – выровняйте привязку на этом устройстве.";
@@ -1886,8 +1886,8 @@
 "main_ai_assistant_greeting" = "Задайте вопрос по защите семьи.";
 "main_ai_assistant_placeholder" = "Введите вопрос...";
 "main_tab_game" = "Игра";
-"main_tab_aladdin_kids" = "Aladdin Kids";
-"main_tab_aladdin_kids_hint" = "Открывает детский интерфейс с возрастными режимами и активностями";
+"main_tab_aladdin_kids" = "Дети";
+"main_tab_aladdin_kids_hint" = "Открывает детский раздел";
 "main_tab_protection" = "Защита";
 "main_tab_notifications" = "Уведомления";
 "main_tab_profile" = "Профиль";
@@ -1906,10 +1906,10 @@
 "notification_type_bypass_subtitle" = "Уведомления о заблокированных попытках обхода";
 "notification_sound_title" = "Звук";
 "notification_sound_subtitle" = "Звуковые уведомления";
-"notification_badge_title" = "Badge";
+"notification_badge_title" = "Значок";
 "notification_badge_subtitle" = "Счетчик непрочитанных на иконке";
 "notification_quiet_mode_title" = "Тихий режим";
-"notification_quiet_mode_subtitle" = "Уведомления без звука и баннера, только badge";
+"notification_quiet_mode_subtitle" = "Уведомления без звука и баннера, только значок";
 "notification_important_only_title" = "Только важные";
 "notification_important_only_subtitle" = "Только угрозы безопасности, остальные в тихий режим";
 "notification_dnd_title" = "Не беспокоить";
@@ -1921,7 +1921,7 @@
 "notification_quiet_hours_enable_title" = "Включить тихие часы";
 "notification_quiet_hours_enable_subtitle" = "Отключить звук и баннер в указанное время";
 "notification_settings_types_title" = "Типы уведомлений";
-"notification_settings_sound_badge_title" = "Звук и badge";
+"notification_settings_sound_badge_title" = "Звук и значок";
 "notification_settings_advanced_modes_title" = "Дополнительные режимы";
 "notification_settings_quiet_hours_title" = "Тихие часы";
 "notification_settings_quiet_hours_start" = "Начало";
@@ -2058,7 +2058,7 @@
 "voice_notes_undo" = "Отменить";
 "voice_notes_deleted_undo_hint" = "Заметка удалена";
 "ai_assistant_voice_permission_denied" = "Нет доступа к микрофону или распознаванию речи. Разрешите доступ в Настройках.";
-"ai_assistant_voice_service_unavailable" = "Распознавание речи недоступно на этом устройстве. В Настройках iPhone включите Siri и загрузите язык «Русский», либо переключите язык приложения на English.";
+"ai_assistant_voice_service_unavailable" = "Распознавание речи недоступно на этом устройстве. В Настройках iPhone включите Siri и загрузите язык «Русский», либо переключите язык приложения на английский.";
 "voice_open_settings" = "Открыть Настройки";
 "voice_notes_start" = "Начать запись";
 "voice_notes_stop_save" = "Стоп и сохранить";
@@ -2085,7 +2085,7 @@
 "ai_assistant_feedback_thanks_title" = "Спасибо!";
 "ai_assistant_feedback_success" = "Ваш отзыв отправлен.";
 "app_feedback_star_accessibility" = "Оценить приложение ALADDIN";
-"dark_web_modal_title" = "Мониторинг Dark Web";
+"dark_web_modal_title" = "Проверка утечек";
 "dark_web_tab_leaks" = "Утечки";
 "dark_web_tab_scans" = "Сканирования";
 "dark_web_total_leaks" = "Всего утечек";
@@ -2104,11 +2104,11 @@
 "dark_web_action_change_password" = "Сменить пароль";
 "dark_web_scans_history" = "История сканирований";
 "dark_web_no_leaks" = "Утечек не найдено";
-"dark_web_no_leaks_cta" = "Запустите проверку – добавьте email или телефон";
+"dark_web_no_leaks_cta" = "Запустите проверку. Добавьте почту или телефон.";
 "dark_web_data_source_server" = "Данные с сервера ALADDIN";
 "dark_web_no_scans" = "Нет истории сканирований";
 "dark_web_scan_data_input_title" = "Введите данные для сканирования";
-"dark_web_scan_data_email" = "Email";
+"dark_web_scan_data_email" = "Почта";
 "dark_web_scan_data_password" = "Пароль";
 "dark_web_scan_data_phone" = "Телефон";
 "dark_web_scan_data_passport" = "Паспорт";
@@ -2136,7 +2136,7 @@
 "dark_web_scan_method_fast_advantage_1" = "Более точный поиск";
 "dark_web_scan_method_fast_advantage_2" = "Работает со всеми базами";
 "dark_web_scan_method_fast_disadvantage_1" = "Данные видны серверу";
-"dark_web_scan_method_fast_disadvantage_2" = "Передача выполняется по HTTPS";
+"dark_web_scan_method_fast_disadvantage_2" = "Данные передаются по защищённому соединению.";
 "dark_web_scan_method_learn_more" = "Подробнее о способах сканирования";
 "dark_web_explanation_title" = "Методы сканирования";
 "dark_web_explanation_secure_title" = "Безопасное сканирование";
@@ -2168,24 +2168,25 @@
 
 "profile_edit_cancel" = "Отмена";
 
-"profile_edit_save" = "Сохранить";
+"profile_edit_save" = "Готово";
 
 "profile_edit_title" = "Профиль";
-"profile_edit_photo_saved" = "Фото профиля сохранено";
+"profile_edit_photo_saved" = "Фото обновлено";
 
 "profile_edit_photo_title" = "Фотография профиля";
 
-"profile_edit_photo_hint" = "Нажмите, чтобы изменить фото";
+"profile_edit_photo_hint" = "Изменить фото";
+"profile_edit_avatar_a11y" = "Фото профиля. Изменить";
 
 "profile_edit_info_title" = "Информация";
 
 "profile_edit_name_label" = "Имя";
 
-"profile_edit_name_placeholder" = "Введите ваше имя";
+"profile_edit_name_placeholder" = "Например, Анна";
 
-"profile_edit_email_label" = "Email";
+"profile_edit_email_label" = "Почта";
 
-"profile_edit_email_placeholder" = "Введите email";
+"profile_edit_email_placeholder" = "Почта";
 
 "profile_edit_phone_label" = "Телефон";
 
@@ -2265,7 +2266,7 @@
 
 "wellness_recap_prefix" = "В прошлый раз: %@";
 
-"ai_assistant_faq_footer" = "%@\n\n📚 Источник: FAQ (%@)";
+"ai_assistant_faq_footer" = "%@\n\nИсточник: ответы (%@)";
 
 "network_error_encoding" = "Ошибка подготовки данных: %@";
 
@@ -2311,7 +2312,7 @@
 
 "network_error_token_expired" = "Сессия истекла. Войдите заново";
 
-"network_error_invalid_token" = "Неверный токен авторизации";
+"network_error_invalid_token" = "Войдите ещё раз.";
 
 "network_error_reauth" = "Требуется повторный вход";
 
@@ -2353,7 +2354,7 @@
 
 "network_error_failure_support" = "Обратитесь в поддержку";
 
-"network_error_recovery_no_connection" = "Проверьте Wi‑Fi или мобильный интернет";
+"network_error_recovery_no_connection" = "Проверьте Wi-Fi или мобильный интернет";
 
 "network_error_recovery_timeout" = "Попробуйте ещё раз через несколько секунд";
 
@@ -2383,7 +2384,7 @@
 
 "active_sessions_family_empty" = "Пока нет других устройств семьи. Пригласите участника или откройте приложение на другом телефоне.";
 
-"active_sessions_apple_privacy_note" = "Показываем устройства семейной защиты (имя, тип, последняя активность) – без точного GPS. «Выйти» снимает устройство с семьи после Parent Gate.";
+"active_sessions_apple_privacy_note" = "Здесь видны устройства семьи: имя, тип и когда были в сети. Точное место не показываем.";
 
 "active_sessions_device_name_default" = "Это устройство";
 
@@ -2395,7 +2396,7 @@
 
 "active_sessions_sign_out_title" = "Убрать это устройство?";
 
-"active_sessions_sign_out_message" = "Устройство выйдет из семейной защиты. Нужно подтверждение Parent Gate.";
+"active_sessions_sign_out_message" = "Устройство выйдет из семьи. Нужно подтверждение родителя.";
 
 "active_sessions_sign_out_failed" = "Не удалось убрать устройство. Попробуйте снова.";
 
@@ -2424,7 +2425,7 @@
 "privacy_policy_section_calls_memory_subtitle" = "Микрофон, локальное хранение, ваша ответственность";
 "privacy_policy_section_calls_memory_content_1" = "ALADDIN не записывает линию оператора. Запись возможна только через микрофон телефона, если вы сами включили запись (обычно с громкой связью).";
 "privacy_policy_section_calls_memory_content_2" = "Запись не начинается сама. Нужны ваши действия в разделе «Звонки» или Диктофон.";
-"privacy_policy_section_calls_memory_content_3" = "Аудио и выжимка по умолчанию хранятся на устройстве. На сервер – только если вы сами отправите (например, проверка antifake).";
+"privacy_policy_section_calls_memory_content_3" = "Аудио и выжимка по умолчанию хранятся на устройстве. На сервер – только если вы сами отправите (например, проверка на обман).";
 "privacy_policy_section_calls_memory_content_4" = "Вы сами решаете, предупреждать ли собеседника, и соблюдаете законы своей страны о записи разговоров.";
 "privacy_policy_section_calls_memory_content_5" = "Качество записи не гарантируется: система iOS может прервать микрофон во время звонка.";
 "privacy_policy_section_calls_memory_content_6" = "Кнопки «спокойно» / «деньги» после звонка – ваш ручной сигнал семье, не автоматическое доказательство мошенничества.";
@@ -2442,12 +2443,12 @@
 "privacy_policy_section_wellness_content_7" = "Удаление данных о настроении и самочувствии – по запросу через поддержку.";
 "faq_wellness_support" = "Что такое эмоциональная поддержка?";
 "faq_wellness_support_answer" = "Раздел «Настроение и поддержка» – это самопомощь: отметка настроения, упражнения и диалог с цифровым другом (ИИ).\n\n⚠️ Это НЕ медицинская услуга, НЕ психотерапия и НЕ чат с живым врачом или психологом.\n\nПри признаках кризиса приложение подсказывает обратиться к взрослому, которому доверяете, или на линию 112 / 8-800-2000-122.\n\n✅ ALADDIN помогает заметить настроение и сделать маленький шаг – без диагнозов и назначений.";
-"privacy_policy_section_2_content" = "Данные используются для работы аккаунта и семьи, StoreKit-подписки, семейного чата, Antifake, функции «Безопасные сайты», геолокации, экстренных и AI/голосовых функций, поддержки и стабильности. Для выбранных функций данные могут передаваться backend ALADDIN и поставщикам Apple, OpenRouter/DeepSeek, Yandex SpeechKit, OpenAI, ElevenLabs или Telegram. Передача в Telegram происходит только по инициативе пользователя.";
+"privacy_policy_section_2_content" = "Данные используются для работы аккаунта и семьи, подписки App Store, семейного чата, Проверка на обман, функции «Безопасные сайты», геолокации, экстренных и AI/голосовых функций, поддержки и стабильности. Для выбранных функций данные могут передаваться серверы ALADDIN и поставщикам Apple, OpenRouter/DeepSeek, Yandex SpeechKit, OpenAI, ElevenLabs или Telegram. Передача в Telegram происходит только по инициативе пользователя.";
 "privacy_policy_section_5_content" = "Данные хранятся только в течение срока, необходимого для соответствующей функции, безопасности, поддержки и законных обязательств; локальные данные удаляются вместе с приложением, а серверные – по правилам удаления аккаунта и конкретного сервиса. Функции безопасности и подсказки ALADDIN являются вспомогательными: они могут ошибаться и не заменяют родителя, экстренные службы, банк, врача, юриста или другого специалиста. Об изменениях политики сообщается в приложении; действует версия с указанной датой обновления.";
 "privacy_policy_section_6" = "6. Ограничение ответственности";
-"privacy_policy_section_6_content" = "ALADDIN предоставляет семейную защиту, Antifake, Безопасные сайты, SOS, AI-подсказки, эмоциональную поддержку, мониторинг, уведомления и другие функции как вспомогательные инструменты. Они помогают снижать риски, но не гарантируют точность, непрерывность, доступность, обнаружение, блокировку или предотвращение всех угроз, мошенничества, обходов, ошибок, аварий, потерь данных, вреда или неправомерных действий других людей. Решения принимает пользователь, родитель или законный представитель. При угрозе жизни, здоровью, деньгам или правам обращайтесь в экстренные службы, банк, врача, юриста или иной профильный орган. В максимальной степени, разрешённой законом, ALADDIN AI мобильное приложение, компания SAUDAPAYDI, TOO не несут ответственности за прямой или косвенный ущерб, убытки, неверные решения, пропущенные угрозы, действия третьих лиц, сбои iOS, сети, функции «Безопасные сайты», устройства, сторонних сервисов, пользовательских настроек или неправильное использование приложения.";
+"privacy_policy_section_6_content" = "ALADDIN предоставляет семейную защиту, Проверка на обман, Безопасные сайты, SOS, AI-подсказки, эмоциональную поддержку, мониторинг, уведомления и другие функции как вспомогательные инструменты. Они помогают снижать риски, но не гарантируют точность, непрерывность, доступность, обнаружение, блокировку или предотвращение всех угроз, мошенничества, обходов, ошибок, аварий, потерь данных, вреда или неправомерных действий других людей. Решения принимает пользователь, родитель или законный представитель. При угрозе жизни, здоровью, деньгам или правам обращайтесь в экстренные службы, банк, врача, юриста или иной профильный орган. В максимальной степени, разрешённой законом, ALADDIN AI мобильное приложение, компания SAUDAPAYDI, TOO не несут ответственности за прямой или косвенный ущерб, убытки, неверные решения, пропущенные угрозы, действия третьих лиц, сбои iOS, сети, функции «Безопасные сайты», устройства, сторонних сервисов, пользовательских настроек или неправильное использование приложения.";
 "privacy_policy_section_final_content_5" = "Функции безопасности и подсказки ALADDIN являются вспомогательными: они могут ошибаться и не заменяют родителя, экстренные службы, банк, врача, юриста или другого специалиста.";
-"privacy_policy_section_responsibility_content_5" = "ALADDIN предоставляет семейную защиту, Antifake, Безопасные сайты, SOS, AI-подсказки, эмоциональную поддержку, мониторинг, уведомления и другие функции как вспомогательные инструменты. Они помогают снижать риски, но не гарантируют точность, непрерывность, доступность, обнаружение, блокировку или предотвращение всех угроз, мошенничества, обходов, ошибок, аварий, потерь данных, вреда или неправомерных действий других людей. Решения принимает пользователь, родитель или законный представитель. При угрозе жизни, здоровью, деньгам или правам обращайтесь в экстренные службы, банк, врача, юриста или иной профильный орган. В максимальной степени, разрешённой законом, ALADDIN AI мобильное приложение, компания SAUDAPAYDI, TOO не несут ответственности за прямой или косвенный ущерб, убытки, неверные решения, пропущенные угрозы, действия третьих лиц, сбои iOS, сети, функции «Безопасные сайты», устройства, сторонних сервисов, пользовательских настроек или неправильное использование приложения.";
+"privacy_policy_section_responsibility_content_5" = "ALADDIN предоставляет семейную защиту, Проверка на обман, Безопасные сайты, SOS, AI-подсказки, эмоциональную поддержку, мониторинг, уведомления и другие функции как вспомогательные инструменты. Они помогают снижать риски, но не гарантируют точность, непрерывность, доступность, обнаружение, блокировку или предотвращение всех угроз, мошенничества, обходов, ошибок, аварий, потерь данных, вреда или неправомерных действий других людей. Решения принимает пользователь, родитель или законный представитель. При угрозе жизни, здоровью, деньгам или правам обращайтесь в экстренные службы, банк, врача, юриста или иной профильный орган. В максимальной степени, разрешённой законом, ALADDIN AI мобильное приложение, компания SAUDAPAYDI, TOO не несут ответственности за прямой или косвенный ущерб, убытки, неверные решения, пропущенные угрозы, действия третьих лиц, сбои iOS, сети, функции «Безопасные сайты», устройства, сторонних сервисов, пользовательских настроек или неправильное использование приложения.";
 "terms_section_liability_content_1" = "Используйте приложение законно и с учётом ограничений функций.";
 "terms_section_liability_content_2" = "ALADDIN не является экстренной, медицинской, юридической, банковской или операторской службой.";
 "terms_section_liability_content_3" = "Пользователь, родитель или законный представитель отвечает за настройки, разрешения и свои действия.";
@@ -2458,7 +2459,7 @@
 "terms_section_liability_content_8" = "Мы не несём ответственности за убытки от телефонного мошенничества и за решения по выжимке или кнопкам после звонка";
 "terms_section_liability_content_9" = "Раздел «Звонки» – вспомогательный инструмент, не юридическая или банковская консультация и не услуга оператора связи";
 "terms_section_liability_content_10" = "Используя запись и память звонков, вы принимаете эти ограничения";
-"terms_section_liability_content_11" = "ALADDIN предоставляет семейную защиту, Antifake, Безопасные сайты, SOS, AI-подсказки, эмоциональную поддержку, мониторинг, уведомления и другие функции как вспомогательные инструменты.";
+"terms_section_liability_content_11" = "ALADDIN предоставляет семейную защиту, Проверка на обман, Безопасные сайты, SOS, AI-подсказки, эмоциональную поддержку, мониторинг, уведомления и другие функции как вспомогательные инструменты.";
 "terms_section_liability_content_12" = "Они помогают снижать риски, но не гарантируют точность, непрерывность, доступность, обнаружение, блокировку или предотвращение всех угроз, мошенничества, обходов, ошибок, аварий, потерь данных, вреда или неправомерных действий других людей.";
 "terms_section_liability_content_13" = "Решения принимает пользователь, родитель или законный представитель. При угрозе жизни, здоровью, деньгам или правам обращайтесь в экстренные службы, банк, врача, юриста или иной профильный орган.";
 "terms_section_liability_content_14" = "В максимальной степени, разрешённой законом, ALADDIN AI мобильное приложение, компания SAUDAPAYDI, TOO не несут ответственности за прямой или косвенный ущерб, убытки, неверные решения, пропущенные угрозы, действия третьих лиц, сбои iOS, сети, функции «Безопасные сайты», устройства, сторонних сервисов, пользовательских настроек или неправильное использование приложения.";
@@ -2478,13 +2479,13 @@
 "calls_after_antifake_cta" = "Проверить на мошенников";
 "calls_after_antifake_note" = "Проверка после звонка";
 "calls_card_untitled" = "Исходящий";
-"calls_paywall_title" = "Звонки – для Family и Premium";
-"calls_paywall_body" = "Память звонков доступна в пробном периоде 14 дней и на тарифах Family/Premium.";
+"calls_paywall_title" = "Звонки для Семейного и Премиум";
+"calls_paywall_body" = "Память звонков доступна в пробный период 14 дней и на тарифах Семейный и Премиум.";
 "calls_paywall_open_tariffs" = "Открыть тарифы";
 
 "calls_safety_prompt_toggle" = "Защита от телефонных мошенников";
 "calls_safety_prompt_toggle_subtitle" = "Красная и зелёная кнопки после звонка по телефону";
-"calls_safety_prompt_toggle_a11y_hint" = "После звонка Phone или FaceTime. WhatsApp и Telegram iOS не видит – откройте раздел Звонки вручную.";
+"calls_safety_prompt_toggle_a11y_hint" = "После звонка по телефону или FaceTime. WhatsApp и Telegram система не видит. Откройте раздел «Звонки» вручную.";
 "settings_icon_style_preview_title" = "Стиль иконок";
 "settings_icon_style_preview_subtitle" = "Стиль иконок на главной";
 "settings_icon_style_classic" = "Классика";
@@ -2910,7 +2911,7 @@
 "referral_method_x" = "X";
 "referral_method_x_subtitle" = "Опубликовать приглашение в X";
 "referral_method_instagram" = "Instagram";
-"referral_method_instagram_subtitle" = "Поделиться через Instagram (Stories/Direct)";
+"referral_method_instagram_subtitle" = "Поделиться через Instagram";
 "family_habit_eventkit_toggle" = "Календарь Apple";
 "family_habit_eventkit_subtitle" = "Дублировать напоминания в Календарь";
 "family_habit_status_server_saved" = "Семейные настройки сохранены на сервере.";
@@ -2918,8 +2919,8 @@
 "family_habit_status_push_on" = "Пуши на этом iPhone включены.";
 "family_habit_status_push_off" = "Пуши на этом iPhone выключены.";
 "family_habit_status_push_denied" = "Уведомления запрещены в настройках iOS.";
-"family_habit_status_calendar_on" = "Apple Calendar включён для этого iPhone.";
-"family_habit_status_calendar_off" = "Apple Calendar не включён.";
+"family_habit_status_calendar_on" = "Календарь включён для этого iPhone.";
+"family_habit_status_calendar_off" = "Календарь не включён.";
 "family_habit_status_wellness_ready" = "Напоминания появятся и в «Самочувствии».";
 "family_habit_status_wellness_consent" = "Напоминания появятся в «Самочувствии», когда вы примете правила этого раздела.";
 "family_habit_wellness_optional_consent" = "Напоминания сохранены. В «Самочувствии» они появятся после принятия правил этого раздела.";
@@ -2927,16 +2928,16 @@
 "family_habit_wellness_optional_synced" = "Напоминания сохранены и появились в «Самочувствии».";
 "bypass_smart_dns_title" = "Безопасные сайты";
 "bypass_smart_dns_desc" = "Дополнительная проверка адресов сайтов для защиты семьи и усиления защиты от обхода.";
-"bypass_smart_dns_reason_ipc_failed" = "Smart DNS сейчас не включился. Обычно мешает другой VPN/DNS-профиль или проверка идёт не на iPhone. Проверьте устройство и попробуйте снова.";
+"bypass_smart_dns_reason_ipc_failed" = "Фильтр сайтов сейчас не включился. Обычно мешает другой VPN. Проверьте iPhone и попробуйте снова.";
 "bypass_smart_dns_debug_label" = "Что делать:";
-"bypass_smart_dns_unavailable_simulator" = "В симуляторе показываем экран. Системный DNS включается только на iPhone.";
-"bypass_smart_dns_status_unavailable" = "Smart DNS недоступен в этой сборке.";
-"bypass_smart_dns_status_simulator_preview" = "На iPhone включается в настройках DNS.";
-"bypass_smart_dns_status_inactive" = "Smart DNS выключен.";
-"bypass_smart_dns_status_saving" = "Готовим профиль DNS.";
+"bypass_smart_dns_unavailable_simulator" = "В симуляторе показываем экран. Фильтр сайтов включается только на iPhone.";
+"bypass_smart_dns_status_unavailable" = "Фильтр сайтов недоступен в этой версии.";
+"bypass_smart_dns_status_simulator_preview" = "На iPhone фильтр включается в Настройках.";
+"bypass_smart_dns_status_inactive" = "Фильтр сайтов выключен.";
+"bypass_smart_dns_status_saving" = "Готовим фильтр сайтов.";
 "bypass_smart_dns_status_needs_settings" = "Нужно включить профиль в настройках iOS.";
-"bypass_smart_dns_status_active" = "Smart DNS включён.";
-"bypass_smart_dns_status_failed" = "Не включилось. Проверьте другой VPN/DNS-профиль.";
+"bypass_smart_dns_status_active" = "Фильтр сайтов включён.";
+"bypass_smart_dns_status_failed" = "Не включилось. Проверьте, не мешает ли другой VPN.";
 "bypass_smart_dns_settings_hint" = "Откройте Настройки iPhone -> Основные -> VPN и управление устройством -> DNS и выберите ALADDIN.";
 "bypass_smart_dns_guide_title" = "Как включить на iPhone";
 "bypass_smart_dns_guide_step_1" = "1. Откройте Настройки iPhone.";
@@ -2964,7 +2965,7 @@
 "invitation_display_name_hint" = "Как вас будут видеть в семье. Можно на русском или английском.";
 "invitation_display_name_placeholder" = "Например: Маша";
 "invitation_display_name_invalid" = "Введите имя от 2 до 24 букв (можно с пробелом или дефисом).";
-"invitation_code_not_found_friendly" = "Код не найден или уже не действует. Попросите новый QR или вставьте другой FAM-код.";
+"invitation_code_not_found_friendly" = "Код не найден или уже не действует. Попросите новый QR или вставьте другой код семьи.";
 "registration_select_display_name" = "Как вас зовут в семье?";
 "invitation_picker_placeholder" = "Выбрать";
 "invitation_age_toddler" = "Малыш (0-3)";
@@ -2978,7 +2979,7 @@
 "parental_stats_rate_wait_fmt" = "Подождите :%02d";
 "settings_updates_opening" = "Открываем App Store…";
 "settings_updates_failed" = "Не удалось открыть App Store";
-"positioning_system_ios_note" = "На iPhone Apple всегда использует доступные спутники вместе (GPS + ГЛОНАСС + Galileo и др.). Выбор здесь – предпочтение для подсказок, а не принудительное отключение систем.";
+"positioning_system_ios_note" = "На iPhone Apple использует доступные спутники вместе. Выбор здесь показывает предпочтение, а не отключает остальные.";
 "positioning_system_saved_toast" = "Сохранено: %@";
 "calls_phone_unavailable_sim" = "На симуляторе Телефон недоступен. Проверьте на iPhone.";
 "calls_phone_open_failed" = "Не удалось открыть Телефон. Наберите номер вручную.";
@@ -3004,7 +3005,7 @@
 "protection_feedback_threats_off" = "Защита от угроз выключена";
 "protection_feedback_messages_on" = "Мониторинг сообщений включён";
 "protection_feedback_messages_off" = "Мониторинг сообщений выключен";
-"protection_feedback_messages_subtitle" = "Сохраняем настройку в семье. Push от iOS – только если разрешены уведомления.";
+"protection_feedback_messages_subtitle" = "Сохраняем настройку в семье. Сообщение придёт, только если разрешены уведомления.";
 "protection_feedback_screenshots_on" = "Контроль снимков экрана включён";
 "protection_feedback_screenshots_off" = "Контроль снимков экрана выключен";
 "advanced_threat_status_count_fmt" = "Защита от угроз: %d из %d";
@@ -3024,7 +3025,7 @@
 "main_protect_parents_subtitle" = "Вторая рука для 60+: звонки и доверие в семье";
 "main_more_title" = "Ещё";
 "main_more_subtitle" = "Удобный режим и другие разделы";
-"main_simple_version_title" = "ALADDIN Home";
+"main_simple_version_title" = "ALADDIN домашний экран";
 "main_simple_version_subtitle" = "Всё важное на одном экране";
 "family_safe_word_show_phrase" = "Показать фразу";
 "family_safe_word_hide_phrase" = "Скрыть фразу";
@@ -3038,7 +3039,7 @@
 "family_safe_word_no_family_how_title" = "Как подключиться";
 "family_safe_word_no_family_step_1" = "Откройте вкладку «Семья» внизу экрана.";
 "family_safe_word_no_family_step_2" = "Если вы начинаете – нажмите «Создать семью».";
-"family_safe_word_no_family_step_3" = "Если вас пригласили – «Ввести код» или «Сканировать QR». Код вида FAM-XXXX… даёт родитель.";
+"family_safe_word_no_family_step_3" = "Если вас пригласили, нажмите «Ввести код» или «Сканировать QR». Код даёт родитель.";
 "family_safe_word_no_family_step_4" = "Когда семья появится – вернитесь сюда и сохраните фразу.";
 "family_safe_word_no_family_cta" = "Открыть подключение к семье";
 "simple_home_tile_parents_title" = "Родители 60+";
@@ -3055,14 +3056,14 @@
 "pay_pains_family_strip_slots_fmt" = "Семья · %d из %d мест";
 "pay_pains_family_strip_add" = "Добавить";
 "pay_pains_family_strip_add_to_family" = "Добавить в семью";
-"simple_home_open_full_main" = "ALADDIN Home";
+"simple_home_open_full_main" = "Полная версия";
 "simple_home_title" = "Aladdin start!";
-"pay_pains_door_check_title" = "Проверить";
+"pay_pains_door_check_title" = "Проверка на обман";
 "pay_pains_door_check_subtitle" = "Проверим звонок, сообщение, видео или текст";
 "pay_pains_door_child_title" = "Ребёнок";
-"pay_pains_door_child_subtitle" = "Сайты, лимит и пауза";
+"pay_pains_door_child_subtitle" = "Лимит, пауза и отбой";
 "pay_pains_door_where_title" = "Где семья";
-"pay_pains_door_where_subtitle" = "Карта";
+"pay_pains_door_where_subtitle" = "Живая карта";
 "pay_pains_ai_friends_row" = "AI Друзья";
 "pay_pains_menu_button" = "Меню";
 "pay_pains_menu_title" = "Все разделы";
@@ -3173,26 +3174,26 @@
 "family_discord" = "Discord";
 "family_games" = "Игры";
 "screen_time_child_setup_title" = "Экранное время ребёнка";
-"screen_time_child_setup_body" = "На этом iPhone разрешите Screen Time и выберите приложения. Минуты появятся у родителя после использования.";
+"screen_time_child_setup_body" = "На этом iPhone разрешите Экранное время и выберите приложения. Минуты появятся у родителя после использования.";
 "screen_time_child_setup_cta" = "Разрешить и выбрать приложения";
 "screen_time_child_setup_pick_apps" = "Выберите приложения и категории для контроля";
 "screen_time_child_setup_done" = "Готово. Данные появятся у родителя после использования приложений.";
 "screen_time_unavailable_in_build" = "Системный Screen Time недоступен в этой сборке App Store.";
 "screen_time_parent_open_on_child" = "Откройте ALADDIN на телефоне ребёнка и настройте экранное время";
 "screen_time_stats_stale" = "Нет свежих данных об использовании (старше 6 часов)";
-"app_limits_token_hint" = "Лимиты минут сохраняются здесь. Привязка к приложениям Screen Time делается на iPhone ребёнка (выбор приложений).";
-"app_limits_token_bound" = "Привязано к Screen Time";
+"app_limits_token_hint" = "Лимиты минут сохраняются здесь. Привязка к приложениям Экранного времени делается на iPhone ребёнка.";
+"app_limits_token_bound" = "Привязано к Экранному времени";
 "screen_time_device_row_title" = "Экранное время";
 "screen_time_device_unavailable_build" = "Screen Time: в этой сборке App Store выключен до Device QA";
-"screen_time_device_needs_auth" = "Screen Time: нужна авторизация на телефоне ребёнка";
-"screen_time_device_active" = "Screen Time: активно";
+"screen_time_device_needs_auth" = "Экранное время: нужно разрешение на телефоне ребёнка";
+"screen_time_device_active" = "Экранное время включено";
 "screen_time_device_active_fmt" = "Экран: %@ / %@";
-"screen_time_device_no_data" = "Screen Time: нет данных";
-"screen_time_device_stale" = "Screen Time: данные устарели";
-"screen_time_fc_gated_banner" = "Системный Screen Time включим после Device QA (сейчас честный empty / без claims).";
-"screen_time_fc_need_auth" = "Screen Time: нет авторизации на этом устройстве – настройте на iPhone ребёнка.";
+"screen_time_device_no_data" = "Экранное время: пока нет данных";
+"screen_time_device_stale" = "Экранное время: данные устарели";
+"screen_time_fc_gated_banner" = "Экранное время пока недоступно в этой версии.";
+"screen_time_fc_need_auth" = "Экранное время: нет разрешения на этом iPhone. Настройте на телефоне ребёнка.";
 "screen_time_fc_need_extension" = "Screen Time: расширения Monitor/Report ещё не в сборке или не подписаны.";
-"screen_time_fc_ready" = "Screen Time: авторизация и расширения готовы на этом устройстве.";
+"screen_time_fc_ready" = "Экранное время готово на этом iPhone.";
 "family_presence_stamp_today" = "сегодня · %@";
 "family_presence_stamp_yesterday" = "вчера · %@";
 "family_presence_stamp_date" = "%@ · %@";
@@ -3271,8 +3272,8 @@
 "location_error_region_monitoring_failed" = "Не удалось следить за местом: %@.";
 
 /* WAVE3 cap-A3 ManagedSettings honesty */
-"app_limits_shield_parent_honesty" = "Лимиты минут сохраняются у родителя. Блокировка приложений (Shield) включается на iPhone ребёнка после настройки Screen Time – не на телефоне родителя.";
-"app_limits_unbound_honesty" = "Приложения ещё не привязаны к Screen Time. Откройте настройку на iPhone ребёнка и выберите приложения.";
+"app_limits_shield_parent_honesty" = "Лимиты минут сохраняются у родителя. Блокировка приложений включается на iPhone ребёнка после настройки Экранного времени, не на телефоне родителя.";
+"app_limits_unbound_honesty" = "Приложения ещё не привязаны к Экранному времени. Откройте настройку на iPhone ребёнка и выберите приложения.";
 
 /* WAVE3 cap-F3 Safari vs system filter honesty */
 "parental_filter_safari_honesty" = "Сейчас фильтр работает в Safari (Content Blocker). Другие приложения Safari не закрывает.";
@@ -3286,7 +3287,7 @@
 "system_filter_toggle_error_simulator" = "На симуляторе системный фильтр Apple не работает. Проверьте на реальном iPhone (без другого VPN).";
 "system_filter_toggle_error_disabled" = "Системный фильтр не включён в этой сборке.";
 "system_filter_toggle_error_permission" = "1) Выключите другой VPN\n2) Снова включите фильтр\n3) В окне iPhone нажмите «Разрешить»";
-"system_filter_toggle_error_extension" = "Системный фильтр недоступен в этой сборке. Нужно проверить Network Extension entitlement/profile.";
+"system_filter_toggle_error_extension" = "Фильтр сайтов пока недоступен в этой версии.";
 "family_critical_alerts_toggle" = "Критические оповещения";
 "family_critical_alerts_footer" = "Срочный сигнал и важные семейные события могут звучать даже в «Не беспокоить». Можно выключить в Настройках iPhone.";
 "family_critical_alerts_on_hint" = "Критические оповещения разрешены. Проверьте Настройки → ALADDIN → Уведомления.";
@@ -3296,7 +3297,7 @@
 "family_urgent_signal_body" = "Нужна помощь близкого. Откройте ALADDIN и свяжитесь.";
 "family_urgent_signal_chat" = "🆘 Срочный сигнал семье: %@ (%@)";
 "family_urgent_signal_toggle" = "Срочный сигнал семье";
-"family_urgent_signal_toggle_footer" = "Использует Apple Health (HealthKit). При экстренной ситуации или по кнопке близкие получат сигнал. Нужно ваше согласие.";
+"family_urgent_signal_toggle_footer" = "Использует приложение «Здоровье». При экстренной ситуации или по кнопке близкие получат сигнал. Нужно ваше согласие.";
 "family_urgent_signal_send_now" = "Отправить сигнал сейчас";
 "family_urgent_signal_sent" = "Сигнал отправлен семье";
 "scam_comm_notification_title" = "Подозрительный звонок";
@@ -3312,15 +3313,15 @@
 "profile_family_invite_section_title" = "Семья";
 "profile_friends_bonus_section_title" = "Друзья и бонусы";
 "profile_invite_family_members" = "Пригласить в семью";
-"profile_invite_family_members_desc" = "Создать FAM или QR для близкого. Это не бонус и не реферал.";
+"profile_invite_family_members_desc" = "Создать код семьи или QR для близкого. Это не бонус и не код для друзей.";
 "profile_join_family" = "Присоединиться к семье";
-"profile_join_family_desc" = "Ввести FAM или отсканировать QR, если вас пригласили. Не код от команды ALADDIN.";
+"profile_join_family_desc" = "Введите код семьи или отсканируйте QR, если вас пригласили. Это не код от команды ALADDIN.";
 "profile_invite_friends" = "Пригласить друзей";
 "profile_invite_discount" = "Поделитесь своим реферальным кодом. Друг получает выгоду, вам начисляется бонус.";
 "family_invite_error_invalid" = "Код приглашения не подошёл. Попросите администратора семьи отправить новый QR или код.";
 "family_invite_error_expired" = "Срок приглашения истёк. Попросите администратора семьи создать новый код.";
 "family_invite_error_revoked" = "Это приглашение уже отменено. Нужен новый QR или код.";
-"family_invite_error_used_up" = "Это приглашение уже использовано максимальное число раз. Попросите новый QR или FAM-код.";
+"family_invite_error_used_up" = "Это приглашение уже использовано. Попросите новый QR или код семьи.";
 "family_invite_error_family_not_found" = "Семья не найдена. Проверьте код или попросите новый QR.";
 "family_invite_error_forbidden" = "Приглашать семью может владелец или родитель в этой семье.";
 "family_invite_error_already_in_another_family" = "Этот телефон уже привязан к другой семье. Удалите профиль или выйдите из текущей семьи, затем повторите.";
@@ -3334,18 +3335,18 @@
 "device_pairing_error_token_or_pin_required" = "Введите 6-значный PIN или отсканируйте QR устройства.";
 "family_invite_wrong_flow_device_code" = "Это 6-значный код устройства. Для него откройте «Привязать новое устройство».";
 "device_pairing_wrong_flow_family_code" = "Это приглашение в семью. Сейчас откроем экран добавления человека.";
-"join_device_family_invite_hint" = "Этот экран только для привязки нового устройства. Чтобы добавить маму, ребёнка или другого человека в семью, используйте «Пригласить в семью» и семейный QR/FAM-код.";
+"join_device_family_invite_hint" = "Этот экран только для привязки нового устройства. Чтобы добавить человека в семью, используйте код семьи.";
 "join_device_success_message" = "Готово. Это устройство привязано к вашей семье. Список устройств обновится на главном экране.";
 "invitation_join_navigation_title" = "Вход в семью";
 "invitation_code_enter_title" = "Присоединиться к семье";
-"invitation_code_enter_subtitle" = "Вставьте FAM или данные с QR от владельца семьи. Это не промокод команды ALADDIN.";
+"invitation_code_enter_subtitle" = "Вставьте код семьи или данные с QR от владельца семьи. Это не промокод команды ALADDIN.";
 "invitation_code_preflight_ok" = "Код найден. Выберите роль, возраст и введите имя.";
 "crash_settings_save_error_login_required" = "Не удалось сохранить: профиль ещё не авторизован. Откройте профиль и попробуйте снова.";
 "crash_settings_save_error_permissions" = "Не удалось включить: проверьте Геолокацию, Движение и Уведомления в настройках iPhone.";
 "crash_settings_save_error_network" = "Не удалось сохранить из-за сети. Проверьте интернет и попробуйте снова.";
 "crash_settings_pending_sync" = "Настройки сохранены на телефоне и ждут синхронизации с сервером.";
 "crash_settings_saved_pending_sync" = "Сохранили на телефоне. Синхронизируем с сервером позже.";
-"geofence_notifications_enabled_now" = "Уведомления включены. Теперь места смогут присылать push.";
+"geofence_notifications_enabled_now" = "Уведомления включены. Теперь места смогут присылать уведомления.";
 "geofence_notifications_permission_denied" = "Уведомления не включены. Разрешите их в настройках iPhone.";
 "geofence_notifications_open_settings_hint" = "Открыл настройки iPhone. Включите уведомления для ALADDIN и вернитесь в приложение.";
 "recovery_share_text_family_link" = "Приглашаю тебя в мою семью ALADDIN.\nКод: %@\nСсылка: %@\nОткрой ALADDIN и выбери «Ввести код», если ссылка не открылась автоматически.";
@@ -3353,27 +3354,27 @@
 "recovery_share" = "Поделиться";
 "invitation_paste_code_button" = "Вставить";
 "family_invite_card_title" = "Пригласить в семью";
-"family_invite_card_body" = "QR, FAM или ссылка для близкого. Не реферал и не промокод команды.";
+"family_invite_card_body" = "QR, код семьи или ссылка для близкого. Это не код для друзей и не промокод.";
 "family_invite_show_qr_title" = "Показать семейный QR";
-"family_invite_show_qr_desc" = "Создать новое FAM-приглашение для этой семьи: QR, код и ссылка.";
+"family_invite_show_qr_desc" = "Создать новое приглашение для этой семьи: QR, код и ссылка.";
 "family_invite_person_primary_title" = "Пригласить человека в семью";
-"family_invite_person_primary_desc" = "QR, FAM-код и ссылка для нового участника. После входа привяжем его iPhone к семье.";
+"family_invite_person_primary_desc" = "QR, код семьи и ссылка для нового участника. После входа привяжем его iPhone к семье.";
 "family_invite_full_hint" = "Семья заполнена. Чтобы создать QR-приглашение, освободите место или обновите тариф.";
 "family_invite_share_title" = "Приглашение в семью";
-"family_invite_share_subtitle" = "Покажите этот QR участнику семьи или отправьте FAM-код. Это добавляет человека, не устройство.";
+"family_invite_share_subtitle" = "Покажите этот QR или отправьте код семьи. Так добавляется человек, не устройство.";
 "family_invite_tap_code_hint" = "Нажмите, чтобы скопировать код";
 "family_invite_copy_link" = "Ссылка";
-"family_invite_code_copied" = "FAM-код скопирован";
+"family_invite_code_copied" = "Код семьи скопирован";
 "family_invite_link_copied" = "Ссылка приглашения скопирована";
 "family_invite_loading" = "Создаём приглашение...";
 "family_invite_expires_at_fmt" = "Действует до: %@";
 "family_invite_missing_family" = "Не найден ID семьи. Обновите экран «Семья» и попробуйте снова.";
 "family_invite_create_failed" = "Не удалось создать приглашение в семью. Проверьте сеть и попробуйте ещё раз.";
-"family_invite_create_route_unavailable" = "Сервер приглашений ещё недоступен. iPhone отправил правильный запрос, но backend пока не знает этот endpoint. Попробуйте позже после обновления сервера.";
+"family_invite_create_route_unavailable" = "Не получилось создать приглашение. Попробуйте позже.";
 "family_invite_create_forbidden" = "Создать приглашение может только владелец или администратор семьи.";
 "family_invite_create_family_full" = "Семья заполнена. Освободите место или обновите тариф перед созданием приглашения.";
 "family_invite_create_network_failed" = "Сервер приглашений сейчас недоступен. Проверьте интернет и попробуйте ещё раз.";
-"invitation_code_family_hint" = "Вставьте FAM-код из приглашения. Его отправляет владелец семьи. Пример: FAM-ABCD-1234.";
+"invitation_code_family_hint" = "Вставьте код семьи из приглашения. Его отправляет владелец семьи.";
 "invitation_join_family_failed" = "Не удалось присоединиться к семье. Проверьте код и попробуйте ещё раз.";
 "family_join_autobind_progress" = "Готово, вы в семье. Теперь привязываем этот iPhone к вашему участнику.";
 "family_join_autobind_success" = "Этот iPhone привязан к семье. Он появится в списке устройств.";
@@ -3406,10 +3407,10 @@
 "promo_error_login_required" = "Войдите в аккаунт, чтобы активировать код.";
 "promo_error_generic" = "Не удалось активировать код. Проверьте интернет и попробуйте ещё раз.";
 "promo_error_member_id" = "Это ID участника семьи. Для бонуса нужен промокод от команды ALADDIN.";
-"promo_error_family_invite_code" = "Это FAM – приглашение в семью. Открываем «Присоединиться к семье».";
-"promo_routing_to_family_join" = "Обнаружен FAM. Открываем вход в семью…";
+"promo_error_family_invite_code" = "Это код семьи. Открываем «Присоединиться к семье».";
+"promo_routing_to_family_join" = "Это код семьи. Открываем вход в семью.";
 "promo_error_device_code" = "Это код устройства. Для бонуса нужен промокод от команды ALADDIN.";
-"promo_error_backend_not_ready" = "Сервер промокодов ещё не подключён на проде. Код появится после выката /api/promo.";
+"promo_error_backend_not_ready" = "Промокоды временно не работают. Попробуйте позже.";
 "biometric_auth_reason" = "Подтвердите личность для доступа к ALADDIN.";
 
 /* App Store review prompt (after onboarding, once) */
@@ -3499,7 +3500,7 @@
 "where_phone_trail_title" = "След за сегодня";
 "where_phone_trail_empty" = "Пока пусто. След – только приходы и уходы из сохранённых мест за сегодня.";
 "where_phone_share_hint_map" = "Точка для семьи сейчас. С доступом при закрытом приложении она может обновляться, когда ALADDIN закрыт. В тихой зоне точку не отправляем.";
-"privacy_policy_section_not_collected_content_2" = "Телефоны и email для рекламы не берём. Дом и школу – только если родитель сам сохранил в «Где семья»";
+"privacy_policy_section_not_collected_content_2" = "Телефоны и почту для рекламы не берём. Дом и школу – только если родитель сам сохранил в «Где семья»";
 "privacy_policy_section_family_location" = "Место семьи";
 "privacy_policy_section_family_location_subtitle" = "Карта, тихая зона и поездки только внутри семьи";
 "privacy_policy_section_family_location_content_1" = "На карте семьи актуальное или недавнее место и уведомления «пришёл / ушёл», если на этом iPhone разрешена геолокация для ALADDIN. Показ места семье это часть «Где семья».";
@@ -3541,13 +3542,13 @@
 "map_hub_subscription_body" = "Семейный тариф ALADDIN. Посмотрите планы.";
 "map_hub_safety_title" = "Безопасность семьи";
 "map_hub_safety_body" = "SOS и подтверждение аварии появятся здесь.";
-"map_hub_events_next_body" = "Полный месяц-календарь и EventKit подключим на следующем шаге. Секция уже на месте.";
+"map_hub_events_next_body" = "Полный календарь появится в обновлении. Раздел уже на месте.";
 "map_hub_subscription_cta" = "Открыть тарифы ALADDIN";
 "map_hub_safety_open_settings" = "Настройки обнаружения аварии";
 "map_hub_safety_contacts_fmt" = "Экстренные контакты: %d";
 "map_hub_safety_sos_note" = "Удержание SOS для семьи – на следующем шаге. Без «помощь уже едет».";
 "map_soft_paywall_title" = "Одна подписка на всю семью";
-"map_soft_paywall_body" = "Карта семьи уже с вами. Family ALADDIN – спокойствие для всех устройств. Можно позже.";
+"map_soft_paywall_body" = "Карта семьи уже с вами. Семейный тариф можно подключить позже.";
 "map_soft_paywall_try" = "Посмотреть тарифы";
 "map_soft_paywall_later" = "Может, позже";
 "map_share_dur_1h" = "1 час";
@@ -3858,19 +3859,55 @@
 "connect_device_body_a" = "Добавьте телефон близкого – увидите защиту и точку на карте.";
 "connect_device_cta" = "Пригласить";
 "tariffs_levels_title" = "Что входит в тарифы";
-"tariffs_levels_devices_fmt" = "Устройства: бесплатно %d · семья %d · премиум %d";
-"tariffs_free_simple" = "Семья до 4 · живая карта · SOS";
-"tariffs_family_simple" = "Семья до 6 · живая карта · Антифейк · история мест 7 дней";
-"tariffs_premium_simple" = "Всё из Семейного · до 15 · история мест 30 дней · приоритет";
+"tariffs_levels_devices_fmt" = "В семье: бесплатно %d · личный %d · семья %d · премиум %d";
+"tariffs_free_simple" = "Бесплатный: до %d · живая карта · SOS · история %d часа";
+"tariffs_personal_simple" = "Личный: проверка на обман (до %d тяжёлых в месяц) · история %d часа";
+"tariffs_family_simple" = "Семейный: до %d · проверка на обман · история %d дней · поездки";
+"tariffs_premium_simple" = "Премиум: до %d · проверка без лимита · история %d дней";
+"tariffs_status_trial" = "Сейчас у вас: Пробный период до %@";
+"tariffs_status_trial_nodate" = "Сейчас у вас: Пробный период";
+"tariffs_status_free" = "Сейчас у вас: Бесплатный";
+"tariffs_status_personal" = "Сейчас у вас: Личный до %@";
+"tariffs_status_personal_nodate" = "Сейчас у вас: Личный";
+"tariffs_status_family" = "Сейчас у вас: Семейный до %@";
+"tariffs_status_family_nodate" = "Сейчас у вас: Семейный";
+"tariffs_status_premium" = "Сейчас у вас: Премиум до %@";
+"tariffs_status_premium_nodate" = "Сейчас у вас: Премиум";
+"tariffs_trial_auto_note" = "Пробный период включился сам после входа. Платить не нужно, пока не выберете тариф.";
+"tariffs_compare_toggle" = "Сравнить тарифы";
+"tariffs_free_row" = "Бесплатный: семья до %d, живая карта, SOS. Остаётся всегда.";
+"tariffs_history_hours" = "%d часа";
+"tariffs_history_days" = "%d дней";
+"tariffs_heavy_quota" = "%d в месяц";
+"tariffs_heavy_unlimited" = "без лимита";
+"tariffs_gates_share" = "Делится защитой с семьёй";
+"tariffs_gates_heavy" = "Тяжёлые проверки";
+"tariffs_card_personal_subtitle" = "Защита для вас";
+"tariffs_card_personal_1" = "Проверка на обман: звонки, СМС, ссылки";
+"tariffs_card_personal_quota" = "Проверка голоса и видео: %d в месяц";
+"tariffs_card_history_hours" = "История мест: %d часа";
+"tariffs_card_family_subtitle" = "Для всей семьи, до %d человек";
+"tariffs_card_family_map" = "Живая карта семьи и места";
+"tariffs_card_family_child" = "Ребёнок: лимиты, пауза, отбой";
+"tariffs_card_family_check" = "Проверка на обман для каждого";
+"tariffs_card_premium_subtitle" = "Всё из Семейного и больше";
+"tariffs_card_premium_members" = "До %d человек в семье";
+"tariffs_card_premium_unlimited" = "Проверка на обман без лимита";
+"tariffs_card_premium_history" = "История мест за %d дней";
+"tariffs_card_premium_trips" = "Поездки: скорость и отвлечения";
+"tariffs_choose_personal" = "Выбрать Личный";
+"tariffs_choose_family" = "Выбрать Семейный";
+"tariffs_choose_premium" = "Выбрать Премиум";
+"tariffs_col_personal" = "Личный";
 "tariffs_col_free" = "Бесплат.";
 "tariffs_col_family" = "Семья";
 "tariffs_col_premium" = "Премиум";
 "premium_nudge_map_title" = "Больше спокойствия на карте";
-"premium_nudge_map_body" = "В Family – живая карта и больше мест для семьи.";
+"premium_nudge_map_body" = "На Семейном есть живая карта и больше мест для семьи.";
 "premium_nudge_antifake_title" = "Нужно больше проверок?";
-"premium_nudge_antifake_body" = "В Family и Premium – расширенный Antifake для семьи.";
+"premium_nudge_antifake_body" = "В Семейном и Премиум проверка на обман шире.";
 "premium_nudge_cta" = "Смотреть тарифы";
-"calldir_unknown_build" = "Расширение звонков не найдено в этой сборке. Обновите приложение из TestFlight.";
+"calldir_unknown_build" = "Проверка звонков недоступна. Обновите ALADDIN в App Store.";
 "adblock_safari_steps_title" = "Включите в Safari";
 "adblock_safari_steps_body" = "Настройки → Safari → Расширения → ALADDIN → включите.";
 "adblock_safari_open_settings" = "Открыть Настройки";
@@ -3959,8 +3996,8 @@
 "avatar_crop_apply" = "Готово";
 "map_live_speed_online" = "Сейчас: %d км/ч";
 "map_live_speed_max" = "Макс.: %d км/ч";
-"tariffs_antifake_free" = "Antifake: 0 проверок после пробного периода";
-"tariffs_antifake_paid" = "Antifake: без лимита – текст, документы, голос, видео, звонок";
+"tariffs_antifake_free" = "Проверка на обман: 0 после пробного периода";
+"tariffs_antifake_paid" = "Проверка на обман без месячного лимита: текст, документы, голос, видео, звонок";
 "tariffs_antifake_action_only" = "Только по вашему действию – без фоновой записи";
 "location_history_30d_title" = "История мест за 30 дней";
 "location_history_30d_subtitle" = "Полная история – в семейном тарифе";
@@ -3973,7 +4010,7 @@
 "map_drive_lock_speeding" = "Превышение скорости";
 "map_drive_lock_inattention" = "Невнимательность";
 "map_drive_lock_acceleration" = "Быстрый разгон";
-"map_drive_locks_hint" = "На Family и Premium после пробного";
+"map_drive_locks_hint" = "На Семейном и Премиум после пробного периода";
 "map_drive_unlock_cta" = "Отчёт о поездках за неделю";
 "driving_reports_max_speed" = "Макс. %@";
 "driving_reports_time_range" = "%@ – %@";
@@ -4023,30 +4060,31 @@
 "parent_dashboard_s09_hint" = "Панель родителя – тот же тёмный стиль ALADDIN, без белых полей.";
 "pay_tiers_plain_body" = "После входа пробный период 14 дней включается сам. Здесь – переход на платный тариф.";
 "pay_tiers_plain_title" = "Выберите уровень защиты";
-"privacy_policy" = "Privacy Policy";
+"privacy_policy" = "Политика конфиденциальности";
 "tariffs_activation_code" = "Активировать код";
 "tariffs_error_create_tariff" = "Не удалось создать тариф. Попробуйте ещё раз.";
 "tariffs_error_purchase_tariff" = "Не удалось оформить покупку. Попробуйте ещё раз.";
 "tariffs_excellent" = "Отлично!";
-"tariffs_family" = "СЕМЕЙНЫЙ";
+"tariffs_family" = "Семейный";
 "tariffs_family_features_1" = "Карта семьи и места";
 "tariffs_family_features_3" = "Лимиты и контроль ребёнка";
 "tariffs_family_features_4" = "SOS / «нужна помощь»";
-"tariffs_family_features_5" = "Антифрод для каждого в семье";
+"tariffs_family_features_5" = "Проверка на обман для каждого в семье";
 "tariffs_family_scam_alert" = "Оповещение родных о звонке мошенника";
 "tariffs_family_features_6" = "Поездки и тихая зона";
-"tariffs_free" = "БАЗОВЫЙ";
+"tariffs_free" = "Бесплатный";
 "tariffs_free_period" = "Бесплатно";
-"tariffs_gates_antifake_limit" = "Antifake без лимита";
+"tariffs_gates_antifake_limit" = "Проверка на обман без месячного лимита";
 "tariffs_gates_history_long" = "Длиннее история мест";
 "tariffs_gates_sos" = "SOS / «нужна помощь»";
-"tariffs_gates_trips" = "Поездки (после пробного)";
-"tariffs_ok" = "OK";
+"tariffs_gates_adblock" = "Анти-Баннер";
+"tariffs_gates_trips" = "Поездки";
+"tariffs_ok" = "Понятно";
 "tariffs_payment_error" = "Ошибка оплаты";
 "tariffs_period_month" = "в месяц";
-"tariffs_personal" = "ЛИЧНЫЙ";
+"tariffs_personal" = "Личный";
 "tariffs_personal_features_1" = "Защита одного устройства";
-"tariffs_personal_features_3" = "Антифрод для себя: звонки, SMS, ссылки, переводы";
+"tariffs_personal_features_3" = "Проверка на обман для себя: звонки, СМС, ссылки";
 "tariffs_personal_voice_video_limit" = "Проверка голоса и видео – %d в месяц";
 "tariffs_personal_ai" = "ИИ-помощник по безопасности";
 "tariffs_member_limit_format" = "До %d участников в семье";
@@ -4054,12 +4092,12 @@
 "tariffs_upgrade_personal_to_family_cta_plain" = "Защитить всю семью – перейти на Семейный";
 "tariffs_upgrade_personal_to_family_note" = "Остаток оплаты App Store пересчитает сам";
 "antifake_quota_exhausted_body" = "%d проверок голоса и видео в этом месяце уже использованы. Лимит обновится 1-го числа.";
-"tariffs_personal_features_4" = "Карта последней точки";
+"tariffs_personal_features_4" = "Последнее место";
 "tariffs_personal_features_5" = "Базовые лимиты и SOS";
 "tariffs_personal_features_6" = "Только по вашему действию – без фоновой записи";
-"tariffs_premium" = "ПРЕМИУМ";
+"tariffs_premium" = "Премиум";
 "tariffs_premium_features_1" = "Всё из Семейного";
-"tariffs_premium_features_3" = "Антифрод без лимита: текст, голос, видео, звонок";
+"tariffs_premium_features_3" = "Проверка на обман без месячного лимита: текст, голос, видео, звонок";
 "tariffs_premium_features_4" = "Длиннее история мест";
 "tariffs_premium_features_5" = "Приоритетная поддержка семьи";
 "tariffs_premium_features_6" = "Расширенные лимиты устройств";
@@ -4067,17 +4105,17 @@
 "tariffs_premium_features_8" = "Только по вашему действию – без фоновой записи";
 "tariffs_purchase_button" = "Оформить подписку";
 "tariffs_purchase_success" = "Покупка успешна!";
-"tariffs_recommended" = "⭐ РЕКОМЕНДУЕМ";
+"tariffs_recommended" = "Рекомендуем";
 "tariffs_restore_purchases" = "Восстановить покупки";
-"tariffs_selected" = "✓ ВЫБРАН";
+"tariffs_selected" = "Выбран";
 "tariffs_subscribe_agreement_and" = "и";
 "tariffs_subscribe_agreement_text" = "Нажимая «Подписаться», вы соглашаетесь с";
 "tariffs_subscription_activated" = "Подписка успешно активирована!";
 "tariffs_subtitle" = "Выберите подходящий план";
-"tariffs_title" = "ТАРИФЫ";
-"tariffs_trial" = "ПРОБНЫЙ";
+"tariffs_title" = "Тарифы";
+"tariffs_trial" = "Пробный";
 "tariffs_trial_already_active_until" = "Пробный период уже активен до %@";
-"tariffs_trial_button" = "НАЧАТЬ ПРОБНЫЙ ПЕРИОД";
+"tariffs_trial_button" = "Начать пробный период";
 "tariffs_trial_features_1" = "Полный доступ ко всем функциям";
 "tariffs_trial_features_3" = "AI помощник без ограничений";
 "tariffs_trial_features_4" = "Расширенная защита семьи";
@@ -4114,11 +4152,11 @@
 "notif_s36_title" = "Безопасность";
 "notif_s36_body" = "SOS и «нужна помощь» – сразу на карту.";
 "notif_s37_title" = "Погода семьи";
-"notif_s37_body" = "Скоро. Без клона Life360.";
+"notif_s37_body" = "Скоро.";
 "notif_s38_title" = "События семьи";
 "notif_s38_body" = "Напоминания о семейных событиях.";
 "notif_s39_title" = "Питомцы";
-"notif_s39_body" = "Не копируем Life360. Свой сценарий – позже.";
+"notif_s39_body" = "Появится в обновлении.";
 
 /* WAVE R7 min — S31/S32 events + S52 inbox */
 "family_cal_who_title" = "Кто увидит";
@@ -4150,7 +4188,7 @@
 "map_journal_scrub_hint" = "Листайте точки за сегодня";
 
 /* S58 weekly densitiy / tariff gates */
-"drive_weekly_locked_title" = "Риски за рулём – по Family/Premium";
+"drive_weekly_locked_title" = "Риски за рулём на Семейном и Премиум";
 "drive_weekly_locked_body" = "Счётчики скорости и резких манёвров открываются на семейном тарифе. Поездки и км без выдуманных цифр.";
 "drive_weekly_locked_cta" = "Открыть тарифы";
 "drive_weekly_violations_total" = "Нарушений за период: %d";
@@ -4220,8 +4258,8 @@
 "ai_categories_action_block" = "Блокировать";
 
 /* Policy A — Antifake App Trial access (pre-prod 2026-11-16) */
-"antifake_premium_gate_honest_body" = "Проверка подлинности доступна на активном пробном периоде приложения, а также в тарифах Family и Premium. Мы не показываем демо-вердикты без реального анализа.";
-"faq_antifake_apple_limits_answer" = "ALADDIN проверяет текст, ссылки, аудио и видео только когда вы сами нажимаете «Проверить» или делитесь контентом через «Поделиться».\n\nМы не слушаем все телефонные звонки в фоне – iOS это запрещает. Не кладём трубку автоматически и не перехватываем FaceTime или мессенджеры.\n\nМетки на звонках – только для номеров из проверенной базы (Call Directory), не для всех незнакомых.\n\nНа сайте aladdin-ai.ru/antifake – **14 дней бесплатно** или Family/Premium по коду; лимит файлов 25 МБ. В приложении – активный App Trial, Family или Premium.\n\nРезультат – оценка (похоже на подделку / неясно / похоже на подлинное), не юридическое заключение.";
+"antifake_premium_gate_honest_body" = "Проверка на обман доступна в пробный период, а также на тарифах Семейный и Премиум. Без настоящей проверки результат не показываем.";
+"faq_antifake_apple_limits_answer" = "ALADDIN проверяет текст, ссылки, аудио и видео только когда вы сами нажимаете «Проверить» или делитесь через «Поделиться».\n\nМы не слушаем все звонки в фоне. Система это запрещает. Не кладём трубку сами и не перехватываем FaceTime или мессенджеры.\n\nМетки на звонках только для номеров из проверенного списка, не для всех незнакомых.\n\nНа сайте aladdin-ai.ru проверка доступна в пробный период или на тарифах Семейный и Премиум. Файл не больше 25 МБ.\n\nРезультат это оценка: похоже на подделку, неясно или похоже на подлинное. Это не заключение юриста.";
 
 /* L360 stage 3 — family growth nudge (FamilyGrowthNudgeScheduler) */
 "family_growth_nudge_title" = "Добавьте близких в семью";
@@ -4243,7 +4281,7 @@
 "family_location_history_privacy_note" = "Историю видит только ваша семья. Старые точки удаляются автоматически, при удалении аккаунта – сразу.";
 
 /* L360 — site expiry reminders + tariff history gate + trip push */
-"tariffs_gates_history_places" = "История мест (24ч / 7д / 30д)";
+"tariffs_gates_history_places" = "История мест";
 "site_sub_expiry_push_title" = "Подписка с сайта скоро закончится";
 "site_sub_expiry_push_body_7d" = "Осталась неделя до %@. Продлите на сайте, чтобы не потерять доступ.";
 "site_sub_expiry_push_body_3d" = "Через 3 дня, %@, доступ по коду с сайта закончится. Продлите оплату.";
@@ -4263,7 +4301,7 @@
 
 /* App Store promo / redeem help (friend codes from App Store Connect) */
 "appstore_redeem_help_title" = "Как активировать код App Store";
-"appstore_redeem_help_intro" = "Код для друзей из App Store Connect вводится не в ALADDIN, а в приложении App Store. Пункт меню часто называется «Активировать код».";
+"appstore_redeem_help_intro" = "Код для друзей из App Store вводится не в ALADDIN, а в приложении App Store. Пункт меню часто называется «Активировать код».";
 "appstore_redeem_help_step1" = "1. Закройте ALADDIN.";
 "appstore_redeem_help_step2" = "2. Откройте приложение App Store (синяя иконка «A»).";
 "appstore_redeem_help_step3" = "3. Внизу откройте любую вкладку App Store (например «Сегодня»).";
@@ -4275,8 +4313,20 @@
 "appstore_redeem_help_open_store" = "Открыть App Store";
 "appstore_redeem_help_close" = "Понятно";
 "appstore_redeem_help_card_title" = "Код из App Store (для друзей)";
-"appstore_redeem_help_card_body" = "Если код выдали из App Store Connect – активируйте его в App Store, не здесь. Здесь – только бонусные коды команды ALADDIN.";
+"appstore_redeem_help_card_body" = "Если код выдали для App Store, активируйте его в App Store, не здесь. Здесь только бонусные коды команды ALADDIN.";
 "appstore_redeem_help_card_cta" = "Как активировать в App Store";
 "antifake_family_reports_subtitle" = "Одобренные жалобы участников семьи.";
 "antifake_family_reports_collapsed_hint" = "";
 "antifake_history_empty" = "Пока нет проверок.";
+"antifake_hub_title" = "Проверка на обман";
+"antifake_hub_subtitle" = "Проверьте звонок, сообщение, ссылку, голос или видео.";
+"antifake_premium_required_title" = "Нужен Премиум";
+"antifake_premium_gate_no_demo" = "Здесь нет примеров. Только настоящая проверка.";
+"antifake_premium_locked_tabs_title" = "На Премиум откроются вкладки:";
+"antifake_premium_locked_tab_hint" = "Доступно на Премиум";
+"family_title" = "Семья";
+"family_chat_error_upload_insecure_url" = "Не получилось отправить файл. Попробуйте ещё раз.";
+"location_error_significant_change_unavailable" = "Фоновое определение места недоступно на этом iPhone.";
+"screen_time_device_unavailable_build" = "Экранное время пока недоступно в этой версии.";
+"screen_time_fc_need_extension" = "Экранное время пока недоступно в этой версии.";
+"screen_time_unavailable_in_build" = "Экранное время пока недоступно в этой версии.";

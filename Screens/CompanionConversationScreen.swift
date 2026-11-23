@@ -305,6 +305,7 @@ struct CompanionConversationScreen: View {
                 }
                 Spacer(minLength: 0)
                 Button {
+                    HapticFeedback.selection()
                     // qa-03: X on PDF-only gate turns the mode OFF (not just hide the banner)
                     let pdfRequired = localizationManager.localized("companion_family_pdf_required")
                     if self.errorText == pdfRequired {
@@ -382,7 +383,10 @@ struct CompanionConversationScreen: View {
                 }
                 .navigationTitle(localizationManager.localized("companion_conversation_cosmetics"))
                 .navigationBarTitleDisplayMode(.inline)
-                .navigationBarItems(trailing: Button(action: { showCosmetics = false }) {
+                .navigationBarItems(trailing: Button(action: {
+                    HapticFeedback.selection()
+                    showCosmetics = false
+                }) {
                     Text(localizationManager.localized("companion_conversation_done"))
                 })
             }
@@ -406,7 +410,10 @@ struct CompanionConversationScreen: View {
                 fullChatHistoryScroll
                     .navigationTitle(localizationManager.localized("companion_conversation_history"))
                     .navigationBarTitleDisplayMode(.inline)
-                    .navigationBarItems(trailing: Button(action: { showFullChatHistory = false }) {
+                    .navigationBarItems(trailing: Button(action: {
+                        HapticFeedback.selection()
+                        showFullChatHistory = false
+                    }) {
                         Text(localizationManager.localized("companion_conversation_done"))
                     })
             }
@@ -452,6 +459,7 @@ struct CompanionConversationScreen: View {
                         .cornerRadius(8)
                         .accessibilityIdentifier("companion_break_steps_goal_field")
                         Button {
+                            HapticFeedback.impact(.medium)
                             Task { await runBreakSteps() }
                         } label: {
                             if isBreakingSteps {
@@ -477,7 +485,10 @@ struct CompanionConversationScreen: View {
                 }
                 .navigationTitle(localizationManager.localized("companion_break_steps_title"))
                 .navigationBarTitleDisplayMode(.inline)
-                .navigationBarItems(leading: Button(action: { showBreakStepsPrompt = false }) {
+                .navigationBarItems(leading: Button(action: {
+                    HapticFeedback.selection()
+                    showBreakStepsPrompt = false
+                }) {
                     Text(localizationManager.localized("wellness_guide_cancel"))
                 })
             }
@@ -522,17 +533,17 @@ struct CompanionConversationScreen: View {
             }
         }
         .alert(localizationManager.localized("companion_alert_mic_title"), isPresented: $showMicrophonePermissionAlert) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) { HapticFeedback.selection() }
         } message: {
             Text(localizationManager.localized("companion_alert_mic_body"))
         }
         .alert(localizationManager.localized("companion_alert_speech_title"), isPresented: $showSpeechPermissionAlert) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) { HapticFeedback.selection() }
         } message: {
             Text(localizationManager.localized("companion_alert_speech_body"))
         }
         .alert(localizationManager.localized("companion_alert_voice_title"), isPresented: $showVoiceServiceUnavailableAlert) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) { HapticFeedback.selection() }
         } message: {
             Text(localizationManager.localized("companion_alert_voice_body"))
         }
@@ -911,6 +922,7 @@ struct CompanionConversationScreen: View {
                 HStack {
                     Spacer()
                     Button {
+                        HapticFeedback.selection()
                         onOpenMineTab?()
                     } label: {
                         Label("\(trustScore)", systemImage: "heart.fill")
@@ -984,6 +996,7 @@ struct CompanionConversationScreen: View {
                 LazyVStack(alignment: .leading, spacing: 12) {
                     if showResumeStream {
                         Button {
+                            HapticFeedback.impact(.light)
                             Task { await resumeStream() }
                         } label: {
                             Label(localizationManager.localized("companion_conversation_resume_stream"), systemImage: "arrow.clockwise.circle.fill")
@@ -996,6 +1009,7 @@ struct CompanionConversationScreen: View {
                     }
                     if showVoiceReconnect {
                         Button {
+                            HapticFeedback.impact(.light)
                             Task { await retryVoiceRealtime() }
                         } label: {
                             Label(localizationManager.localized("companion_conversation_resume_voice"), systemImage: "mic.circle.fill")
@@ -1012,8 +1026,9 @@ struct CompanionConversationScreen: View {
                             HStack {
                                 if msg.isUser { Spacer() }
                                 Text(msg.text)
+                                    .foregroundColor(msg.isUser ? .white.opacity(0.92) : .white.opacity(0.95))
                                     .padding(10)
-                                    .background(msg.isUser ? Color.blue.opacity(0.15) : Color.gray.opacity(0.12))
+                                    .background(msg.isUser ? Color.blue.opacity(0.28) : Color.white.opacity(0.12))
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                                 if !msg.isUser { Spacer() }
                             }
@@ -1157,7 +1172,10 @@ struct CompanionConversationScreen: View {
         disabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.selection()
+            action()
+        }) {
             Image(systemName: systemName)
                 .foregroundStyle(tint)
         }
@@ -1455,6 +1473,7 @@ struct CompanionConversationScreen: View {
             }
             if !pendingAttachments.isEmpty {
                 Button(role: .destructive) {
+                    HapticFeedback.notification(.warning)
                     pendingAttachments = []
                 } label: {
                     Label(
@@ -2550,7 +2569,10 @@ private struct CompanionKeyboardDoneToolbarModifier: ViewModifier {
     private func keyboardToolbar() -> some ToolbarContent {
         ToolbarItemGroup(placement: .keyboard) {
             Spacer()
-            Button(action: action) {
+            Button(action: {
+                HapticFeedback.selection()
+                action()
+            }) {
                 Text(title)
             }
         }

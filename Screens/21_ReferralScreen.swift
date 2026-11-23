@@ -208,17 +208,16 @@ struct ReferralScreen: View {
                     
                     Text(localizationManager.localized("referral_invite_button"))
                         .font(.bodyBold)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
-                .foregroundColor(.white)
+                .foregroundColor(Color.backgroundDark)
                 .padding(.horizontal, Spacing.xl)
                 .padding(.vertical, Spacing.m)
                 .background(
                     RoundedRectangle(cornerRadius: CornerRadius.button)
-                        .fill(LinearGradient(
-                            colors: [.primaryBlue, .secondaryBlue],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ))
+                        .fill(Color.secondaryGold)
                 )
             }
             .buttonStyle(PlainButtonStyle())
@@ -374,13 +373,20 @@ struct ReferralScreen: View {
                 Button(localizationManager.localized("referral_qr_done")) {
                     showLevelUp = false
                 }
-                .foregroundColor(.white)
+                .font(.bodyBold)
+                .foregroundColor(Color.backgroundDark)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .padding(.horizontal, Spacing.l)
+                .padding(.vertical, Spacing.s)
+                .background(Color.secondaryGold)
+                .clipShape(Capsule())
                 .padding(.top, Spacing.s)
             }
             .padding(Spacing.xl)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.primaryBlue.opacity(0.95))
+                    .fill(Color.backgroundMedium)
             )
         }
         .onTapGesture { showLevelUp = false }

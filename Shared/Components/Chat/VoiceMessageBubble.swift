@@ -33,6 +33,7 @@ struct VoiceMessageBubble: View {
                 HStack(spacing: Spacing.m) {
                     // Кнопка воспроизведения
                     Button(action: {
+                        HapticFeedback.selection()
                         if isPlaying {
                             player.togglePause()
                         } else {

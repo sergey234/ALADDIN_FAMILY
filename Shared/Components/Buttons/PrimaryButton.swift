@@ -34,17 +34,14 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: {
             if !isLoading && !isDisabled {
-                // Haptic feedback (вибрация при нажатии)
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
-                
+                HapticFeedback.impact(.medium)
                 action()
             }
         }) {
             HStack(spacing: 8) {
                 if isLoading {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.backgroundDark))
                 } else {
                     if let icon = icon {
                         Image(systemName: icon)
@@ -53,24 +50,16 @@ struct PrimaryButton: View {
                     
                     Text(title)
                         .font(.system(size: 16, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .foregroundColor(.white)
-            .background(
-                // Градиент как в HTML
-                LinearGradient(
-                    colors: isDisabled
-                        ? [Color.gray, Color.gray.opacity(0.8)]
-                        : [Color.blue, Color.blue.opacity(0.8)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+            .foregroundColor(isDisabled ? Color.textSecondary : Color.backgroundDark)
+            .background(isDisabled ? Color.backgroundMedium : Color.secondaryGold)
             .cornerRadius(12)
-            .cardShadow()
-            .opacity(isDisabled ? 0.6 : 1.0)
         }
         .disabled(isDisabled || isLoading)
         // Анимация нажатия

@@ -493,6 +493,7 @@ struct AIAssistantScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(actions) { action in
                 Button {
+                    HapticFeedback.impact(.light)
                     if let url = AIActionCardMapper.phoneURL(for: action.id) {
                         UIApplication.shared.open(url)
                         return
@@ -543,6 +544,7 @@ struct AIAssistantScreen: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             guard !isHoldRecording else { return }
+                            HapticFeedback.selection()
                             toggleVoiceRecording()
                         }
                         .highPriorityGesture(

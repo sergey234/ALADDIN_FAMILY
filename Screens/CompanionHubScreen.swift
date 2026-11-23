@@ -39,6 +39,7 @@ struct CompanionHubScreen: View {
                         Spacer()
                         if !embeddedInHome {
                             Button {
+                                HapticFeedback.selection()
                                 showOnePager = true
                             } label: {
                                 Image(systemName: "person.3")
@@ -46,6 +47,7 @@ struct CompanionHubScreen: View {
                             }
                             .accessibilityLabel(localizationManager.localized("companion_heroes_one_pager_title"))
                             Button {
+                                HapticFeedback.selection()
                                 showLegal = true
                             } label: {
                                 Image(systemName: "doc.text")
@@ -74,6 +76,7 @@ struct CompanionHubScreen: View {
                                 .foregroundColor(.orange)
                                 .fixedSize(horizontal: false, vertical: true)
                             Button(localizationManager.localized("common_retry")) {
+                                HapticFeedback.impact(.light)
                                 Task { await loadHub() }
                             }
                             .font(.subheadline.weight(.semibold))
@@ -96,6 +99,7 @@ struct CompanionHubScreen: View {
                                 .foregroundColor(.white)
                             ForEach(threads) { thread in
                                 Button {
+                                    HapticFeedback.selection()
                                     selectedCharacterId = thread.characterId
                                     activeThreadId = thread.threadId
                                     if let onHeroPicked {
@@ -145,6 +149,7 @@ struct CompanionHubScreen: View {
 
                         ForEach(characters) { hero in
                             Button {
+                                HapticFeedback.impact(.light)
                                 CompanionHeroRouter.markUserOverride(characterId: hero.id)
                                 selectedCharacterId = hero.id
                                 activeThreadId = ""
@@ -316,7 +321,10 @@ struct CompanionHeroesOnePagerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(localizationManager.localized("close")) { dismiss() }
+                Button(localizationManager.localized("close")) {
+                    HapticFeedback.selection()
+                    dismiss()
+                }
             }
         }
     }

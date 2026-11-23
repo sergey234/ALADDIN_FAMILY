@@ -172,12 +172,14 @@ struct AnalyticsScreen: View {
                     icon: "slider.horizontal.3",
                     accessibilityLabel: localizationManager.localized("analytics_settings_button"),
                     action: {
+                        // Haptic: ALADDINNavigationBar rightButtons.
                         logger.buttonTap("Analytics Settings", screen: "Analytics")
                         showAnalyticsSettings = true
                     }
                 )
             ],
             onBack: {
+                // Haptic: ALADDINNavigationBar back.
                 logger.buttonTap("Back", screen: "Analytics")
                 navigationManager.goBack()
             }

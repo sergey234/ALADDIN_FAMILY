@@ -43,6 +43,7 @@ struct VoiceRecordingView: View {
             HStack(spacing: Spacing.l) {
                 // Отмена
                 Button(action: {
+                    HapticFeedback.selection()
                     recorder.cancelRecording()
                     onCancel()
                 }) {
@@ -57,6 +58,7 @@ struct VoiceRecordingView: View {
                 
                 // Отправить
                 Button(action: {
+                    HapticFeedback.impact(.medium)
                     if let url = recorder.stopRecording() {
                         onSend(url)
                     }

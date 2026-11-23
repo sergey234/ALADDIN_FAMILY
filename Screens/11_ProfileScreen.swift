@@ -115,13 +115,10 @@ struct ProfileScreen: View {
                         showEditProfile = true
                     }) {
                         Image(systemName: "pencil")
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.secondaryGold)
                             .font(.system(size: 18))
                             .frame(width: 44, height: 44)
-                            .background(
-                                Circle()
-                                    .fill(Color.blue.opacity(0.2))
-                            )
+                            .contentShape(Rectangle())
                     }
                     .aladdinTapFeedback(.light)
                     .padding(.trailing)
@@ -254,13 +251,7 @@ struct ProfileScreen: View {
             }) {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.primaryBlue, Color.blue],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.backgroundMedium)
                         .frame(width: 100, height: 100)
                     
                     if let selectedImage = selectedImage {
@@ -285,7 +276,7 @@ struct ProfileScreen: View {
                                 .overlay(
                                     Image(systemName: "camera.fill")
                                         .font(.system(size: 14))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(Color.backgroundDark)
                                 )
                         }
                     }
@@ -406,7 +397,7 @@ struct ProfileScreen: View {
             
             Text(value)
                 .font(.title2)
-                .foregroundColor(.primaryBlue)
+                .foregroundColor(.textPrimary)
             
             Text(label)
                 .font(.caption2.weight(.medium))
@@ -1579,135 +1570,136 @@ struct AdultSafetyInstructionsModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView(.vertical, showsIndicators: true) {
+            ZStack {
+                StormMeshBackground(variant: .neutral)
+                ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("profile_safety_reminder"))
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.textPrimary)
                     
                     // Защита от мошенников
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("profile_dont_trust_calls"))
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                         
                         Text(localizationManager.localized("profile_dont_trust_authorities"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                         
                         Text(localizationManager.localized("profile_dont_trust_services"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                         
                         Text(localizationManager.localized("profile_correct_behavior"))
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.green)
+                            .foregroundColor(Color.secondaryGold)
                             .padding(.top, Spacing.s)
                         
                         Text(localizationManager.localized("profile_safety_rules"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                     }
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(CornerRadius.medium)
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
                     
                     // Опасные ссылки
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("profile_dangerous_links"))
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                         
                         Text(localizationManager.localized("profile_dont_click"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                         
                         Text(localizationManager.localized("profile_correct_behavior"))
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.green)
+                            .foregroundColor(Color.secondaryGold)
                             .padding(.top, Spacing.s)
                         
                         Text(localizationManager.localized("profile_link_safety"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                     }
-                    .padding()
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(CornerRadius.medium)
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
                     
                     // Защита детей
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("profile_child_protection"))
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                         
                         Text(localizationManager.localized("profile_device_control"))
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.purple)
+                            .foregroundColor(Color.secondaryGold)
                             .padding(.top, Spacing.s)
                         
                         Text(localizationManager.localized("profile_device_rules"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                         
                         Text(localizationManager.localized("profile_communication"))
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.purple)
+                            .foregroundColor(Color.secondaryGold)
                             .padding(.top, Spacing.s)
                         
                         Text(localizationManager.localized("profile_communication_rules"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                     }
-                    .padding()
-                    .background(Color.purple.opacity(0.1))
-                    .cornerRadius(CornerRadius.medium)
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
                     
                     // Финансовая безопасность
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("profile_financial_safety"))
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                         
                         Text(localizationManager.localized("profile_financial_rules"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                     }
-                    .padding()
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(CornerRadius.medium)
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
                     
                     // Экстренные ситуации
                     VStack(alignment: .leading, spacing: Spacing.m) {
                         Text(localizationManager.localized("profile_emergency"))
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                         
                         Text(localizationManager.localized("profile_emergency_rules"))
                             .font(.system(size: 16))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .padding(.vertical, Spacing.xs)
                     }
-                    .padding()
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(CornerRadius.medium)
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
                 }
                 .padding()
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("profile_safety_done")) {
-                        HapticFeedback.selection()
-                        isPresented = false
-                    }
-                }
+            .modifier(StormHiddenNavBarModifier())
+            .aladdinToolbar { safetyDoneToolbar }
+        }
+    }
+
+    private var safetyDoneToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button(localizationManager.localized("profile_safety_done")) {
+                HapticFeedback.selection()
+                isPresented = false
             }
         }
     }

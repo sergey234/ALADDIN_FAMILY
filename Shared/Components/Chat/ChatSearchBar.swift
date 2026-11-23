@@ -28,6 +28,7 @@ struct ChatSearchBar: View {
             // Кнопка очистки
             if !searchText.isEmpty {
                 Button(action: {
+                    HapticFeedback.selection()
                     searchText = ""
                     onClear()
                 }) {
@@ -38,6 +39,7 @@ struct ChatSearchBar: View {
             
             // Кнопка закрытия поиска
             Button(action: {
+                HapticFeedback.selection()
                 isSearching = false
                 searchText = ""
                 onClear()

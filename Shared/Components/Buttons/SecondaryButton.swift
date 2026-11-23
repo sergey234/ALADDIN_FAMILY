@@ -31,10 +31,7 @@ struct SecondaryButton: View {
     var body: some View {
         Button(action: {
             if !isDisabled {
-                // Haptic feedback
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
-                
+                HapticFeedback.impact(.light)
                 action()
             }
         }) {

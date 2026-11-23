@@ -55,7 +55,7 @@
 "onboarding_page7_desc" = "Check a call, news, messages, video, voice, SMS, text, or a link.";
 "onboarding_page8_title" = "Join ALADDIN";
 "onboarding_page8_desc" = "Peace of mind for loved ones is priceless. Protection starts today!";
-"onboarding_data_collection_info" = "We collect only anonymized data to ensure security.";
+"onboarding_data_collection_info" = "Legal information";
 "onboarding_privacy_policy_link" = "Privacy Policy";
 "onboarding_data_consent" = "I agree to data processing";
 "onboarding_terms_of_service_link" = "Terms of Service";
@@ -65,7 +65,7 @@
 "onboarding_recover" = "RECOVER";
 "child_content_retry_accessibility_hint" = "Retry loading child content";
 "parent_dashboard_open_unified_limits_hint" = "Opens the unified daily limits screen";
-"parent_dashboard_report_export_csv_hint" = "Exports the report as CSV";
+"parent_dashboard_report_export_csv_hint" = "Saves the report as a spreadsheet";
 "parent_dashboard_report_export_pdf_hint" = "Exports the report as PDF";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -124,7 +124,7 @@
 "family.role.teenager" = "Teenager";
 "family.role.elderly" = "People 60+";
 "family.incomplete_server_roster_hint" = "Your plan allows more members, but the server only returned one – family data looks incomplete. Contact support or wait for a server-side fix.";
-"delete_account_error_gateway" = "The server returned a protection wrapper without confirming deletion (mock-real-protection). Deletion was not confirmed – the DELETE /api/user/delete response must be fixed on the backend.";
+"delete_account_error_gateway" = "Could not delete your account. Try again later or contact support.";
 
 /* ═══════════════════════════════════════════════════════════════
  * Network Protection
@@ -151,7 +151,7 @@
 "antivirus_scan_choose_file_accessibility_hint" = "Opens a document picker. Only the file you select is analyzed.";
 "antivirus_scan_legal_disclaimer" = "Only the file you select is analyzed. A full storage sweep is not available on iOS. Local heuristics always run; cloud scanning applies only to files up to %d MB when the service is reachable.";
 "antivirus_scan_picker_error" = "Could not access the selected file. Please try again.";
-"crash_detection_simulator_banner" = "Simulator: motion data is approximate. Validate real crash detection on an iPhone. DEBUG builds include a synthetic test.";
+"crash_detection_simulator_banner" = "Motion data on this screen is approximate. Check it on an iPhone.";
 "antivirus_toast_server_check_unavailable" = "Server scan is unavailable. Rely on the local check result.";
 "antivirus_toast_large_file_local_only" = "Files over %d MB are not uploaded; you are seeing local checks only.";
 
@@ -406,7 +406,7 @@
 "child_seed_creativity_2" = "Color And Composition";
 "child_seed_creativity_3" = "Mini DIY Project";
 "child_seed_programming_1" = "Algorithm Logic";
-"child_seed_programming_2" = "Swift Start";
+"child_seed_programming_2" = "First steps in code";
 "child_seed_programming_3" = "Visual Programming";
 "child_seed_social_1" = "Safe Communication";
 "child_seed_social_2" = "Digital Etiquette";
@@ -535,8 +535,8 @@
 "child_study_test_progress_prefix" = "Question:";
 "child_study_score_prefix" = "Result:";
 "child_study_retry_test" = "Retry test";
-"child_study_checkpoint_passed" = "Checkpoint passed";
-"child_study_checkpoint_failed" = "Checkpoint failed";
+"child_study_checkpoint_passed" = "Check passed";
+"child_study_checkpoint_failed" = "Check not passed";
 "child_study_lesson_page_1" = "Lesson: read the full task carefully and highlight key words.";
 "child_study_lesson_page_2" = "Lesson: split hard tasks into small steps and solve step by step.";
 "child_study_lesson_page_3" = "Lesson: before answering, verify your result against the task.";
@@ -680,7 +680,7 @@
 "child_daily_journey_v3_reflection_prompt" = "Reflection: what worked today and what is your next step?";
 "child_daily_journey_v3_reflection_action" = "Save reflection";
 "child_daily_journey_v3_reflection_done" = "Reflection saved";
-"child_creative_output_v2_title" = "Creative Output v2: Project Artifacts";
+"child_creative_output_v2_title" = "My projects";
 "child_creative_output_v2_progress_prefix" = "Artifacts today:";
 "child_creative_output_v2_none" = "No artifacts yet";
 "child_creative_output_v2_action_prototype" = "Add prototype";
@@ -710,8 +710,8 @@
 "child_daily_journey_v2_corrective_action" = "Apply corrective pacing";
 "child_adaptive_loop_v2_title" = "Recovery Plan";
 "child_adaptive_loop_v2_confidence_message" = "You can do this. Mistakes are part of learning, not a stop signal.";
-"child_adaptive_loop_v2_recovery_plan" = "Steps: 1) short retry, 2) easier scaffolded step with hint, 3) return to the main challenge.";
-"child_adaptive_loop_v2_action" = "Start gentle recovery";
+"child_adaptive_loop_v2_recovery_plan" = "Steps: 1) a short new try, 2) an easier step with a hint, 3) back to the main task.";
+"child_adaptive_loop_v2_action" = "Try again";
 "child_daily_tip_kids" = "Always wash your hands before eating!";
 "child_daily_tip_school" = "Read at least 20 minutes every day!";
 "child_daily_tip_teen" = "Check your social media privacy settings!";
@@ -739,7 +739,7 @@
 "device_detail_threat_time_5_min" = "5 min ago";
 "device_detail_threat_time_15_min" = "15 min ago";
 "device_detail_threat_time_1_hour" = "1 hour ago";
-"main_demo_mode_message" = "Demo mode - use performRealLogin() for real authentication";
+"main_demo_mode_message" = "The service is temporarily unavailable. Please try again later.";
 "common_cancel" = "Cancel";
 "common_error" = "Error";
 "common_ok" = "OK";
@@ -776,7 +776,7 @@
  * ═══════════════════════════════════════════════════════════════ */
 
 "dark_web_error_critical" = "Critical error: %@";
-"dark_web_error_service_unavailable" = "Dark Web monitoring service is temporarily unavailable";
+"dark_web_error_service_unavailable" = "The data leak check is temporarily unavailable.";
 "dark_web_error_temporary" = "Temporary connection error: %@";
 "dark_web_error_try_later" = "Unable to connect to service. Please try again later.";
 "dark_web_retry_scan" = "Retry Scan";
@@ -1034,17 +1034,17 @@
 
 "error.network" = "Network error. Please check your internet connection.";
 "error.unknown" = "An unknown error occurred.";
-"error.invalid.credentials" = "Invalid email or password.";
+"error.invalid.credentials" = "Wrong email or password.";
 "error.password.mismatch" = "Passwords do not match.";
 
 /* ═══════════════════════════════════════════════════════════════
  * STOREKIT / IN-APP PURCHASE ERRORS
  * ═══════════════════════════════════════════════════════════════ */
 
-"store.error.simulator.not.supported" = "In-App Purchase is not available on the simulator. Please use a real device.";
+"store.error.simulator.not.supported" = "Purchases are not available in the simulator. You need a real iPhone.";
 "store.error.verification.failed" = "Failed to verify purchase";
 "store.error.product.not.found" = "Product not found";
-"store.error.store.not.ready" = "StoreKit is not ready. Please wait.";
+"store.error.store.not.ready" = "The App Store is still loading. Please wait a moment.";
 "store.error.purchase.in.progress" = "Purchase is already in progress. Please wait.";
 "store.error.products.not.loaded" = "Products not loaded. Check your internet connection and try again.";
 "store.error.tariffs.not.loaded" = "Failed to load tariffs. Check your internet connection and try again.";
@@ -1072,7 +1072,7 @@
 
 "success.saved" = "Data saved successfully!";
 "success.purchase" = "Subscription purchased successfully!";
-"success.email.sent" = "Email sent to your address.";
+"success.email.sent" = "We sent a message to your email.";
 
 /* ═══════════════════════════════════════════════════════════════
  * 42 COMPONENTS - AGENTS (19)
@@ -1111,7 +1111,7 @@
 "component.malware_detection_agent.desc" = "Only the file you choose yourself";
 "component.mobile_security_agent.title" = "Mobile Security";
 "component.mobile_security_agent.desc" = "Protection for smartphones and tablets";
-"component.iot_security_agent.title" = "IoT Security";
+"component.iot_security_agent.title" = "Smart device protection";
 "component.iot_security_agent.desc" = "Monitoring and protection of smart home devices";
 "component.network_security_agent.title" = "Network Security";
 "component.network_security_agent.desc" = "Protection of network connections";
@@ -1125,7 +1125,7 @@
 "component.anti_tracker_agent.desc" = "Block tracking";
 
 /* Monitoring */
-"component.dark_web_monitoring_agent.title" = "Dark Web Monitoring";
+"component.dark_web_monitoring_agent.title" = "Data leak check";
 "component.dark_web_monitoring_agent.desc" = "Track data breaches";
 "component.russian_identity_theft_protection_agent.title" = "Identity Theft Protection (RU)";
 "component.russian_identity_theft_protection_agent.desc" = "Protection under 152-FZ RF";
@@ -1227,7 +1227,7 @@
 "incident_response.high" = "High";
 "incident_response.critical" = "Critical";
 "incident_response.minutes" = "min";
-"incident_response.sla_time" = "SLA Response Time";
+"incident_response.sla_time" = "Response time";
 "incident_response.auto_actions" = "Auto Actions";
 "incident_response.block" = "Block";
 "incident_response.notify" = "Notify";
@@ -1271,7 +1271,7 @@
 "component_anti_tracker_agent_description" = "Block advertising trackers";
 
 /* Components - Monitoring */
-"component_dark_web_monitoring_agent_title" = "Dark Web Monitoring";
+"component_dark_web_monitoring_agent_title" = "Data leak check";
 "component_dark_web_monitoring_agent_description" = "Track data leaks";
 "component_russian_identity_theft_protection_agent_title" = "Identity Theft Protection (RU)";
 "component_russian_identity_theft_protection_agent_description" = "Protection against document fraud";
@@ -1313,7 +1313,7 @@
 "emergency_notifications_template_security" = "Security";
 "emergency_notifications_template_placeholder" = "Enter message text";
 "emergency_notifications_channels_title" = "Delivery Channels";
-"emergency_notifications_channel_push" = "Push notifications";
+"emergency_notifications_channel_push" = "Notifications";
 "emergency_notifications_channel_sms" = "SMS";
 "emergency_notifications_channel_email" = "Email";
 "emergency_notifications_channel_call" = "Call";
@@ -1353,7 +1353,7 @@
 /* Family Notifications */
 "family_notification_settings" = "Notification Settings";
 "family_notifications_channels_title" = "Delivery Channels";
-"family_notifications_channel_push" = "Push notifications";
+"family_notifications_channel_push" = "Notifications";
 "family_notifications_channel_email" = "Email";
 "family_notifications_channel_sms" = "SMS";
 "family_notifications_frequency_title" = "Frequency";
@@ -1455,8 +1455,8 @@
 "network_protection_connect_action" = "Enable network protection";
 "network_protection_connection_section" = "CONNECTION";
 "network_protection_disconnect_action" = "Disable network protection";
-"network_protection_dns_leak" = "DNS leak protection";
-"network_protection_dns_leak_protection" = "DNS leak protection";
+"network_protection_dns_leak" = "Site requests do not bypass protection";
+"network_protection_dns_leak_protection" = "Site requests do not bypass protection";
 "network_protection_done" = "Done";
 "network_protection_energy_accessibility" = "Network protection energy consumption screen";
 "network_protection_energy_battery" = "Battery";
@@ -1496,24 +1496,24 @@
 "network_protection_help_ad_blocking_question" = "How does ad blocking work?";
 "network_protection_help_anti_tracking_answer" = "Anti-tracking hides your activity from data collectors and ad networks.";
 "network_protection_help_anti_tracking_question" = "How does anti-tracking work?";
-"network_protection_help_dns_leak_answer" = "DNS leak protection prevents DNS requests from leaking outside a protected connection.";
-"network_protection_help_dns_leak_question" = "How does DNS leak protection work?";
+"network_protection_help_dns_leak_answer" = "Site requests do not bypass protection.";
+"network_protection_help_dns_leak_question" = "Where do site requests go?";
 "network_protection_help_encryption_answer" = "Encryption protects your data from interception and keeps your connection secure.";
 "network_protection_help_encryption_question" = "How does encryption work?";
 "network_protection_help_incognito_answer" = "Incognito detection identifies browser incognito/private mode usage.";
 "network_protection_help_incognito_question" = "How does incognito detection work?";
-"network_protection_help_kill_switch_answer" = "Kill Switch automatically blocks internet access if network protection disconnects.";
-"network_protection_help_kill_switch_question" = "How does Kill Switch work?";
-"network_protection_help_proxy_answer" = "Proxy detection finds and blocks proxy server usage (HTTP, HTTPS, SOCKS).";
+"network_protection_help_kill_switch_answer" = "The internet closes if protection turns off.";
+"network_protection_help_kill_switch_question" = "What happens if protection turns off?";
+"network_protection_help_proxy_answer" = "We block proxies that can bypass protection.";
 "network_protection_help_proxy_question" = "How does proxy detection work?";
 "network_protection_help_threat_protection_answer" = "Threat protection blocks dangerous websites and malware before they cause harm.";
 "network_protection_help_threat_protection_question" = "How does threat protection work?";
-"network_protection_help_tor_answer" = "Tor detection blocks anonymous Tor network and .onion site usage.";
-"network_protection_help_tor_question" = "How does Tor detection work?";
+"network_protection_help_tor_answer" = "We close bypasses that use a hidden network.";
+"network_protection_help_tor_question" = "How do we close a hidden bypass?";
 "network_protection_hour" = "h";
 "network_protection_inactive" = "Inactive";
 "network_protection_just_now" = "Just now";
-"network_protection_kill_switch" = "Kill Switch";
+"network_protection_kill_switch" = "Block internet if protection turns off";
 "network_protection_min" = "min";
 "network_protection_nav_panel" = "Network protection navigation panel";
 "network_protection_never" = "Never";
@@ -1574,7 +1574,7 @@
 "widget.test.clear" = "Clear test data";
 "widget.test.data" = "Widget test data";
 "widget.test.reload" = "Reload widget timeline";
-"widget.test.set.mock" = "Set mock widget data";
+"widget.test.set.mock" = "Fill the widget with a sample";
 
 /* Parent dashboard (W3-2 / W3-5) */
 "parent_dashboard_title" = "Parent Dashboard";
@@ -1616,8 +1616,8 @@
 "parent_dashboard_metric_remaining" = "Remaining time today (min)";
 "parent_dashboard_metric_filtered_items" = "Filtered catalog items";
 "parent_dashboard_report_export_title" = "Export report";
-"parent_dashboard_report_export_subtitle" = "Share a snapshot of dashboard metrics and trends (CSV or PDF).";
-"parent_dashboard_report_export_csv" = "CSV";
+"parent_dashboard_report_export_subtitle" = "Share a snapshot of the numbers on screen: a spreadsheet or a PDF.";
+"parent_dashboard_report_export_csv" = "Spreadsheet";
 "parent_dashboard_report_export_pdf" = "PDF";
 "parent_dashboard_report_file_title" = "ALADDIN parent dashboard report";
 "parent_dashboard_report_generated" = "Generated";
@@ -1734,10 +1734,10 @@
 "dark_web_filter_new" = "New";
 "dark_web_filter_resolved" = "Resolved";
 "dark_web_filters" = "Filters";
-"dark_web_modal_title" = "Dark Web Monitoring";
+"dark_web_modal_title" = "Data leak check";
 "dark_web_new_leaks" = "New";
 "dark_web_no_leaks" = "No leaks found";
-"dark_web_no_leaks_cta" = "Run a scan – add email or phone";
+"dark_web_no_leaks_cta" = "Start a check. Add an email or a phone number.";
 "dark_web_data_source_server" = "Data from ALADDIN server";
 "dark_web_no_scans" = "No scan history";
 "dark_web_resolved" = "Resolved";
@@ -1913,7 +1913,7 @@
 "common_delete" = "Delete";
 "main_aladdin_title" = "ALADDIN";
 "main_ai_protection" = "AI family protection";
-"main_antivirus_title" = "ALADDIN Protection";
+"main_antivirus_title" = "ALADDIN protection";
 "main_antivirus_subtitle" = "Network and file checks";
 "main_tariffs" = "Plans";
 "main_tariffs_subtitle" = "Choose plan";
@@ -1924,12 +1924,12 @@
 "main_family_header_title" = "Family";
 "main_family_title" = "Family under protection";
 "main_family_user_id" = "ID:";
-"main_member_id_not_found_debug" = "member_id missing";
+"main_member_id_not_found_debug" = "We could not identify this family member. Please sign in again.";
 "main_family_info" = "Members: %d • Devices: %d";
 "main_family_network_protection_info" = "Threats from device protection: %d";
 "main_toggle_short_on" = "on";
 "main_toggle_short_off" = "off";
-"main_family_safari_cb_status" = "Safari Content Blocker: %@";
+"main_family_safari_cb_status" = "Safari ad blocker: %@";
 "main_family_last_refresh_caption" = "Family: updated %@";
 "main_family_network_protection_hint" = "For differences between counters, see Reports and Notifications.";
 "notifications_statistics_subtitle" = "Counts refer to the notification feed below (support/help).";
@@ -1951,10 +1951,10 @@
 "main_family_restore_trial_cta" = "Restore trial until %@";
 "main_family_start_trial_cta" = "Start 14-day free trial – up to 6 members";
 "driving_reports_empty_other_member" = "No trips for “%@” yet. They appear when that member’s device records a real trip (GPS + motion).";
-"tariffs_downgrade_trial_confirm_title" = "Switch to BASIC?";
+"tariffs_downgrade_trial_confirm_title" = "Switch to Free?";
 "tariffs_downgrade_trial_confirm_body" = "Your trial will end now. Family slots become 1. Continue?";
 "tariffs_downgrade_trial_confirm_cancel" = "Cancel";
-"tariffs_downgrade_trial_confirm_continue" = "Switch to BASIC";
+"tariffs_downgrade_trial_confirm_continue" = "Switch to Free";
 "family_member_capacity_with_plan_fmt" = "%d of %d members";
 "family_members_label" = "Members";
 "family_members_accessibility_fmt" = "Family: %@";
@@ -1965,34 +1965,34 @@
 "tariffs_billing_chooser_title" = "How do you want to pay?";
 "tariffs_billing_chooser_body" = "Choose a period for “%@”. Price from App Store when available.";
 "tariffs_billing_autorenew_note" = "Month and year auto-renew. Cancel in Settings → Apple ID → Subscriptions.";
-"tariffs_gates_table_title" = "What’s included · Free / Family / Premium";
-"tariffs_gates_child_basic" = "Child: pause, limit, bedtime";
-"tariffs_gates_map_last" = "Map: last-point + share location";
-"tariffs_gates_map_live" = "Live map (access while the app is closed)";
-"tariffs_gates_places_more" = "More places & day history";
-"tariffs_gates_members" = "Multiple family members";
-"tariffs_gates_free_note" = "Free: family of up to 4, live map, SOS. Anti-fraud from Personal.";
-"tariffs_free_included_title" = "What’s included on Free";
+"tariffs_gates_table_title" = "What’s included · Free / Personal / Family / Premium";
+"tariffs_gates_child_basic" = "Child: pause, limit, and bedtime";
+"tariffs_gates_map_last" = "Last location and “I’m here”";
+"tariffs_gates_map_live" = "Live map";
+"tariffs_gates_places_more" = "More places on the map";
+"tariffs_gates_members" = "Family members";
+"tariffs_gates_free_note" = "Free: family of up to 4, live map, SOS. Scam Check starts on Personal.";
+"tariffs_free_included_title" = "What’s included for free";
 "tariffs_free_excluded_title" = "Not included";
 "tariffs_free_no_charge_note" = "₽0 · no charge · no auto-renew";
 "tariffs_free_features_1" = "Family of up to 4";
-"tariffs_free_features_2" = "Child – internet pause, limit, bedtime";
+"tariffs_free_features_2" = "Child: internet pause, limit, and bedtime";
 "tariffs_free_features_3" = "Live family map";
 "tariffs_free_features_4" = "Share your location once with family";
 "tariffs_free_features_5" = "Map places (home / school)";
 "tariffs_free_features_6" = "Family SOS (press & hold)";
 "tariffs_free_features_7" = "Anti-Banner (basic)";
-"tariffs_free_features_8" = "Antifake: 0 checks after the trial";
-"tariffs_free_features_9" = "Live map in real time";
-"tariffs_free_features_10" = "More than 4 members and anti-fraud";
-"tariffs_gates_check" = "Antifake Check (call/text/video)";
+"tariffs_free_features_8" = "Scam Check: none after the trial";
+"tariffs_free_features_9" = "Live map";
+"tariffs_free_features_10" = "More than 4 people and Scam Check";
+"tariffs_gates_check" = "Scam Check: call, text, video";
 "main_family_subscription_valid_until" = "Valid until:";
 "main_family_manage" = "Manage";
 "main_family_add_member" = "Add member";
 "family_roster_manage_denied_banner_title" = "Roster management unavailable";
 "family_roster_manage_denied_banner_body" = "The app doesn’t recognize you as a parent or a member with the “People 60+” role in this list. Sign out and sign in again, reopen Family, or wait for sync to finish. If it persists, contact support.";
 "family_identity_repair_banner_title" = "Family identity on this device";
-"family_identity_repair_banner_body" = "Your place in the family list may be out of sync with this account. Tap Restore to align your member ID and role from the list on this device, then the app will refresh from the server.";
+"family_identity_repair_banner_body" = "Your place in the family list may not match this account. Tap Restore, and the app will refresh.";
 "family_identity_repair_button" = "Restore";
 "family_identity_repair_section_title" = "Family";
 "family_identity_repair_section_body" = "If you have family members but Family behaves oddly, align your membership on this device.";
@@ -2000,8 +2000,8 @@
 "main_ai_assistant_greeting" = "Ask anything about your family protection.";
 "main_ai_assistant_placeholder" = "Type your question...";
 "main_tab_game" = "Game";
-"main_tab_aladdin_kids" = "Aladdin Kids";
-"main_tab_aladdin_kids_hint" = "Opens the child interface with age modes and activities";
+"main_tab_aladdin_kids" = "Kids";
+"main_tab_aladdin_kids_hint" = "Opens the kids section";
 "main_tab_protection" = "Protection";
 "main_tab_notifications" = "Alerts";
 "main_tab_profile" = "Profile";
@@ -2020,10 +2020,10 @@
 "notification_type_bypass_subtitle" = "Blocked bypass attempt alerts";
 "notification_sound_title" = "Sound";
 "notification_sound_subtitle" = "Play sounds for notifications";
-"notification_badge_title" = "Badge";
+"notification_badge_title" = "Icon badge";
 "notification_badge_subtitle" = "Unread counter on app icon";
 "notification_quiet_mode_title" = "Quiet mode";
-"notification_quiet_mode_subtitle" = "No sound or banner, badge only";
+"notification_quiet_mode_subtitle" = "Notifications with no sound and no banner, only the icon badge";
 "notification_important_only_title" = "Important only";
 "notification_important_only_subtitle" = "Only security alerts; others in quiet mode";
 "notification_dnd_title" = "Do Not Disturb";
@@ -2035,7 +2035,7 @@
 "notification_quiet_hours_enable_title" = "Enable quiet hours";
 "notification_quiet_hours_enable_subtitle" = "Mute sound and banners during set time";
 "notification_settings_types_title" = "Notification Types";
-"notification_settings_sound_badge_title" = "Sound & Badge";
+"notification_settings_sound_badge_title" = "Sound and icon badge";
 "notification_settings_advanced_modes_title" = "Advanced Modes";
 "notification_settings_quiet_hours_title" = "Quiet Hours";
 "notification_settings_quiet_hours_start" = "Start";
@@ -2171,7 +2171,7 @@
 "voice_notes_undo" = "Undo";
 "voice_notes_deleted_undo_hint" = "Note deleted";
 "ai_assistant_voice_permission_denied" = "Microphone or speech recognition access is denied. Enable access in Settings.";
-"ai_assistant_voice_service_unavailable" = "Speech recognition is not available on this device. In iPhone Settings, enable Siri and download the Russian language pack, or switch the app language to English.";
+"ai_assistant_voice_service_unavailable" = "Speech recognition is not available on this device. In iPhone Settings, turn on Siri and download Russian, or switch the app language to English.";
 "voice_open_settings" = "Open Settings";
 "voice_notes_start" = "Start recording";
 "voice_notes_stop_save" = "Stop & save";
@@ -2227,7 +2227,7 @@
 "dark_web_scan_method_fast_advantage_1" = "More accurate matching";
 "dark_web_scan_method_fast_advantage_2" = "Works with all databases";
 "dark_web_scan_method_fast_disadvantage_1" = "Data is visible to the server";
-"dark_web_scan_method_fast_disadvantage_2" = "Data is sent via HTTPS";
+"dark_web_scan_method_fast_disadvantage_2" = "Data is sent over a protected connection.";
 "dark_web_scan_method_learn_more" = "Learn more about scan methods";
 "dark_web_explanation_title" = "Scan Methods";
 "dark_web_explanation_secure_title" = "Secure scan";
@@ -2257,24 +2257,25 @@
 
 "profile_edit_cancel" = "Cancel";
 
-"profile_edit_save" = "Save";
+"profile_edit_save" = "Done";
 
 "profile_edit_title" = "Profile";
-"profile_edit_photo_saved" = "Profile photo saved";
+"profile_edit_photo_saved" = "Photo updated";
 
 "profile_edit_photo_title" = "Profile photo";
 
-"profile_edit_photo_hint" = "Tap to change photo";
+"profile_edit_photo_hint" = "Change photo";
+"profile_edit_avatar_a11y" = "Profile photo. Change";
 
 "profile_edit_info_title" = "Information";
 
 "profile_edit_name_label" = "Name";
 
-"profile_edit_name_placeholder" = "Enter your name";
+"profile_edit_name_placeholder" = "For example, Anna";
 
 "profile_edit_email_label" = "Email";
 
-"profile_edit_email_placeholder" = "Enter email";
+"profile_edit_email_placeholder" = "Email";
 
 "profile_edit_phone_label" = "Phone";
 
@@ -2354,7 +2355,7 @@
 
 "wellness_recap_prefix" = "Last time: %@";
 
-"ai_assistant_faq_footer" = "%@\\\n\\\n📚 Source: FAQ (%@)";
+"ai_assistant_faq_footer" = "%@\n\nSource: answers (%@)";
 
 "network_error_encoding" = "Couldn’t prepare the request: %@";
 
@@ -2400,7 +2401,7 @@
 
 "network_error_token_expired" = "Session expired. Please sign in again";
 
-"network_error_invalid_token" = "Invalid sign-in token";
+"network_error_invalid_token" = "Please sign in again.";
 
 "network_error_reauth" = "Please sign in again";
 
@@ -2472,7 +2473,7 @@
 
 "active_sessions_family_empty" = "No other family devices yet. Invite a family member or open the app on another phone.";
 
-"active_sessions_apple_privacy_note" = "We show family protection devices (name, type, last activity) – not precise GPS. Signing out removes a device from your family after Parent Gate.";
+"active_sessions_apple_privacy_note" = "You can see family devices: name, type, and when they were online. We do not show the exact place.";
 
 "active_sessions_device_name_default" = "This device";
 
@@ -2484,7 +2485,7 @@
 
 "active_sessions_sign_out_title" = "Remove this device?";
 
-"active_sessions_sign_out_message" = "The device will leave family protection. This needs Parent Gate confirmation.";
+"active_sessions_sign_out_message" = "This device will leave the family. A parent needs to confirm.";
 
 "active_sessions_sign_out_failed" = "Couldn’t remove the device. Try again.";
 
@@ -2513,7 +2514,7 @@
 "privacy_policy_section_calls_memory_subtitle" = "Microphone, on-device storage, your responsibility";
 "privacy_policy_section_calls_memory_content_1" = "ALADDIN does not record the carrier phone line. Capture is only via the phone microphone if you start recording (usually with speakerphone).";
 "privacy_policy_section_calls_memory_content_2" = "Recording never starts by itself. You must start it in Calls or Voice Notes.";
-"privacy_policy_section_calls_memory_content_3" = "Audio and summaries stay on device by default. Upload only if you send them (for example, an antifake check).";
+"privacy_policy_section_calls_memory_content_3" = "Audio and summaries stay on device by default. Upload only if you send them (for example, an scam check check).";
 "privacy_policy_section_calls_memory_content_4" = "You decide whether to tell the other party and must follow local call-recording laws.";
 "privacy_policy_section_calls_memory_content_5" = "Recording quality is not guaranteed: iOS may interrupt the microphone during a call.";
 "privacy_policy_section_calls_memory_content_6" = "Post-call calm / money buttons are your manual family signal, not automatic fraud proof.";
@@ -2531,12 +2532,12 @@
 "privacy_policy_section_wellness_content_7" = "Mood and wellbeing data can be deleted on request via support.";
 "faq_wellness_support" = "What is emotional support?";
 "faq_wellness_support_answer" = "Mood and support is self-help: a mood check, exercises, and a chat with a digital friend (AI).\n\n⚠️ This is NOT medical care, NOT therapy, and NOT a live chat with a doctor or counselor.\n\nIf there are signs of a crisis, the app suggests a trusted adult or public helplines (112 / 8-800-2000-122 in Russia).\n\n✅ ALADDIN helps you notice your mood and take a small step – without diagnoses or prescriptions.";
-"privacy_policy_section_2_content" = "Data is used for account and family operation, StoreKit subscriptions, family chat, Antifake, Safe Sites, location, emergency, AI and voice features, support, and reliability. Chosen features may send data to the ALADDIN backend and to Apple, OpenRouter/DeepSeek, Yandex SpeechKit, OpenAI, ElevenLabs, or Telegram. Telegram sharing happens only when initiated by the user.";
+"privacy_policy_section_2_content" = "Data is used for account and family operation, App Store subscriptions, family chat, Scam Check, Safe Sites, location, emergency, AI and voice features, support, and reliability. Chosen features may send data to the ALADDIN servers and to Apple, OpenRouter/DeepSeek, Yandex SpeechKit, OpenAI, ElevenLabs, or Telegram. Telegram sharing happens only when initiated by the user.";
 "privacy_policy_section_5_content" = "Data is retained only as needed for the relevant feature, security, support, and legal obligations. Local data is removed with the app; server data follows account-deletion and service-specific rules. ALADDIN safety features and suggestions are assistive tools: they may be wrong and do not replace a parent, emergency services, a bank, a doctor, a lawyer, or another qualified professional. Policy updates are communicated in the app, and the version bearing the displayed update date applies.";
 "privacy_policy_section_6" = "6. Limitation of liability";
-"privacy_policy_section_6_content" = "ALADDIN provides family protection, Antifake, Safe Sites, SOS, AI suggestions, emotional support, monitoring, notifications, and other features as assistive tools. They help reduce risks but do not guarantee accuracy, uninterrupted operation, availability, detection, blocking, or prevention of every threat, scam, bypass, error, accident, data loss, harm, or unlawful action by other people. Decisions are made by the user, parent, or legal guardian. In matters involving life, health, money, or legal rights, contact emergency services, your bank, a doctor, a lawyer, or another qualified authority. To the maximum extent permitted by law, the ALADDIN AI mobile application and company SAUDAPAYDI, TOO are not liable for direct or indirect damage, losses, wrong decisions, missed threats, third-party actions, iOS, network, Safe Sites feature, device, third-party service, user-setting failures, or improper use of the app.";
+"privacy_policy_section_6_content" = "ALADDIN provides family protection, Scam Check, Safe Sites, SOS, AI suggestions, emotional support, monitoring, notifications, and other features as assistive tools. They help reduce risks but do not guarantee accuracy, uninterrupted operation, availability, detection, blocking, or prevention of every threat, scam, bypass, error, accident, data loss, harm, or unlawful action by other people. Decisions are made by the user, parent, or legal guardian. In matters involving life, health, money, or legal rights, contact emergency services, your bank, a doctor, a lawyer, or another qualified authority. To the maximum extent permitted by law, the ALADDIN AI mobile application and company SAUDAPAYDI, TOO are not liable for direct or indirect damage, losses, wrong decisions, missed threats, third-party actions, iOS, network, Safe Sites feature, device, third-party service, user-setting failures, or improper use of the app.";
 "privacy_policy_section_final_content_5" = "ALADDIN safety features and suggestions are assistive tools: they may be wrong and do not replace a parent, emergency services, a bank, a doctor, a lawyer, or another qualified professional.";
-"privacy_policy_section_responsibility_content_5" = "ALADDIN provides family protection, Antifake, Safe Sites, SOS, AI suggestions, emotional support, monitoring, notifications, and other features as assistive tools. They help reduce risks but do not guarantee accuracy, uninterrupted operation, availability, detection, blocking, or prevention of every threat, scam, bypass, error, accident, data loss, harm, or unlawful action by other people. Decisions are made by the user, parent, or legal guardian. In matters involving life, health, money, or legal rights, contact emergency services, your bank, a doctor, a lawyer, or another qualified authority. To the maximum extent permitted by law, the ALADDIN AI mobile application and company SAUDAPAYDI, TOO are not liable for direct or indirect damage, losses, wrong decisions, missed threats, third-party actions, iOS, network, Safe Sites feature, device, third-party service, user-setting failures, or improper use of the app.";
+"privacy_policy_section_responsibility_content_5" = "ALADDIN provides family protection, Scam Check, Safe Sites, SOS, AI suggestions, emotional support, monitoring, notifications, and other features as assistive tools. They help reduce risks but do not guarantee accuracy, uninterrupted operation, availability, detection, blocking, or prevention of every threat, scam, bypass, error, accident, data loss, harm, or unlawful action by other people. Decisions are made by the user, parent, or legal guardian. In matters involving life, health, money, or legal rights, contact emergency services, your bank, a doctor, a lawyer, or another qualified authority. To the maximum extent permitted by law, the ALADDIN AI mobile application and company SAUDAPAYDI, TOO are not liable for direct or indirect damage, losses, wrong decisions, missed threats, third-party actions, iOS, network, Safe Sites feature, device, third-party service, user-setting failures, or improper use of the app.";
 "terms_section_liability_content_1" = "Use the app lawfully and with the feature limits in mind.";
 "terms_section_liability_content_2" = "ALADDIN is not an emergency, medical, legal, banking, or carrier service.";
 "terms_section_liability_content_3" = "The user, parent, or legal guardian is responsible for settings, permissions, and their actions.";
@@ -2547,7 +2548,7 @@
 "terms_section_liability_content_8" = "We are not liable for phone-scam losses or decisions based on summaries or post-call safety buttons";
 "terms_section_liability_content_9" = "Calls is a helper tool, not legal or banking advice and not a carrier recording service";
 "terms_section_liability_content_10" = "By using call recording and call memory you accept these limits";
-"terms_section_liability_content_11" = "ALADDIN provides family protection, Antifake, Safe Sites, SOS, AI suggestions, emotional support, monitoring, notifications, and other features as assistive tools.";
+"terms_section_liability_content_11" = "ALADDIN provides family protection, Scam Check, Safe Sites, SOS, AI suggestions, emotional support, monitoring, notifications, and other features as assistive tools.";
 "terms_section_liability_content_12" = "They help reduce risks but do not guarantee accuracy, uninterrupted operation, availability, detection, blocking, or prevention of every threat, scam, bypass, error, accident, data loss, harm, or unlawful action by other people.";
 "terms_section_liability_content_13" = "Decisions are made by the user, parent, or legal guardian. In matters involving life, health, money, or legal rights, contact emergency services, your bank, a doctor, a lawyer, or another qualified authority.";
 "terms_section_liability_content_14" = "To the maximum extent permitted by law, the ALADDIN AI mobile application and company SAUDAPAYDI, TOO are not liable for direct or indirect damage, losses, wrong decisions, missed threats, third-party actions, iOS, network, Safe Sites feature, device, third-party service, user-setting failures, or improper use of the app.";
@@ -2567,8 +2568,8 @@
 "calls_after_antifake_cta" = "Check for scams";
 "calls_after_antifake_note" = "Post-call check";
 "calls_card_untitled" = "Outgoing";
-"calls_paywall_title" = "Calls – Family and Premium";
-"calls_paywall_body" = "Call memory is available during the 14-day trial and on Family/Premium.";
+"calls_paywall_title" = "Calls are on Family and Premium";
+"calls_paywall_body" = "Call history is included in the 14-day trial and on Family and Premium.";
 "calls_paywall_open_tariffs" = "Open plans";
 
 "calls_safety_prompt_toggle" = "Phone scam protection";
@@ -2999,7 +3000,7 @@
 "referral_method_x" = "X";
 "referral_method_x_subtitle" = "Post your invite on X";
 "referral_method_instagram" = "Instagram";
-"referral_method_instagram_subtitle" = "Share via Instagram (Stories/Direct)";
+"referral_method_instagram_subtitle" = "Share via Instagram";
 "family_habit_eventkit_toggle" = "Apple Calendar";
 "family_habit_eventkit_subtitle" = "Mirror reminders into Calendar";
 "family_habit_status_server_saved" = "Family settings are saved on the server.";
@@ -3007,8 +3008,8 @@
 "family_habit_status_push_on" = "Push reminders are on for this iPhone.";
 "family_habit_status_push_off" = "Push reminders are off for this iPhone.";
 "family_habit_status_push_denied" = "Notifications are blocked in iOS Settings.";
-"family_habit_status_calendar_on" = "Apple Calendar is on for this iPhone.";
-"family_habit_status_calendar_off" = "Apple Calendar is off.";
+"family_habit_status_calendar_on" = "Calendar is on for this iPhone.";
+"family_habit_status_calendar_off" = "Calendar is off.";
 "family_habit_status_wellness_ready" = "Reminders will also appear in Wellbeing.";
 "family_habit_status_wellness_consent" = "Reminders will appear in Wellbeing after you accept this section's terms.";
 "family_habit_wellness_optional_consent" = "Reminders are saved. They will appear in Wellbeing after you accept this section's terms.";
@@ -3016,16 +3017,16 @@
 "family_habit_wellness_optional_synced" = "Reminders are saved and now appear in Wellbeing.";
 "bypass_smart_dns_title" = "Safe sites";
 "bypass_smart_dns_desc" = "An extra site-address check for family safety and stronger bypass protection.";
-"bypass_smart_dns_reason_ipc_failed" = "Smart DNS did not turn on. Another VPN/DNS profile may be blocking it, or this is not an iPhone check. Check the device and try again.";
+"bypass_smart_dns_reason_ipc_failed" = "The site filter did not turn on. Another VPN is usually in the way. Check this iPhone and try again.";
 "bypass_smart_dns_debug_label" = "What to do:";
-"bypass_smart_dns_unavailable_simulator" = "The Simulator shows the screen. System DNS turns on only on iPhone.";
-"bypass_smart_dns_status_unavailable" = "Smart DNS is unavailable in this build.";
-"bypass_smart_dns_status_simulator_preview" = "Turn this on in DNS settings on iPhone.";
-"bypass_smart_dns_status_inactive" = "Smart DNS is off.";
-"bypass_smart_dns_status_saving" = "Preparing the DNS profile.";
+"bypass_smart_dns_unavailable_simulator" = "The simulator only shows this screen. The site filter turns on only on iPhone.";
+"bypass_smart_dns_status_unavailable" = "Site filter is not available in this version.";
+"bypass_smart_dns_status_simulator_preview" = "On iPhone, turn the filter on in Settings.";
+"bypass_smart_dns_status_inactive" = "Site filter is off.";
+"bypass_smart_dns_status_saving" = "Preparing the site filter.";
 "bypass_smart_dns_status_needs_settings" = "Turn on the profile in iOS Settings.";
-"bypass_smart_dns_status_active" = "Smart DNS is on.";
-"bypass_smart_dns_status_failed" = "Could not turn on. Check other VPN/DNS profiles.";
+"bypass_smart_dns_status_active" = "Site filter is on.";
+"bypass_smart_dns_status_failed" = "It did not turn on. Check that another VPN is not in the way.";
 "bypass_smart_dns_settings_hint" = "Open iPhone Settings -> General -> VPN & Device Management -> DNS and choose ALADDIN.";
 "bypass_smart_dns_guide_title" = "How to turn this on";
 "bypass_smart_dns_guide_step_1" = "1. Open iPhone Settings.";
@@ -3053,7 +3054,7 @@
 "invitation_display_name_hint" = "How others will see you in the family. Russian or English is fine.";
 "invitation_display_name_placeholder" = "e.g. Emma";
 "invitation_display_name_invalid" = "Enter a name with 2–24 letters (spaces and hyphen allowed).";
-"invitation_code_not_found_friendly" = "Code not found or no longer valid. Ask for a new QR or paste another FAM code.";
+"invitation_code_not_found_friendly" = "The code was not found or no longer works. Ask for a new QR or paste another family code.";
 "registration_select_display_name" = "What should we call you in the family?";
 "invitation_picker_placeholder" = "Select";
 "invitation_age_toddler" = "Toddler (0-3)";
@@ -3093,7 +3094,7 @@
 "protection_feedback_threats_off" = "Threat protection is off";
 "protection_feedback_messages_on" = "Message monitoring is on";
 "protection_feedback_messages_off" = "Message monitoring is off";
-"protection_feedback_messages_subtitle" = "We save this for your family. iOS push only if notifications are allowed.";
+"protection_feedback_messages_subtitle" = "We save this setting for the family. A message arrives only if notifications are allowed.";
 "protection_feedback_screenshots_on" = "Screenshot monitoring is on";
 "protection_feedback_screenshots_off" = "Screenshot monitoring is off";
 "advanced_threat_status_count_fmt" = "Threat protection: %d of %d";
@@ -3113,7 +3114,7 @@
 "main_protect_parents_subtitle" = "Second hand for 60+: calls and family trust";
 "main_more_title" = "More";
 "main_more_subtitle" = "Comfortable mode and other sections";
-"main_simple_version_title" = "ALADDIN Home";
+"main_simple_version_title" = "ALADDIN home screen";
 "main_simple_version_subtitle" = "Everything important on one screen";
 "family_safe_word_show_phrase" = "Show phrase";
 "family_safe_word_hide_phrase" = "Hide phrase";
@@ -3127,7 +3128,7 @@
 "family_safe_word_no_family_how_title" = "How to connect";
 "family_safe_word_no_family_step_1" = "Open the Family tab at the bottom.";
 "family_safe_word_no_family_step_2" = "If you’re starting – tap Create family.";
-"family_safe_word_no_family_step_3" = "If you were invited – Enter code or Scan QR. A parent shares a code like FAM-XXXX…";
+"family_safe_word_no_family_step_3" = "If you were invited, tap Enter code or Scan QR. A parent gives you the code.";
 "family_safe_word_no_family_step_4" = "When your family appears, come back here and save the phrase.";
 "family_safe_word_no_family_cta" = "Open family connect";
 "simple_home_tile_parents_title" = "Parents 60+";
@@ -3144,14 +3145,14 @@
 "pay_pains_family_strip_slots_fmt" = "Family · %d of %d seats";
 "pay_pains_family_strip_add" = "Add";
 "pay_pains_family_strip_add_to_family" = "Add to family";
-"simple_home_open_full_main" = "ALADDIN Home";
+"simple_home_open_full_main" = "All sections";
 "simple_home_title" = "Aladdin start!";
-"pay_pains_door_check_title" = "Check";
+"pay_pains_door_check_title" = "Scam Check";
 "pay_pains_door_check_subtitle" = "We'll check a call, message, video, or text";
 "pay_pains_door_child_title" = "Child";
-"pay_pains_door_child_subtitle" = "Sites, a limit, and a pause";
+"pay_pains_door_child_subtitle" = "Limits, pause, and bedtime";
 "pay_pains_door_where_title" = "Where they are";
-"pay_pains_door_where_subtitle" = "Map";
+"pay_pains_door_where_subtitle" = "Live map";
 "pay_pains_ai_friends_row" = "AI Friends";
 "pay_pains_menu_button" = "Menu";
 "pay_pains_menu_title" = "All sections";
@@ -3269,19 +3270,19 @@
 "screen_time_unavailable_in_build" = "System Screen Time is unavailable in this App Store build.";
 "screen_time_parent_open_on_child" = "Open ALADDIN on the child’s iPhone and set up Screen Time";
 "screen_time_stats_stale" = "No fresh usage data (older than 6 hours)";
-"app_limits_token_hint" = "Minute limits are saved here. Binding to Screen Time apps happens on the child’s iPhone (app picker).";
-"app_limits_token_bound" = "Bound to Screen Time";
+"app_limits_token_hint" = "Minute limits are saved here. Linking apps to Screen Time is done on the child’s iPhone.";
+"app_limits_token_bound" = "Linked to Screen Time";
 "screen_time_device_row_title" = "Screen Time";
 "screen_time_device_unavailable_build" = "Screen Time: off in this App Store build until Device QA";
-"screen_time_device_needs_auth" = "Screen Time: authorize on the child’s iPhone";
-"screen_time_device_active" = "Screen Time: active";
+"screen_time_device_needs_auth" = "Screen Time: permission is needed on the child's phone";
+"screen_time_device_active" = "Screen Time is on";
 "screen_time_device_active_fmt" = "Screen: %@ / %@";
-"screen_time_device_no_data" = "Screen Time: no data";
-"screen_time_device_stale" = "Screen Time: data is stale";
-"screen_time_fc_gated_banner" = "System Screen Time turns on after Device QA (honest empty / no claims for now).";
-"screen_time_fc_need_auth" = "Screen Time: not authorized on this device – set up on the child’s iPhone.";
+"screen_time_device_no_data" = "Screen Time: no data yet";
+"screen_time_device_stale" = "Screen Time: the data is out of date";
+"screen_time_fc_gated_banner" = "Screen Time is not available in this version yet.";
+"screen_time_fc_need_auth" = "Screen Time: there is no permission on this iPhone. Set it up on the child's phone.";
 "screen_time_fc_need_extension" = "Screen Time: Monitor/Report extensions missing or not signed.";
-"screen_time_fc_ready" = "Screen Time: authorization and extensions ready on this device.";
+"screen_time_fc_ready" = "Screen Time is ready on this iPhone.";
 "family_presence_stamp_today" = "today · %@";
 "family_presence_stamp_yesterday" = "yesterday · %@";
 "family_presence_stamp_date" = "%@ · %@";
@@ -3360,8 +3361,8 @@
 "location_error_region_monitoring_failed" = "Could not watch this place: %@.";
 
 /* WAVE3 cap-A3 ManagedSettings honesty */
-"app_limits_shield_parent_honesty" = "Minute limits are saved on the parent phone. App blocking (Shield) applies on the child’s iPhone after Screen Time setup – not on the parent device.";
-"app_limits_unbound_honesty" = "Apps are not bound to Screen Time yet. Open setup on the child’s iPhone and pick apps.";
+"app_limits_shield_parent_honesty" = "Minute limits stay on the parent’s phone. App blocking turns on the child’s iPhone after Screen Time setup, not on the parent’s phone.";
+"app_limits_unbound_honesty" = "Apps are not linked to Screen Time yet. Open setup on the child’s iPhone and choose apps.";
 
 /* WAVE3 cap-F3 Safari vs system filter honesty */
 "parental_filter_safari_honesty" = "Filtering works in Safari (Content Blocker) today. It does not cover other apps.";
@@ -3375,7 +3376,7 @@
 "system_filter_toggle_error_simulator" = "Apple’s system filter does not run in Simulator. Test on a real iPhone (turn off other VPNs).";
 "system_filter_toggle_error_disabled" = "System filtering is not enabled in this build.";
 "system_filter_toggle_error_permission" = "1) Turn off any other VPN\n2) Turn the filter on again\n3) Tap Allow in the iPhone prompt";
-"system_filter_toggle_error_extension" = "System filter is not available in this build. Check the Network Extension entitlement/profile.";
+"system_filter_toggle_error_extension" = "Site filter is not available in this version yet.";
 "family_critical_alerts_toggle" = "Critical alerts";
 "family_critical_alerts_footer" = "Urgent family signals and important events may sound even in Do Not Disturb. You can turn this off in iPhone Settings.";
 "family_critical_alerts_on_hint" = "Critical alerts allowed. Check Settings → ALADDIN → Notifications.";
@@ -3385,7 +3386,7 @@
 "family_urgent_signal_body" = "A family member may need help. Open ALADDIN and reach them.";
 "family_urgent_signal_chat" = "🆘 Family urgent signal: %@ (%@)";
 "family_urgent_signal_toggle" = "Family urgent safety signal";
-"family_urgent_signal_toggle_footer" = "Uses Apple Health (HealthKit). In an emergency or via the button, family gets a signal. Your consent is required.";
+"family_urgent_signal_toggle_footer" = "Uses Apple Health. In an emergency, or when you tap the button, people close to you get a signal. Your consent is required.";
 "family_urgent_signal_send_now" = "Send signal now";
 "family_urgent_signal_sent" = "Signal sent to the family";
 "scam_comm_notification_title" = "Suspicious call";
@@ -3401,15 +3402,15 @@
 "profile_family_invite_section_title" = "Family";
 "profile_friends_bonus_section_title" = "Friends and bonuses";
 "profile_invite_family_members" = "Invite to family";
-"profile_invite_family_members_desc" = "Create a FAM or QR for a relative. This is not a bonus or referral.";
+"profile_invite_family_members_desc" = "Create a family code or a QR for someone close. This is not a bonus and not a code for friends.";
 "profile_join_family" = "Join a family";
-"profile_join_family_desc" = "Enter a FAM or scan a QR if you were invited. Not a code from the ALADDIN team.";
+"profile_join_family_desc" = "Enter the family code or scan the QR if you were invited. This is not a code from the ALADDIN team.";
 "profile_invite_friends" = "Invite friends";
 "profile_invite_discount" = "Share your referral code. Your friend gets a perk, you earn a reward.";
 "family_invite_error_invalid" = "The invite code did not work. Ask the family administrator to send a new QR or code.";
 "family_invite_error_expired" = "This invite has expired. Ask the family administrator to create a new code.";
 "family_invite_error_revoked" = "This invite was revoked. You need a new QR or code.";
-"family_invite_error_used_up" = "This invite has already reached its use limit. Ask for a new QR or FAM code.";
+"family_invite_error_used_up" = "This invitation is already used. Ask for a new QR or family code.";
 "family_invite_error_family_not_found" = "Family not found. Check the code or ask for a new QR.";
 "family_invite_error_forbidden" = "Only the family owner or a parent in this family can invite family members.";
 "family_invite_error_already_in_another_family" = "This phone is already linked to another family. Delete the profile or leave the current family, then try again.";
@@ -3423,18 +3424,18 @@
 "device_pairing_error_token_or_pin_required" = "Enter the 6-digit PIN or scan the device QR.";
 "family_invite_wrong_flow_device_code" = "This is a 6-digit device code. Open “Pair a new device” for this code.";
 "device_pairing_wrong_flow_family_code" = "This is a family invite. We’ll open the family member screen now.";
-"join_device_family_invite_hint" = "This screen is only for pairing a new device. To add a parent, child, or another person to the family, use Invite to family and the family QR/FAM code.";
+"join_device_family_invite_hint" = "This screen only links a new device. To add a person to the family, use the family code.";
 "join_device_success_message" = "Done. This device is linked to your family. The device list will refresh on the main screen.";
 "invitation_join_navigation_title" = "Join family";
 "invitation_code_enter_title" = "Join a family";
-"invitation_code_enter_subtitle" = "Paste the FAM or QR payload from the family owner. This is not an ALADDIN team promo.";
+"invitation_code_enter_subtitle" = "Paste the family code or the QR details from the family owner. This is not an ALADDIN team promo code.";
 "invitation_code_preflight_ok" = "Code found. Choose role, age, and enter a name.";
 "crash_settings_save_error_login_required" = "Could not save: the profile is not authorized yet. Open Profile and try again.";
 "crash_settings_save_error_permissions" = "Could not turn this on: check Location, Motion, and Notifications in iPhone Settings.";
 "crash_settings_save_error_network" = "Could not save because of a network issue. Check your internet connection and try again.";
 "crash_settings_pending_sync" = "Settings are saved on this phone and waiting for server sync.";
 "crash_settings_saved_pending_sync" = "Saved on this phone. We will sync with the server later.";
-"geofence_notifications_enabled_now" = "Notifications are on. Places can now send push alerts.";
+"geofence_notifications_enabled_now" = "Notifications are on. Places can now send notifications.";
 "geofence_notifications_permission_denied" = "Notifications are not enabled. Allow them in iPhone Settings.";
 "geofence_notifications_open_settings_hint" = "Opened iPhone Settings. Enable notifications for ALADDIN and return to the app.";
 "recovery_share_text_family_link" = "I’m inviting you to my ALADDIN family.\nCode: %@\nLink: %@\nOpen ALADDIN and choose “Enter code” if the link does not open automatically.";
@@ -3442,27 +3443,27 @@
 "recovery_share" = "Share";
 "invitation_paste_code_button" = "Paste";
 "family_invite_card_title" = "Invite to family";
-"family_invite_card_body" = "QR, FAM, or link for a relative. Not a referral and not a team promo.";
+"family_invite_card_body" = "A QR code, family code, or link for someone close. Not a friend code and not a promo code.";
 "family_invite_show_qr_title" = "Show family QR";
-"family_invite_show_qr_desc" = "Create a fresh FAM invite for this family: QR, code, and share link.";
+"family_invite_show_qr_desc" = "Create a new invitation for this family: a QR, a code, and a link.";
 "family_invite_person_primary_title" = "Invite a person to the family";
-"family_invite_person_primary_desc" = "QR, FAM code, and link for a new member. After they join, we will link their iPhone to the family.";
+"family_invite_person_primary_desc" = "A QR, a family code, and a link for a new member. After they sign in, we link their iPhone to the family.";
 "family_invite_full_hint" = "The family is full. Free a seat or upgrade the plan before creating a QR invite.";
 "family_invite_share_title" = "Family invite";
-"family_invite_share_subtitle" = "Show this QR to a family member or share the FAM code. It adds a person, not a device.";
+"family_invite_share_subtitle" = "Show this QR or send the family code. This adds a person, not a device.";
 "family_invite_tap_code_hint" = "Tap to copy the code";
 "family_invite_copy_link" = "Link";
-"family_invite_code_copied" = "FAM code copied";
+"family_invite_code_copied" = "Family code copied";
 "family_invite_link_copied" = "Invite link copied";
 "family_invite_loading" = "Creating invite...";
 "family_invite_expires_at_fmt" = "Expires: %@";
 "family_invite_missing_family" = "Family ID is missing. Refresh Family and try again.";
 "family_invite_create_failed" = "Could not create a family invite. Check connection and try again.";
-"family_invite_create_route_unavailable" = "The invite server is not available yet. The iPhone sent the correct request, but the backend does not know this endpoint yet. Try again after the server update.";
+"family_invite_create_route_unavailable" = "Could not create an invite. Please try again later.";
 "family_invite_create_forbidden" = "Only the family owner or admin can create an invite.";
 "family_invite_create_family_full" = "The family is full. Free a seat or upgrade the plan before creating an invite.";
 "family_invite_create_network_failed" = "The invite server is unavailable right now. Check your connection and try again.";
-"invitation_code_family_hint" = "Paste the FAM code from the invite. The family owner sends it. Example: FAM-ABCD-1234.";
+"invitation_code_family_hint" = "Paste the family code from the invitation. The family owner sends it.";
 "invitation_join_family_failed" = "Could not join the family. Check the code and try again.";
 "family_join_autobind_progress" = "Done, you are in the family. Now linking this iPhone to your member.";
 "family_join_autobind_success" = "This iPhone is linked to the family. It will appear in Devices.";
@@ -3495,10 +3496,10 @@
 "promo_error_login_required" = "Sign in to activate the code.";
 "promo_error_generic" = "Could not activate the code. Check your connection and try again.";
 "promo_error_member_id" = "This is a family member ID. Use a team promo for bonus access.";
-"promo_error_family_invite_code" = "This is a FAM family invite. Opening “Join a family”.";
-"promo_routing_to_family_join" = "FAM detected. Opening family join…";
+"promo_error_family_invite_code" = "This is a family code. Opening Join a family.";
+"promo_routing_to_family_join" = "This is a family code. Opening family sign-in.";
 "promo_error_device_code" = "This is a device code. Use a promo code from the ALADDIN team for bonus access.";
-"promo_error_backend_not_ready" = "Promo code server is not connected in production yet. This will work after /api/promo is deployed.";
+"promo_error_backend_not_ready" = "Promo codes are temporarily unavailable. Please try again later.";
 "biometric_auth_reason" = "Confirm your identity to access ALADDIN.";
 
 /* App Store review prompt (after onboarding, once) */
@@ -3630,13 +3631,13 @@
 "map_hub_subscription_body" = "ALADDIN Family plan. See the plans.";
 "map_hub_safety_title" = "Family safety";
 "map_hub_safety_body" = "SOS and crash confirmation will appear here.";
-"map_hub_events_next_body" = "Full month calendar + EventKit come in the next step. This section stays in place.";
+"map_hub_events_next_body" = "The full calendar will arrive in an update. This section stays.";
 "map_hub_subscription_cta" = "Open ALADDIN plans";
 "map_hub_safety_open_settings" = "Crash detection settings";
 "map_hub_safety_contacts_fmt" = "Emergency contacts: %d";
 "map_hub_safety_sos_note" = "Family SOS hold comes next. No “help is on the way” without a partner.";
 "map_soft_paywall_title" = "One plan for the whole family";
-"map_soft_paywall_body" = "Family map is already with you. ALADDIN Family – calm across devices. You can skip for now.";
+"map_soft_paywall_body" = "The family map is already with you. You can add the Family plan later.";
 "map_soft_paywall_try" = "See plans";
 "map_soft_paywall_later" = "Maybe later";
 "map_share_dur_1h" = "1 hour";
@@ -3947,19 +3948,55 @@
 "connect_device_body_a" = "Add a family phone – see protection and their place on the map.";
 "connect_device_cta" = "Invite";
 "tariffs_levels_title" = "What’s in each plan";
-"tariffs_levels_devices_fmt" = "Devices: Free %d · Family %d · Premium %d";
-"tariffs_free_simple" = "Family of up to 4 · live map · SOS";
-"tariffs_family_simple" = "Family of 6 · live map · Antifake · 7-day place history";
-"tariffs_premium_simple" = "Everything in Family · up to 15 · 30-day place history · priority";
+"tariffs_levels_devices_fmt" = "In the family: Free %d · Personal %d · Family %d · Premium %d";
+"tariffs_free_simple" = "Free: up to %d · live map · SOS · %d hours of history";
+"tariffs_personal_simple" = "Personal: Scam Check (up to %d heavy checks a month) · %d hours of history";
+"tariffs_family_simple" = "Family: up to %d · Scam Check · %d days of history · trips";
+"tariffs_premium_simple" = "Premium: up to %d · Scam Check with no monthly limit · %d days of history";
+"tariffs_status_trial" = "You’re on a free trial until %@";
+"tariffs_status_trial_nodate" = "You’re on a free trial";
+"tariffs_status_free" = "You’re on the Free plan";
+"tariffs_status_personal" = "You’re on Personal until %@";
+"tariffs_status_personal_nodate" = "You’re on Personal";
+"tariffs_status_family" = "You’re on Family until %@";
+"tariffs_status_family_nodate" = "You’re on Family";
+"tariffs_status_premium" = "You’re on Premium until %@";
+"tariffs_status_premium_nodate" = "You’re on Premium";
+"tariffs_trial_auto_note" = "Your free trial started automatically. You won’t pay unless you choose a plan.";
+"tariffs_compare_toggle" = "Compare plans";
+"tariffs_free_row" = "Free: up to %d people, live map and SOS. Always included.";
+"tariffs_history_hours" = "%d hours";
+"tariffs_history_days" = "%d days";
+"tariffs_heavy_quota" = "%d a month";
+"tariffs_heavy_unlimited" = "no monthly limit";
+"tariffs_gates_share" = "Shares protection with the family";
+"tariffs_gates_heavy" = "Heavy checks";
+"tariffs_card_personal_subtitle" = "Protection for you";
+"tariffs_card_personal_1" = "Scam Check for calls, texts and links";
+"tariffs_card_personal_quota" = "Voice and video checks: %d per month";
+"tariffs_card_history_hours" = "Location history: %d hours";
+"tariffs_card_family_subtitle" = "For the whole family, up to %d people";
+"tariffs_card_family_map" = "Live family map and places";
+"tariffs_card_family_child" = "Kids: limits, pause, bedtime";
+"tariffs_card_family_check" = "Scam Check for everyone";
+"tariffs_card_premium_subtitle" = "Everything in Family, and more";
+"tariffs_card_premium_members" = "Up to %d family members";
+"tariffs_card_premium_unlimited" = "Unlimited Scam Check";
+"tariffs_card_premium_history" = "%d-day location history";
+"tariffs_card_premium_trips" = "Trips: speed and distractions";
+"tariffs_choose_personal" = "Choose Personal";
+"tariffs_choose_family" = "Choose Family";
+"tariffs_choose_premium" = "Choose Premium";
+"tariffs_col_personal" = "Personal";
 "tariffs_col_free" = "Free";
 "tariffs_col_family" = "Family";
 "tariffs_col_premium" = "Premium";
 "premium_nudge_map_title" = "More peace of mind on the map";
-"premium_nudge_map_body" = "Family unlocks live map and more places.";
+"premium_nudge_map_body" = "Family includes a live map and more places for the family.";
 "premium_nudge_antifake_title" = "Need more checks?";
-"premium_nudge_antifake_body" = "Family and Premium include more Antifake for your family.";
+"premium_nudge_antifake_body" = "Family and Premium include a wider Scam Check.";
 "premium_nudge_cta" = "See plans";
-"calldir_unknown_build" = "Call extension isn’t in this build. Update the app from TestFlight.";
+"calldir_unknown_build" = "Call check is unavailable. Update ALADDIN in the App Store.";
 "adblock_safari_steps_title" = "Turn on in Safari";
 "adblock_safari_steps_body" = "Settings → Safari → Extensions → ALADDIN → turn on.";
 "adblock_safari_open_settings" = "Open Settings";
@@ -4048,8 +4085,8 @@
 "avatar_crop_apply" = "Done";
 "map_live_speed_online" = "Now: %d km/h";
 "map_live_speed_max" = "Max: %d km/h";
-"tariffs_antifake_free" = "Antifake: 0 checks after the trial";
-"tariffs_antifake_paid" = "Antifake: unlimited – text, docs, voice, video, call";
+"tariffs_antifake_free" = "Scam Check: none after the trial";
+"tariffs_antifake_paid" = "Scam Check with no monthly cap: text, documents, voice, video, call";
 "tariffs_antifake_action_only" = "Only when you tap – no background recording";
 "location_history_30d_title" = "30-day location history";
 "location_history_30d_subtitle" = "Full history on Family plan";
@@ -4062,7 +4099,7 @@
 "map_drive_lock_speeding" = "Speeding";
 "map_drive_lock_inattention" = "Distraction";
 "map_drive_lock_acceleration" = "Hard acceleration";
-"map_drive_locks_hint" = "On Family & Premium after trial";
+"map_drive_locks_hint" = "On Family and Premium after the trial";
 "map_drive_unlock_cta" = "This week’s trip report";
 "driving_reports_max_speed" = "Max %@";
 "driving_reports_time_range" = "%@ – %@";
@@ -4118,25 +4155,26 @@
 "tariffs_error_create_tariff" = "Failed to create tariff. Please try again.";
 "tariffs_error_purchase_tariff" = "Purchase failed. Please try again.";
 "tariffs_excellent" = "Excellent!";
-"tariffs_family" = "FAMILY";
+"tariffs_family" = "Family";
 "tariffs_family_features_1" = "Family map and places";
 "tariffs_family_features_3" = "Child limits and parental controls";
 "tariffs_family_features_4" = "SOS / “help needed”";
-"tariffs_family_features_5" = "Anti-fraud for everyone in the family";
+"tariffs_family_features_5" = "Scam Check for everyone in the family";
 "tariffs_family_scam_alert" = "Alert your family about scam calls";
 "tariffs_family_features_6" = "Trips and quiet zone";
-"tariffs_free" = "BASIC";
+"tariffs_free" = "Free";
 "tariffs_free_period" = "Free";
-"tariffs_gates_antifake_limit" = "Unlimited Antifake";
+"tariffs_gates_antifake_limit" = "Scam Check with no monthly cap";
 "tariffs_gates_history_long" = "Longer place history";
 "tariffs_gates_sos" = "SOS / help needed";
-"tariffs_gates_trips" = "Trips (after trial)";
+"tariffs_gates_adblock" = "Ad blocker";
+"tariffs_gates_trips" = "Trips";
 "tariffs_ok" = "OK";
 "tariffs_payment_error" = "Payment error";
 "tariffs_period_month" = "per month";
-"tariffs_personal" = "PERSONAL";
+"tariffs_personal" = "Personal";
 "tariffs_personal_features_1" = "Protection for one device";
-"tariffs_personal_features_3" = "Anti-fraud for you: calls, texts, links, transfers";
+"tariffs_personal_features_3" = "Scam Check for you: calls, texts, and links";
 "tariffs_personal_voice_video_limit" = "Voice & video checks – %d per month";
 "tariffs_personal_ai" = "AI safety assistant";
 "tariffs_member_limit_format" = "Up to %d family members";
@@ -4144,12 +4182,12 @@
 "tariffs_upgrade_personal_to_family_cta_plain" = "Protect your whole family – switch to Family";
 "tariffs_upgrade_personal_to_family_note" = "App Store prorates what you’ve already paid";
 "antifake_quota_exhausted_body" = "You’ve used all %d voice & video checks this month. The limit resets on the 1st.";
-"tariffs_personal_features_4" = "Last-point map";
+"tariffs_personal_features_4" = "Last location";
 "tariffs_personal_features_5" = "Basic limits and SOS";
 "tariffs_personal_features_6" = "Only when you act – no background recording";
-"tariffs_premium" = "PREMIUM";
+"tariffs_premium" = "Premium";
 "tariffs_premium_features_1" = "Everything in Family";
-"tariffs_premium_features_3" = "Unlimited anti-fraud: text, voice, video, call";
+"tariffs_premium_features_3" = "Scam Check with no monthly cap: text, voice, video, call";
 "tariffs_premium_features_4" = "Longer place history";
 "tariffs_premium_features_5" = "Priority family support";
 "tariffs_premium_features_6" = "Higher device limits";
@@ -4157,17 +4195,17 @@
 "tariffs_premium_features_8" = "Only when you act – no background recording";
 "tariffs_purchase_button" = "Subscribe";
 "tariffs_purchase_success" = "Purchase successful!";
-"tariffs_recommended" = "⭐ RECOMMENDED";
+"tariffs_recommended" = "Recommended";
 "tariffs_restore_purchases" = "Restore Purchases";
-"tariffs_selected" = "✓ SELECTED";
+"tariffs_selected" = "Selected";
 "tariffs_subscribe_agreement_and" = "and";
 "tariffs_subscribe_agreement_text" = "By tapping 'Subscribe', you agree to";
 "tariffs_subscription_activated" = "Subscription successfully activated!";
 "tariffs_subtitle" = "Choose a suitable plan";
-"tariffs_title" = "TARIFFS";
-"tariffs_trial" = "TRIAL";
+"tariffs_title" = "Plans";
+"tariffs_trial" = "Trial";
 "tariffs_trial_already_active_until" = "Trial already active until %@";
-"tariffs_trial_button" = "START FREE TRIAL";
+"tariffs_trial_button" = "Start free trial";
 "tariffs_trial_features_1" = "Full access to all features";
 "tariffs_trial_features_3" = "AI assistant without limits";
 "tariffs_trial_features_4" = "Advanced family protection";
@@ -4204,11 +4242,11 @@
 "notif_s36_title" = "Safety";
 "notif_s36_body" = "SOS and Need help open the map.";
 "notif_s37_title" = "Family weather";
-"notif_s37_body" = "Coming soon. Not a Life360 clone.";
+"notif_s37_body" = "Coming soon.";
 "notif_s38_title" = "Family events";
 "notif_s38_body" = "Reminders for family events.";
 "notif_s39_title" = "Pets";
-"notif_s39_body" = "Not copying Life360. Own flow later.";
+"notif_s39_body" = "Coming in an update.";
 
 /* WAVE R7 min — S31/S32 events + S52 inbox */
 "family_cal_who_title" = "Who can see";
@@ -4240,7 +4278,7 @@
 "map_journal_scrub_hint" = "Browse today’s place points";
 
 /* S58 weekly densitiy / tariff gates */
-"drive_weekly_locked_title" = "Driving risks – Family/Premium";
+"drive_weekly_locked_title" = "Driving risks on Family and Premium";
 "drive_weekly_locked_body" = "Speed and harsh-maneuver counts unlock on a family plan. Trip and km stats stay honest – no invented numbers.";
 "drive_weekly_locked_cta" = "Open tariffs";
 "drive_weekly_violations_total" = "Violations this period: %d";
@@ -4250,8 +4288,8 @@
 "drive_weekly_stats_max_na" = "No data";
 
 /* Policy A — Antifake App Trial access (pre-prod 2026-11-16) */
-"antifake_premium_gate_honest_body" = "Authenticity checks require an active App Trial, or Family / Premium. We do not show demo verdicts without real analysis.";
-"faq_antifake_apple_limits_answer" = "ALADDIN checks text, links, audio, and video only when you tap Check or share content via the Share sheet.\n\nWe do not listen to all phone calls in the background – iOS forbids that. We do not hang up automatically or intercept FaceTime or messengers.\n\nCall labels apply only to numbers in our verified database (Call Directory), not every unknown caller.\n\nOn aladdin-ai.ru/antifake – **14-day free trial** or Family/Premium with a code; 25 MB file limit. In the app – active App Trial, Family, or Premium.\n\nResults are assessments (likely fake / uncertain / likely real), not legal verdicts.";
+"antifake_premium_gate_honest_body" = "Scam Check is available during the trial and on Family and Premium. We do not show a result without a real check.";
+"faq_antifake_apple_limits_answer" = "ALADDIN checks text, links, audio, and video only when you tap Check or share via Share.\n\nWe do not listen to every call in the background. The system does not allow it. We do not hang up for you, and we do not intercept FaceTime or messengers.\n\nCall labels apply only to numbers from a checked list, not to every unknown number.\n\nOn aladdin-ai.ru the check is available during the trial or on Family and Premium. A file can be up to 25 MB.\n\nThe result is an estimate: looks fake, unclear, or looks real. It is not a lawyer's opinion.";
 
 /* L360 stage 3 — family growth nudge (FamilyGrowthNudgeScheduler) */
 "family_growth_nudge_title" = "Add your loved ones";
@@ -4273,7 +4311,7 @@
 "family_location_history_privacy_note" = "Only your family sees the history. Old points are deleted automatically, and right away when the account is deleted.";
 
 /* L360 — site expiry reminders + tariff history gate + trip push */
-"tariffs_gates_history_places" = "Place history (24h / 7d / 30d)";
+"tariffs_gates_history_places" = "Location history";
 "site_sub_expiry_push_title" = "Your site subscription is ending soon";
 "site_sub_expiry_push_body_7d" = "One week left until %@. Renew on the site so you keep access.";
 "site_sub_expiry_push_body_3d" = "In 3 days (%@) your site-code access ends. Renew payment.";
@@ -4293,7 +4331,7 @@
 
 /* App Store promo / redeem help (friend codes from App Store Connect) */
 "appstore_redeem_help_title" = "How to redeem an App Store code";
-"appstore_redeem_help_intro" = "Friend codes from App Store Connect are entered in the App Store app, not in ALADDIN. The menu item is often called “Redeem Code”.";
+"appstore_redeem_help_intro" = "A friend code from the App Store is entered in the App Store app, not in ALADDIN. The menu item is often called Redeem Code.";
 "appstore_redeem_help_step1" = "1. Close ALADDIN.";
 "appstore_redeem_help_step2" = "2. Open the App Store app (blue “A” icon).";
 "appstore_redeem_help_step3" = "3. At the bottom, open any App Store tab (for example Today).";
@@ -4305,8 +4343,20 @@
 "appstore_redeem_help_open_store" = "Open App Store";
 "appstore_redeem_help_close" = "Got it";
 "appstore_redeem_help_card_title" = "App Store code (for friends)";
-"appstore_redeem_help_card_body" = "If the code came from App Store Connect, redeem it in the App Store – not here. This screen is only for ALADDIN team bonus codes.";
+"appstore_redeem_help_card_body" = "If the code is for the App Store, redeem it in the App Store, not here. This screen is only for ALADDIN team bonus codes.";
 "appstore_redeem_help_card_cta" = "How to redeem in the App Store";
 "antifake_family_reports_subtitle" = "Approved reports from family members.";
 "antifake_family_reports_collapsed_hint" = "";
 "antifake_history_empty" = "No checks yet.";
+"antifake_hub_title" = "Scam Check";
+"antifake_hub_subtitle" = "Check a call, message, link, voice, or video.";
+"antifake_premium_required_title" = "Premium needed";
+"antifake_premium_gate_no_demo" = "There are no sample results here. Only a real check.";
+"antifake_premium_locked_tabs_title" = "Premium unlocks these tabs:";
+"antifake_premium_locked_tab_hint" = "Available on Premium";
+"family_title" = "Family";
+"family_chat_error_upload_insecure_url" = "Could not send the file. Please try again.";
+"location_error_significant_change_unavailable" = "Background location is not available on this iPhone.";
+"screen_time_device_unavailable_build" = "Screen Time is not available in this version yet.";
+"screen_time_fc_need_extension" = "Screen Time is not available in this version yet.";
+"screen_time_unavailable_in_build" = "Screen Time is not available in this version yet.";

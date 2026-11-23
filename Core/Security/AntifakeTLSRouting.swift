@@ -12,6 +12,7 @@ enum AntifakeTLSRouting {
         AppConfig.Endpoint.antifakeCheckDocument,
         AppConfig.Endpoint.antifakeCallAnalyze,
         AppConfig.Endpoint.antifakeMetrics,
+        AppConfig.Endpoint.antifakeQuota,
         AppConfig.Endpoint.antifakeCallDirectory,
         AppConfig.Endpoint.antifakeReport,
         AppConfig.Endpoint.antifakeAppeal,

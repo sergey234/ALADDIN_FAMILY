@@ -275,10 +275,9 @@ class TokenHealthMonitor {
             if let existingDeviceId = currentToken?.deviceId, !existingDeviceId.isEmpty {
                 deviceId = existingDeviceId
             } else {
-                // Приоритет 2: Используем identifierForVendor (требует MainActor)
-                // Приоритет 3: Генерируем новый UUID
+                // Приоритет 2: стабильный id из Keychain (переживает переустановку)
                 deviceId = await MainActor.run {
-                    UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+                    StableDeviceIdentity.current()
                 }
             }
             

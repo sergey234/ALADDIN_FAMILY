@@ -80,6 +80,7 @@ struct CompanionParentConsentSection: View {
                 .opacity(childCanUseCompanion ? 1 : 0.45)
 
                 Button {
+                    HapticFeedback.impact(.medium)
                     Task { await save() }
                 } label: {
                     HStack {
@@ -149,6 +150,7 @@ struct CompanionParentConsentSection: View {
     @ViewBuilder
     private func heroChip(id: String, emoji: String, title: String, isOn: Binding<Bool>) -> some View {
         Button {
+            HapticFeedback.selection()
             isOn.wrappedValue.toggle()
             print("🦄 CompanionConsent hero \(id) → \(isOn.wrappedValue)")
         } label: {

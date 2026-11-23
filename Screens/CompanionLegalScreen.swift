@@ -43,9 +43,15 @@ struct CompanionLegalScreen: View {
                         Text(localizationManager.localized("companion_legal_full_docs"))
                             .font(.headline)
                             .foregroundColor(.white)
-                        Button(localizationManager.localized("companion_legal_privacy")) { showPrivacy = true }
+                        Button(localizationManager.localized("companion_legal_privacy")) {
+                            HapticFeedback.selection()
+                            showPrivacy = true
+                        }
                             .foregroundColor(Color(hex: "C4B5FD"))
-                        Button(localizationManager.localized("companion_legal_terms")) { showTerms = true }
+                        Button(localizationManager.localized("companion_legal_terms")) {
+                            HapticFeedback.selection()
+                            showTerms = true
+                        }
                             .foregroundColor(Color(hex: "C4B5FD"))
                     }
                     .padding(.top, 8)
@@ -56,6 +62,7 @@ struct CompanionLegalScreen: View {
 
                     if let onAcknowledge {
                         Button {
+                            HapticFeedback.impact(.light)
                             onAcknowledge()
                         } label: {
                             Text(localizationManager.localized("companion_legal_ack"))
@@ -76,6 +83,7 @@ struct CompanionLegalScreen: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(localizationManager.localized("companion_legal_close")) {
+                    HapticFeedback.selection()
                     if let onAcknowledge {
                         onAcknowledge()
                     } else {

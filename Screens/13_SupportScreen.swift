@@ -227,7 +227,7 @@ struct SupportScreen: View {
                         
                         Text(localizationManager.localized("support_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.textSecondary)
                             .accessibilityLabel(localizationManager.localized("support_subtitle"))
                     }
                     .accessibilityElement(children: .combine)
@@ -356,7 +356,7 @@ struct SupportScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("support_contact_us"))
                 .font(.title2)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.horizontal, 20)
                 .accessibilityLabel(localizationManager.localized("support_contact_us_label"))
                 .accessibilityAddTraits(.isHeader)
@@ -462,7 +462,7 @@ struct SupportScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("support_antifake_share_title"))
                 .font(.title2)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.horizontal, 20)
                 .accessibilityAddTraits(.isHeader)
 
@@ -513,7 +513,6 @@ struct SupportScreen: View {
                                 .font(.subheadline.bold())
                             Text(localizationManager.localized("support_antifake_web_subtitle"))
                                 .font(.caption)
-                                .opacity(0.85)
                         }
                         Spacer()
                         Image(systemName: "arrow.up.right")
@@ -542,7 +541,6 @@ struct SupportScreen: View {
                                 .font(.subheadline.bold())
                             Text(localizationManager.localized("support_antifake_qr_subtitle"))
                                 .font(.caption)
-                                .opacity(0.85)
                         }
                         Spacer()
                     }
@@ -596,7 +594,7 @@ struct SupportScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("roadside_assistance_title"))
                 .font(.title2)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.horizontal, 20)
                 .accessibilityLabel(localizationManager.localized("roadside_assistance_title"))
                 .accessibilityAddTraits(.isHeader)
@@ -618,12 +616,12 @@ struct SupportScreen: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localizationManager.localized("roadside_call_help"))
                             .font(.body.bold())
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
                             .accessibilityLabel(localizationManager.localized("roadside_call_help"))
                         
                         Text(localizationManager.localized("roadside_assistance_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.textSecondary)
                             .accessibilityLabel(localizationManager.localized("roadside_assistance_subtitle"))
                     }
                     
@@ -701,11 +699,11 @@ struct SupportScreen: View {
                             .foregroundColor(.white)
                         Text(localizationManager.localized("support_ask_assistant_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.white)
                     }
                     Spacer()
                     Image(systemName: "arrow.up.right")
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.white)
                 }
                 .padding(14)
                 .background(
@@ -733,11 +731,11 @@ struct SupportScreen: View {
                             .foregroundColor(.white)
                         Text(localizationManager.localized("support_connect_telegram_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.white)
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.white)
                 }
                 .padding(14)
                 .background(
@@ -765,11 +763,11 @@ struct SupportScreen: View {
                             .foregroundColor(.white)
                         Text(localizationManager.localized("support_telegram_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.85))
+                            .foregroundColor(.white)
                     }
                     Spacer()
                     Image(systemName: "arrow.up.right")
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.white)
                 }
                 .padding(14)
                 .background(
@@ -798,7 +796,7 @@ struct SupportScreen: View {
                 Spacer()
                 Text("@AladdinchatAI_bot")
                     .font(.caption)
-                    .opacity(0.9)
+                    .foregroundColor(.white)
             }
             .foregroundColor(.white)
             .padding(.horizontal, 16)
@@ -815,7 +813,7 @@ struct SupportScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("support_faq"))
                 .font(.title2)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.horizontal, 20)
                 .accessibilityLabel(localizationManager.localized("support_faq_label"))
                 .accessibilityAddTraits(.isHeader)
@@ -832,7 +830,7 @@ struct SupportScreen: View {
                     } label: {
                         Text(localizationManager.localized("support_faq_show_more"))
                             .font(.subheadline.bold())
-                            .foregroundColor(.blue)
+                            .foregroundColor(Color.secondaryGold)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                     }

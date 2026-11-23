@@ -40,12 +40,12 @@ struct DevicePairingModal: View {
                     VStack(spacing: Spacing.l) {
                         VStack(spacing: Spacing.s) {
                             Text(localizationManager.localized("device_pairing_title"))
-                                .font(.h2)
-                                .foregroundColor(.textPrimary)
+                                .font(AladdinFamilyType.title2())
+                                .foregroundColor(.white)
 
                             Text(localizationManager.localized("device_pairing_intro", deviceName, ownerName))
                                 .font(.body)
-                                .foregroundColor(.textSecondary)
+                                .foregroundColor(.white.opacity(0.88))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }
@@ -60,7 +60,7 @@ struct DevicePairingModal: View {
                             VStack(spacing: Spacing.s) {
                                 Text(localizationManager.localized("device_pairing_method1_hint"))
                                     .font(.caption)
-                                    .foregroundColor(.textSecondary)
+                                    .foregroundColor(.white.opacity(0.8))
                                     .multilineTextAlignment(.center)
 
                                 if let qrImage = generateQRCode(from: inviteLink) {
@@ -88,8 +88,7 @@ struct DevicePairingModal: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             Button(action: {
-                                let generator = UIImpactFeedbackGenerator(style: .medium)
-                                generator.impactOccurred()
+                                HapticFeedback.impact(.medium)
                                 showShareSheet = true
                             }) {
                                 HStack {
@@ -114,7 +113,7 @@ struct DevicePairingModal: View {
                             VStack(spacing: Spacing.s) {
                                 Text(localizationManager.localized("device_pairing_method3_hint"))
                                     .font(.caption)
-                                    .foregroundColor(.textSecondary)
+                                    .foregroundColor(.white.opacity(0.8))
                                     .multilineTextAlignment(.center)
 
                                 Text(formattedPin)
@@ -124,13 +123,12 @@ struct DevicePairingModal: View {
 
                                 Text(localizationManager.localized("device_pairing_pin_digits_hint", formattedPin.replacingOccurrences(of: "-", with: "")))
                                     .font(.caption2)
-                                    .foregroundColor(.textSecondary)
+                                    .foregroundColor(.white.opacity(0.78))
                                     .multilineTextAlignment(.center)
 
                                 Button(action: {
                                     UIPasteboard.general.string = shortPin.filter { $0.isNumber }
-                                    let gen = UINotificationFeedbackGenerator()
-                                    gen.notificationOccurred(.success)
+                                    HapticFeedback.notification(.success)
                                 }) {
                                     HStack {
                                         Image(systemName: "doc.on.doc")
@@ -158,6 +156,7 @@ struct DevicePairingModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("device_pairing_done")) {
+                        HapticFeedback.selection()
                         dismiss()
                     }
                     .font(.bodyBold)

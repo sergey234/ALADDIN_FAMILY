@@ -61,6 +61,7 @@ struct ALADDINNavigationBar: View {
                 // Левая сторона - кнопка назад или логотип
                 if showBackButton {
                     Button(action: {
+                        HapticFeedback.impact(.light)
                         onBack?()
                     }) {
                         Image(systemName: "chevron.left")
@@ -68,10 +69,6 @@ struct ALADDINNavigationBar: View {
                             .foregroundColor(.white)
                             .frame(width: 44, height: 44)
                             .contentShape(Circle())
-                            .background(
-                                Circle()
-                                    .fill(Color.orange.opacity(0.2))
-                            )
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Назад")
@@ -91,16 +88,23 @@ struct ALADDINNavigationBar: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(title)
                                 .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(.orange)
+                                .foregroundColor(.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                                 .dynamicTypeSize(.medium ... .large)
                             
                             if let subtitle = subtitle {
                                 Text(subtitle)
                                     .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(.textSecondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.55)
+                                    .allowsTightening(true)
                                     .dynamicTypeSize(.small ... .medium)
                             }
                         }
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                     }
                     .onTapGesture {
                         if navigationManager.isManuallyClosingPaymentQR {
@@ -119,6 +123,7 @@ struct ALADDINNavigationBar: View {
                     // Кнопка добавления
                     if showAddButton {
                         Button(action: {
+                            HapticFeedback.impact(.light)
                             onAdd?()
                         }) {
                             HStack(spacing: 4) {
@@ -141,6 +146,7 @@ struct ALADDINNavigationBar: View {
                     // Дополнительные кнопки
                     ForEach(rightButtons.indices, id: \.self) { index in
                         Button(action: {
+                            HapticFeedback.selection()
                             rightButtons[index].action()
                         }) {
                             Image(systemName: rightButtons[index].icon)
@@ -158,6 +164,7 @@ struct ALADDINNavigationBar: View {
                     // Кнопка списка экранов
                     if showListButton {
                         Button(action: {
+                            HapticFeedback.selection()
                             showingScreenList.toggle()
                         }) {
                             Image(systemName: "list.bullet")
@@ -193,16 +200,7 @@ struct ALADDINNavigationBar: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.04, green: 0.07, blue: 0.16),
-                        Color(red: 0.12, green: 0.23, blue: 0.37)
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
+            .background(Color.backgroundDark)
             
             // Список экранов (если показан)
             if showingScreenList {

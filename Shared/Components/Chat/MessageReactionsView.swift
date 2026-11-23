@@ -35,6 +35,7 @@ struct MessageReactionsView: View {
             
             // Кнопка добавления реакции
             Button(action: {
+                HapticFeedback.selection()
                 showReactionPicker = true
             }) {
                 Image(systemName: "face.smiling")
@@ -88,7 +89,10 @@ struct ReactionButton: View {
     let onTap: () -> Void
     
     var body: some View {
-        Button(action: onTap) {
+        Button(action: {
+            HapticFeedback.selection()
+            onTap()
+        }) {
             HStack(spacing: Spacing.xxs) {
                 Text(emoji)
                     .font(.caption)
@@ -121,6 +125,7 @@ struct ReactionPickerView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: Spacing.m) {
                 ForEach(popularEmojis, id: \.self) { emoji in
                     Button(action: {
+                        HapticFeedback.selection()
                         onSelect(emoji)
                     }) {
                         Text(emoji)
@@ -133,7 +138,10 @@ struct ReactionPickerView: View {
             }
             .padding()
             
-            Button(action: { dismiss() }) {
+            Button(action: {
+                HapticFeedback.selection()
+                dismiss()
+            }) {
                 Text(localizationManager.localized("common_cancel"))
                     .font(.body)
                     .foregroundColor(.textPrimary)

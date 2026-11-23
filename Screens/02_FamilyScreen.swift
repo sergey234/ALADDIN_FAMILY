@@ -3795,7 +3795,7 @@ extension FamilyScreen {
                     // Localized child reward title expands to full width
                     Text(localizationManager.localized("family_child_reward"))
                         .font(.bodyBold)
-                        .foregroundColor(Color(red: 0.75, green: 0.52, blue: 0.99))
+                        .foregroundColor(Color.secondaryGold)
                         .lineLimit(1)
                         .minimumScaleFactor(0.9) // Немного уменьшаем шрифт если не влезает
                         .frame(maxWidth: .infinity, alignment: .leading) // Text takes maximum width
@@ -3806,19 +3806,10 @@ extension FamilyScreen {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading) // Карточка на всю ширину
                 .padding(Spacing.m)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.66, green: 0.33, blue: 0.97).opacity(0.15),
-                            Color(red: 0.93, green: 0.28, blue: 0.6).opacity(0.15)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .background(Color.secondaryGold.opacity(0.18))
                 .overlay(
                     RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color(red: 0.66, green: 0.33, blue: 0.97).opacity(0.4), lineWidth: 2)
+                        .stroke(Color.secondaryGold.opacity(0.55), lineWidth: 2)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
             }
@@ -3943,15 +3934,7 @@ struct FamilyParentalControlCard: View {
                 }) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(
-                                LinearGradient(
-                                    colors: isEnabled ?
-                                        [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
-                                        [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(isEnabled ? Color.secondaryGold : Color.backgroundMedium)
                             .frame(width: 40, height: 24)
 
                         Circle()
@@ -4023,15 +4006,7 @@ struct FamilyContentBlockItem: View {
             }) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 15)
-                        .fill(
-                            LinearGradient(
-                                colors: isEnabled ?
-                                    [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
-                                    [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(isEnabled ? Color.secondaryGold : Color.backgroundMedium)
                         .frame(width: 50, height: 30)
                     
                     Circle()
@@ -5999,7 +5974,7 @@ struct RewardsModal: View {
         VStack(spacing: 20) {
             Text(localizationManager.localized("family_rewards_modal_title"))
                 .font(.title2)
-                .foregroundColor(Color(red: 0.75, green: 0.52, blue: 0.99))
+                .foregroundColor(Color.secondaryGold)
             
             Text(localizationManager.localized("family_unicorn_balance_format", 245))
                 .foregroundColor(.gray)

@@ -98,6 +98,7 @@ struct MediaMessageBubble: View {
                         .overlay(ProgressView())
                 }
                 .onTapGesture {
+                    HapticFeedback.selection()
                     showFullImage = true
                 }
             } else {
@@ -152,6 +153,7 @@ struct MediaMessageBubble: View {
         HStack(spacing: 12) {
             let isPlayingCurrentVoice = voicePlayer.isPlaying && voicePlayer.currentMessageId == message.id
             Button(action: {
+                HapticFeedback.selection()
                 if isPlayingCurrentVoice {
                     voicePlayer.togglePause()
                 } else if let url = resolvedMediaURL ?? message.voiceUrl.flatMap({ URL(string: $0) }) {
@@ -246,6 +248,7 @@ struct FullScreenImageView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("close")) {
+                        HapticFeedback.selection()
                         isPresented = false
                     }
                     .foregroundColor(.white)

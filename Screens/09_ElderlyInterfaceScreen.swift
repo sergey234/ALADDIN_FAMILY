@@ -112,8 +112,12 @@ struct ElderlyInterfaceScreen: View {
                                 AntifakeCallDirectorySettingsCard()
                                     .environmentObject(localizationManager)
                                 Text(localizationManager.localized("elderly_scam_call_directory_note"))
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.white.opacity(0.85))
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.55)
+                                    .allowsTightening(true)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .padding(.horizontal, Spacing.screenPadding)
 
@@ -324,20 +328,18 @@ struct ElderlyInterfaceScreen: View {
                 Text(localizationManager.localized("elderly_interface_hello"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .minimumScaleFactor(0.78)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
                 
                 Text(localizationManager.localized("elderly_interface_protected"))
                     .font(.system(size: 20))
-                    .foregroundColor(.white.opacity(0.8))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .minimumScaleFactor(0.78)
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
             }
-            .layoutPriority(1)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             
             Spacer()
             
@@ -383,7 +385,7 @@ struct ElderlyInterfaceScreen: View {
                 
                 Text(localizationManager.localized("elderly_interface_no_threats"))
                     .font(.system(size: 20))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.white)
             }
             .padding(Spacing.xl)
             .stormGlassCard(cornerRadius: CornerRadius.xl)
@@ -515,21 +517,24 @@ struct ElderlyInterfaceScreen: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     
                     Text(subtitle)
                         .font(.system(size: 16))
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                 
                 Spacer()
                 
                 // Стрелка
                 Image(systemName: "chevron.right")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.white)
             }
             .padding(Spacing.l)
             .stormGlassCard(cornerRadius: CornerRadius.large)
@@ -597,19 +602,22 @@ struct ElderlyInterfaceScreen: View {
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
                 
                 Text(member.role)
                     .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(.white)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
                 
                 Text(member.phone)
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.system(size: 18))
+                    .foregroundColor(.white)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
                 
                 // Статус
                 HStack(spacing: Spacing.s) {
@@ -618,12 +626,14 @@ struct ElderlyInterfaceScreen: View {
                         .frame(width: 12, height: 12)
                     
                     Text(member.status.text(localizationManager: localizationManager))
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.8))
+                        .font(.system(size: 18))
+                        .foregroundColor(.white)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
             }
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             
             Spacer()
             
@@ -685,14 +695,17 @@ struct ElderlyInterfaceScreen: View {
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.8)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                             
                             Text(localizationManager.localized("elderly_interface_quick_call"))
-                                .font(.system(size: 14))
-                                .foregroundColor(.white.opacity(0.8))
+                                .font(.system(size: 18))
+                                .foregroundColor(.white)
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.8)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                         }
+                        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                         
                         Spacer()
                         
@@ -784,21 +797,24 @@ struct ElderlyInterfaceScreen: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     
                     Text(subtitle)
                         .font(.system(size: 16))
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                 
                 Spacer()
                 
                 // Стрелка
                 Image(systemName: "chevron.right")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.white)
             }
             .padding(Spacing.l)
             .stormGlassCard(cornerRadius: CornerRadius.large)
@@ -929,17 +945,18 @@ struct ElderlyInterfaceScreen: View {
                     Text(title)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.75)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     
                     Text(subtitle)
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.92))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.75)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .font(.system(size: 18))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                 
                 Spacer()
             }
@@ -977,13 +994,15 @@ struct ElderlyInterfaceScreen: View {
                         .font(.system(size: 28, weight: .heavy))
                         .foregroundColor(.white)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     
                     Text(localizationManager.localized("elderly_interface_emergency_help_text"))
                         .font(.system(size: 18))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.white)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.xl)
@@ -3910,14 +3929,20 @@ struct ElderlyScamCallScreen: View {
                     .font(.system(size: 34, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.85)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
+                    .frame(maxWidth: .infinity)
 
                 // fvp-p1-6: банк-playbook (без deep-link банков)
                 VStack(alignment: .leading, spacing: 10) {
                     Text(localizationManager.localized("bank_playbook_title"))
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     scamStepLine(localizationManager.localized("bank_playbook_step_1"))
                     scamStepLine(localizationManager.localized("bank_playbook_step_2"))
                     scamStepLine(localizationManager.localized("bank_playbook_step_3"))
@@ -3947,7 +3972,7 @@ struct ElderlyScamCallScreen: View {
 
                 Text(localizationManager.localized("elderly_scam_call_hint"))
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -3995,18 +4020,27 @@ struct ElderlyScamCallScreen: View {
                         Text(localizationManager.localized("elderly_scam_call_directory_cta"))
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.secondaryGold)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.55)
+                            .allowsTightening(true)
                         Text(localizationManager.localized("elderly_scam_call_directory_cta_hint"))
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.65))
-                            .multilineTextAlignment(.center)
+                            .font(.system(size: 18))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.55)
+                            .allowsTightening(true)
                     }
                 }
                 .accessibilityIdentifier("elderly_scam_call_directory_cta")
 
                 Button(action: openRecording) {
                     Text(localizationManager.localized("elderly_scam_call_recording"))
-                        .font(.system(size: 16))
-                        .foregroundColor(.white.opacity(0.75))
+                        .font(.system(size: 18))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
+                        .frame(maxWidth: .infinity)
                 }
                 .accessibilityIdentifier("elderly_scam_call_recording")
                 .padding(.top, 8)
@@ -4045,8 +4079,9 @@ struct ElderlyScamCallScreen: View {
         Text(text)
             .font(.system(size: 18, weight: .semibold))
             .foregroundColor(.white)
-            .multilineTextAlignment(.leading)
-            .fixedSize(horizontal: false, vertical: true)
+            .lineLimit(1)
+            .minimumScaleFactor(0.55)
+            .allowsTightening(true)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 

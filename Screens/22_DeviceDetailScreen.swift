@@ -209,24 +209,33 @@ struct DeviceDetailScreen: View {
         .accessibilityLabel(String(format: localizationManager.localized("device_detail_accessibility"), device.name))
         .navigationBarHidden(true)
         .alert(localizationManager.localized("device_detail_block_confirmation_title"), isPresented: $showBlockConfirmation) {
-            Button(localizationManager.localized("common_cancel"), role: .cancel) { }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                HapticFeedback.selection()
+            }
             Button(localizationManager.localized("device_detail_block_device"), role: .destructive) {
+                HapticFeedback.notification(.warning)
                 confirmBlockDevice()
             }
         } message: {
             Text(String(format: localizationManager.localized("device_detail_block_confirmation_message"), device.name))
         }
         .alert(localizationManager.localized("device_detail_unblock_confirmation_title"), isPresented: $showUnblockConfirmation) {
-            Button(localizationManager.localized("common_cancel"), role: .cancel) { }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                HapticFeedback.selection()
+            }
             Button(localizationManager.localized("device_detail_unblock_device")) {
+                HapticFeedback.impact(.light)
                 confirmUnblockDevice()
             }
         } message: {
             Text(String(format: localizationManager.localized("device_detail_unblock_confirmation_message"), device.name))
         }
         .alert(localizationManager.localized("device_detail_remove_confirmation_title"), isPresented: $showRemoveConfirmation) {
-            Button(localizationManager.localized("common_cancel"), role: .cancel) { }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                HapticFeedback.selection()
+            }
             Button(localizationManager.localized("device_detail_remove_device"), role: .destructive) {
+                HapticFeedback.notification(.warning)
                 confirmRemoveDevice()
             }
         } message: {
@@ -234,6 +243,7 @@ struct DeviceDetailScreen: View {
         }
         .alert(localizationManager.localized("common_error"), isPresented: .constant(actionErrorMessage != nil)) {
             Button(localizationManager.localized("common_ok")) {
+                HapticFeedback.selection()
                 actionErrorMessage = nil
             }
         } message: {

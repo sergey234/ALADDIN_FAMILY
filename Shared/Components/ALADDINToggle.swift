@@ -78,26 +78,11 @@ struct ALADDINToggle: View {
                 ZStack {
                     // Фон переключателя
                     RoundedRectangle(cornerRadius: size / 2)
-                        .fill(
-                            LinearGradient(
-                                colors: isOn ? 
-                                    [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
-                                    [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(isOn ? Color.secondaryGold : Color.backgroundMedium)
                         .frame(width: size, height: size / 2)
                     
-                    // Кнопка переключателя
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white, Color.white.opacity(0.9)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.white)
                         .frame(width: (size / 2) - 4, height: (size / 2) - 4)
                         .shadow(
                             color: Color.black.opacity(0.2),
@@ -108,10 +93,9 @@ struct ALADDINToggle: View {
                         .offset(x: isOn ? size / 4 - 2 : -size / 4 + 2)
                         .animation(.easeInOut(duration: animationDuration), value: isOn)
                     
-                    // Иконка состояния
                     Image(systemName: isOn ? "checkmark" : "xmark")
                         .font(.system(size: size / 6, weight: .bold))
-                        .foregroundColor(isOn ? .primaryBlue : .gray)
+                        .foregroundColor(isOn ? Color.backgroundDark : Color.textSecondary)
                         .offset(x: isOn ? size / 4 - 2 : -size / 4 + 2)
                         .animation(.easeInOut(duration: animationDuration), value: isOn)
                 }
@@ -124,7 +108,7 @@ struct ALADDINToggle: View {
         .if(title != nil) { view in
             view
                 .padding()
-                .background(Color(.systemBackground))
+                .background(Color.backgroundMedium)
                 .cornerRadius(12)
         }
     }

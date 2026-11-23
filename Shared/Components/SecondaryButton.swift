@@ -7,7 +7,10 @@ struct SecondaryButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            HapticFeedback.impact(.light)
+            action()
+        }) {
             Text(title)
                 .font(.headline)
                 .foregroundColor(.blue)

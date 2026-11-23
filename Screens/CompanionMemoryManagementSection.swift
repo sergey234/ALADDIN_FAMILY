@@ -69,6 +69,7 @@ struct CompanionMemoryManagementSection: View {
 
                 HStack(spacing: 12) {
                     Button {
+                        HapticFeedback.impact(.light)
                         Task { await exportMemory() }
                     } label: {
                         Label(
@@ -82,6 +83,7 @@ struct CompanionMemoryManagementSection: View {
                     .disabled(isExporting || isDeleting)
 
                     Button(role: .destructive) {
+                        HapticFeedback.notification(.warning)
                         Task { await deleteAll() }
                     } label: {
                         Label(

@@ -19,6 +19,8 @@ struct TariffsScreen: View {
     /// W-pre-C: confirm before ending trial via Базовый.
     @State private var showDowngradeFromTrialConfirm = false
     @State private var showcaseVariant = TariffShowcaseExperiment.variant()
+    @State private var showGatesDetail = false
+    @State private var gatesFocus: TariffType = .family
     
     // Сохраняем выбранный тариф в AppStorage
     @AppStorage("selected_tariff_type") private var selectedTariffRaw: String = "family"
@@ -69,35 +71,29 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_antifake_free")
             ]
             case .personal:
-                var items = [
-                    localizationManager.localized("tariffs_personal_features_3"),
-                    familyMemberLimitFeatureText(for: .personal, localizationManager: localizationManager),
-                    localizationManager.localized("tariffs_personal_ai"),
-                    localizationManager.localized("tariffs_personal_features_6")
+                let quota = TariffEntitlements.antifakeMonthlyHeavyQuota(.personal)
+                    ?? TariffEntitlements.personalMonthlyHeavyChecksDefault
+                let hours = TariffEntitlements.locationHistoryHours(.personal)
+                return [
+                    localizationManager.localized("tariffs_card_personal_1"),
+                    String(format: localizationManager.localized("tariffs_card_personal_quota"), quota),
+                    String(format: localizationManager.localized("tariffs_card_history_hours"), hours)
                 ]
-                if TariffEntitlements.antifakeMonthlyHeavyQuota(.personal) != nil,
-                   let quota = AntifakeMonthlyQuota.serverPersonalLimit {
-                    items.insert(
-                        String(format: localizationManager.localized("tariffs_personal_voice_video_limit"), quota),
-                        at: 1
-                    )
-                }
-                return items
             case .family: return [
-                localizationManager.localized("tariffs_family_features_1"),
-                familyMemberLimitFeatureText(for: .family, localizationManager: localizationManager),
-                localizationManager.localized("tariffs_family_features_5"),
-                localizationManager.localized("tariffs_family_scam_alert"),
-                localizationManager.localized("tariffs_family_features_3"),
-                localizationManager.localized("tariffs_family_features_4"),
-                localizationManager.localized("tariffs_family_features_6")
+                localizationManager.localized("tariffs_card_family_map"),
+                localizationManager.localized("tariffs_card_family_child"),
+                localizationManager.localized("tariffs_card_family_check"),
+                localizationManager.localized("tariffs_family_scam_alert")
             ]
-            case .premium: return [
-                localizationManager.localized("tariffs_premium_features_1"),
-                familyMemberLimitFeatureText(for: .premium, localizationManager: localizationManager),
-                localizationManager.localized("tariffs_premium_features_3"),
-                localizationManager.localized("tariffs_premium_features_5")
-            ]
+            case .premium:
+                let members = TariffEntitlements.familyMemberLimit(.premium)
+                let days = TariffEntitlements.locationHistoryHours(.premium) / 24
+                return [
+                    String(format: localizationManager.localized("tariffs_card_premium_members"), members),
+                    localizationManager.localized("tariffs_card_premium_unlimited"),
+                    String(format: localizationManager.localized("tariffs_card_premium_history"), days),
+                    localizationManager.localized("tariffs_card_premium_trips")
+                ]
             }
         }
         
@@ -151,7 +147,7 @@ struct TariffsScreen: View {
                 // Навигационная панель
                 ALADDINNavigationBar(
                     title: localizationManager.localized("tariffs_title"),
-                    subtitle: localizationManager.localized("tariffs_subtitle"),
+                    subtitle: nil,
                     showBackButton: navigationManager.canGoBack,
                     onBack: {
                         navigationManager.goBackToPreviousScreen(reason: "Tariffs.onBack")
@@ -161,22 +157,8 @@ struct TariffsScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
-                        // pay-01 — три ясных уровня без страховки
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(localizationManager.localized("pay_tiers_plain_title"))
-                                .font(.headline)
-                                .foregroundColor(.textPrimary)
-                            Text(localizationManager.localized("pay_tiers_plain_body"))
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(Spacing.m)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.backgroundMedium.opacity(0.35))
-                        .cornerRadius(CornerRadius.medium)
-                        .padding(.horizontal, Spacing.screenPadding)
-                        .accessibilityIdentifier("pay_tiers_plain_blurb")
+                        planStatusBlock
+                            .padding(.horizontal, Spacing.screenPadding)
 
                         // External activation is unavailable in the App Store binary.
                         if AppStoreBuildPolicy.allowsAlternativePayments && AppConfig.isRussianRegion {
@@ -192,9 +174,12 @@ struct TariffsScreen: View {
 
                         // Trial A: no «Пробный» card — trial starts after onboarding via activateTrialIfNeeded.
                         // Card order is the `tariff_showcase_v1` A/B; comparison table below.
-                        ForEach(TariffShowcaseExperiment.order(for: showcaseVariant), id: \.self) { tariff in
+                        ForEach(paidCardOrder, id: \.self) { tariff in
                             tariffCard(tariff)
                         }
+
+                        freePlanRow
+                            .padding(.horizontal, Spacing.screenPadding)
 
                         honestGatesComparisonTable
                             .padding(.horizontal, Spacing.screenPadding)
@@ -229,11 +214,7 @@ struct TariffsScreen: View {
                         //         .padding(.top, Spacing.s)
                         // }
                         
-                        // Уровень защиты по тарифам
-                        TariffFeaturesGallery { tariff in
-                            viewModel.displayedPrice(for: tariff, localizationManager: localizationManager)
-                        }
-                            .padding(.top, Spacing.s)
+                        // Проценты по тарифам спрятаны с экрана. Файл TariffFeaturesGallery не удалён.
                         
                         // Spacer
                     Spacer()
@@ -350,83 +331,72 @@ struct TariffsScreen: View {
         .accessibilityIdentifier("tariffs_personal_to_family_upgrade")
     }
 
-    /// Free / Family / Premium — что реально открыто (как гейты продукта). Под Premium.
+    /// Free / Personal / Family / Premium from TariffEntitlements. Four columns stay for a wide screen.
+    /// On a narrow width the same rows show for one plan at a time.
     private var honestGatesComparisonTable: some View {
-        let freeN = SubscriptionManager.familyMemberLimitStatic(for: .free)
-        let familyN = SubscriptionManager.familyMemberLimitStatic(for: .family)
-        let premiumN = SubscriptionManager.familyMemberLimitStatic(for: .premium)
+        let rows = gateRows
+        let levels = gateLevels
         return VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("tariffs_levels_title"))
-                .font(.system(.title3, design: .serif).weight(.bold))
+                .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
-            Text(
-                String(
-                    format: localizationManager.localized("tariffs_levels_devices_fmt"),
-                    freeN, familyN, premiumN
-                )
-            )
-            .font(.caption)
+            Text(String(
+                format: localizationManager.localized("tariffs_levels_devices_fmt"),
+                TariffEntitlements.familyMemberLimit(.free),
+                TariffEntitlements.familyMemberLimit(.personal),
+                TariffEntitlements.familyMemberLimit(.family),
+                TariffEntitlements.familyMemberLimit(.premium)
+            ))
+            .font(AladdinFamilyType.caption())
             .foregroundColor(.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
-            Text(localizationManager.localized("tariffs_free_simple"))
-                .font(.caption)
-                .foregroundColor(.textPrimary)
-            Text(localizationManager.localized("tariffs_family_simple"))
-                .font(.caption)
-                .foregroundColor(.textPrimary)
-            Text(localizationManager.localized("tariffs_premium_simple"))
-                .font(.caption)
-                .foregroundColor(.textPrimary)
-            HStack(spacing: Spacing.s) {
-                Text("")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(localizationManager.localized("tariffs_col_free"))
-                    .font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 44)
-                Text(localizationManager.localized("tariffs_col_family"))
-                    .font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 44)
-                Text(localizationManager.localized("tariffs_col_premium"))
-                    .font(.caption2.weight(.bold)).foregroundColor(.textSecondary).frame(width: 44)
+            Text(String(
+                format: localizationManager.localized("tariffs_free_simple"),
+                TariffEntitlements.familyMemberLimit(.free),
+                TariffEntitlements.locationHistoryHours(.free)
+            ))
+            .font(AladdinFamilyType.caption())
+            .foregroundColor(.textPrimary)
+            Text(String(
+                format: localizationManager.localized("tariffs_personal_simple"),
+                TariffEntitlements.antifakeMonthlyHeavyQuota(.personal) ?? TariffEntitlements.personalMonthlyHeavyChecksDefault,
+                TariffEntitlements.locationHistoryHours(.personal)
+            ))
+            .font(AladdinFamilyType.caption())
+            .foregroundColor(.textPrimary)
+            Text(String(
+                format: localizationManager.localized("tariffs_family_simple"),
+                TariffEntitlements.familyMemberLimit(.family),
+                TariffEntitlements.locationHistoryHours(.family) / 24
+            ))
+            .font(AladdinFamilyType.caption())
+            .foregroundColor(.textPrimary)
+            Text(String(
+                format: localizationManager.localized("tariffs_premium_simple"),
+                TariffEntitlements.familyMemberLimit(.premium),
+                TariffEntitlements.locationHistoryHours(.premium) / 24
+            ))
+            .font(AladdinFamilyType.caption())
+            .foregroundColor(.textPrimary)
+
+            Button {
+                HapticFeedback.selection()
+                showGatesDetail.toggle()
+            } label: {
+                HStack {
+                    Text(localizationManager.localized("tariffs_compare_toggle"))
+                        .font(AladdinFamilyType.body(weight: .semibold))
+                    Spacer()
+                    Image(systemName: showGatesDetail ? "chevron.up" : "chevron.down")
+                }
+                .foregroundColor(Color.secondaryGold)
             }
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_check"),
-                free: false, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_child_basic"),
-                free: true, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_map_last"),
-                free: true, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_map_live"),
-                free: TariffEntitlements.hasLiveMap(.free), family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_places_more"),
-                free: false, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_members"),
-                free: freeN > 1, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_sos"),
-                free: true, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_trips"),
-                free: TariffEntitlements.hasDrivingInsights(.free), family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_history_places"),
-                free: true, family: true, premium: true
-            )
-            gatesRow(
-                feature: localizationManager.localized("tariffs_gates_antifake_limit"),
-                free: false, family: true, premium: true
-            )
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("tariffs_compare_toggle")
+
+            if showGatesDetail {
+                tariffGatesFit(rows: rows, levels: levels)
+            }
         }
         .padding(Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -434,24 +404,255 @@ struct TariffsScreen: View {
         .accessibilityIdentifier("tariffs_gates_table")
     }
 
-    private func gatesRow(feature: String, free: Bool, family: Bool, premium: Bool) -> some View {
-        HStack(alignment: .top, spacing: Spacing.s) {
-            Text(feature)
-                .font(.caption)
-                .foregroundColor(.textPrimary)
+    private var gateLevels: [SubscriptionLevel] {
+        [.free, .personal, .family, .premium]
+    }
+
+    private var gateRows: [(feature: String, values: [String])] {
+        let levels = gateLevels
+        func mark(_ on: Bool) -> String { on ? "✓" : "—" }
+        func history(_ level: SubscriptionLevel) -> String {
+            let hours = TariffEntitlements.locationHistoryHours(level)
+            if hours <= 48 {
+                return String(format: localizationManager.localized("tariffs_history_hours"), hours)
+            }
+            return String(format: localizationManager.localized("tariffs_history_days"), hours / 24)
+        }
+        func heavy(_ level: SubscriptionLevel) -> String {
+            guard TariffEntitlements.canUseAntifake(level) else { return "—" }
+            if let quota = TariffEntitlements.antifakeMonthlyHeavyQuota(level) {
+                return String(format: localizationManager.localized("tariffs_heavy_quota"), quota)
+            }
+            return localizationManager.localized("tariffs_heavy_unlimited")
+        }
+        func places(_ level: SubscriptionLevel) -> String {
+            switch level {
+            case .family, .premium, .trial: return "✓"
+            case .free, .personal: return "—"
+            }
+        }
+        return [
+            (localizationManager.localized("tariffs_gates_members"), levels.map { String(TariffEntitlements.familyMemberLimit($0)) }),
+            (localizationManager.localized("tariffs_gates_map_live"), levels.map { mark(TariffEntitlements.hasLiveMap($0)) }),
+            (localizationManager.localized("tariffs_gates_map_last"), levels.map { _ in "✓" }),
+            (localizationManager.localized("tariffs_gates_history_places"), levels.map(history)),
+            (localizationManager.localized("tariffs_gates_child_basic"), levels.map { _ in "✓" }),
+            (localizationManager.localized("tariffs_gates_sos"), levels.map { _ in "✓" }),
+            (localizationManager.localized("tariffs_gates_check"), levels.map { mark(TariffEntitlements.canUseAntifake($0)) }),
+            (localizationManager.localized("tariffs_family_scam_alert"), levels.map { mark(TariffEntitlements.ownerTierSharesFamilyPerks($0.rawValue)) }),
+            (localizationManager.localized("tariffs_gates_adblock"), levels.map { _ in "✓" }),
+            (localizationManager.localized("tariffs_gates_heavy"), levels.map(heavy)),
+            (localizationManager.localized("tariffs_gates_trips"), levels.map { mark(TariffEntitlements.hasDrivingInsights($0)) }),
+            (localizationManager.localized("tariffs_gates_share"), levels.map { mark(TariffEntitlements.ownerTierSharesFamilyPerks($0.rawValue)) }),
+            (localizationManager.localized("tariffs_gates_places_more"), levels.map(places))
+        ]
+    }
+
+    private func columnTitle(_ level: SubscriptionLevel) -> String {
+        switch level {
+        case .free: return localizationManager.localized("tariffs_free")
+        case .personal: return localizationManager.localized("tariffs_personal")
+        case .family: return localizationManager.localized("tariffs_family")
+        case .premium: return localizationManager.localized("tariffs_premium")
+        case .trial: return localizationManager.localized("tariffs_trial")
+        }
+    }
+
+    @ViewBuilder
+    private func tariffGatesFit(rows: [(feature: String, values: [String])], levels: [SubscriptionLevel]) -> some View {
+        if #available(iOS 16.0, *) {
+            ViewThatFits(in: .horizontal) {
+                wideGates(rows: rows, levels: levels)
+                    .frame(minWidth: 640)
+                narrowGates(rows: rows, levels: levels)
+            }
+        } else {
+            narrowGates(rows: rows, levels: levels)
+        }
+    }
+
+    private func wideGates(rows: [(feature: String, values: [String])], levels: [SubscriptionLevel]) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(spacing: Spacing.s) {
+                Text("")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                ForEach(levels, id: \.self) { level in
+                    Text(columnTitle(level))
+                        .font(AladdinFamilyType.caption2(weight: .bold))
+                        .foregroundColor(.textSecondary)
+                        .frame(width: 72)
+                }
+            }
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(alignment: .top, spacing: Spacing.s) {
+                    Text(row.feature)
+                        .font(AladdinFamilyType.caption())
+                        .foregroundColor(.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    ForEach(Array(row.values.enumerated()), id: \.offset) { _, value in
+                        Text(value)
+                            .font(AladdinFamilyType.caption(weight: .bold))
+                            .foregroundColor(value == "—" ? .textSecondary : .secondaryGold)
+                            .frame(width: 72)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier("tariffs_gates_wide")
+    }
+
+    private func narrowGates(rows: [(feature: String, values: [String])], levels: [SubscriptionLevel]) -> some View {
+        let index = levels.firstIndex(of: level(for: gatesFocus)) ?? 0
+        let choices: [TariffType] = [.free, .personal, .family, .premium]
+        return VStack(alignment: .leading, spacing: Spacing.m) {
+            VStack(spacing: Spacing.s) {
+                HStack(spacing: Spacing.s) {
+                    tariffChoiceChip(choices[0])
+                    tariffChoiceChip(choices[1])
+                }
+                HStack(spacing: Spacing.s) {
+                    tariffChoiceChip(choices[2])
+                    tariffChoiceChip(choices[3])
+                }
+            }
+            .accessibilityIdentifier("tariffs_gates_chips")
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(row.feature)
+                        .font(AladdinFamilyType.body())
+                        .foregroundColor(.textPrimary)
+                    Text(row.values[index])
+                        .font(AladdinFamilyType.title3())
+                        .foregroundColor(row.values[index] == "—" ? .textSecondary : .secondaryGold)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text(free ? "✓" : "—")
-                .font(.caption.weight(.bold))
-                .foregroundColor(free ? .secondaryGold : .textSecondary)
-                .frame(width: 44)
-            Text(family ? "✓" : "—")
-                .font(.caption.weight(.bold))
-                .foregroundColor(family ? .secondaryGold : .textSecondary)
-                .frame(width: 44)
-            Text(premium ? "✓" : "—")
-                .font(.caption.weight(.bold))
-                .foregroundColor(premium ? .secondaryGold : .textSecondary)
-                .frame(width: 44)
+            }
+        }
+        .accessibilityIdentifier("tariffs_gates_narrow")
+    }
+
+    private func tariffChoiceChip(_ tariff: TariffType) -> some View {
+        let selected = gatesFocus == tariff
+        return Button {
+            gatesFocus = tariff
+            HapticFeedback.selection()
+        } label: {
+            Text(tariff.title(localizationManager: localizationManager))
+                .font(AladdinFamilyType.body(weight: .semibold))
+                .foregroundColor(selected ? Color.backgroundDark : Color.secondaryGold)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+                .background(
+                    Capsule()
+                        .fill(selected ? Color.secondaryGold : Color.backgroundMedium.opacity(0.55))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(Color.secondaryGold, lineWidth: selected ? 0 : 1.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("tariffs_gate_chip_\(tariff.rawValue)")
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private func level(for tariff: TariffType) -> SubscriptionLevel {
+        switch tariff {
+        case .trial: return .trial
+        case .free: return .free
+        case .personal: return .personal
+        case .family: return .family
+        case .premium: return .premium
+        }
+    }
+
+    private var paidCardOrder: [TariffType] {
+        let paid = TariffShowcaseExperiment.order(for: showcaseVariant).filter {
+            $0 == .personal || $0 == .family || $0 == .premium
+        }
+        return paid.isEmpty ? [.personal, .family, .premium] : paid
+    }
+
+    private var planStatusBlock: some View {
+        let manager = SubscriptionManager.shared
+        let level = manager.getCurrentLevel()
+        let trialOn = level == .trial || manager.trialStatus?.isActive == true
+        return VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(planStatusText(level: level, manager: manager))
+                .font(AladdinFamilyType.body(weight: .semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            if trialOn {
+                Text(localizationManager.localized("tariffs_trial_auto_note"))
+                    .font(AladdinFamilyType.caption())
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("tariffs_plan_status")
+    }
+
+    private func planStatusText(level: SubscriptionLevel, manager: SubscriptionManager) -> String {
+        func dated(_ key: String, _ date: Date?) -> String {
+            guard let date else {
+                return localizationManager.localized(key + "_nodate")
+            }
+            return String(format: localizationManager.localized(key), planDate(date))
+        }
+        switch level {
+        case .trial:
+            let end = manager.trialStatus?.endDate ?? manager.currentSubscription?.trialInfo?.endDate
+            return dated("tariffs_status_trial", end)
+        case .free:
+            return localizationManager.localized("tariffs_status_free")
+        case .personal:
+            return dated("tariffs_status_personal", manager.currentSubscription?.expiresAt)
+        case .family:
+            return dated("tariffs_status_family", manager.currentSubscription?.expiresAt)
+        case .premium:
+            return dated("tariffs_status_premium", manager.currentSubscription?.expiresAt)
+        }
+    }
+
+    private func planDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = localizationManager.currentLanguage == .english
+            ? Locale(identifier: "en_US")
+            : Locale(identifier: "ru_RU")
+        formatter.setLocalizedDateFormatFromTemplate("d MMMM")
+        return formatter.string(from: date)
+    }
+
+    private var freePlanRow: some View {
+        Text(String(
+            format: localizationManager.localized("tariffs_free_row"),
+            TariffEntitlements.familyMemberLimit(.free)
+        ))
+        .font(AladdinFamilyType.body())
+        .foregroundColor(.textPrimary)
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .accessibilityIdentifier("tariffs_free_row")
+    }
+
+    private func cardSubtitle(_ tariff: TariffType) -> String? {
+        switch tariff {
+        case .personal:
+            return localizationManager.localized("tariffs_card_personal_subtitle")
+        case .family:
+            return String(
+                format: localizationManager.localized("tariffs_card_family_subtitle"),
+                TariffEntitlements.familyMemberLimit(.family)
+            )
+        case .premium:
+            return localizationManager.localized("tariffs_card_premium_subtitle")
+        case .free, .trial:
+            return nil
         }
     }
 
@@ -578,14 +779,16 @@ struct TariffsScreen: View {
     private func getButtonText(for tariff: TariffType) -> String {
         if tariff == .trial || tariff == .free {
             return localizationManager.localized("tariffs_trial_button")
-        } else if selectedTariff == tariff {
-            return localizationManager.localized("tariffs_selected")
-        } else {
-            // ✅ ВАРИАНТ Б: Всегда показываем "Subscribe" / "Оформить подписку"
-            // Логика проверки региона находится в обработчике кнопки (строки 313-345)
-            // Для России → открывается сайт (QR оплата)
-            // Для остальных стран → открывается IAP (App Store)
-            return localizationManager.localized("tariffs_purchase_button")
+        }
+        switch tariff {
+        case .personal:
+            return localizationManager.localized("tariffs_choose_personal")
+        case .family:
+            return localizationManager.localized("tariffs_choose_family")
+        case .premium:
+            return localizationManager.localized("tariffs_choose_premium")
+        case .trial, .free:
+            return localizationManager.localized("tariffs_trial_button")
         }
     }
     
@@ -657,12 +860,18 @@ struct TariffsScreen: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(tariff.title(localizationManager: localizationManager))
-                        .font(.h2)
+                        .font(AladdinFamilyType.title3())
                         .foregroundColor(tariff.color)
+                    if let subtitle = cardSubtitle(tariff) {
+                        Text(subtitle)
+                            .font(AladdinFamilyType.caption())
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     
                     HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
                         Text(viewModel.displayedPrice(for: tariff, localizationManager: localizationManager))
-                            .font(.system(size: 36, weight: .bold))
+                            .font(AladdinFamilyType.title2(weight: .bold))
                             .foregroundColor(.white)
                             .accessibilityIdentifier("tariff_price_\(tariff.rawValue)")
                         
@@ -965,22 +1174,10 @@ struct TariffsScreen: View {
                     // Кнопка Subscribe
                     Text(getButtonText(for: tariff))
                         .font(.buttonText)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.backgroundDark)
                         .frame(maxWidth: .infinity)
                         .frame(height: Size.buttonHeight)
-                        .background(
-                            selectedTariff == tariff ?
-                            LinearGradient(
-                                colors: [Color.successGreen, Color(hex: "#16A34A")],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ) :
-                            LinearGradient(
-                                colors: [tariff.color, tariff.color.opacity(0.8)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .background(Color.secondaryGold)
                         .cornerRadius(CornerRadius.large)
                 }
             }
@@ -1061,44 +1258,29 @@ struct TariffsScreen: View {
             HStack(spacing: Spacing.m) {
                 Image(systemName: "key.fill")
                     .font(.system(size: 18))
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    .foregroundColor(Color.backgroundDark)
                 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(localizationManager.localized("tariffs_activation_code"))
                         .font(.body)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.backgroundDark)
                     
                     Text(localizationManager.localized("activation_code_subtitle"))
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(Color.backgroundDark.opacity(0.75))
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.85))
+                    .foregroundColor(Color.backgroundDark.opacity(0.75))
             }
             .padding(Spacing.m)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(hex: "#FAD961"),
-                                Color(hex: "#F76B1C")
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .fill(Color.secondaryGold)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .stroke(LinearGradient.aladdinGold, lineWidth: 2)
-            )
-            .shadow(color: Color(hex: "#F76B1C").opacity(0.45), radius: 16, x: 0, y: 8)
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, 20) // Используем фиксированное значение вместо Spacing.screenPadding для безопасности

@@ -32,8 +32,7 @@ struct JoinDeviceScreen: View {
                 ScrollView(.vertical, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
                         Button(action: {
-                            let gen = UIImpactFeedbackGenerator(style: .medium)
-                            gen.impactOccurred()
+                            HapticFeedback.impact(.medium)
                             showQRScanner = true
                         }) {
                             VStack(spacing: Spacing.m) {
@@ -88,6 +87,7 @@ struct JoinDeviceScreen: View {
                                 }
 
                             Button(action: {
+                                HapticFeedback.impact(.medium)
                                 bindWithPinOnly()
                             }) {
                                 HStack {
@@ -134,6 +134,7 @@ struct JoinDeviceScreen: View {
         }
         .alert(localizationManager.localized("join_device_success_title"), isPresented: $showSuccessAlert) {
             Button(localizationManager.localized("common_ok")) {
+                HapticFeedback.notification(.success)
                 notifyRefreshAndLeave()
             }
         } message: {
@@ -141,6 +142,7 @@ struct JoinDeviceScreen: View {
         }
         .alert(localizationManager.localized("join_device_error_title"), isPresented: .constant(errorMessage != nil)) {
             Button(localizationManager.localized("common_ok")) {
+                HapticFeedback.selection()
                 errorMessage = nil
                 if navigationManager.pendingFamilyInvitePayload != nil || navigationManager.pendingFamilyInviteCode != nil {
                     navigationManager.navigateTo(.invitationCode)

@@ -143,8 +143,11 @@ struct MessageActionsMenu: View {
             localizationManager.localized("family_chat_message_delete_everyone_confirm_title"),
             isPresented: $showDeleteEveryoneConfirm
         ) {
-            Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                HapticFeedback.selection()
+            }
             Button(localizationManager.localized("family_chat_message_delete_for_everyone"), role: .destructive) {
+                HapticFeedback.notification(.warning)
                 onDeleteForEveryone()
             }
         } message: {
@@ -162,7 +165,14 @@ struct ActionButton: View {
     var isDestructive: Bool = false
     
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            if isDestructive {
+                HapticFeedback.notification(.warning)
+            } else {
+                HapticFeedback.selection()
+            }
+            action()
+        }) {
             HStack(spacing: Spacing.m) {
                 Image(systemName: icon)
                     .font(.body)

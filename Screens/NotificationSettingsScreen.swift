@@ -472,6 +472,7 @@ struct NotificationSettingsScreen: View {
             }
 
             Button {
+                HapticFeedback.impact(.light)
                 notificationManager.sendSoftTestNotification()
             } label: {
                 HStack(spacing: 8) {
@@ -519,6 +520,7 @@ struct NotificationSettingsScreen: View {
             }
 
             Button {
+                HapticFeedback.impact(.medium)
                 notificationManager.sendQATestThreatNotification()
             } label: {
                 HStack(spacing: 8) {
@@ -537,6 +539,7 @@ struct NotificationSettingsScreen: View {
             .buttonStyle(.plain)
 
             Button {
+                HapticFeedback.impact(.medium)
                 NotificationSmokeKind.fireAllSequentially(gapSeconds: 2.5)
             } label: {
                 HStack(spacing: 8) {
@@ -557,6 +560,7 @@ struct NotificationSettingsScreen: View {
 
             ForEach(NotificationSmokeKind.allCases) { kind in
                 Button {
+                    HapticFeedback.selection()
                     kind.fireSmoke()
                 } label: {
                     HStack {
@@ -619,6 +623,7 @@ struct NotificationSettingsScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Button {
+                HapticFeedback.impact(.light)
                 Task {
                     await WindDownScheduler.shared.fireTestNotification()
                 }
@@ -641,6 +646,7 @@ struct NotificationSettingsScreen: View {
             .accessibilityIdentifier("notification_real_wind_down")
 
             Button {
+                HapticFeedback.impact(.light)
                 PushNotificationService.shared.sendChatNotification(
                     message: "Проверка прод-пути семейного чата",
                     sender: "QA",
@@ -665,6 +671,7 @@ struct NotificationSettingsScreen: View {
             .accessibilityIdentifier("notification_real_family_chat")
 
             Button {
+                HapticFeedback.impact(.light)
                 // Same product API ScanScheduler uses after unify (avoid target/scope coupling).
                 notificationManager.sendAntivirusScanCompleteNotification(threatsFound: 1)
             } label: {
@@ -734,6 +741,7 @@ struct NotificationSettingsScreen: View {
 
             if !notificationManager.isAuthorized {
                 Button {
+                    HapticFeedback.impact(.light)
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }

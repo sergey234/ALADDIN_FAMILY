@@ -11,9 +11,9 @@
 App:          ai.aladdin  (ALADDIN AI)
 Team:         B3WGHSWL79  (SAUDAPAYDI)   ← НЕ 6CJVBBUGSN
 Version:      1.0.2       (= marketing / ASC iOS version)
-Build:        35          (= CFBundleVersion / upload candidate)
-PREV_BUILD:   35
-NEXT_BUILD:   36          ← подставлять ТОЛЬКО после GO на bump
+Build:        36          (= CFBundleVersion / upload candidate)
+PREV_BUILD:   36
+NEXT_BUILD:   37          ← подставлять ТОЛЬКО после GO на bump
 CURRENT_MARKETING_VERSION = 1.0.2
 Ветка:        master
 Remote:       git@github.com:sergey234/ALADDIN_FAMILY.git
@@ -24,9 +24,9 @@ CI:           check-secrets.yml («Build and Upload to App Store»)
 | Что | Куда смотреть | Сейчас |
 |-----|---------------|--------|
 | Version | ASC «iOS App Version» + код `MARKETING_VERSION` / `appVersion` | **1.0.2** |
-| Build | код `CFBundleVersion` / `buildNumber` | **35** |
+| Build | код `CFBundleVersion` / `buildNumber` | **36** |
 | Review | ASC · build **14** · 2.1 (код) + 2.5.1 (HealthKit) | ответ письмом + фикс в **15** |
-| След. Build | только после **«GO на bump»** | **36** |
+| След. Build | только после **«GO на bump»** | **37** |
 | След. Version | ASC train **1.0.2**; 1.0.1 Ready | дальше — только по GO |
 | Push | только после **«GO на push»** | `git push origin master` → CI Archive+Upload |
 
@@ -36,14 +36,14 @@ CI:           check-secrets.yml («Build and Upload to App Store»)
 
 | Слой | Факт |
 |------|------|
-| Код в git (номера) | Version **1.0.2** · Build **35** (все plists + pbx ×24 + AppConfig) |
+| Код в git (номера) | Version **1.0.2** · Build **36** (все plists + pbx ×24 + AppConfig) |
 | Build **35** содержимое | Life360-grade trip GPS · map avatar · place chips · (+ china storefront gate в следующем коммите) |
 | Build **34** (origin до push) | auto family trial + DeviceCheck gate · Life360 trip push/card |
 | CI канон | `check-secrets.yml` («Build and Upload to App Store») |
 | Зелёный релиз | **Archive + Export + Upload** все OK · Job green ≠ TF, если `altool` FAIL |
 | Урок подписи | Content Filter + Shield Action: UUID в pbx Release SPECIFIER (§4c) |
 | Урок Version | Upload 16 на **1.0.1** FAIL (train closed) → ASC **+ 1.0.2** → marketing bump → push |
-| След. Upload | candidate **35** на train **1.0.2**; дальше build — только **36** после GO на bump |
+| След. Upload | candidate **36** на train **1.0.2** (35 уже залита 2026-11-17); дальше build — только **37** после GO на bump |
 
 One-pager дня: `docs/AppStore/WAVE3_TOMORROW_TASKS_2026-10-17_RU.md`.
 Portal session: `docs/AppStore/WAVE3_PORTAL_6_TASKS_STATUS_AND_CLICKS_RU.md`.

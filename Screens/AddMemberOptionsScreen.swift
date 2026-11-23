@@ -185,6 +185,9 @@ struct AddMemberOptionsScreen: View {
                                             FamilyLocalStore.prepareCreateFamilyFlow()
                                             print("✅ AddMemberOptionsScreen: create-family flow → POST /api/family/create")
                                         }
+                                        // W11-A: skip «Семья под защитой» / second «+ Добавить семью» → consent immediately.
+                                        UserDefaults.standard.set(true, forKey: "family_registration_auto_start")
+                                        UserDefaults.standard.synchronize()
 
                                         navigationManager.navigateTo(.mainWithRegistration)
 

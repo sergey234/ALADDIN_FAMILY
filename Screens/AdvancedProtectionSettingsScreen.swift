@@ -143,9 +143,11 @@ struct AdvancedProtectionSettingsScreen: View {
             set: { if !$0 { safariApplyErrorMessage = nil } }
         )) {
             Button(localizationManager.localized("content_block_guide_open_title")) {
+                HapticFeedback.impact(.light)
                 showSafariEnableGuide = true
             }
             Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {
+                HapticFeedback.selection()
                 safariApplyErrorMessage = nil
             }
         } message: {
@@ -156,6 +158,7 @@ struct AdvancedProtectionSettingsScreen: View {
             set: { if !$0 { safariCheckMessage = nil } }
         )) {
             Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {
+                HapticFeedback.selection()
                 safariCheckMessage = nil
             }
         } message: {
@@ -464,6 +467,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         onToggle: { value in viewModel.setTelegramSecurity(isEnabled: value) }
                     )
                     .onTapGesture {
+                        HapticFeedback.selection()
                         viewModel.showTelegramSettings = true
                     }
                 }
@@ -476,7 +480,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "💬",
                         onToggle: { value in viewModel.setWhatsAppSecurity(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showWhatsAppSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showWhatsAppSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("instagram_security_bot") {
                     ComponentToggleCard(
@@ -487,7 +494,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "📷",
                         onToggle: { value in viewModel.setInstagramSecurity(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showInstagramSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showInstagramSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("max_messenger_security_bot") {
                     ComponentToggleCard(
@@ -498,7 +508,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "💭",
                         onToggle: { value in viewModel.setMaxMessengerSecurity(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showMaxMessengerSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showMaxMessengerSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("gaming_security_bot") {
                     ComponentToggleCard(
@@ -509,7 +522,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🎮",
                         onToggle: { value in viewModel.setGamingSecurity(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showGamingSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showGamingSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("browser_security_bot") {
                     ComponentToggleCard(
@@ -520,7 +536,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🌐",
                         onToggle: { value in viewModel.setBrowserSecurity(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showBrowserSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showBrowserSettings = true
+                    }
                 }
             }
             .padding(.top, Spacing.m)
@@ -545,7 +564,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "📍",
                         onToggle: { value in viewModel.setLocationBubble(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showLocationBubbleSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showLocationBubbleSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("personal_data_cleanup_agent") {
                     ComponentToggleCard(
@@ -556,7 +578,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🧹",
                         onToggle: { value in viewModel.setPersonalDataCleanup(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showPersonalDataCleanupSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showPersonalDataCleanupSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("anti_tracker_agent") {
                     ComponentToggleCard(
@@ -567,7 +592,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🚫",
                         onToggle: { value in viewModel.setAntiTracker(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showAntiTrackerSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showAntiTrackerSettings = true
+                    }
                 }
             }
             .padding(.top, Spacing.m)
@@ -592,7 +620,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🌑",
                         onToggle: { value in viewModel.setDarkWebMonitoring(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showDarkWebMonitoringSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showDarkWebMonitoringSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("russian_identity_theft_protection_agent") {
                     ComponentToggleCard(
@@ -603,7 +634,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🆔",
                         onToggle: { value in viewModel.setIdentityTheftProtection(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showIdentityTheftProtectionSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showIdentityTheftProtectionSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("ai_categories_agent") {
                     ComponentToggleCard(
@@ -614,7 +648,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🤖",
                         onToggle: { value in viewModel.setAICategories(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showAICategoriesSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showAICategoriesSettings = true
+                    }
                 }
                 if !PayPainsHiddenComponents.isComponentHidden("driving_reports_agent") {
                     ComponentToggleCard(
@@ -625,7 +662,10 @@ struct AdvancedProtectionSettingsScreen: View {
                         icon: "🚗",
                         onToggle: { value in viewModel.setDrivingReports(isEnabled: value) }
                     )
-                    .onTapGesture { viewModel.showDrivingReportsSettings = true }
+                    .onTapGesture {
+                        HapticFeedback.selection()
+                        viewModel.showDrivingReportsSettings = true
+                    }
                 }
             }
             .padding(.top, Spacing.m)
@@ -796,6 +836,7 @@ struct AdvancedProtectionSettingsScreen: View {
             
             HStack {
                 Button {
+                    HapticFeedback.selection()
                     showThreatProtectionSheet = true
                 } label: {
                     Text(localizationManager.localized("advanced_threat_configure"))
@@ -806,6 +847,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 Spacer()
                 
                 Button {
+                    HapticFeedback.selection()
                     refreshThreatStatuses()
                 } label: {
                     Text(localizationManager.localized("advanced_threat_refresh"))
@@ -889,6 +931,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 Spacer()
 
                 Button {
+                    HapticFeedback.selection()
                     showFamilyMonitoringModal = true
                 } label: {
                     Text(localizationManager.localized("advanced_family_details"))
@@ -987,6 +1030,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 Spacer()
 
                 Button {
+                    HapticFeedback.selection()
                     showFamilyTimeControlModal = true
                 } label: {
                     Text(localizationManager.localized("advanced_family_details"))
@@ -1029,6 +1073,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 Spacer(minLength: 8)
 
                 Button {
+                    HapticFeedback.selection()
                     showAppLimitsSettingsModal = true
                 } label: {
                     Text(localizationManager.localized("advanced_family_details"))
@@ -1151,6 +1196,7 @@ struct AdvancedProtectionSettingsScreen: View {
             
             HStack {
                 Button {
+                    HapticFeedback.selection()
                     configureAction()
                 } label: {
                     Text(localizationManager.localized("advanced_safari_configure_categories"))
@@ -1162,6 +1208,7 @@ struct AdvancedProtectionSettingsScreen: View {
                 
                 if showSafariCTA {
                     Button {
+                        HapticFeedback.impact(.light)
                         showSafariEnableGuide = true
                     } label: {
                         Text(localizationManager.localized("content_block_guide_open_title"))
@@ -1170,6 +1217,7 @@ struct AdvancedProtectionSettingsScreen: View {
                     }
                 } else {
                     Button {
+                        HapticFeedback.impact(.light)
                         showSafariEnableGuide = true
                     } label: {
                         Text(localizationManager.localized("content_block_guide_open_title"))
@@ -1182,6 +1230,7 @@ struct AdvancedProtectionSettingsScreen: View {
             HStack {
                 Spacer()
                 Button {
+                    HapticFeedback.impact(.light)
                     runSafariActivationCheck()
                 } label: {
                     Text(localizationManager.localized("content_block_check_enabled_button"))
@@ -1465,6 +1514,7 @@ private struct ThreatProtectionFlowSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
+                        HapticFeedback.selection()
                         if destination != nil {
                             destination = nil
                         } else {
@@ -1488,16 +1538,28 @@ private struct ThreatProtectionFlowSheet: View {
                 .padding(.top, Spacing.l)
 
             VStack(spacing: Spacing.s) {
-                Button { destination = .phishing } label: {
+                Button {
+                    HapticFeedback.selection()
+                    destination = .phishing
+                } label: {
                     row(title: localizationManager.localized("component.phishing_protection_agent.title"))
                 }
-                Button { destination = .malware } label: {
+                Button {
+                    HapticFeedback.selection()
+                    destination = .malware
+                } label: {
                     row(title: localizationManager.localized("component.malware_detection_agent.title"))
                 }
-                Button { destination = .mobileSecurity } label: {
+                Button {
+                    HapticFeedback.selection()
+                    destination = .mobileSecurity
+                } label: {
                     row(title: localizationManager.localized("component.mobile_security_agent.title"))
                 }
-                Button { destination = .networkSecurity } label: {
+                Button {
+                    HapticFeedback.selection()
+                    destination = .networkSecurity
+                } label: {
                     row(title: localizationManager.localized("component.network_security_agent.title"))
                 }
             }
@@ -1599,6 +1661,7 @@ private struct SafariEnableGuideSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("content_block_alert_cancel")) {
+                        HapticFeedback.selection()
                         isPresented = false
                     }
                     .foregroundColor(.secondaryGold)

@@ -1499,9 +1499,17 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         if let deepLink = userInfo["deepLink"] as? String,
            let url = URL(string: deepLink) {
             if url.host == "tariffs" || url.absoluteString.hasPrefix(Self.tariffsDeepLink) {
+                let renew = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                    .queryItems?
+                    .contains(where: { $0.name.lowercased() == "renew" && ($0.value == "1" || $0.value?.lowercased() == "true") }) == true
+                    || (userInfo["type"] as? String) == "site_subscription_expiry"
+                if renew {
+                    UserDefaults.standard.set(true, forKey: "pending_site_renew_hint_v1")
+                }
                 NotificationCenter.default.post(
                     name: NSNotification.Name("NavigateToTariffs"),
-                    object: nil
+                    object: nil,
+                    userInfo: renew ? ["renew": true] : nil
                 )
                 return
             }

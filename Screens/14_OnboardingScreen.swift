@@ -76,9 +76,9 @@ private struct OnboardingFigmaAnchor {
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
         case 0:
-            // OB_01: wordmark Figma `88:53` @ (17,271); title/desc без изменений
+            // OB_01: wordmark у верхнего неба / Сатурна (source 5456653420568715674).
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 17, y: 271, width: 360, height: 121),
+                wordmark: CGRect(x: 17, y: 32, width: 360, height: 121),
                 title: CGRect(x: 14, y: 450, width: 361, height: 60),
                 desc: CGRect(x: 22, y: 546, width: 346, height: 66),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
@@ -292,8 +292,8 @@ private struct OnboardingOB07LegalBlock: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(dataCollectionInfo)
-                .font(OnboardingOB07Style.infoFont)
-                .foregroundColor(.white.opacity(0.65))
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
@@ -328,26 +328,31 @@ private struct OnboardingOB07LegalBlock: View {
     }
 
     private func ob07ConsentRow(isOn: Binding<Bool>, label: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    isOn.wrappedValue.toggle()
-                }
-                HapticFeedback.selection()
-            }) {
-                Image(systemName: isOn.wrappedValue ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 20))
-                    .foregroundColor(isOn.wrappedValue ? .primaryBlue : .textSecondary)
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isOn.wrappedValue.toggle()
             }
+            HapticFeedback.selection()
+        }) {
+            HStack(alignment: .center, spacing: 8) {
+                Image(systemName: isOn.wrappedValue ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 28))
+                    .foregroundColor(isOn.wrappedValue ? .primaryBlue : .textSecondary)
+                    .frame(width: 44, height: 44)
 
-            Text(label)
-                .font(OnboardingOB07Style.consentFont)
-                .foregroundColor(.white.opacity(0.9))
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
+                Text(label)
+                    .font(OnboardingOB07Style.consentFont)
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isOn.wrappedValue ? .isSelected : [])
     }
 }
 
@@ -553,7 +558,8 @@ private enum OnboardingReadableLayout {
         UIScreen.main.bounds.width < 375 ? 22 : 24
     }
 
-    static let bodyFontSize: CGFloat = 16
+    /// Описание под кругом. 18 — чуть крупнее системных 17, чтобы строка читалась с расстояния.
+    static let bodyFontSize: CGFloat = 18
 }
 
 private struct OnboardingTextZoneConfig {
@@ -738,6 +744,10 @@ struct OnboardingScreen: View {
     @State private var currentPage: Int = 0
     /// Увеличивается при выборе языка — короткий графический «всплеск» (без новых строк локализации).
     @State private var languageSparkTick: Int = 0
+    /// Вибрация шагов 2 и 3 только после жеста человека, не при автопереходе на старте.
+    @State private var onboardingProgressHapticArmed = false
+    @State private var didPlaySecondStepHaptic = false
+    @State private var didPlayThirdStepHaptic = false
     @State private var showJoinFamily: Bool = false
     @State private var showRecovery: Bool = false
     @State private var showRecoveryOptions = false
@@ -749,6 +759,7 @@ struct OnboardingScreen: View {
     @State private var termsConsentAccepted: Bool = false
     @State private var showPrivacyPolicy: Bool = false
     @State private var showTermsOfService: Bool = false
+    @State private var showAppStoreRedeemHelp: Bool = false
 
     /// Выбранный на шаге 0 язык (кнопки шага 0 не зависят от `LocalizationManager.isReady`).
     @State private var selectedLanguageForOnboarding: LocalizationManager.Language = .russian
@@ -761,12 +772,14 @@ struct OnboardingScreen: View {
 
     @State private var pages: [OnboardingPage] = [
         OnboardingPage(
+            story: .family,
             icon: "🛡️",
             title: "Защита семьи",
             description: "Комплексная система защиты от киберугроз",
             color: Color.primaryBlue
         ),
         OnboardingPage(
+            story: .final,
             icon: "🦄",
             title: "ALADDIN",
             description: "Присоединяйтесь к системе безопасности",
@@ -776,25 +789,47 @@ struct OnboardingScreen: View {
     
     // @StateObject private var registrationVM = FamilyRegistrationViewModel()
     
+    /// Какая это страница. Круги смотрят сюда, а не на номер в ленте.
+    enum OnboardingStory {
+        case family
+        case agent
+        case parental
+        case analytics
+        case kids
+        case whereFamily
+        case check
+        case final
+    }
+
     struct OnboardingPage {
+        let story: OnboardingStory
         let icon: String
         let title: String
         let description: String
         let color: Color
     }
-    
-    // ⚠️ Контент онбординга (без шага 0 «Язык»): 8 полных (pay-pains O3) или 2 минимальных.
-    private static let EXPECTED_CONTENT_PAGES_COUNT = 8
+
+    /// `true`: в ленте 5 страниц истории. Агент, отдельный родительский контроль и аналитика остаются в коде, в показ не входят.
+    private static let useShortOnboarding = true
+    /// Эти три страницы пользователь не видит. Картинки и ключи не удалены.
+    private static let storiesHiddenFromOnboarding: Set<OnboardingStory> = [.agent, .parental, .analytics]
+    /// Контент без шага «Язык»: 5 в короткой ленте, 8 если `useShortOnboarding` выключен, либо 2 минимальных.
+    private static var EXPECTED_CONTENT_PAGES_COUNT: Int { useShortOnboarding ? 5 : 8 }
     private static let MINIMAL_CONTENT_PAGES_COUNT = 2
 
-    /// Вкладки TabView: 0 = язык, 1…N = контент (`N == pages.count`).
+    /// То, что реально листается. Три старых экрана отсекаются здесь ещё раз.
+    private var shownPages: [OnboardingPage] {
+        pages.filter { !Self.storiesHiddenFromOnboarding.contains($0.story) }
+    }
+
+    /// Вкладки TabView: 0 = язык, 1…N = контент.
     private var lastTabIndex: Int {
-        guard !pages.isEmpty else { return 0 }
-        return pages.count
+        guard !shownPages.isEmpty else { return 0 }
+        return shownPages.count
     }
 
     private var totalTabCount: Int {
-        pages.isEmpty ? 0 : pages.count + 1
+        shownPages.isEmpty ? 0 : shownPages.count + 1
     }
 
     // ✅ НОВОЕ: Fallback тексты на случай проблем с локализацией
@@ -819,9 +854,9 @@ struct OnboardingScreen: View {
         "onboarding_continue": "ПРОДОЛЖИТЬ",
         "onboarding_start": "НАЧАТЬ",
         "onboarding_have_code": "Код App Store",
-        "onboarding_have_code_hint": "Открывает экран кода App Store",
+        "onboarding_have_code_hint": "Пошагово: как активировать код в App Store",
         "onboarding_recover": "ВОССТАНОВИТЬ",
-        "onboarding_data_collection_info": "Мы собираем только обезличенные данные для обеспечения безопасности.",
+        "onboarding_data_collection_info": "Правовая информация!",
         "onboarding_privacy_policy_link": "Политика конфиденциальности",
         "onboarding_terms_of_service_link": "Пользовательское соглашение",
         "onboarding_data_consent": "Я согласен с обработкой данных",
@@ -850,10 +885,10 @@ struct OnboardingScreen: View {
         "onboarding_skip": "Skip",
         "onboarding_continue": "CONTINUE",
         "onboarding_start": "GET STARTED",
-        "onboarding_have_code": "Redeem App Store code",
-        "onboarding_have_code_hint": "Opens the App Store code screen",
+        "onboarding_have_code": "App Store code",
+        "onboarding_have_code_hint": "Step-by-step: how to redeem a code in the App Store",
         "onboarding_recover": "RECOVER",
-        "onboarding_data_collection_info": "We collect only anonymized data to ensure security.",
+        "onboarding_data_collection_info": "Legal information",
         "onboarding_privacy_policy_link": "Privacy Policy",
         "onboarding_terms_of_service_link": "Terms of Service",
         "onboarding_data_consent": "I agree to the Privacy Policy",
@@ -965,7 +1000,7 @@ struct OnboardingScreen: View {
                         // Тот же источник истины, что и LanguageSettingsScreen: `changeLanguage` пишет `appLanguage` + обновляет UI.
                         localizationManager.changeLanguage(to: lang)
                         loadPages()
-                        HapticFeedback.selection()
+                        HapticFeedback.impact(.medium)
                         languageSparkTick += 1
                     } label: {
                         HStack(spacing: Spacing.m) {
@@ -1034,6 +1069,21 @@ struct OnboardingScreen: View {
         applyStoredLanguageSkipIfNeeded()
     }
 
+    /// Язык — одна средняя вибрация в кнопке выбора. Второй экран слабее, третий ещё тише, дальше без этого ритма.
+    private func playFadingOnboardingHaptic(page: Int) {
+        guard onboardingProgressHapticArmed else { return }
+        switch page {
+        case 1 where !didPlaySecondStepHaptic:
+            didPlaySecondStepHaptic = true
+            HapticFeedback.impact(.light)
+        case 2 where !didPlayThirdStepHaptic:
+            didPlayThirdStepHaptic = true
+            HapticFeedback.impact(.soft)
+        default:
+            break
+        }
+    }
+
     private func clampCurrentPageIfNeeded() {
         guard !pages.isEmpty else {
             currentPage = 0
@@ -1071,62 +1121,73 @@ struct OnboardingScreen: View {
     // ✅ Создание полных страниц (только с MainActor — см. loadPages)
     @MainActor
     private func createFullPages() -> [OnboardingPage] {
-        [
-            // Страница 1: Защита всей семьи
+        let family = OnboardingPage(
+            story: .family,
+            icon: "🛡️",
+            title: safeLocalized("onboarding_page1_title"),
+            description: safeLocalized("onboarding_page1_desc"),
+            color: Color.primaryBlue
+        )
+        let rest = [
             OnboardingPage(
-                icon: "🛡️",
-                title: safeLocalized("onboarding_page1_title"),
-                description: safeLocalized("onboarding_page1_desc"),
-                color: Color.primaryBlue
-            ),
-            // Страница 2: Персональный агент безопасности + Многоуровневая защита
-            OnboardingPage(
-                icon: "🕵️",
-                title: safeLocalized("onboarding_page2_title"),
-                description: safeLocalized("onboarding_page2_desc"),
-                color: Color.successGreen
-            ),
-            // Страница 3: Родительский контроль
-            OnboardingPage(
-                icon: "👨‍👩‍👧",
-                title: safeLocalized("onboarding_page3_title"),
-                description: safeLocalized("onboarding_page3_desc"),
-                color: Color.orange
-            ),
-            // Страница 4: Аналитика
-            OnboardingPage(
-                icon: "📊",
-                title: safeLocalized("onboarding_page4_title"),
-                description: safeLocalized("onboarding_page4_desc"),
-                color: Color.red
-            ),
-            // Страница 5: Обучение детей безопасности + Академия памяти
-            OnboardingPage(
+                story: .kids,
                 icon: "🎮",
                 title: safeLocalized("onboarding_page5_title"),
                 description: onboardingPage5Description(),
                 color: Color.purple
             ),
-            // Страница 6 (O3): Где семья — между детьми и Antifake
             OnboardingPage(
+                story: .whereFamily,
                 icon: "📍",
                 title: safeLocalized("onboarding_page6_title"),
                 description: safeLocalized("onboarding_page6_desc"),
                 color: Color.cyan
             ),
-            // Страница 7 (O2): Antifake — расширенный список проверок
             OnboardingPage(
+                story: .check,
                 icon: "🧑",
                 title: safeLocalized("onboarding_page7_title"),
                 description: safeLocalized("onboarding_page7_desc"),
                 color: Color.blue
             ),
-            // Страница 8: Присоединяйтесь к ALADDIN AI
             OnboardingPage(
+                story: .final,
                 icon: "🦄",
                 title: safeLocalized("onboarding_page8_title"),
                 description: safeLocalized("onboarding_page8_desc"),
                 color: Color.green
+            ),
+        ]
+        let archived = archivedStoryPages()
+        if Self.useShortOnboarding {
+            return [family] + rest
+        }
+        return [family] + archived + rest
+    }
+
+    /// Агент, отдельный родительский контроль, аналитика. В короткую ленту не входят. Картинки и ключи не удалены.
+    private func archivedStoryPages() -> [OnboardingPage] {
+        [
+            OnboardingPage(
+                story: .agent,
+                icon: "🕵️",
+                title: safeLocalized("onboarding_page2_title"),
+                description: safeLocalized("onboarding_page2_desc"),
+                color: Color.successGreen
+            ),
+            OnboardingPage(
+                story: .parental,
+                icon: "👨‍👩‍👧",
+                title: safeLocalized("onboarding_page3_title"),
+                description: safeLocalized("onboarding_page3_desc"),
+                color: Color.orange
+            ),
+            OnboardingPage(
+                story: .analytics,
+                icon: "📊",
+                title: safeLocalized("onboarding_page4_title"),
+                description: safeLocalized("onboarding_page4_desc"),
+                color: Color.red
             ),
         ]
     }
@@ -1135,12 +1196,14 @@ struct OnboardingScreen: View {
     private func createMinimalPages() -> [OnboardingPage] {
         return [
             OnboardingPage(
+                story: .family,
                 icon: "🛡️",
                 title: "Защита семьи",
                 description: "Комплексная система защиты от киберугроз",
                 color: Color.primaryBlue
             ),
             OnboardingPage(
+                story: .final,
                 icon: "🦄",
                 title: "ALADDIN",
                 description: "Присоединяйтесь к системе безопасности",
@@ -1204,26 +1267,38 @@ struct OnboardingScreen: View {
         return .onboardingContent(pageIndex: max(0, currentPage - 1))
     }
 
+    /// Страницы, собранные как «Семья»: Шторм и два круга. Язык и ещё не собранные страницы остаются старыми.
+    private var isCircleStoryPage: Bool {
+        guard currentPage > 0, shownPages.indices.contains(currentPage - 1) else { return false }
+        return OnboardingCircleSpec.forStory(shownPages[currentPage - 1].story) != nil
+    }
+
     // MARK: - Body
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Фон экрана онбординга")
+            if isCircleStoryPage {
+                StormMeshBackground(variant: .family)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Фон экрана онбординга")
+            } else {
+                // Фон
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Фон экрана онбординга")
 
-            HeroAmbientLayerView(slot: currentHeroSlot)
-                .ignoresSafeArea()
-                // Removed .opacity(0.4) — it was making the new hero illustrations (OnboardingHero_00 etc.) almost invisible.
-                // The hero layer now renders at full opacity so the generated images are clearly visible.
-                .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
-                .accessibilityHidden(true)
+                HeroAmbientLayerView(slot: currentHeroSlot)
+                    .ignoresSafeArea()
+                    // Removed .opacity(0.4) — it was making the new hero illustrations (OnboardingHero_00 etc.) almost invisible.
+                    // The hero layer now renders at full opacity so the generated images are clearly visible.
+                    .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
+                    .accessibilityHidden(true)
 
-            // Все контент-вкладки (язык=0 … финал=8 при 8 страницах)
-            HeroBottomReadableGradient(strong: currentPage <= lastTabIndex)
-                .ignoresSafeArea()
+                // Все контент-вкладки (язык=0 … финал=8 при 8 страницах)
+                HeroBottomReadableGradient(strong: currentPage <= lastTabIndex)
+                    .ignoresSafeArea()
+            }
 
             // ✅ ВАРИАНТ 1: Показываем онбординг сразу, без проверки готовности локализации
             // (как в рабочем бэкапе - локализация загрузится позже и обновит тексты)
@@ -1242,9 +1317,13 @@ struct OnboardingScreen: View {
             #endif
             AnalyticsManager.shared.trackOnboardingStep(currentPage, action: "view")
             print("✅ OnboardingScreen: Pages loaded (minimal or full depending on localization)")
+            DispatchQueue.main.async {
+                onboardingProgressHapticArmed = true
+            }
         }
         .onChange(of: currentPage) { newPage in
             AnalyticsManager.shared.trackOnboardingStep(newPage, action: "view")
+            playFadingOnboardingHaptic(page: newPage)
         }
         .onChange(of: localizationManager.currentLanguage) { newLang in
             if LocalizationManager.Language.userSelectableLanguages.contains(newLang) {
@@ -1316,6 +1395,11 @@ struct OnboardingScreen: View {
             TermsOfServiceScreen()
                 .aladdinSheetPresentation()
         }
+        .sheet(isPresented: $showAppStoreRedeemHelp) {
+            AppStoreRedeemCodeHelpSheet()
+                .environmentObject(localizationManager)
+                .aladdinSheetPresentation()
+        }
     }
 
     // ✅ Основной контент онбординга
@@ -1323,7 +1407,14 @@ struct OnboardingScreen: View {
         VStack(spacing: 0) {
             // «Пропустить» только до финального шага: ведёт к экрану с 2 обязательными согласиями. На последнем шаге скрыта — иначе обход без галочек.
             // Шаг 0 (язык) пропускать нельзя — без явного «Продолжить» и записи языка.
-            if currentPage > 0 && !isFinalOnboardingPage {
+            if isFinalOnboardingPage {
+                HStack {
+                    OnboardingLogoV2View(fixedHeight: 36, expandsToContainerWidth: false)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, Spacing.m)
+                .padding(.top, Spacing.s)
+            } else if currentPage > 0 {
                 HStack {
                     Spacer()
 
@@ -1347,7 +1438,7 @@ struct OnboardingScreen: View {
             }
 
             // Контент страниц
-            if pages.isEmpty {
+            if shownPages.isEmpty {
                 ProgressView()
                     .progressViewStyle(.circular)
                     .tint(.white)
@@ -1357,7 +1448,7 @@ struct OnboardingScreen: View {
                     languageStepView()
                         .tag(0)
 
-                    ForEach(Array(pages.enumerated()), id: \.offset) { contentIndex, page in
+                    ForEach(Array(shownPages.enumerated()), id: \.offset) { contentIndex, page in
                         let tabIndex = contentIndex + 1
                         onboardingPage(
                             page,
@@ -1376,7 +1467,7 @@ struct OnboardingScreen: View {
             }
 
             // Индикаторы страниц
-            if !pages.isEmpty {
+            if !shownPages.isEmpty {
                 HStack(spacing: Spacing.sm) {
                     ForEach(0..<totalTabCount, id: \.self) { index in
                         Circle()
@@ -1510,11 +1601,11 @@ struct OnboardingScreen: View {
                     // Дополнительные кнопки на последнем слайде
                     if isFinalOnboardingPage {
                         HStack(spacing: Spacing.m) {
-                            // App Store Offer Code — official redeem sheet only (not ALADDIN promo).
+                            // Friend promo codes from ASC → App Store “Activate / Redeem code” (not in-app offer sheet).
                             Button(action: {
                                 let impactFeedback = UIImpactFeedbackGenerator(style: .light)
                                 impactFeedback.impactOccurred()
-                                StoreManager().presentAppStoreOfferCodeRedemption()
+                                showAppStoreRedeemHelp = true
                             }) {
                                 Text(safeLocalized("onboarding_have_code"))
                                     .font(.caption)
@@ -1577,30 +1668,135 @@ struct OnboardingScreen: View {
 
 
     // MARK: - Onboarding Page
-    
-    private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex: Int, isActiveTab _: Bool) -> some View {
-        Group {
-            if let figmaAnchor = OnboardingFigmaAnchor.forContentIndex(contentIndex) {
-                OnboardingFigmaAnchoredContent(
-                    title: page.title,
-                    description: page.description,
-                    anchor: figmaAnchor
+
+    /// Два круга одной и той же сборки. Маленький круг сдвинут так, чтобы не закрывать головы и тело.
+    private struct OnboardingCircleSpec {
+        let bigImage: String
+        let bigZoom: CGFloat
+        let smallImage: String
+        let smallZoom: CGFloat
+        let smallOffset: CGSize
+
+        static func forStory(_ story: OnboardingStory) -> OnboardingCircleSpec? {
+            switch story {
+            case .family:
+                // Семья. Джинн на заборе справа снизу.
+                return OnboardingCircleSpec(
+                    bigImage: "OnboardingCircle_Family",
+                    bigZoom: 1.08,
+                    smallImage: "OnboardingCircle_FamilyGenie",
+                    smallZoom: 1,
+                    smallOffset: CGSize(width: 96, height: 122)
                 )
-            } else if let zoneConfig = OnboardingTextZoneConfig.forContentIndex(contentIndex) {
-                VStack(spacing: 0) {
-                    Spacer(minLength: 0)
-                    OnboardingBottomTextPanel(
-                        title: page.title,
-                        description: page.description,
-                        config: zoneConfig
-                    )
-                    .padding(.bottom, OnboardingReadableLayout.chromeBottomReserve)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                EmptyView()
+            case .kids:
+                // Дети. Телефон слева снизу: лицо девочки и лампа справа свободны.
+                return OnboardingCircleSpec(
+                    bigImage: "OnboardingCircle_Kids",
+                    bigZoom: 1.18,
+                    smallImage: "OnboardingCircle_KidsPhone",
+                    smallZoom: 1,
+                    smallOffset: CGSize(width: -96, height: 122)
+                )
+            case .whereFamily:
+                // Где семья. Шар на небе справа сверху: головы мамы и мальчика свободны.
+                return OnboardingCircleSpec(
+                    bigImage: "OnboardingCircle_Where",
+                    bigZoom: 1,
+                    smallImage: "OnboardingCircle_WhereGlobe",
+                    smallZoom: 1.08,
+                    smallOffset: CGSize(width: 130, height: -78)
+                )
+            case .check:
+                // Проверка. Щит на столе снизу слева: лицо, руки и телефон свободны.
+                return OnboardingCircleSpec(
+                    bigImage: "OnboardingCircle_Check",
+                    bigZoom: 1.28,
+                    smallImage: "OnboardingCircle_CheckShield",
+                    smallZoom: 1.12,
+                    smallOffset: CGSize(width: -36, height: 140)
+                )
+            case .final:
+                // Финал. Джинн на ободе справа, около двух часов: макушка не срезается, лица и щит свободны.
+                return OnboardingCircleSpec(
+                    bigImage: "OnboardingCircle_Final",
+                    bigZoom: 1.14,
+                    smallImage: "OnboardingCircle_FinalGenie",
+                    smallZoom: 1.06,
+                    smallOffset: CGSize(width: 124, height: -70)
+                )
+            case .agent, .parental, .analytics:
+                return nil
             }
         }
+    }
+
+    /// Картинка в круге, матовый ободок, тонкое золото снаружи. Стекло не затирает лица.
+    /// `contentZoom` больше 1 прячет белый холст генератора, если он попал внутрь круга.
+    private func onboardingGlassCircle(imageName: String, outer: CGFloat, contentZoom: CGFloat = 1) -> some View {
+        let picture = outer - 16
+        let gold = accessibilityReduceMotion ? Color.white.opacity(0.55) : Color.secondaryGold
+        let goldWidth: CGFloat = accessibilityReduceMotion ? 1 : 1.5
+        return ZStack {
+            Circle()
+                .fill(.ultraThinMaterial)
+            Circle()
+                .fill(Color.white.opacity(0.10))
+            Image(imageName)
+                .resizable()
+                .scaledToFill()
+                .frame(width: picture, height: picture)
+                .scaleEffect(contentZoom)
+                .clipShape(Circle())
+            Circle()
+                .stroke(Color.white.opacity(0.28), lineWidth: 1.5)
+            Circle()
+                .stroke(gold, lineWidth: goldWidth)
+        }
+        .frame(width: outer, height: outer)
+        .shadow(color: Color.black.opacity(0.28), radius: 8, x: 0, y: 4)
+        .accessibilityHidden(true)
+    }
+
+    private func storyCircles(_ spec: OnboardingCircleSpec) -> some View {
+        ZStack {
+            onboardingGlassCircle(imageName: spec.bigImage, outer: 270, contentZoom: spec.bigZoom)
+            onboardingGlassCircle(imageName: spec.smallImage, outer: 96, contentZoom: spec.smallZoom)
+                .offset(x: spec.smallOffset.width, y: spec.smallOffset.height)
+        }
+        .frame(width: 270, height: 270)
+        .padding(.top, Spacing.m)
+        .padding(.bottom, 36)
+    }
+
+    /// Одна и та же нижняя колонка на каждой странице истории, сразу над точками.
+    private func onboardingStoryText(title: String, description: String) -> some View {
+        VStack(spacing: Spacing.s) {
+            Text(title)
+                .font(.system(size: OnboardingReadableLayout.titleFontSize, weight: .bold, design: .serif))
+                .foregroundColor(Color.textPrimary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(description)
+                .font(.system(size: OnboardingReadableLayout.bodyFontSize, weight: .regular))
+                .foregroundColor(Color.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, Spacing.screenPadding)
+        .padding(.bottom, Spacing.s)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex _: Int, isActiveTab _: Bool) -> some View {
+        VStack(spacing: 0) {
+            if let spec = OnboardingCircleSpec.forStory(page.story) {
+                Spacer(minLength: Spacing.s)
+                storyCircles(spec)
+            }
+            Spacer(minLength: 0)
+            onboardingStoryText(title: page.title, description: page.description)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Страница онбординга: \(page.title)")
     }

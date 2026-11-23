@@ -73,12 +73,17 @@ struct FunctionCard: View {
                 VStack(spacing: 4) {
                     Text(title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
+                        .foregroundColor(.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
                 
                 // Индикатор статуса
@@ -94,24 +99,8 @@ struct FunctionCard: View {
             .frame(maxWidth: .infinity)
             .frame(height: 120)
             .padding(16)
-            .background(
-                // Градиент как в HTML
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .overlay(
-                    // Glassmorphism эффект
-                    Color.white.opacity(0.05)
-                )
-            )
+            .background(Color.backgroundMedium)
             .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-            .cardShadow()
         }
         .buttonStyle(PlainButtonStyle())
     }

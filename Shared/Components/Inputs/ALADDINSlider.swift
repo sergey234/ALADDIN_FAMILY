@@ -53,9 +53,12 @@ struct ALADDINSlider: View {
                 // Текст
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     HStack {
-                        Text(title)
-                            .font(.body)
-                            .foregroundColor(.textPrimary)
+                    Text(title)
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                         
                         Spacer()
                         
@@ -63,7 +66,7 @@ struct ALADDINSlider: View {
                         if showValue {
                             Text("\(Int(value))\(unit)")
                                 .font(.bodyBold)
-                                .foregroundColor(.primaryBlue)
+                                .foregroundColor(.secondaryGold)
                         }
                     }
                     
@@ -85,13 +88,7 @@ struct ALADDINSlider: View {
                     
                     // Активная часть
                     RoundedRectangle(cornerRadius: CornerRadius.small)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.primaryBlue, Color.secondaryBlue],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .fill(Color.secondaryGold)
                         .frame(
                             width: progressWidth(in: geometry.size.width),
                             height: Size.sliderTrackHeight
@@ -104,7 +101,7 @@ struct ALADDINSlider: View {
                         .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
                         .overlay(
                             Circle()
-                                .stroke(Color.primaryBlue, lineWidth: 2)
+                                .stroke(Color.secondaryGold, lineWidth: 2)
                         )
                         .offset(x: progressWidth(in: geometry.size.width) - Size.sliderKnob / 2)
                         .gesture(

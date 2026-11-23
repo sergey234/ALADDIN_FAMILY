@@ -434,6 +434,7 @@ private struct DeviceHubIoTPanel: View {
                     }
                     Spacer()
                     Button {
+                        HapticFeedback.impact(.light)
                         Task { await viewModel.fixThreat(threat.id) }
                     } label: {
                         if viewModel.fixingThreatId == threat.id {

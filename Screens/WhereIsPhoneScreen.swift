@@ -309,7 +309,7 @@ struct WhereIsPhoneScreen: View {
             if hubTab == .location {
                 locationLife360Canvas
             } else {
-                AladdinSnowballPalette.canvasGradient
+                StormMeshBackground(variant: .shield)
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
@@ -788,8 +788,10 @@ struct WhereIsPhoneScreen: View {
             Text(localizationManager.localized(hubTab.titleKey))
                 .font(AladdinFamilyType.title2())
                 .foregroundColor(.textPrimary)
-
-            Spacer()
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .allowsTightening(true)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
 
             Button {
                 HapticFeedback.selection()
@@ -1326,7 +1328,10 @@ struct WhereIsPhoneScreen: View {
                     showNavigatorOfferBanner = false
                 } label: {
                     Text(localizationManager.localized("map_clear_route"))
-                        .font(.caption2.weight(.bold))
+                        .font(.caption.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                         .foregroundColor(.backgroundDark)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -1345,7 +1350,10 @@ struct WhereIsPhoneScreen: View {
                     queueHubSheet(.routes)
                 } label: {
                     Text(localizationManager.localized("map_routes_open_navigator"))
-                        .font(.caption2.weight(.bold))
+                        .font(.caption.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                         .foregroundColor(.backgroundDark)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -1365,7 +1373,10 @@ struct WhereIsPhoneScreen: View {
                         Int(liveLocation.accuracyMeters.rounded())
                     )
                 )
-                .font(.caption2.weight(.bold))
+                .font(.caption.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 .foregroundColor(.backgroundDark)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -1379,7 +1390,10 @@ struct WhereIsPhoneScreen: View {
                let at = liveLocation.updatedAt ?? mapPointAt,
                Date().timeIntervalSince(at) > 5 * 60 {
                 Text(localizationManager.localized("where_phone_accuracy_stale_hint"))
-                    .font(.caption2.weight(.bold))
+                    .font(.caption.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     .foregroundColor(.backgroundDark)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
@@ -1392,6 +1406,9 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized("map_live_no_signal"))
                     .font(.caption.weight(.bold))
                     .foregroundColor(.backgroundDark)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(Color.secondaryGold.opacity(0.9))
@@ -1402,6 +1419,9 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized("map_quiet_active_badge"))
                     .font(.caption.weight(.bold))
                     .foregroundColor(.backgroundDark)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(Color.secondaryGold.opacity(0.9))
@@ -1418,6 +1438,9 @@ struct WhereIsPhoneScreen: View {
                 )
                 .font(.caption.weight(.bold))
                 .foregroundColor(.backgroundDark)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .allowsTightening(true)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(Color.secondaryGold.opacity(0.92))
@@ -1523,7 +1546,10 @@ struct WhereIsPhoneScreen: View {
                         }
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.caption2.weight(.bold))
+                            .font(.caption.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                             .foregroundColor(.white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
@@ -1608,8 +1634,10 @@ struct WhereIsPhoneScreen: View {
                             Image(systemName: chip.systemImage)
                                 .font(.system(size: 16, weight: .semibold))
                             Text(localizationManager.localized(chip.titleKey))
-                                .font(.caption2.weight(.semibold))
+                                .font(.caption.weight(.semibold))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                         }
                         .foregroundColor(activeChip == chip ? Color.backgroundDark : Color.textSecondary)
                         .padding(.horizontal, Spacing.m)
@@ -1658,6 +1686,10 @@ struct WhereIsPhoneScreen: View {
             Text(localizationManager.localized("where_phone_family_hero_title"))
                 .font(AladdinFamilyType.title3())
                 .foregroundColor(.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .allowsTightening(true)
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(localizationManager.localized("where_phone_family_hero_body"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
@@ -1674,15 +1706,21 @@ struct WhereIsPhoneScreen: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             HStack {
                 Text(localizationManager.localized("family_groups_map_filter"))
-                    .font(.caption.weight(.bold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(.textSecondary)
-                Spacer()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                 Button {
                     queueHubSheet(.familyGroups)
                 } label: {
                     Text(localizationManager.localized("family_groups_title"))
-                        .font(.caption.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundColor(.secondaryGold)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("where_phone_open_groups")
@@ -1724,8 +1762,11 @@ struct WhereIsPhoneScreen: View {
     private func groupFilterChip(title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.caption.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundColor(selected ? .backgroundDark : .secondaryGold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .allowsTightening(true)
                 .padding(.horizontal, Spacing.m)
                 .padding(.vertical, Spacing.s)
                 .background(selected ? Color.secondaryGold : Color.clear)
@@ -1754,13 +1795,19 @@ struct WhereIsPhoneScreen: View {
                                     Text(pet.name)
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundColor(.textPrimary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.55)
+                                        .allowsTightening(true)
                                     if !pet.breed.isEmpty {
                                         Text(pet.breed)
-                                            .font(.caption)
+                                            .font(.subheadline)
                                             .foregroundColor(.textSecondary)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.55)
+                                            .allowsTightening(true)
                                     }
                                 }
-                                Spacer(minLength: 0)
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                                 Button {
                                     HapticFeedback.impact(.light)
                                     savedPets = FamilyPetProfileStore.remove(id: pet.id)
@@ -1863,6 +1910,10 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized("where_phone_places_title"))
                     .font(AladdinFamilyType.title3())
                     .foregroundColor(.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Text(localizationManager.localized("where_phone_places_empty"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
@@ -1908,17 +1959,22 @@ struct WhereIsPhoneScreen: View {
                             .foregroundColor(.secondaryGold)
                         // C1: no Life360 «В » / «At » prefix on stay titles.
                         Text(Self.streetTitleWithoutAtPrefix(name))
-                            .font(.caption.weight(.semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundColor(.textPrimary)
-                        Spacer(minLength: 0)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.55)
+                            .allowsTightening(true)
+                            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                         Button {
                             HapticFeedback.selection()
                             queueHubSheet(.places(preferredNameKey: nil))
                         } label: {
                             Text(localizationManager.localized("map_member_save_place"))
-                                .font(.caption2.weight(.bold))
+                                .font(.subheadline.weight(.bold))
                                 .foregroundColor(.secondaryGold)
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                         }
                         .buttonStyle(.plain)
                     }
@@ -2120,6 +2176,10 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized(titleKey))
                     .font(AladdinFamilyType.title3())
                     .foregroundColor(.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             }
             Text(localizationManager.localized(bodyKey))
                 .font(AladdinFamilyType.subheadline())
@@ -4185,9 +4245,10 @@ struct WhereIsPhoneScreen: View {
                                 .font(.system(size: 18, weight: .semibold))
                         }
                         Text(localizationManager.localized(tab.titleKey))
-                            .font(AladdinFamilyType.caption(weight: .semibold))
+                            .font(AladdinFamilyType.subheadline(weight: .semibold))
                             .lineLimit(1)
-                            .minimumScaleFactor(0.75)
+                            .minimumScaleFactor(0.55)
+                            .allowsTightening(true)
                     }
                     // Calm Navy tab: gold active, near-white inactive (readable on dark bar).
                     .foregroundColor(hubTab == tab ? Color.secondaryGold : Color.white.opacity(0.92))
@@ -4526,6 +4587,10 @@ struct WhereIsPhoneScreen: View {
                 Text(localizationManager.localized(titleKey))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .allowsTightening(true)
+                    .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             }
             content()
         }
@@ -4542,6 +4607,9 @@ struct WhereIsPhoneScreen: View {
             Text(localizationManager.localized(key))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.backgroundDark)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .allowsTightening(true)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(Color.secondaryGold)

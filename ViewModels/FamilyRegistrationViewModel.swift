@@ -680,7 +680,7 @@ class FamilyRegistrationViewModel: ObservableObject {
         logger.business("Role (server): \(role.serverValue)")  // ✅ ИСПРАВЛЕНО: Логируем serverValue
         logger.business("Age group (client): \(ageGroup.rawValue)")
         logger.business("Age group (server): \(ageGroup.serverValue)")
-        logger.business("Personal letter length: \(letter.count) characters")
+        logger.business("Display name length: \(displayName.count) characters")
 
         // ✅ УДАЛЕНО: Моковые данные - теперь используем реальный API
 

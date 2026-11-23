@@ -70,32 +70,30 @@ struct StatusCard: View {
                 // Иконка
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.blue.opacity(0.3), Color.blue.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.black.opacity(0.35))
                         .frame(width: 56, height: 56)
                     
                     Image(systemName: icon)
                         .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(.orange)
+                        .foregroundColor(.secondaryGold)
                 }
                 
-                // Текст
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                     
                     Text(value)
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .allowsTightening(true)
                 }
-                
-                Spacer()
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
                 
                 // Индикатор статуса
                 VStack(spacing: 4) {
@@ -108,16 +106,8 @@ struct StatusCard: View {
                 }
             }
             .padding(16)
-            .background(
-                // Градиент фона как в HTML
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+            .background(Color.backgroundMedium)
             .cornerRadius(16)
-            .cardShadow()
         }
         .buttonStyle(PlainButtonStyle())
         .disabled(action == nil)

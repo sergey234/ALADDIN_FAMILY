@@ -92,15 +92,7 @@ struct FamilyParentalControlCard: View {
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(
-                                    LinearGradient(
-                                        colors: isEnabled ?
-                                            [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
-                                            [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(isEnabled ? Color.secondaryGold : Color.backgroundMedium)
                                 .frame(width: 40, height: 24)
                             
                             Circle()
@@ -173,15 +165,7 @@ struct FamilyContentBlockItem: View {
             }) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 15)
-                        .fill(
-                            LinearGradient(
-                                colors: isEnabled ?
-                                    [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
-                                    [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(isEnabled ? Color.secondaryGold : Color.backgroundMedium)
                         .frame(width: 50, height: 30)
                     
                     Circle()
@@ -1512,7 +1496,7 @@ struct RewardsModal: View {
         VStack(spacing: 20) {
             Text(localizationManager.localized("family_rewards_modal_title"))
                 .font(.title2)
-                .foregroundColor(Color(red: 0.75, green: 0.52, blue: 0.99))
+                .foregroundColor(Color.secondaryGold)
             
             Text(localizationManager.localized("family_unicorn_balance_format", 245))
                 .foregroundColor(.gray)

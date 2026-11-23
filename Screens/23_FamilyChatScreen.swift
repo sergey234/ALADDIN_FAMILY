@@ -194,6 +194,7 @@ struct FamilyChatScreen: View {
                 if showE2EETimeoutActions {
                     HStack(spacing: 12) {
                         Button(localizationManager.localized("common_retry")) {
+                            HapticFeedback.impact(.light)
                             guard let fid = getFamilyId(), !fid.isEmpty else { return }
                             e2eeSetupStartedAt = Date()
                             allowComposerWithoutE2EE = false
@@ -204,6 +205,7 @@ struct FamilyChatScreen: View {
                         .accessibilityIdentifier("family_chat_e2ee_retry")
 
                         Button(localizationManager.localized("family_chat_e2ee_write_without")) {
+                            HapticFeedback.selection()
                             allowComposerWithoutE2EE = true
                         }
                         .font(.caption.weight(.semibold))
@@ -213,6 +215,7 @@ struct FamilyChatScreen: View {
                 }
                 if let err = e2eeManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines), !err.isEmpty {
                     Button(localizationManager.localized("family_chat_e2ee_recreate")) {
+                        HapticFeedback.impact(.medium)
                         guard let fid = getFamilyId(), !fid.isEmpty else { return }
                         Task { await e2eeManager.recreateChatProtection(familyId: fid) }
                     }
@@ -255,6 +258,7 @@ struct FamilyChatScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
             Button(localizationManager.localized("family_chat_reconnect")) {
+                HapticFeedback.impact(.light)
                 webSocket?.reconnectNow()
             }
             .font(.caption.weight(.semibold))
@@ -535,7 +539,9 @@ struct FamilyChatScreen: View {
                         filteredMessages = messages
                     }
                 }
-                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                    HapticFeedback.selection()
+                }
             }
             .confirmationDialog(
                 localizationManager.localized("family_chat_action_choose_reaction"),
@@ -543,10 +549,13 @@ struct FamilyChatScreen: View {
             ) {
                 ForEach(["👍", "❤️", "🔥", "😂", "👏", "🙏", "😮", "🎉"], id: \.self) { emoji in
                     Button(emoji) {
+                        HapticFeedback.selection()
                         applyQuickReactionFromMenu(emoji: emoji)
                     }
                 }
-                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                    HapticFeedback.selection()
+                }
             }
             .fileImporter(
                 isPresented: $showFileImporter,
@@ -635,6 +644,7 @@ struct FamilyChatScreen: View {
                 ),
                 actions: {
                     Button(localizationManager.localized("family_chat_error_ok")) {
+                        HapticFeedback.selection()
                         chatErrorMessage = nil
                     }
                 },
@@ -648,26 +658,32 @@ struct FamilyChatScreen: View {
                 titleVisibility: .visible
             ) {
                 Button(localizationManager.localized("family_chat_report_spam")) {
+                    HapticFeedback.selection()
                     reportMessage(category: .spam)
                 }
                 .accessibilityIdentifier("family_chat_report_reason_spam")
                 Button(localizationManager.localized("family_chat_report_harassment")) {
+                    HapticFeedback.selection()
                     reportMessage(category: .harassment)
                 }
                 .accessibilityIdentifier("family_chat_report_reason_harassment")
                 Button(localizationManager.localized("family_chat_report_inappropriate")) {
+                    HapticFeedback.selection()
                     reportMessage(category: .inappropriate)
                 }
                 .accessibilityIdentifier("family_chat_report_reason_inappropriate")
                 Button(localizationManager.localized("family_chat_report_threat")) {
+                    HapticFeedback.selection()
                     reportMessage(category: .threat)
                 }
                 .accessibilityIdentifier("family_chat_report_reason_threat")
                 Button(localizationManager.localized("family_chat_report_other")) {
+                    HapticFeedback.selection()
                     reportMessage(category: .other)
                 }
                 .accessibilityIdentifier("family_chat_report_reason_other")
                 Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                    HapticFeedback.selection()
                     moderationTargetMessage = nil
                 }
             } message: {
@@ -679,9 +695,11 @@ struct FamilyChatScreen: View {
                 titleVisibility: .visible
             ) {
                 Button(localizationManager.localized("family_chat_restrict_sender"), role: .destructive) {
+                    HapticFeedback.notification(.warning)
                     restrictMessageSender()
                 }
                 Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                    HapticFeedback.selection()
                     moderationTargetMessage = nil
                 }
             } message: {

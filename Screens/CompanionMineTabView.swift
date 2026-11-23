@@ -83,6 +83,7 @@ struct CompanionMineTabView: View {
                         .foregroundColor(.white)
                     ForEach(threads) { thread in
                         Button {
+                            HapticFeedback.selection()
                             selectedCharacterId = thread.characterId
                             activeThreadId = thread.threadId
                             onOpenConversation()
@@ -94,6 +95,7 @@ struct CompanionMineTabView: View {
                 }
 
                 Button {
+                    HapticFeedback.selection()
                     showLegal = true
                 } label: {
                     Label(localizationManager.localized("companion_mine_rules"), systemImage: "doc.text")
@@ -122,9 +124,11 @@ struct CompanionMineTabView: View {
         .alert(localizationManager.localized("companion_mine_workspace_new_title"), isPresented: $showCreateWorkspace) {
             TextField(localizationManager.localized("companion_mine_workspace_new_title"), text: $newWorkspaceTitle)
             Button(localizationManager.localized("companion_mine_workspace_cancel"), role: .cancel) {
+                HapticFeedback.selection()
                 newWorkspaceTitle = ""
             }
             Button(localizationManager.localized("companion_mine_workspace_create_action")) {
+                HapticFeedback.impact(.light)
                 Task { await createWorkspace() }
             }
         }
@@ -246,6 +250,7 @@ struct CompanionMineTabView: View {
                     .font(.title3.bold())
                 Spacer()
                 Button {
+                    HapticFeedback.selection()
                     showCreateWorkspace = true
                 } label: {
                     Text(localizationManager.localized("companion_mine_workspace_create"))
@@ -261,6 +266,7 @@ struct CompanionMineTabView: View {
             } else {
                 ForEach(workspaces) { workspace in
                     Button {
+                        HapticFeedback.selection()
                         selectWorkspace(workspace)
                     } label: {
                         HStack {

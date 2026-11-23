@@ -249,38 +249,47 @@ struct AntifakeHubScreen: View {
     }
 
     private var tabPicker: some View {
-        HStack(spacing: Spacing.xs) {
-            ForEach(AntifakeHubTab.allCases) { tab in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selectedTab = tab
-                    }
-                    HapticFeedback.selection()
-                } label: {
-                    VStack(spacing: 4) {
-                        AliveGlyph(id: tab.aliveIcon, size: 28) {
-                            Image(systemName: tab.iconName)
-                                .font(.body.weight(.semibold))
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.s) {
+                ForEach(AntifakeHubTab.allCases) { tab in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedTab = tab
                         }
-                        Text(localizationManager.localized(tab.titleKey))
-                            .font(.caption2.weight(.medium))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                        HapticFeedback.selection()
+                    } label: {
+                        antifakeChipFace(tab: tab, selected: selectedTab == tab)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.s)
-                    .foregroundColor(selectedTab == tab ? .white : .white.opacity(0.65))
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(selectedTab == tab ? Color.secondaryGold.opacity(0.35) : Color.white.opacity(0.08))
-                    )
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("antifake_hub_tab_\(tab.rawValue)")
+                    .accessibilityLabel(localizationManager.localized(tab.titleKey))
+                    .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("antifake_hub_tab_\(tab.rawValue)")
-                .accessibilityLabel(localizationManager.localized(tab.titleKey))
-                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
+            .padding(.horizontal, Spacing.m)
         }
+        .accessibilityIdentifier("antifake_hub_tab_strip")
+    }
+
+    private func antifakeChipFace(tab: AntifakeHubTab, selected: Bool) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: tab.iconName)
+                .font(.system(size: 16, weight: .semibold))
+            Text(localizationManager.localized(tab.titleKey))
+                .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+        }
+        .foregroundColor(selected ? Color.backgroundDark : Color.textSecondary)
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.s)
+        .background(
+            Capsule()
+                .fill(selected ? Color.secondaryGold : Color.backgroundMedium.opacity(0.55))
+        )
+        .overlay(
+            Capsule()
+                .stroke(Color.secondaryGold.opacity(selected ? 0 : 0.35), lineWidth: 1)
+        )
     }
 
     @ViewBuilder
@@ -381,26 +390,15 @@ struct AntifakeHubScreen: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.white.opacity(0.75))
                 .accessibilityAddTraits(.isHeader)
-            HStack(spacing: Spacing.xs) {
-                ForEach(AntifakeHubTab.allCases) { tab in
-                    VStack(spacing: 4) {
-                        AliveGlyph(id: tab.aliveIcon, size: 28) {
-                            Image(systemName: tab.iconName)
-                        }
-                        Text(localizationManager.localized(tab.titleKey))
-                            .font(.caption2)
-                            .lineLimit(1)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.s) {
+                    ForEach(AntifakeHubTab.allCases) { tab in
+                        antifakeChipFace(tab: tab, selected: false)
+                            .accessibilityLabel(localizationManager.localized(tab.titleKey))
+                            .accessibilityHint(localizationManager.localized("antifake_premium_locked_tab_hint"))
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.s)
-                    .foregroundColor(.white.opacity(0.35))
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                    )
-                    .accessibilityLabel(localizationManager.localized(tab.titleKey))
-                    .accessibilityHint(localizationManager.localized("antifake_premium_locked_tab_hint"))
                 }
+                .padding(.horizontal, Spacing.m)
             }
         }
         .padding(Spacing.m)
@@ -437,17 +435,6 @@ enum AntifakeHubTab: String, CaseIterable, Identifiable {
         case .audio: return "waveform"
         case .video: return "video.fill"
         case .call: return "phone.fill"
-        }
-    }
-
-    /// Wave C Variant A — soft-clay AliveGlyph (Classic = `iconName`).
-    var aliveIcon: AliveIconID {
-        switch self {
-        case .text: return .afText
-        case .document: return .afDoc
-        case .audio: return .afAudio
-        case .video: return .afVideo
-        case .call: return .afCall
         }
     }
 }

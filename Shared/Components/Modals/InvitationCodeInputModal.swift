@@ -42,50 +42,63 @@ struct InvitationCodeInputModal: View {
 
     var body: some View {
         NavigationView {
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.04, green: 0.06, blue: 0.12),
-                        Color(red: 0.08, green: 0.12, blue: 0.22)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-
-                ScrollView {
-                    VStack(spacing: 20) {
-                        headerBlock
-                        codeBlock
-                        profileBlock
-                        joinButton
-                        if autoBindState != .idle {
-                            autoBindStatusCard
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 28)
-                }
-            }
-            .navigationTitle(localizationManager.localized("invitation_join_navigation_title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("common_cancel")) {
+            scrollContent
+                .background(joinBackground.ignoresSafeArea())
+                .navigationTitle(localizationManager.localized("invitation_join_navigation_title"))
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(
+                    leading: Button(localizationManager.localized("common_cancel")) {
                         dismissInvitationFlow()
                     }
                     .foregroundColor(.white)
-                }
-            }
-            .toolbarBackground(Color(red: 0.04, green: 0.06, blue: 0.12), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+                )
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .compatibleToolbarColorScheme(.dark, forNavigationBar: true)
         .onAppear {
             seedInviteFromNavigationOrInitial()
             preflightInviteIfPossible()
         }
+    }
+
+    private var joinBackground: some View {
+        LinearGradient(
+            colors: [
+                Color(red: 0.04, green: 0.06, blue: 0.12),
+                Color(red: 0.08, green: 0.12, blue: 0.22)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var scrollContent: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                headerBlock
+                codeBlock
+                profileBlock
+                joinButton
+                if autoBindState != .idle {
+                    autoBindStatusCard
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 28)
+        }
+    }
+
+    private var codeFieldBorderColor: Color {
+        if code.isEmpty {
+            return Color.white.opacity(0.15)
+        }
+        return isInviteCodeValid ? Color.green : Color.red.opacity(0.85)
+    }
+
+    /// Accepts FAM-XXXX display codes and QR JSON payloads already parsed into `code`.
+    private var isInviteCodeValid: Bool {
+        if code.isValidRecoveryCode { return true }
+        return FamilyInviteCodeParser.parse(rawInvitePayload ?? code) != nil
     }
 
     private var headerBlock: some View {
@@ -140,12 +153,7 @@ struct InvitationCodeInputModal: View {
                         .fill(fieldBg)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(
-                                    code.isEmpty
-                                        ? Color.white.opacity(0.15)
-                                        : (code.isValidRecoveryCode ? Color.green : Color.red.opacity(0.85)),
-                                    lineWidth: 2
-                                )
+                                .stroke(codeFieldBorderColor, lineWidth: 2)
                         )
                 )
                 .autocapitalization(.allCharacters)
@@ -179,7 +187,7 @@ struct InvitationCodeInputModal: View {
                 .foregroundColor(.orange)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 4)
-        } else if !code.isEmpty && !code.isValidRecoveryCode {
+        } else if !code.isEmpty && !isInviteCodeValid {
             Text(localizationManager.localized("invitation_code_format_hint"))
                 .font(.caption)
                 .foregroundColor(textSecondary)
@@ -356,7 +364,7 @@ struct InvitationCodeInputModal: View {
     }
 
     private var canSubmit: Bool {
-        code.isValidRecoveryCode &&
+        isInviteCodeValid &&
         selectedRole != nil &&
         selectedAgeGroup != nil &&
         isDisplayNameValid &&
@@ -464,7 +472,7 @@ struct InvitationCodeInputModal: View {
     }
 
     private func joinFamily() {
-        guard code.isValidRecoveryCode else {
+        guard isInviteCodeValid else {
             errorMessage = localizationManager.localized("invitation_invalid_code")
             return
         }
@@ -648,5 +656,15 @@ struct InvitationCodeInputModal: View {
         case .adult: return localizationManager.localized("invitation_age_adult")
         case .senior: return localizationManager.localized("invitation_age_senior")
         }
+    }
+}
+
+// MARK: - FAM display-code format (restored — missing after hybrid rewrite)
+
+extension String {
+    /// `FAM-XXXX-XXXX-XXXX` (letters/digits). Used by join UI border + submit gate.
+    var isValidRecoveryCode: Bool {
+        let pattern = #"^FAM-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$"#
+        return range(of: pattern, options: .regularExpression) != nil
     }
 }

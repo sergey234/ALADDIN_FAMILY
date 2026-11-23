@@ -166,6 +166,12 @@ struct NetworkProtectionScreen: View {
                 showCrashDetectionAlert = true
             }
         }
+        .onReceive(CrashDetectionManager.shared.$crashDetected) { detected in
+            if detected { showCrashDetectionAlert = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: CrashDetectionManager.crashDetectedNotification)) { _ in
+            showCrashDetectionAlert = true
+        }
         .sheet(isPresented: $showingSettings) {
             NetworkProtectionSettingsView()
         }
@@ -339,6 +345,7 @@ struct NetworkProtectionScreen: View {
                             }
                             if viewModel.crashDetectionNeedsOpenSettings {
                                 Button {
+                                    HapticFeedback.impact(.light)
                                     if let url = URL(string: UIApplication.openSettingsURLString) {
                                         UIApplication.shared.open(url)
                                     }
@@ -356,6 +363,7 @@ struct NetworkProtectionScreen: View {
 
                     #if DEBUG
                     Button(action: {
+                        HapticFeedback.impact(.medium)
                         logger.buttonTap("Test Crash Detection", screen: "NetworkProtection")
                         guard LocationManager.shared.hasRequiredAuthorization() else {
                             ToastManager.shared.showWarning(
@@ -784,6 +792,7 @@ struct NetworkProtectionScreen: View {
             
             // Scan Button - Кнопка сканирования
             Button(action: {
+                HapticFeedback.impact(.medium)
                 VisualLogger.shared.log(
                     "▶️ Start antivirus scan tapped",
                     level: .info,
@@ -846,6 +855,7 @@ struct NetworkProtectionScreen: View {
                         .foregroundColor(.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Button {
+                        HapticFeedback.impact(.light)
                         navigationManager.navigateToPrivacyHub(tab: .darkWeb)
                     } label: {
                         Label(
@@ -947,6 +957,7 @@ struct NetworkProtectionScreen: View {
             
             // Scan Button - Кнопка сканирования
             Button(action: {
+                HapticFeedback.impact(.medium)
                 showAntivirusFileImporter = true
             }) {
                 HStack {
@@ -986,6 +997,7 @@ struct NetworkProtectionScreen: View {
                 Spacer()
                 if !scanHistory.isEmpty {
                     Button(action: {
+                        HapticFeedback.selection()
                         showScanHistory = true
                     }) {
                         Text(localizationManager.localized("antivirus_view_history"))
@@ -1031,6 +1043,7 @@ struct NetworkProtectionScreen: View {
                 Spacer()
                 if quarantineActiveFiles > 0 {
                     Button(action: {
+                        HapticFeedback.selection()
                         showQuarantineDetails = true
                     }) {
                         Text(localizationManager.localized("antivirus_view_quarantine"))
@@ -1082,6 +1095,7 @@ struct NetworkProtectionScreen: View {
                     .foregroundColor(.textPrimary)
                 Spacer()
                 Button(action: {
+                    HapticFeedback.selection()
                     showMalwareSettings = true
                 }) {
                     Text(localizationManager.localized("antivirus_all_settings"))
@@ -1496,6 +1510,7 @@ struct AntivirusScanHistoryModalView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
+                        HapticFeedback.selection()
                         isPresented = false
                     }) {
                         Image(systemName: "xmark.circle.fill")
@@ -1637,6 +1652,7 @@ struct AntivirusQuarantineModalView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
+                        HapticFeedback.selection()
                         isPresented = false
                     }) {
                         Image(systemName: "xmark.circle.fill")
@@ -1762,6 +1778,7 @@ struct AntivirusQuarantineModalView: View {
                     
                     Menu {
                         Button(action: {
+                            HapticFeedback.impact(.light)
                             Task {
                                 do {
                                     let restoreURL = URL(fileURLWithPath: file.originalPath)
@@ -1775,6 +1792,7 @@ struct AntivirusQuarantineModalView: View {
                         }
                         
                         Button(role: .destructive, action: {
+                            HapticFeedback.notification(.warning)
                             Task {
                                 do {
                                     try await QuarantineManager.shared.permanentlyRemoveFile(file)
@@ -1899,6 +1917,7 @@ struct ServerSelectionView: View {
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.center)
                         Button(localizationManager.localized("network_protection_retry")) {
+                            HapticFeedback.impact(.light)
                             loadServers()
                         }
                         .buttonStyle(.borderedProminent)
@@ -1923,6 +1942,7 @@ struct ServerSelectionView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("network_protection_done")) {
+                        HapticFeedback.selection()
                         dismiss()
                     }
                 }
@@ -1973,7 +1993,10 @@ struct ServerRowView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        Button(action: onSelect) {
+        Button(action: {
+            HapticFeedback.selection()
+            onSelect()
+        }) {
             HStack(spacing: Spacing.m) {
                 // Флаг
                 Text(server.flag)
@@ -2103,6 +2126,7 @@ struct NetworkProtectionSettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("network_protection_done")) {
+                        HapticFeedback.selection()
                         dismiss()
                     }
                 }
@@ -2283,6 +2307,7 @@ struct NetworkProtectionStatisticsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("network_protection_done")) {
+                        HapticFeedback.selection()
                         dismiss()
                     }
                 }
@@ -2371,6 +2396,7 @@ struct NetworkProtectionHelpView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("network_protection_done")) {
+                        HapticFeedback.selection()
                         dismiss()
                     }
                 }

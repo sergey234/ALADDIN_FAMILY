@@ -14,11 +14,7 @@ struct PromoActivationScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(red: 0.04, green: 0.06, blue: 0.12), Color(red: 0.08, green: 0.12, blue: 0.22)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            StormMeshBackground(variant: .neutral)
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -187,16 +183,19 @@ struct PromoActivationScreen: View {
                         HStack {
                             if isRedeeming {
                                 ProgressView()
-                                    .tint(.white)
+                                    .tint(Color.backgroundDark)
                             }
                             Text(localizationManager.localized("promo_activation_activate"))
                                 .font(.subheadline.weight(.bold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.textSecondary : Color.backgroundDark)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 12)
                         .frame(maxWidth: .infinity)
-                        .background(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray : Color.blue)
+                        .background(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.backgroundMedium : Color.secondaryGold)
                         .cornerRadius(12)
                     }
                     .disabled(isRedeeming || code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -375,7 +374,7 @@ struct AppStoreRedeemCodeHelpSheet: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
-                            .foregroundColor(.white.opacity(0.55))
+                            .foregroundColor(.white)
                     }
                     .accessibilityLabel(localizationManager.localized("appstore_redeem_help_close"))
                 }
@@ -420,10 +419,13 @@ struct AppStoreRedeemCodeHelpSheet: View {
                     } label: {
                         Text(localizationManager.localized("appstore_redeem_help_open_store"))
                             .font(.bodyBold)
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.backgroundDark)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.55)
+                            .allowsTightening(true)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color.primaryBlue)
+                            .background(Color.secondaryGold)
                             .cornerRadius(14)
                     }
                     .accessibilityIdentifier("appstore_redeem_help_open_store")

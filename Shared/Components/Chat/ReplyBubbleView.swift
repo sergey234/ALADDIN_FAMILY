@@ -33,7 +33,10 @@ struct ReplyBubbleView: View {
             Spacer()
             
             // Кнопка отмены
-            Button(action: onCancel) {
+            Button(action: {
+                HapticFeedback.selection()
+                onCancel()
+            }) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.caption)
                     .foregroundColor(.textTertiary)

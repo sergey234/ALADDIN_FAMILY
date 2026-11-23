@@ -578,7 +578,9 @@ extension NetworkManager {
                 members: [
                     FamilyMemberResponse(
                         id: mockMemberId,
-                        name: request.personal_letter,
+                        name: request.display_name
+                            ?? request.personal_letter
+                            ?? "Member",
                         role: request.role,
                         avatar: "👤",
                         status: "protected",
@@ -616,7 +618,9 @@ extension NetworkManager {
                     ),
                     FamilyMemberResponse(
                         id: "member_\(UUID().uuidString)",
-                        name: request.personal_letter,
+                        name: request.display_name
+                            ?? request.personal_letter
+                            ?? "Member",
                         role: request.role,
                         avatar: "👤",
                         status: "protected",
