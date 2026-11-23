@@ -1716,13 +1716,13 @@ struct OnboardingScreen: View {
                     smallOffset: CGSize(width: -36, height: 140)
                 )
             case .final:
-                // Финал. Джинн на ободе справа, около двух часов: макушка не срезается, лица и щит свободны.
+                // Финал. Джинн правее, на тёмном поле у обода: голова деда свободна, макушка внутри экрана.
                 return OnboardingCircleSpec(
                     bigImage: "OnboardingCircle_Final",
                     bigZoom: 1.14,
                     smallImage: "OnboardingCircle_FinalGenie",
                     smallZoom: 1.06,
-                    smallOffset: CGSize(width: 124, height: -70)
+                    smallOffset: CGSize(width: 150, height: -70)
                 )
             case .agent, .parental, .analytics:
                 return nil

@@ -223,7 +223,7 @@ struct AppConfig {
     
     // MARK: - App Info
     
-    static let appVersion = "1.0.2"
+    static let appVersion = "1.0.3"
     static let buildNumber = "36"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"

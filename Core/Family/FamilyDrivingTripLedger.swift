@@ -185,18 +185,16 @@ enum FamilyDrivingTripLedger {
     }
 
     /// P0.4 H1 — Life360-style trip completed push → map + polyline.
-    /// Lock-screen parity: name as title, 🏁 km + 🚗 max speed, avatar attachment, time-sensitive.
+    /// Lock-screen: name as title. Photo in the icon slot when the user set one; otherwise the app logo.
     @MainActor
     private static func notifyTripEnded(_ report: DrivingReport) {
         let loc = LocalizationManager.shared
-        let displayName: String = {
-            let raw = report.userName.trimmingCharacters(in: .whitespacesAndNewlines)
-            if raw.isEmpty || raw.lowercased() == "me" || report.userId == currentDeviceMember().id
-                || report.userId == "current" {
-                return loc.localized("where_phone_you")
-            }
-            return raw
-        }()
+        let rawName = report.userName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isOwnTrip = rawName.isEmpty
+            || rawName.lowercased() == "me"
+            || report.userId == currentDeviceMember().id
+            || report.userId == "current"
+        let displayName = isOwnTrip ? loc.localized("where_phone_you") : rawName
         // Life360: title = person name; body = flag+distance / car+max speed (two lines).
         let title = displayName
         let body = String(
@@ -209,7 +207,7 @@ enum FamilyDrivingTripLedger {
             focus: .trips,
             tripId: report.id
         )
-        let avatarURL = Self.notificationAvatarFileURL()
+        let avatarURL = isOwnTrip ? Self.notificationAvatarFileURL() : nil
         let tripSound = Self.tripEndedNotificationSound()
         NotificationManager.shared.sendLocalNotification(
             title: title,
@@ -237,11 +235,14 @@ enum FamilyDrivingTripLedger {
         )
     }
 
-    /// Map/profile photo for the lock-screen thumbnail (same file as the family map avatar).
+    /// Photo this person saved on the phone. No file → caller keeps the app logo.
     private static func notificationAvatarFileURL() -> URL? {
-        let source = ProfileImageManager.shared.fileURLForNotificationAttachment(for: .main)
-        guard FileManager.default.fileExists(atPath: source.path) else { return nil }
-        // UNNotificationAttachment may delete/move the file — copy into tmp.
+        let manager = ProfileImageManager.shared
+        let source = [UserCategory.main, .child, .elderly]
+            .map { manager.fileURLForNotificationAttachment(for: $0) }
+            .first { FileManager.default.fileExists(atPath: $0.path) }
+        guard let source else { return nil }
+        // The system may move the file we hand it — copy into tmp.
         let dest = FileManager.default.temporaryDirectory
             .appendingPathComponent("trip_avatar_\(UUID().uuidString).jpg")
         do {

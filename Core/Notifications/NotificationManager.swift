@@ -260,13 +260,30 @@ class NotificationManager: NSObject, ObservableObject {
             if timeSensitive, #available(iOS 15.0, *) {
                 content.interruptionLevel = .timeSensitive
             }
-            if let attachmentFileURL,
+            var outbound = content
+            var usedPersonIcon = false
+            if notificationType.lowercased() == "family_trip_ended",
+               let attachmentFileURL {
+                let rawName = (userInfo["display_name"] as? String)?
+                    .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                let personName = rawName.isEmpty ? title : rawName
+                if let decorated = CommunicationScamNotificationPresenter.contentByApplyingAvatar(
+                    content,
+                    displayName: personName,
+                    imageFileURL: attachmentFileURL
+                ) {
+                    outbound = decorated
+                    usedPersonIcon = true
+                }
+            }
+            if !usedPersonIcon,
+               let attachmentFileURL,
                let attachment = try? UNNotificationAttachment(
                 identifier: "avatar",
                 url: attachmentFileURL,
                 options: [UNNotificationAttachmentOptionsTypeHintKey: "public.jpeg"]
                ) {
-                content.attachments = [attachment]
+                outbound.attachments = [attachment]
             }
 
             // Persist security events locally to survive temporary backend/API failures.
@@ -275,7 +292,7 @@ class NotificationManager: NSObject, ObservableObject {
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: safeDelay, repeats: false)
             let request = UNNotificationRequest(
                 identifier: identifier ?? UUID().uuidString,
-                content: content,
+                content: outbound,
                 trigger: trigger
             )
             
