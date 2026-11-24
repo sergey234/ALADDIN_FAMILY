@@ -16,7 +16,6 @@ struct DevicesScreen: View {
     @State private var errorMessage: String? = nil
     @State private var showAddDevice: Bool = false
     @State private var selectedFilter: DeviceFilter = .all
-    @State private var expandedFilters: Set<DeviceFilter> = []
     @State private var scheduledLoadWorkItem: DispatchWorkItem?
     
     private let apiService = APIService.shared
@@ -56,15 +55,7 @@ struct DevicesScreen: View {
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: Spacing.l) {
                             // fsl-03 / fsl-04 — карта дома + пауза
-                            HomeMapSection(
-                                familyDevices: devices,
-                                onPauseFamilyDevice: { device in
-                                    pauseFamilyDevice(device)
-                                },
-                                onResumeFamilyDevice: { device in
-                                    resumeFamilyDevice(device)
-                                }
-                            )
+                            HomeMapSection(familyDevices: devices)
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager)
 
@@ -225,136 +216,52 @@ struct DevicesScreen: View {
     // MARK: - Device Filters (Раздвигающиеся секции как в SupportScreen)
     
     private var deviceFilters: some View {
-        VStack(spacing: Spacing.m) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             Text(localizationManager.localized("devices_filters"))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
-            
-            VStack(spacing: Spacing.s) {
-                ForEach(DeviceFilter.allCases, id: \.self) { filter in
-                    filterSection(filter: filter)
-                }
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
-    }
-    
-    private func filterSection(filter: DeviceFilter) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            // Заголовок фильтра (раздвигается)
-            Button(action: {
-                HapticFeedback.selection()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    if expandedFilters.contains(filter) {
-                        expandedFilters.remove(filter)
-                    } else {
-                        // Закрываем остальные фильтры (аккордеон)
-                        expandedFilters.removeAll()
-                        expandedFilters.insert(filter)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.s) {
+                    ForEach(DeviceFilter.allCases, id: \.self) { filter in
+                        deviceFilterChip(filter)
                     }
                 }
-            }) {
-                HStack(spacing: Spacing.m) {
-                    // Иконка фильтра
-                    Text(filterIcon(filter))
-                        .font(.system(size: 20))
-                    
-                    // Название фильтра
-                    Text(filter.title(localizationManager: localizationManager))
-                        .font(.body.weight(.semibold))
-                        .foregroundColor(.textPrimary)
-                    
-                    Spacer()
-                    
-                    // Количество устройств
-                    Text("(\(getFilteredDeviceCount(filter)))")
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                    
-                    // Стрелка
-                    Image(systemName: expandedFilters.contains(filter) ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primaryBlue)
-                }
-                .padding(Spacing.m)
-            }
-            .buttonStyle(PlainButtonStyle())
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(selectedFilter == filter ? Color.primaryBlue.opacity(0.1) : Color.backgroundMedium)
-            )
-            
-            // Контент фильтра (раскрывается)
-            if expandedFilters.contains(filter) {
-                VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text(filterDescription(filter))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .padding(.horizontal, Spacing.m)
-                    
-                    // Кнопка применения фильтра
-                    Button(action: {
-                        HapticFeedback.impact(.light)
-                        withAnimation {
-                            selectedFilter = filter
-                            expandedFilters.remove(filter)
-                        }
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text(localizationManager.localized("devices_apply_filter"))
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
-                        .padding(.vertical, Spacing.s)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.small)
-                                .fill(Color.primaryBlue)
-                        )
-                    }
-                    .padding(.horizontal, Spacing.m)
-                    .padding(.bottom, Spacing.s)
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .stormGlassCard(cornerRadius: CornerRadius.medium)
-    }
-    
-    private func filterIcon(_ filter: DeviceFilter) -> String {
-        switch filter {
-        case .all: return "📱"
-        case .protected: return "🛡️"
-        case .warning: return "⚠️"
-        case .danger: return "🔴"
-        case .inactive: return "⏸️"
-        }
-    }
-    
-    private func filterDescription(_ filter: DeviceFilter) -> String {
-        switch filter {
-        case .all: return localizationManager.localized("devices_filter_all_desc")
-        case .protected: return localizationManager.localized("devices_filter_protected_desc")
-        case .warning: return localizationManager.localized("devices_filter_warning_desc")
-        case .danger: return localizationManager.localized("devices_filter_danger_desc")
-        case .inactive: return localizationManager.localized("devices_filter_inactive_desc")
-        }
-    }
-    
-    private func getFilteredDeviceCount(_ filter: DeviceFilter) -> Int {
-        switch filter {
-        case .all: return devices.count
-        case .protected: return devices.filter { $0.status == .protected }.count
-        case .warning: return devices.filter { $0.status == .warning }.count
-        case .danger: return devices.filter { $0.status == .danger }.count
-        case .inactive: return devices.filter { $0.status == .inactive || $0.status == .blocked }.count
-        }
+        .accessibilityIdentifier("devices_filter_chips")
     }
 
+    private func deviceFilterChip(_ filter: DeviceFilter) -> some View {
+        let selected = selectedFilter == filter
+        return Button {
+            HapticFeedback.selection()
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedFilter = filter
+            }
+        } label: {
+            Text(filter.title(localizationManager: localizationManager))
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .foregroundColor(selected ? Color.backgroundDark : Color.textPrimary)
+                .padding(.horizontal, Spacing.m)
+                .frame(minHeight: 44)
+                .background(
+                    Capsule()
+                        .fill(selected ? Color.secondaryGold : Color.backgroundMedium.opacity(0.55))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(Color.secondaryGold, lineWidth: selected ? 0 : 1.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("devices_filter_chip_\(filter.rawValue)")
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+    
     private var cachedFamilyMemberCount: Int {
         guard let data = UserDefaults.standard.data(forKey: FamilyLocalStore.familyMembersKey),
               let members = try? JSONDecoder().decode([FamilyMemberResponse].self, from: data) else {
@@ -399,6 +306,12 @@ struct DevicesScreen: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.xl)
+            } else if filteredDevices.isEmpty {
+                Text(localizationManager.localized("devices_filter_none"))
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, Spacing.m)
             } else {
                 LazyVStack(spacing: Spacing.s) {
                     ForEach(filteredDevices) { device in
@@ -496,6 +409,13 @@ struct DevicesScreen: View {
         return localizationManager.localized("devices_load_failed")
     }
     
+    private static func parseClosedUntil(_ raw: String?) -> Date? {
+        guard let raw, !raw.isEmpty else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: raw)
+    }
+
     private func convertToDevice(_ response: DeviceResponse) -> Device {
         // Конвертируем тип устройства
         let deviceType: DeviceType
@@ -525,7 +445,8 @@ struct DevicesScreen: View {
             owner: response.owner,
             type: deviceType,
             status: deviceStatus,
-            lastActive: response.lastActive
+            lastActive: response.lastActive,
+            closedUntil: Self.parseClosedUntil(response.blockedUntil)
         )
     }
 
@@ -542,42 +463,6 @@ struct DevicesScreen: View {
         )
     }
 
-    // MARK: - fsl-04 Pause (family phone)
-
-    private func pauseFamilyDevice(_ device: Device) {
-        apiService.blockDevice(deviceId: device.id) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    DevicePauseScheduler.schedulePause(deviceId: device.id, kind: .familyPhone)
-                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
-                    loadDevicesImmediate()
-                    HapticFeedback.notification(.success)
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
-                    HapticFeedback.notification(.error)
-                }
-            }
-        }
-    }
-
-    private func resumeFamilyDevice(_ device: Device) {
-        apiService.unblockDevice(deviceId: device.id) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    DevicePauseScheduler.cancel(deviceId: device.id)
-                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
-                    loadDevicesImmediate()
-                    HapticFeedback.notification(.success)
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
-                    HapticFeedback.notification(.error)
-                }
-            }
-        }
-    }
-    
     // MARK: - Computed Properties
     
     private var filteredDevices: [Device] {
@@ -722,8 +607,10 @@ struct Device: Identifiable, Hashable {
     let type: DeviceType
     let status: DeviceStatus
     let lastActive: String
+    /// Конец закрытия с сервера, если на этом телефоне нет своего таймера.
+    let closedUntil: Date?
     
-    init(id: String, name: String, modelName: String? = nil, owner: String, type: DeviceType, status: DeviceStatus, lastActive: String) {
+    init(id: String, name: String, modelName: String? = nil, owner: String, type: DeviceType, status: DeviceStatus, lastActive: String, closedUntil: Date? = nil) {
         self.id = id
         self.name = name
         self.modelName = modelName
@@ -731,6 +618,7 @@ struct Device: Identifiable, Hashable {
         self.type = type
         self.status = status
         self.lastActive = lastActive
+        self.closedUntil = closedUntil
     }
 }
 

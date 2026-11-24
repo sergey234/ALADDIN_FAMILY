@@ -18,7 +18,10 @@ struct CompanionDialogueStrip: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if showResumeStream {
-                Button(action: onResume) {
+                Button {
+                    HapticFeedback.impact(.light)
+                    onResume()
+                } label: {
                     Label(localizationManager.localized("companion_conversation_resume_stream"), systemImage: "arrow.clockwise.circle.fill")
                         .font(.subheadline.bold())
                         .foregroundStyle(.purple)
@@ -28,7 +31,10 @@ struct CompanionDialogueStrip: View {
                 .accessibilityIdentifier("companion_resume_stream_button")
             }
             if showVoiceReconnect {
-                Button(action: onVoiceReconnect) {
+                Button {
+                    HapticFeedback.impact(.light)
+                    onVoiceReconnect()
+                } label: {
                     Label(localizationManager.localized("companion_conversation_resume_voice"), systemImage: "mic.circle.fill")
                         .font(.subheadline.bold())
                         .foregroundStyle(.orange)
@@ -39,9 +45,10 @@ struct CompanionDialogueStrip: View {
             }
 
             if let user = penultimateUserLine {
+                // W3: dark StormMesh — `.secondary`/`.primary` read as near-black; force light ink.
                 Text(user)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.white.opacity(0.72))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
@@ -50,9 +57,10 @@ struct CompanionDialogueStrip: View {
                 HStack(spacing: 8) {
                     ProgressView()
                         .controlSize(.small)
+                        .tint(.white.opacity(0.85))
                     Text(localizationManager.localized("companion_sending_reply"))
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.75))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityIdentifier("companion_sending_indicator")
@@ -61,7 +69,7 @@ struct CompanionDialogueStrip: View {
             if let (idx, assistant) = lastAssistantPair {
                 Text(assistant.text.isEmpty ? "…" : assistant.text)
                     .font(.title3.weight(.medium))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.white.opacity(0.95))
                     .lineLimit(5)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityIdentifier("companion_hero_subtitle")
@@ -75,7 +83,10 @@ struct CompanionDialogueStrip: View {
             // Empty chat: no center placeholder («Скажи или напиши…») — composer is enough.
 
             if messages.count > 2 {
-                Button(action: onShowHistory) {
+                Button {
+                    HapticFeedback.selection()
+                    onShowHistory()
+                } label: {
                     Label(
                         String(format: localizationManager.localized("companion_conversation_full_history"), messages.count),
                         systemImage: "text.bubble"
@@ -131,7 +142,10 @@ struct CompanionDialogueStrip: View {
         disabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        Button {
+            HapticFeedback.selection()
+            action()
+        } label: {
             Image(systemName: systemName)
                 .foregroundStyle(tint)
         }
@@ -145,6 +159,7 @@ struct CompanionDialogueStrip: View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(actions) { action in
                 Button {
+                    HapticFeedback.impact(.light)
                     onActionTap?(action)
                 } label: {
                     Text(action.title)

@@ -402,6 +402,7 @@
 "device_detail_stats_traffic_uploaded" = "Отправлено";
 "device_detail_stats_usage_time" = "Время использования";
 "device_detail_stats_protection_level" = "Уровень защиты";
+"device_detail_stats_battery" = "Батарея";
 "device_detail_settings_protection" = "Защита устройства";
 "device_detail_settings_scanning" = "Автоматическое сканирование";
 "device_detail_settings_notifications" = "Уведомления";
@@ -440,6 +441,8 @@
 "child_interface_time_minutes" = "%d минут";
 "child_interface_unicorn_balance" = "Мои единороги";
 "child_interface_unicorn_count" = "%d единорогов";
+"loading_balance" = "Загружаем баланс";
+"unicorn_insufficient_balance" = "Не хватает единорогов";
 
 /* ═══════════════════════════════════════════════════════════════
  * ДЕТСКИЙ ИНТЕРФЕЙС - ВОЗРАСТНЫЕ ГРУППЫ
@@ -840,10 +843,25 @@
 "device_detail_threat_time_5_min" = "5 мин назад";
 "device_detail_threat_time_15_min" = "15 мин назад";
 "device_detail_threat_time_1_hour" = "1 час назад";
+"device_detail_threat_count" = "Обнаружено: %d";
+"device_detail_threat_recent" = "Недавно";
 "main_demo_mode_message" = "Сервис временно недоступен. Попробуйте позже.";
 "common_cancel" = "Отмена";
 "common_error" = "Ошибка";
 "common_ok" = "Понятно";
+"common_change" = "Изменить";
+"identity_theft_total_attempts" = "Всего попыток";
+"identity_theft_blocked" = "Заблокировано";
+"identity_theft_suspicious" = "Подозрительно";
+"identity_theft_no_attempts" = "Попыток кражи не найдено";
+"identity_theft_filters" = "Фильтры";
+"identity_theft_filter_all" = "Все";
+"identity_theft_filter_all_actions" = "Все действия";
+"identity_theft_filter_allowed" = "Разрешённые";
+"identity_theft_filter_blocked" = "Заблокированные";
+"identity_theft_action_allow" = "Разрешить";
+"identity_theft_action_block" = "Заблокировать";
+"identity_theft_action_whitelist" = "Добавить в исключения";
 
 /* ═══════════════════════════════════════════════════════════════
  * ФОРМА ДОБАВЛЕНИЯ УСТРОЙСТВА
@@ -1179,6 +1197,7 @@
 "store.error.store.not.ready" = "App Store ещё загружается. Подождите пару секунд.";
 "store.error.purchase.in.progress" = "Покупка уже выполняется. Пожалуйста, подождите.";
 "store.error.products.not.loaded" = "Продукты не загружены. Проверьте подключение к интернету и попробуйте снова.";
+"store.error.payment.cancelled" = "Оплата отменена. Списания не было.";
 "store.error.tariffs.not.loaded" = "Не удалось загрузить тарифы. Проверьте подключение к интернету и попробуйте снова.";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1294,6 +1313,14 @@
 "component.referral_manager.desc" = "Приглашение друзей";
 "component.qr_payment_manager.title" = "QR платежи";
 "component.qr_payment_manager.desc" = "Оплата через QR-код";
+"payment_qr_creating" = "Создаём платёж...";
+"payment_qr_loading" = "Загружаем QR-код...";
+"payment_qr_error_load" = "Не удалось загрузить QR-код";
+"payment_qr_error_connection" = "Проверьте интернет";
+"payment_qr_error_title" = "Ошибка";
+"payment_qr_error_ok" = "Понятно";
+"payment_qr_success_message" = "Подписка %@ включена!\n\nСпасибо за покупку!";
+"payment_qr_timer_until" = "до окончания срока";
 "component.analytics_manager.title" = "Аналитика";
 "component.analytics_manager.desc" = "Статистика и отчеты";
 "component.report_manager.title" = "Отчеты";
@@ -2229,6 +2256,7 @@
 "roadside_assistance_title" = "Помощь на дороге";
 
 "roadside_assistance_subtitle" = "Вызвать помощь при поломке или аварии";
+"roadside_assistance_icon" = "Значок помощи на дороге";
 
 "device_detail_threats_empty" = "Нет угроз для этого устройства";
 
@@ -2265,6 +2293,7 @@
 "device_hub_coverage_iot" = "Умный дом";
 
 "wellness_recap_prefix" = "В прошлый раз: %@";
+"wellness_recap_default" = "разговор сохранён";
 
 "ai_assistant_faq_footer" = "%@\n\nИсточник: ответы (%@)";
 
@@ -3056,7 +3085,7 @@
 "pay_pains_family_strip_slots_fmt" = "Семья · %d из %d мест";
 "pay_pains_family_strip_add" = "Добавить";
 "pay_pains_family_strip_add_to_family" = "Добавить в семью";
-"simple_home_open_full_main" = "Полная версия";
+"simple_home_open_full_main" = "Дополнительные разделы";
 "simple_home_title" = "Aladdin start!";
 "pay_pains_door_check_title" = "Проверка на обман";
 "pay_pains_door_check_subtitle" = "Проверим звонок, сообщение, видео или текст";
@@ -3634,6 +3663,7 @@
 "map_live_battery" = "Заряд %d%%";
 "map_live_updating" = "Карта обновляется";
 "map_live_no_signal" = "Пока нет сигнала";
+"map_live_locate_me" = "Показать, где я";
 "map_live_speed_badge" = "≈ %d км/ч";
 "map_type_title" = "Тип карты";
 "map_type_auto" = "Авто";
@@ -3874,6 +3904,20 @@
 "tariffs_status_premium" = "Сейчас у вас: Премиум до %@";
 "tariffs_status_premium_nodate" = "Сейчас у вас: Премиум";
 "tariffs_trial_auto_note" = "Пробный период включился сам после входа. Платить не нужно, пока не выберете тариф.";
+"tariff_trial_description" = "Пробная защита перед выбором тарифа.";
+"tariffs_card_details" = "Подробнее";
+"tariffs_card_details_hide" = "Свернуть";
+"privacy_cleanup_premium_body" = "Очистка доступна в Премиум";
+"devices_filter_none" = "Таких телефонов нет";
+"child_phone_close_title" = "Закрыть телефон на время";
+"child_phone_close_hint" = "Защита от обмана остаётся. Телефон откроется сам.";
+"child_phone_close_1h" = "1 час";
+"child_phone_close_2h" = "2 часа";
+"child_phone_close_3h" = "3 часа";
+"child_phone_close_morning" = "До утра";
+"child_phone_opens_at" = "Откроется сам в %@";
+"child_phone_open_now" = "Открыть сейчас";
+"child_phone_closed_until" = "Закрыт до %@";
 "tariffs_compare_toggle" = "Сравнить тарифы";
 "tariffs_free_row" = "Бесплатный: семья до %d, живая карта, SOS. Остаётся всегда.";
 "tariffs_history_hours" = "%d часа";

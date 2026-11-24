@@ -1621,6 +1621,8 @@ struct SimpleHomeScreen: View {
                 }
                 Text(localizationManager.localized("simple_home_open_full_main"))
                     .font(AladdinFamilyType.body(weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 Spacer()
             }
             .foregroundColor(.white)

@@ -1519,7 +1519,7 @@ extension ALADDINApp {
             navigationManager.currentScreen = .onboarding
         } else {
             print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на вход")
-            // Pay-pains: SimpleHome = корень входа. Main только по явному «Полная версия» / Меню.
+            // Pay-pains: SimpleHome = корень входа. Main только по явному «Дополнительные разделы» / Меню.
             // A1: init уже ставит homeEntry — здесь подтверждаем корень без вспышки Main.
             navigationManager.navigateToHomeEntry(reason: "initializeNavigation")
             print("🟢 HOME_ENTRY: корень входа = \(navigationManager.currentScreen.rawValue)")

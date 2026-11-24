@@ -1707,22 +1707,22 @@ struct OnboardingScreen: View {
                     smallOffset: CGSize(width: 130, height: -78)
                 )
             case .check:
-                // Проверка. Щит на столе снизу слева: лицо, руки и телефон свободны.
+                // Проверка. Щит на ободе слева сверху, около десяти часов: левее головы, не на лице и не на слове.
                 return OnboardingCircleSpec(
                     bigImage: "OnboardingCircle_Check",
                     bigZoom: 1.28,
                     smallImage: "OnboardingCircle_CheckShield",
                     smallZoom: 1.12,
-                    smallOffset: CGSize(width: -36, height: 140)
+                    smallOffset: CGSize(width: -134, height: -78)
                 )
             case .final:
-                // Финал. Джинн правее, на тёмном поле у обода: голова деда свободна, макушка внутри экрана.
+                // Финал. Джинн выше и правее, на золотом ободе: фото семьи не задевает, макушка внутри экрана.
                 return OnboardingCircleSpec(
                     bigImage: "OnboardingCircle_Final",
                     bigZoom: 1.14,
                     smallImage: "OnboardingCircle_FinalGenie",
                     smallZoom: 1.06,
-                    smallOffset: CGSize(width: 150, height: -70)
+                    smallOffset: CGSize(width: 156, height: -84)
                 )
             case .agent, .parental, .analytics:
                 return nil
@@ -1788,22 +1788,66 @@ struct OnboardingScreen: View {
     }
 
     private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex _: Int, isActiveTab _: Bool) -> some View {
-        VStack(spacing: 0) {
-            if let spec = OnboardingCircleSpec.forStory(page.story) {
-                Spacer(minLength: Spacing.s)
-                storyCircles(spec)
+        Group {
+            if page.story == .final, let spec = OnboardingCircleSpec.forStory(page.story) {
+                finalStoryLayout(spec: spec, title: page.title, description: page.description)
+            } else {
+                VStack(spacing: 0) {
+                    if let spec = OnboardingCircleSpec.forStory(page.story) {
+                        Spacer(minLength: Spacing.s)
+                        storyCircles(spec)
+                    }
+                    Spacer(minLength: 0)
+                    onboardingStoryText(title: page.title, description: page.description)
+                }
             }
-            Spacer(minLength: 0)
-            onboardingStoryText(title: page.title, description: page.description)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Страница онбординга: \(page.title)")
     }
 
+    /// Финал. Круг остаётся 270, текст 24/18. На коротком телефоне едут только круг и заголовок.
+    /// Точки, «Начать» и правовая информация стоят ниже этой области и не уезжают.
+    private func finalStoryLayout(spec: OnboardingCircleSpec, title: String, description: String) -> some View {
+        GeometryReader { geo in
+            ScrollViewReader { proxy in
+                ScrollView(.vertical, showsIndicators: true) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        storyCircles(spec)
+                        onboardingStoryText(title: title, description: description)
+                            .id("finalOnboardingStoryText")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: geo.size.height)
+                }
+                .modifier(OnboardingBottomScrollAnchor())
+                .frame(width: geo.size.width, height: geo.size.height)
+                .onAppear {
+                    DispatchQueue.main.async {
+                        proxy.scrollTo("finalOnboardingStoryText", anchor: .bottom)
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 // MARK: - Onboarding hero chrome (RTL / искры языка)
+
+/// На iOS 17 заголовок финала сразу над точками. На 15–16 то же делает scrollTo.
+private struct OnboardingBottomScrollAnchor: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content.defaultScrollAnchor(.bottom)
+        } else {
+            content
+        }
+    }
+}
 
 private struct OnboardingHeroRTLFlipModifier: ViewModifier {
     let isRTL: Bool

@@ -33,19 +33,34 @@ enum DevicePauseScheduler {
         return max(1, Int(ceil(seconds / 60)))
     }
 
-    /// Records a 1-hour pause after a successful block API call.
+    static func activeEndsAt(deviceId: String) -> Date? {
+        guard let pause = activePause(deviceId: deviceId) else { return nil }
+        return pause.endsAt
+    }
+
+    /// Records a timed close after a successful block API call.
     @discardableResult
-    static func schedulePause(deviceId: String, kind: DevicePauseKind) -> DevicePauseRecord {
+    static func schedulePause(deviceId: String, kind: DevicePauseKind, endsAt: Date) -> DevicePauseRecord {
         var records = load().filter { $0.deviceId != deviceId }
         let record = DevicePauseRecord(
             deviceId: deviceId,
             kind: kind,
-            endsAt: Date().addingTimeInterval(pauseDurationSeconds),
+            endsAt: endsAt,
             startedAt: Date()
         )
         records.append(record)
         save(records)
         return record
+    }
+
+    /// One hour. Kept for the hidden smart-home pause and older call sites.
+    @discardableResult
+    static func schedulePause(deviceId: String, kind: DevicePauseKind) -> DevicePauseRecord {
+        schedulePause(
+            deviceId: deviceId,
+            kind: kind,
+            endsAt: Date().addingTimeInterval(pauseDurationSeconds)
+        )
     }
 
     static func cancel(deviceId: String) {
@@ -88,6 +103,54 @@ enum DevicePauseScheduler {
     private static func save(_ records: [DevicePauseRecord]) {
         guard let data = try? JSONEncoder().encode(records) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
+    }
+}
+
+/// How long a parent closes a child's phone. Morning means the next 07:00.
+enum ChildPhoneCloseChoice: String, CaseIterable, Identifiable {
+    case oneHour
+    case twoHours
+    case threeHours
+    case untilMorning
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        switch self {
+        case .oneHour: return "child_phone_close_1h"
+        case .twoHours: return "child_phone_close_2h"
+        case .threeHours: return "child_phone_close_3h"
+        case .untilMorning: return "child_phone_close_morning"
+        }
+    }
+
+    func endsAt(now: Date = Date(), calendar: Calendar = .current) -> Date {
+        switch self {
+        case .oneHour:
+            return now.addingTimeInterval(60 * 60)
+        case .twoHours:
+            return now.addingTimeInterval(2 * 60 * 60)
+        case .threeHours:
+            return now.addingTimeInterval(3 * 60 * 60)
+        case .untilMorning:
+            var parts = calendar.dateComponents([.year, .month, .day], from: now)
+            parts.hour = 7
+            parts.minute = 0
+            parts.second = 0
+            let thisMorning = calendar.date(from: parts) ?? now
+            if thisMorning > now.addingTimeInterval(60) {
+                return thisMorning
+            }
+            return calendar.date(byAdding: .day, value: 1, to: thisMorning)
+                ?? now.addingTimeInterval(8 * 60 * 60)
+        }
+    }
+
+    static func clockString(_ date: Date, locale: Locale) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
     }
 }
 

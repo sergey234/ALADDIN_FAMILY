@@ -130,6 +130,7 @@ class PrivacyReportsViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
+        isPremiumRequired = false
         defer { isLoading = false }
         
         do {
@@ -181,6 +182,14 @@ class PrivacyReportsViewModel: ObservableObject {
                 self.cleanupStats = nil
                 self.cleanupRecords = []
                 errorMessage = nil
+                return
+            }
+
+            if PrivacyPremiumErrorMapper.isPremiumRequired(error) {
+                isPremiumRequired = true
+                errorMessage = localizationManager.localized("privacy_cleanup_premium_body")
+                self.cleanupStats = nil
+                self.cleanupRecords = []
                 return
             }
             
@@ -427,6 +436,11 @@ class PrivacyReportsViewModel: ObservableObject {
             }
             await loadCleanupData()
         } catch {
+            if PrivacyPremiumErrorMapper.isPremiumRequired(error) {
+                isPremiumRequired = true
+                errorMessage = localizationManager.localized("privacy_cleanup_premium_body")
+                return
+            }
             let networkError = NetworkError.from(error)
             if networkError.isCritical || !networkError.isRetryable {
                 let errorKey = "privacy_cleanup_error_failed"

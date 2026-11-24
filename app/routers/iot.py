@@ -268,6 +268,30 @@ async def block_iot_device(deviceId: str = Path(...), db: Session = Depends(get_
     }
 
 
+@router.post("/device/{deviceId}/unblock")
+async def unblock_iot_device(deviceId: str = Path(...), db: Session = Depends(get_db)):
+    """fsl-04 — снять паузу/блок с IoT-устройства (зеркало block)."""
+    ensure_iot_tables()
+    res = db.execute(
+        text(
+            """
+            UPDATE iot_devices SET status = 'online', last_seen = NOW()
+            WHERE device_id = :device_id
+            """
+        ),
+        {"device_id": deviceId},
+    )
+    db.commit()
+    if res.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return {
+        "success": True,
+        "data": True,
+        "deviceId": deviceId,
+        "message": f"Устройство {deviceId} разблокировано",
+    }
+
+
 @router.post("/scan/{homeId}", response_model=IoTScanResponse)
 async def start_iot_scan(homeId: str = Path(...)):
     try:

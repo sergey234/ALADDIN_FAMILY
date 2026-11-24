@@ -26,6 +26,23 @@ final class DevicePauseSchedulerTests: XCTestCase {
         XCTAssertFalse(DevicePauseScheduler.isPaused(phoneId))
     }
 
+    func testCloseChoiceKeepsTwoHoursAndMorning() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let morning = calendar.date(from: DateComponents(year: 2026, month: 11, day: 24, hour: 6, minute: 0))!
+        let afterDawn = ChildPhoneCloseChoice.untilMorning.endsAt(now: morning, calendar: calendar)
+        XCTAssertEqual(calendar.component(.hour, from: afterDawn), 7)
+        XCTAssertEqual(calendar.component(.day, from: afterDawn), 24)
+
+        let evening = calendar.date(from: DateComponents(year: 2026, month: 11, day: 24, hour: 20, minute: 0))!
+        let nextMorning = ChildPhoneCloseChoice.untilMorning.endsAt(now: evening, calendar: calendar)
+        XCTAssertEqual(calendar.component(.day, from: nextMorning), 25)
+        XCTAssertEqual(calendar.component(.hour, from: nextMorning), 7)
+
+        let twoHours = ChildPhoneCloseChoice.twoHours.endsAt(now: evening, calendar: calendar)
+        XCTAssertEqual(twoHours.timeIntervalSince(evening), 2 * 60 * 60)
+    }
+
     func testIoTKindIndependentFromPhone() {
         DevicePauseScheduler.schedulePause(deviceId: camId, kind: .iot)
         XCTAssertTrue(DevicePauseScheduler.isPaused(camId))

@@ -301,6 +301,7 @@
 "device_detail_stats_traffic_uploaded" = "Uploaded";
 "device_detail_stats_usage_time" = "Usage Time";
 "device_detail_stats_protection_level" = "Protection Level";
+"device_detail_stats_battery" = "Battery";
 "device_detail_settings_protection" = "Device Protection";
 "device_detail_settings_scanning" = "Automatic Scanning";
 "device_detail_settings_notifications" = "Notifications";
@@ -339,6 +340,8 @@
 "child_interface_time_minutes" = "%d minutes";
 "child_interface_unicorn_balance" = "My Unicorns";
 "child_interface_unicorn_count" = "%d unicorns";
+"loading_balance" = "Loading balance";
+"unicorn_insufficient_balance" = "Not enough unicorns";
 
 /* ═══════════════════════════════════════════════════════════════
  * CHILD INTERFACE - AGE GROUPS
@@ -439,6 +442,11 @@
 "profile_dont_trust_calls" = "🚫 DON'T BELIEVE these calls!";
 "elderly_safety_dont_believe" = "❌ DON'T BELIEVE these calls! FSB employees, Prosecutors, Bosses, Banks, Social networks";
 "elderly_interface_dont_trust" = "❌ DON'T BELIEVE these calls! FSB, Prosecutor's Office, Management employees, Banks, Social networks";
+"elderly_interface_sos_button" = "SOS button";
+"elderly_interface_emergency_help_text" = "Emergency help";
+"elderly_interface_choose_service" = "Choose a service for an emergency call:";
+"elderly_interface_fire" = "Fire service (101)";
+"elderly_interface_police" = "Police (102)";
 "child_interface_dont_share_info" = "Never share personal information";
 "child_interface_tell_parents" = "Always tell your parents";
 "child_interface_emergency_contacts" = "Emergency Contacts";
@@ -739,6 +747,8 @@
 "device_detail_threat_time_5_min" = "5 min ago";
 "device_detail_threat_time_15_min" = "15 min ago";
 "device_detail_threat_time_1_hour" = "1 hour ago";
+"device_detail_threat_count" = "Detected: %d";
+"device_detail_threat_recent" = "Recently";
 "main_demo_mode_message" = "The service is temporarily unavailable. Please try again later.";
 "common_cancel" = "Cancel";
 "common_error" = "Error";
@@ -770,6 +780,9 @@
 "devices_card_accessibility_fmt" = "Device %@, owner %@, status %@";
 "devices_type_accessibility_fmt" = "Device type: %@";
 "devices_status_indicator_accessibility_fmt" = "Status indicator: %@";
+"devices_subtitle" = "%d devices under protection";
+"devices_nav_accessibility" = "Devices navigation bar";
+"devices_list_accessibility" = "Family devices list";
 
 /* ═══════════════════════════════════════════════════════════════
  * DARK WEB MONITORING
@@ -1047,6 +1060,7 @@
 "store.error.store.not.ready" = "The App Store is still loading. Please wait a moment.";
 "store.error.purchase.in.progress" = "Purchase is already in progress. Please wait.";
 "store.error.products.not.loaded" = "Products not loaded. Check your internet connection and try again.";
+"store.error.payment.cancelled" = "Payment was cancelled. Nothing was charged.";
 "store.error.tariffs.not.loaded" = "Failed to load tariffs. Check your internet connection and try again.";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1162,10 +1176,29 @@
 "component.referral_manager.desc" = "Invite friends";
 "component.qr_payment_manager.title" = "QR Payments";
 "component.qr_payment_manager.desc" = "Payment via QR code";
+"payment_qr_method_sbp" = "SBP";
+"payment_qr_method_sbp_short" = "SBP";
+"payment_qr_method_sberpay" = "SberPay";
+"payment_qr_method_sberpay_short" = "SBER";
+"payment_qr_method_card" = "MIR";
+"payment_qr_method_card_short" = "MIR";
+"payment_qr_method_alfa" = "Alfa";
+"payment_qr_method_alfa_short" = "ALFA";
+"payment_qr_method_vtb" = "VTB";
+"payment_qr_method_vtb_short" = "VTB";
+"payment_qr_creating" = "Creating payment...";
+"payment_qr_loading" = "Loading QR code...";
+"payment_qr_error_load" = "Failed to load QR code";
+"payment_qr_error_connection" = "Check internet connection";
+"payment_qr_error_title" = "Error";
+"payment_qr_error_ok" = "OK";
+"payment_qr_success_message" = "Subscription %@ activated!\n\nThank you for your purchase!";
+"payment_qr_timer_until" = "until payment expires";
 "component.analytics_manager.title" = "Analytics";
 "component.analytics_manager.desc" = "Statistics and reports";
 "component.report_manager.title" = "Reports";
 "component.report_manager.desc" = "Manage reports";
+"component_report_card_accessibility_hint" = "Tap to see the detailed reports";
 
 /* ═══════════════════════════════════════════════════════════════
  * BOTS (8)
@@ -1330,6 +1363,8 @@
 "voice_control_sensitivity_high" = "High";
 "voice_control_mode_title" = "Mode";
 "voice_control_mode_online" = "Online mode";
+"language_russian" = "Russian";
+"language_english" = "English";
 
 /* Compliance */
 "compliance_legal_profile_title" = "Legal Profile";
@@ -1345,6 +1380,18 @@
 "compliance_deletion_manual" = "Manual";
 "compliance_encryption_title" = "Encryption";
 "compliance_encryption_enabled" = "Enable encryption";
+"compliance_region_moscow" = "Moscow";
+"compliance_region_spb" = "Saint Petersburg";
+"compliance_region_moscow_oblast" = "Moscow Region";
+"compliance_region_leningrad_oblast" = "Leningrad Region";
+"compliance_no_personal_data_title" = "Important: We do NOT collect personal data";
+"compliance_no_personal_data_text" = "Under the privacy policy, we work only with de-identified data. Personal data is not collected, processed, or stored.";
+"compliance_storage_sessions_title" = "Anonymous sessions";
+"compliance_storage_sessions_value" = "24 hours";
+"compliance_storage_statistics_title" = "Threat statistics";
+"compliance_storage_statistics_value" = "30 days";
+"compliance_storage_analytics_title" = "Aggregated analytics";
+"compliance_storage_analytics_value" = "1 year";
 
 /* ═══════════════════════════════════════════════════════════════
  * MANAGERS - ADVANCED SETTINGS
@@ -1360,6 +1407,9 @@
 "family_notifications_frequency_instant" = "Instant";
 "family_notifications_frequency_daily" = "Daily";
 "family_notifications_frequency_weekly" = "Weekly";
+"family_notifications_quiet_hours_title" = "Quiet hours";
+"family_notifications_quiet_hours_start" = "Start";
+"family_notifications_quiet_hours_end" = "End";
 "family_notifications_templates_title" = "Message Templates";
 "family_notifications_template_security" = "Security";
 "family_notifications_template_activity" = "Activity";
@@ -2318,6 +2368,7 @@
 "roadside_assistance_title" = "Roadside Assistance";
 
 "roadside_assistance_subtitle" = "Call for help in case of breakdown or accident";
+"roadside_assistance_icon" = "Roadside help icon";
 
 "device_detail_threats_empty" = "No threats for this device";
 
@@ -2354,6 +2405,7 @@
 "device_hub_coverage_iot" = "Smart home";
 
 "wellness_recap_prefix" = "Last time: %@";
+"wellness_recap_default" = "the talk is saved";
 
 "ai_assistant_faq_footer" = "%@\n\nSource: answers (%@)";
 
@@ -2866,6 +2918,7 @@
 
 /* UX-36 #3 security toast */
 "security_settings_toast_saved" = "Settings saved";
+"settings_saved" = "Settings saved";
 "security_settings_toast_saved_local" = "Saved on this device";
 "security_settings_toast_network_error" = "Could not save. Check the internet and try again.";
 "security_settings_toast_no_permission" = "No access. Sign in again.";
@@ -2972,6 +3025,32 @@
 "parental_custom_sites_already" = "This site is already on the list";
 "parental_custom_sites_saved" = "Site added";
 "parental_custom_sites_removed" = "Site removed";
+"parental_select_child_accessibility" = "Select a child: %@";
+"parental_accessibility_background" = "Parental control screen background";
+"parental_accessibility_cards" = "Parental control cards";
+"parental_accessibility_navigation" = "Parental control navigation bar";
+"parental_time_remaining_default" = "1h 24min";
+"parental_location_last_update_default" = "2 min ago";
+"parental_content_blocked_metric" = "Blocked: %d sites";
+"parental_content_blocker_disabled" = "Blocking is off";
+"parental_content_categories_active" = "Categories: %d";
+"parental_time_remaining_status" = "Time left: %@";
+"parental_time_schedules_metric" = "Schedules: %d";
+"parental_monitoring_badge" = "%d";
+"parental_monitoring_sites" = "Sites being watched: %d";
+"parental_monitoring_apps" = "Apps being watched: %d";
+"parental_alert_badge" = "%d";
+"parental_reports_today_status" = "Reports for today";
+"parental_reports_week_status" = "Reports for the week";
+"parental_alerts_metric" = "Warnings: %d";
+"parental_requests_badge" = "%d";
+"parental_requests_status" = "Requests: %d";
+"parental_bypass_badge" = "%d";
+"parental_bypass_no_attempts" = "0";
+"parental_bypass_blocked_metric" = "Blocked: %d";
+"parental_detection_active_metric" = "Active: %d/3";
+"parental_toggle_on" = "On";
+"parental_toggle_off" = "Off";
 "parental_custom_sites_sync_local" = "Saved on this phone. Family sync will retry later.";
 
 /* ProdQA S05 Focus name options (pending owner pick) */
@@ -3036,6 +3115,9 @@
 "bypass_smart_dns_open_settings" = "Open iPhone Settings";
 "common_unavailable_short" = "Unavailable";
 "referral_step1_desc" = "Send the link via WhatsApp, Telegram, VK, X, or Instagram";
+"referral_history_item_name" = "Friend %@";
+"referral_history_accessibility" = "%@, status: %@";
+"referral_step2_title" = "Friend signs up";
 "family_location_stale_hint" = "Last known place";
 "parental_dashboard_button" = "Parent panel";
 "parental_retry" = "Retry";
@@ -3043,6 +3125,7 @@
 "family_location_waiting_gps" = "Getting location…";
 "parental_stats_rate_limited" = "Too many requests. Please wait a minute.";
 "family_role_parent_label" = "Parent";
+"family_screenshots" = "Screenshots";
 "family_role_child_label" = "Child";
 "family_role_teen_label" = "Teen";
 "family_role_elderly_label" = "People 60+";
@@ -3145,7 +3228,7 @@
 "pay_pains_family_strip_slots_fmt" = "Family · %d of %d seats";
 "pay_pains_family_strip_add" = "Add";
 "pay_pains_family_strip_add_to_family" = "Add to family";
-"simple_home_open_full_main" = "All sections";
+"simple_home_open_full_main" = "More sections";
 "simple_home_title" = "Aladdin start!";
 "pay_pains_door_check_title" = "Scam Check";
 "pay_pains_door_check_subtitle" = "We'll check a call, message, video, or text";
@@ -3723,6 +3806,7 @@
 "map_live_battery" = "Battery %d%%";
 "map_live_updating" = "Map updating";
 "map_live_no_signal" = "No signal yet";
+"map_live_locate_me" = "Show where I am";
 "map_live_speed_badge" = "≈ %d km/h";
 "map_type_title" = "Map type";
 "map_type_auto" = "Auto";
@@ -3963,6 +4047,20 @@
 "tariffs_status_premium" = "You’re on Premium until %@";
 "tariffs_status_premium_nodate" = "You’re on Premium";
 "tariffs_trial_auto_note" = "Your free trial started automatically. You won’t pay unless you choose a plan.";
+"tariff_trial_description" = "A trial of protection before you choose a plan.";
+"tariffs_card_details" = "Details";
+"tariffs_card_details_hide" = "Hide";
+"privacy_cleanup_premium_body" = "Cleanup is available in Premium";
+"devices_filter_none" = "No phones in this filter";
+"child_phone_close_title" = "Close the phone for a while";
+"child_phone_close_hint" = "Scam protection stays on. The phone opens itself.";
+"child_phone_close_1h" = "1 hour";
+"child_phone_close_2h" = "2 hours";
+"child_phone_close_3h" = "3 hours";
+"child_phone_close_morning" = "Until morning";
+"child_phone_opens_at" = "Opens itself at %@";
+"child_phone_open_now" = "Open now";
+"child_phone_closed_until" = "Closed until %@";
 "tariffs_compare_toggle" = "Compare plans";
 "tariffs_free_row" = "Free: up to %d people, live map and SOS. Always included.";
 "tariffs_history_hours" = "%d hours";
@@ -4107,6 +4205,33 @@
 "driving_reports_risk_events_many" = "%d risky events";
 "driving_reports_unit_kmh" = "km/h";
 "driving_reports_unit_km" = "km";
+"driving_reports_unit_hour" = "h";
+"driving_event_severity_sharp" = "Sharp";
+"driving_event_severity_medium" = "Medium";
+"driving_event_severity_soft" = "Soft";
+"driving_event_type_braking" = "Braking";
+"driving_event_type_acceleration" = "Acceleration";
+"driving_event_type_turn" = "Turn";
+"driving_violation_speed_exceeded" = "Speeding";
+"driving_violation_harsh_braking" = "Harsh braking";
+"driving_violation_harsh_acceleration" = "Harsh acceleration";
+"driving_violation_sharp_turn" = "Sharp turn";
+"violation_severity_high" = "High";
+"violation_severity_medium" = "Medium";
+"violation_severity_low" = "Low";
+"dark_web_leak_status_new" = "New";
+"dark_web_leak_status_resolved" = "Closed";
+"dark_web_scan_status_in_progress" = "Checking";
+"dark_web_scan_status_completed" = "Done";
+"dark_web_scan_status_failed" = "Error";
+"identity_theft_action_blocked" = "Blocked";
+"identity_theft_action_allowed" = "Allowed";
+"identity_theft_action_suspicious" = "Suspicious";
+"identity_theft_data_type_email" = "Email";
+"identity_theft_data_type_password" = "Password";
+"identity_theft_data_type_phone" = "Phone";
+"identity_theft_data_type_card" = "Bank card";
+"identity_theft_data_type_passport" = "Passport";
 
 /* ASC / Where→Driving→Reports tip + CapCut-parity labels */
 "asc_tip_driving_reports_title" = "Family driving reports";

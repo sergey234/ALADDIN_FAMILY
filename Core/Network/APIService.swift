@@ -3432,6 +3432,17 @@ class APIService: ObservableObject {
         networkManager.post(endpoint: "\(AppConfig.Endpoint.devices)/\(deviceId)/block", body: EmptyBody(), completion: completion)
     }
 
+    /// Закрыть телефон до момента `until`. Сервер хранит конец, телефон родителя остаётся запасным.
+    func blockDevice(deviceId: String, until: Date, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct UntilBody: Codable {
+            let until: String
+        }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        let body = UntilBody(until: formatter.string(from: until))
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.devices)/\(deviceId)/block", body: body, completion: completion)
+    }
+
     /// Разблокировать устройство
     func unblockDevice(deviceId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         struct EmptyBody: Codable {}

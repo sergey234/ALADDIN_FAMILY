@@ -76,7 +76,7 @@ enum AliveIconID: String {
     case aiFriends = "M01_AIFriends"
     /// Удобный · Меню.
     case menu = "D02_Menu"
-    /// Удобный · Полная версия (Main).
+    /// Удобный · Дополнительные разделы (Main).
     case fullApp = "D03_FullApp"
     /// Тарифы · Free.
     case tariffFree = "T01_Free"

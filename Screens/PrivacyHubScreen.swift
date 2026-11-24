@@ -256,6 +256,7 @@ struct PrivacyHubDarkWebPanel: View {
 
 struct PrivacyHubCleanupPanel: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var viewModel = PrivacyReportsViewModel()
 
     var body: some View {
@@ -277,18 +278,27 @@ struct PrivacyHubCleanupPanel: View {
                 }
             }
 
-            PrimaryButton(
-                localizationManager.localized("privacy_cleanup_start"),
-                isLoading: viewModel.isLoading
-            ) {
-                Task {
-                    await viewModel.startCleanup(categories: ["cache", "temp", "logs"])
-                    if viewModel.errorMessage == nil {
-                        HapticFeedback.notification(.success)
+            if viewModel.isPremiumRequired {
+                privacyPremiumUpsellCard(
+                    localizationManager: localizationManager,
+                    titleKey: "privacy_cleanup_premium_body",
+                    bodyKey: nil,
+                    onOpen: { navigationManager.navigateTo(.tariffs) }
+                )
+            } else {
+                PrimaryButton(
+                    localizationManager.localized("privacy_cleanup_start"),
+                    isLoading: viewModel.isLoading
+                ) {
+                    Task {
+                        await viewModel.startCleanup(categories: ["cache", "temp", "logs"])
+                        if viewModel.errorMessage == nil {
+                            HapticFeedback.notification(.success)
+                        }
                     }
                 }
+                .accessibilityIdentifier("privacy_hub_cleanup_start")
             }
-            .accessibilityIdentifier("privacy_hub_cleanup_start")
 
             ForEach(viewModel.cleanupRecords.prefix(6)) { record in
                 HStack {
@@ -309,7 +319,7 @@ struct PrivacyHubCleanupPanel: View {
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
             }
 
-            if let error = viewModel.errorMessage {
+            if let error = viewModel.errorMessage, !viewModel.isPremiumRequired {
                 Text(error)
                     .font(.caption)
                     .foregroundColor(.dangerRed)
@@ -431,16 +441,21 @@ struct PrivacyHubLocationPanel: View {
 @ViewBuilder
 private func privacyPremiumUpsellCard(
     localizationManager: LocalizationManager,
+    titleKey: String = "privacy_premium_required_title",
+    bodyKey: String? = "privacy_premium_required_body",
     onOpen: @escaping () -> Void
 ) -> some View {
     VStack(alignment: .leading, spacing: Spacing.s) {
-        Text(localizationManager.localized("privacy_premium_required_title"))
+        Text(localizationManager.localized(titleKey))
             .font(.subheadline.weight(.bold))
             .foregroundColor(.white)
-        Text(localizationManager.localized("privacy_premium_required_body"))
-            .font(.caption)
-            .foregroundColor(.white.opacity(0.85))
             .fixedSize(horizontal: false, vertical: true)
+        if let bodyKey {
+            Text(localizationManager.localized(bodyKey))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+        }
         Button(action: onOpen) {
             Text(localizationManager.localized("privacy_premium_required_cta"))
                 .font(.subheadline.weight(.semibold))

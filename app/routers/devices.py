@@ -10,7 +10,7 @@ import secrets
 import threading
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -164,6 +164,11 @@ def _ensure_family_devices_table(db: Session) -> None:
             "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS model_name TEXT;"
         )
     )
+    db.execute(
+        text(
+            "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS blocked_until TIMESTAMPTZ;"
+        )
+    )
     db.commit()
     _devices_ddl_checked = True
 
@@ -211,6 +216,46 @@ def _now_iso() -> str:
     )
 
 
+class DeviceBlockBody(BaseModel):
+    until: Optional[str] = None
+
+
+def _parse_block_until(raw: Optional[str]) -> Optional[datetime]:
+    """Parent-chosen end. Empty or past values mean a close with no clock."""
+    if not raw:
+        return None
+    text_value = raw.strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(text_value)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    if parsed <= now:
+        return None
+    latest = now + timedelta(hours=36)
+    if parsed > latest:
+        return latest
+    return parsed
+
+
+def _release_expired_blocks(db: Session, uid: str) -> None:
+    db.execute(
+        text(
+            """
+            UPDATE aladdin_family_devices
+            SET status = 'protected', blocked_until = NULL, last_active = :now
+            WHERE user_id = :uid
+              AND status = 'blocked'
+              AND blocked_until IS NOT NULL
+              AND blocked_until <= NOW()
+            """
+        ),
+        {"uid": uid, "now": _now_iso()},
+    )
+
+
 @router.get("/api/devices", response_model=List[Dict[str, Any]])
 def devices_list(
     current_user: dict = Depends(get_current_user),
@@ -221,11 +266,14 @@ def devices_list(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
     try:
         _ensure_family_devices_table(db)
+        _release_expired_blocks(db, uid)
+        db.commit()
         result = db.execute(
             text(
                 """
                 SELECT id, name, owner_label AS owner, type, status, last_active,
-                       pairing_token, short_pin, owner_member_id, model_name
+                       pairing_token, short_pin, owner_member_id, model_name,
+                       blocked_until
                 FROM aladdin_family_devices
                 WHERE user_id = :uid
                 ORDER BY created_at DESC
@@ -243,6 +291,16 @@ def devices_list(
             model_name = item.pop("model_name", None)
             if model_name:
                 item["modelName"] = model_name
+            blocked_until = item.pop("blocked_until", None)
+            if isinstance(blocked_until, datetime):
+                item["blockedUntil"] = (
+                    blocked_until.astimezone(timezone.utc)
+                    .replace(microsecond=0)
+                    .isoformat()
+                    .replace("+00:00", "Z")
+                )
+            elif blocked_until:
+                item["blockedUntil"] = str(blocked_until)
             if item.get("pairing_token") is None:
                 item.pop("pairing_token", None)
             if item.get("short_pin") is None:
@@ -605,6 +663,7 @@ def devices_update_settings(
 @router.post("/api/devices/{device_id}/block", response_model=Dict[str, Any])
 def devices_block(
     device_id: str,
+    body: DeviceBlockBody = DeviceBlockBody(),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
@@ -613,15 +672,16 @@ def devices_block(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
     try:
         _ensure_family_devices_table(db)
+        until = _parse_block_until(body.until)
         res = db.execute(
             text(
                 """
                 UPDATE aladdin_family_devices
-                SET status = 'blocked', last_active = :now
+                SET status = 'blocked', last_active = :now, blocked_until = :until
                 WHERE id = :id AND user_id = :uid
                 """
             ),
-            {"id": device_id.strip(), "uid": uid, "now": _now_iso()},
+            {"id": device_id.strip(), "uid": uid, "now": _now_iso(), "until": until},
         )
         db.commit()
         if res.rowcount == 0:
@@ -653,7 +713,7 @@ def devices_unblock(
             text(
                 """
                 UPDATE aladdin_family_devices
-                SET status = 'protected', last_active = :now
+                SET status = 'protected', last_active = :now, blocked_until = NULL
                 WHERE id = :id AND user_id = :uid
                 """
             ),

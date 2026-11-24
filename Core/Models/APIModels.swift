@@ -1538,6 +1538,8 @@ struct DeviceResponse: Decodable, Identifiable {
     /// Если бэкенд возвращает данные для экрана сопряжения после `POST /api/devices`.
     let pairingToken: String?
     let shortPin: String?
+    /// Когда сервер сам откроет закрытый телефон. Пусто, если закрытия по времени нет.
+    let blockedUntil: String?
     
     enum CodingKeys: String, CodingKey {
         case id, name, owner, type, status
@@ -1553,6 +1555,8 @@ struct DeviceResponse: Decodable, Identifiable {
         case pairingTokenCamel = "pairingToken"
         case shortPinSnake = "short_pin"
         case shortPinCamel = "shortPin"
+        case blockedUntilCamel = "blockedUntil"
+        case blockedUntilSnake = "blocked_until"
     }
     
     init(from decoder: Decoder) throws {
@@ -1580,6 +1584,9 @@ struct DeviceResponse: Decodable, Identifiable {
         let shortSnake = try c.decodeIfPresent(String.self, forKey: .shortPinSnake)
         let shortCamel = try c.decodeIfPresent(String.self, forKey: .shortPinCamel)
         shortPin = [shortSnake, shortCamel].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let untilCamel = try c.decodeIfPresent(String.self, forKey: .blockedUntilCamel)
+        let untilSnake = try c.decodeIfPresent(String.self, forKey: .blockedUntilSnake)
+        blockedUntil = [untilCamel, untilSnake].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 }
 

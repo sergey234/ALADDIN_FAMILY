@@ -37,6 +37,11 @@ struct DeviceDetailScreen: View {
     @State private var showUnblockConfirmation: Bool = false
     @State private var showRemoveConfirmation: Bool = false
     
+    /// Этот телефон — тот, который родитель держит в руке. Тогда «закрыть на время» не показываем.
+    private var isThisHandset: Bool {
+        deviceIsThisHandset(device: device, deviceDetail: deviceDetail)
+    }
+
     /// Заблокированное устройство: статус в списке или детальный ответ API (`blocked`).
     private var isDeviceBlocked: Bool {
         if device.status == .blocked { return true }
@@ -166,32 +171,21 @@ struct DeviceDetailScreen: View {
                 
                 // Action Buttons
                 VStack(spacing: Spacing.m) {
-                    if isDeviceBlocked {
+                    if !isThisHandset {
+                        childPhoneCloseBlock
+                    }
+                    if isDeviceBlocked && DevicePauseScheduler.activeEndsAt(deviceId: device.id) == nil {
                         SecondaryButton(localizationManager.localized("device_detail_unblock_device")) {
                             showUnblockConfirmation = true
                         }
                         .accessibilityLabel(localizationManager.localized("device_detail_unblock_device"))
                         .accessibilityHint(localizationManager.localized("device_detail_unblock_device_hint"))
-                    } else {
+                    } else if !isDeviceBlocked {
                         SecondaryButton(localizationManager.localized("device_detail_block_device")) {
                             blockDevice()
                         }
                         .accessibilityLabel(localizationManager.localized("device_detail_block_device"))
                         .accessibilityHint(localizationManager.localized("device_detail_block_device_hint"))
-
-                        // fsl-04 — пауза 1 час (не «навсегда»)
-                        SecondaryButton(
-                            DevicePauseScheduler.isPaused(device.id)
-                                ? localizationManager.localized("home_map_resume")
-                                : localizationManager.localized("home_map_pause_1h")
-                        ) {
-                            if DevicePauseScheduler.isPaused(device.id) {
-                                confirmUnblockDeviceAfterPause()
-                            } else {
-                                confirmPauseOneHour()
-                            }
-                        }
-                        .accessibilityIdentifier("device_detail_pause_1h")
                     }
 
                     SecondaryButton(localizationManager.localized("device_detail_remove_device")) {
@@ -323,21 +317,85 @@ struct DeviceDetailScreen: View {
         }
     }
 
-    /// fsl-04 — блок с авто-снятием через 1 час.
-    private func confirmPauseOneHour() {
+    private var childPhoneCloseBlock: some View {
+        let ends = DevicePauseScheduler.activeEndsAt(deviceId: device.id)
+        let clockLocale = localizationManager.speechRecognitionLocale
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            if let ends, ends > Date() {
+                Text(
+                    String(
+                        format: localizationManager.localized("child_phone_opens_at"),
+                        ChildPhoneCloseChoice.clockString(ends, locale: clockLocale)
+                    )
+                )
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    confirmUnblockDeviceAfterPause()
+                } label: {
+                    Text(localizationManager.localized("child_phone_open_now"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(Color.backgroundDark)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 44)
+                        .background(Capsule().fill(Color.secondaryGold))
+                }
+                .buttonStyle(.plain)
+                .disabled(isLoadingAction)
+                .accessibilityIdentifier("device_detail_open_now")
+            } else if !isDeviceBlocked {
+                Text(localizationManager.localized("child_phone_close_title"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized("child_phone_close_hint"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    ForEach(ChildPhoneCloseChoice.allCases) { choice in
+                        Button {
+                            confirmClosePhone(choice)
+                        } label: {
+                            Text(localizationManager.localized(choice.titleKey))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: 44)
+                                .background(
+                                    Capsule().fill(Color.backgroundMedium.opacity(0.55))
+                                )
+                                .overlay(
+                                    Capsule().stroke(Color.secondaryGold, lineWidth: 1.5)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isLoadingAction)
+                        .accessibilityIdentifier("device_detail_close_\(choice.rawValue)")
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier("device_detail_close_block")
+    }
+
+    private func confirmClosePhone(_ choice: ChildPhoneCloseChoice) {
+        let ends = choice.endsAt()
         isLoadingAction = true
         actionErrorMessage = nil
-        apiService.blockDevice(deviceId: device.id) { result in
+        apiService.blockDevice(deviceId: device.id, until: ends) { result in
             DispatchQueue.main.async {
                 self.isLoadingAction = false
                 switch result {
                 case .success:
-                    DevicePauseScheduler.schedulePause(deviceId: device.id, kind: .familyPhone)
+                    DevicePauseScheduler.schedulePause(deviceId: self.device.id, kind: .familyPhone, endsAt: ends)
                     NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
                     HapticFeedback.notification(.success)
-                    self.dismiss()
                 case .failure(let error):
                     self.actionErrorMessage = NetworkError.from(error).localizedDescription
+                    HapticFeedback.notification(.error)
                 }
             }
         }
@@ -547,6 +605,26 @@ struct TabButton: View {
 
 // MARK: - Device Info View
 
+private func deviceIsThisHandset(device: Device, deviceDetail: DeviceDetailResponse?) -> Bool {
+    if let current = DeviceMarketingName.currentDeviceIdentifier,
+       device.id.caseInsensitiveCompare(current) == .orderedSame {
+        return true
+    }
+    let remembered = UserDefaults.standard.string(forKey: "aladdin_handset_server_device_id") ?? ""
+    if !remembered.isEmpty, device.id == remembered {
+        return true
+    }
+    let me = (UserDefaults.standard.string(forKey: "current_user_name") ?? "")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    let owner = (deviceDetail?.owner ?? device.owner)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    if !me.isEmpty, owner.caseInsensitiveCompare(me) == .orderedSame {
+        UserDefaults.standard.set(device.id, forKey: "aladdin_handset_server_device_id")
+        return true
+    }
+    return false
+}
+
 struct DeviceInfoView: View {
     let device: Device
     let deviceDetail: DeviceDetailResponse?
@@ -628,23 +706,7 @@ struct DeviceInfoView: View {
     }
 
     private var isThisHandset: Bool {
-        if let current = DeviceMarketingName.currentDeviceIdentifier,
-           device.id.caseInsensitiveCompare(current) == .orderedSame {
-            return true
-        }
-        let remembered = UserDefaults.standard.string(forKey: "aladdin_handset_server_device_id") ?? ""
-        if !remembered.isEmpty, device.id == remembered {
-            return true
-        }
-        let me = (UserDefaults.standard.string(forKey: "current_user_name") ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let owner = (deviceDetail?.owner ?? device.owner)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        if !me.isEmpty, owner.caseInsensitiveCompare(me) == .orderedSame {
-            UserDefaults.standard.set(device.id, forKey: "aladdin_handset_server_device_id")
-            return true
-        }
-        return false
+        deviceIsThisHandset(device: device, deviceDetail: deviceDetail)
     }
 
 }

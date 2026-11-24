@@ -7,16 +7,16 @@ struct HomeMapSection: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     let familyDevices: [Device]
-    let onPauseFamilyDevice: (Device) -> Void
-    let onResumeFamilyDevice: (Device) -> Void
 
     @StateObject private var iotModule = IoTSecurityModule()
     @State private var isLoadingIoT = false
     @State private var iotError: String?
     @State private var pausingIoTId: String?
-    @State private var pauseBusyFamilyId: String?
 
     private var homeId: String { IoTHomeIdResolver.current }
+
+    /// Примеры умного дома и ссылка на лимиты спрятаны с карты дома. Код остаётся.
+    private var showsHiddenHomeExtras: Bool { false }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
@@ -51,13 +51,20 @@ struct HomeMapSection: View {
                 .accessibilityIdentifier("home_map_pause_honest")
 
             phonesBlock
-            iotBlock
+            if showsHiddenHomeExtras {
+                iotBlock
+            }
         }
         .padding(Spacing.cardPadding)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .secondaryGold)
         .accessibilityIdentifier("home_map_section")
-        .task { await refreshIoT() }
+        .task {
+            if showsHiddenHomeExtras {
+                await refreshIoT()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in
+            guard showsHiddenHomeExtras else { return }
             Task { await refreshIoT() }
         }
     }
@@ -91,22 +98,29 @@ struct HomeMapSection: View {
                 }
             }
 
-            Button {
-                HapticFeedback.selection()
-                navigationManager.navigateTo(.family)
-            } label: {
-                Text(localizationManager.localized("home_map_screen_time_link"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(.secondaryGold)
+            if showsHiddenHomeExtras {
+                Button {
+                    HapticFeedback.selection()
+                    navigationManager.navigateTo(.family)
+                } label: {
+                    Text(localizationManager.localized("home_map_screen_time_link"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("home_map_screen_time_link")
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("home_map_screen_time_link")
         }
     }
 
+    private static func closedUntil(for device: Device) -> Date? {
+        if let local = DevicePauseScheduler.activeEndsAt(deviceId: device.id) {
+            return local
+        }
+        return device.closedUntil
+    }
+
     private func homePhoneRow(_ device: Device) -> some View {
-        let paused = DevicePauseScheduler.isPaused(device.id) || device.status == .blocked
-        let remaining = DevicePauseScheduler.remainingMinutes(deviceId: device.id)
         let ownerName = FamilyMemberDisplayNameFormatter.displayName(
             storedName: device.owner,
             localization: localizationManager
@@ -133,45 +147,18 @@ struct HomeMapSection: View {
 
             Spacer(minLength: 4)
 
-            if paused, let remaining {
+            if let ends = Self.closedUntil(for: device), ends > Date() {
                 Text(
                     String(
-                        format: localizationManager.localized("home_map_pause_remaining"),
-                        remaining
+                        format: localizationManager.localized("child_phone_closed_until"),
+                        ChildPhoneCloseChoice.clockString(ends, locale: localizationManager.speechRecognitionLocale)
                     )
                 )
-                .font(.caption2)
-                .foregroundColor(.warningOrange)
-            }
-
-            if pauseBusyFamilyId == device.id {
-                ProgressView().tint(.white)
-            } else if paused {
-                Button {
-                    HapticFeedback.impact(.light)
-                    pauseBusyFamilyId = device.id
-                    onResumeFamilyDevice(device)
-                    pauseBusyFamilyId = nil
-                } label: {
-                    Text(localizationManager.localized("home_map_resume"))
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.secondaryGold)
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("home_map_resume_phone_\(device.id)")
-            } else {
-                Button {
-                    HapticFeedback.impact(.light)
-                    pauseBusyFamilyId = device.id
-                    onPauseFamilyDevice(device)
-                    pauseBusyFamilyId = nil
-                } label: {
-                    Text(localizationManager.localized("home_map_pause_1h"))
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.warningOrange)
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("home_map_pause_phone_\(device.id)")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.secondaryGold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .accessibilityIdentifier("home_map_closed_until_\(device.id)")
             }
         }
         .padding(.vertical, Spacing.xs)

@@ -45,6 +45,7 @@ struct CompanionConversationBannersSection: View {
             HStack(spacing: 6) {
                 if onCheckinTap != nil {
                     Button {
+                        HapticFeedback.selection()
                         onCheckinTap?()
                     } label: {
                         bannerChip(
@@ -59,6 +60,7 @@ struct CompanionConversationBannersSection: View {
                 }
                 if onOpenMore != nil {
                     Button {
+                        HapticFeedback.selection()
                         onOpenMore?()
                     } label: {
                         bannerChip(
@@ -106,6 +108,7 @@ struct CompanionConversationBannersSection: View {
                 HStack(spacing: 6) {
                     if onCheckinTap != nil {
                         Button {
+                            HapticFeedback.selection()
                             onCheckinTap?()
                         } label: {
                             bannerChip(
@@ -188,6 +191,7 @@ struct CompanionConversationBannersSection: View {
 
     private var checkinFullBanner: some View {
         Button {
+            HapticFeedback.selection()
             onCheckinTap?()
         } label: {
             HStack(spacing: 8) {

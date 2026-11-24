@@ -60,18 +60,7 @@ struct NotificationsScreen: View {
                         // Статистика уведомлений
                         notificationStats
 
-                        // P1.4 S17: Tips / Offers / Notifications / All
-                        Picker("", selection: $inboxChrome) {
-                            ForEach(InboxChromeFilter.allCases) { chrome in
-                                Text(localizationManager.localized(chrome.titleKey)).tag(chrome)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .accessibilityIdentifier("notifications_inbox_chrome")
-                        .onChange(of: inboxChrome) { chrome in
-                            selectedFilter = chrome.mappedFilter
-                            expandedFilter = chrome.mappedFilter
-                        }
+                        inboxChromeChips
                         
                         // Фильтры
                         notificationFilters
@@ -215,6 +204,50 @@ struct NotificationsScreen: View {
         .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
+    private var inboxChromeChips: some View {
+        let items = Array(InboxChromeFilter.allCases)
+        return VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                inboxChromeChip(items[0])
+                inboxChromeChip(items[1])
+            }
+            HStack(spacing: 8) {
+                inboxChromeChip(items[2])
+                inboxChromeChip(items[3])
+            }
+        }
+        .accessibilityIdentifier("notifications_inbox_chrome")
+    }
+
+    private func inboxChromeChip(_ chrome: InboxChromeFilter) -> some View {
+        let selected = inboxChrome == chrome
+        return Button {
+            HapticFeedback.selection()
+            inboxChrome = chrome
+            selectedFilter = chrome.mappedFilter
+            expandedFilter = chrome.mappedFilter
+        } label: {
+            Text(localizationManager.localized(chrome.titleKey))
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .foregroundColor(selected ? Color.backgroundDark : Color.textPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+                .padding(.horizontal, 8)
+                .background(
+                    Capsule()
+                        .fill(selected ? Color.secondaryGold : Color.backgroundMedium.opacity(0.55))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(Color.secondaryGold, lineWidth: selected ? 0 : 1.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
     // MARK: - Notification Filters
     
     private var notificationFilters: some View {
