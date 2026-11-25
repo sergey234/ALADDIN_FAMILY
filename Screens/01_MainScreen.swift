@@ -31,6 +31,7 @@ struct MainScreen: View {
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
+    @AppStorage(AliveIconDiscStyle.storageKey) private var iconDiscStyleRaw: String = AliveIconDiscStyle.defaultStyle.rawValue
     @State private var profileImage: UIImage? = nil
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
@@ -162,118 +163,10 @@ struct MainScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
                 
-                // Основной контент - главная страница
                 homeContent
-                
-                // Нижняя навигация - красивое меню с эмодзи
-                HStack(spacing: 0) {
-                    // 🎮 Игра (быстрый переход в геймификацию)
-                    Button(action: {
-                        HapticFeedback.impact(.light)
-                        logger.buttonTap("Game Tab", screen: "Main")
-                        navigationManager.navigateTo(.childRewards)
-                    }) {
-                        VStack(spacing: 4) {
-                            AliveGlyph(id: .unicorn, size: 28) {
-                                Text("🦄")
-                                    .font(.system(size: 20))
-                            }
-                            Text(localizationManager.localized("main_tab_game"))
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                    }
-                    .accessibilityIdentifier("main_tab_game")
-                    .accessibilityLabel(localizationManager.localized("main_tab_game"))
-                    
-                    // ✨ Аладдин Kids — полный детский интерфейс (маршрут .threatProtection не удалён, см. уведомления / расширенная защита)
-                    Button(action: {
-                        HapticFeedback.impact(.light)
-                        logger.buttonTap("Aladdin Kids Tab", screen: "Main")
-                        navigationManager.navigateTo(.childInterface)
-                    }) {
-                        VStack(spacing: 4) {
-                            AliveGlyph(id: .kids, size: 28) {
-                                Text("✨")
-                                    .font(.system(size: 20))
-                            }
-                            Text(localizationManager.localized("main_tab_aladdin_kids"))
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white.opacity(0.7))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                                .offset(x: -3)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                    }
-                    .accessibilityIdentifier("main_tab_aladdin_kids")
-                    .accessibilityLabel(localizationManager.localized("main_tab_aladdin_kids"))
-                    .accessibilityHint(localizationManager.localized("main_tab_aladdin_kids_hint"))
-                    
-                    // 🔔 Уведомления
-                    Button(action: {
-                        HapticFeedback.impact(.light)
-                        navigationManager.navigateTo(.notifications)
-                    }) {
-                        VStack(spacing: 4) {
-                            AliveGlyph(id: .notif, size: 28) {
-                                Text("🔔")
-                                    .font(.system(size: 20))
-                            }
-                            Text(localizationManager.localized("main_tab_notifications"))
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white.opacity(0.7))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                    }
-                    
-                    // 👤 Профиль
-                    Button(action: {
-                        HapticFeedback.impact(.light)
-                        navigationManager.navigateTo(.profile)
-                    }) {
-                        VStack(spacing: 4) {
-                            AliveGlyph(id: .profile, size: 28) {
-                                Text("👤")
-                                    .font(.system(size: 20))
-                            }
-                            Text(localizationManager.localized("main_tab_profile"))
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white.opacity(0.7))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                    }
-                    
-                    // 📱 Устройства
-                    Button(action: {
-                        HapticFeedback.impact(.light)
-                        navigationManager.navigateTo(.devices)
-                    }) {
-                        VStack(spacing: 4) {
-                            AliveGlyph(id: .devices, size: 28) {
-                                Text("📱")
-                                    .font(.system(size: 20))
-                            }
-                            Text(localizationManager.localized("main_tab_devices"))
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white.opacity(0.7))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                    }
+                if (AliveIconDiscStyle(rawValue: iconDiscStyleRaw) ?? AliveIconDiscStyle.defaultStyle) != .legacy {
+                    legacyBottomBar
                 }
-                .padding(.vertical, 6)
-                .padding(.horizontal, 2)
-                .aladdinProductCard(cornerRadius: 20)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
             }
         }
         .task {
@@ -490,6 +383,61 @@ struct MainScreen: View {
         UserDefaults.standard.synchronize()
     }
     
+    /// Прежняя полоса для «Золото» и «Иконки». «Классика» рисует новые кнопки на корне.
+    private var legacyBottomBar: some View {
+        HStack(spacing: 0) {
+            legacyTab(titleKey: "main_tab_game", glyph: .unicorn, fallback: "🦄", identifier: "main_tab_game") {
+                navigationManager.navigateTo(.childRewards)
+            }
+            legacyTab(titleKey: "main_tab_aladdin_kids", glyph: .kids, fallback: "✨", identifier: "main_tab_aladdin_kids") {
+                navigationManager.navigateTo(.childInterface)
+            }
+            legacyTab(titleKey: "main_tab_notifications", glyph: .notif, fallback: "🔔", identifier: "main_tab_notifications") {
+                navigationManager.navigateTo(.notifications)
+            }
+            legacyTab(titleKey: "main_tab_profile", glyph: .profile, fallback: "👤", identifier: "main_tab_profile") {
+                navigationManager.navigateTo(.profile)
+            }
+            legacyTab(titleKey: "main_tab_devices", glyph: .devices, fallback: "📱", identifier: "main_tab_devices") {
+                navigationManager.navigateTo(.devices)
+            }
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 2)
+        .aladdinProductCard(cornerRadius: 20)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
+    }
+
+    private func legacyTab(
+        titleKey: String,
+        glyph: AliveIconID,
+        fallback: String,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: {
+            HapticFeedback.impact(.light)
+            action()
+        }) {
+            VStack(spacing: 4) {
+                AliveGlyph(id: glyph, size: 28) {
+                    Text(fallback)
+                        .font(.system(size: 20))
+                }
+                Text(localizationManager.localized(titleKey))
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+        }
+        .accessibilityIdentifier(identifier)
+        .accessibilityLabel(localizationManager.localized(titleKey))
+    }
+
     // MARK: - Home Content
     
     private var homeContent: some View {

@@ -313,6 +313,7 @@ struct ALADDINApp: App {
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     // ✅ BUILD 96: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
     @AppStorage("auto_login_enabled") private var autoLoginEnabled: Bool = false
+    @AppStorage(AliveIconDiscStyle.storageKey) private var iconDiscStyleRaw: String = AliveIconDiscStyle.defaultStyle.rawValue
 
     // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
     @Environment(\.scenePhase) private var scenePhase
@@ -580,14 +581,8 @@ struct ALADDINApp: App {
                     guard completed else { return }
                     // Round2 S13: auto-start 14-day trial after onboarding (no extra tap).
                     Task { await SubscriptionManager.shared.activateTrialIfNeeded() }
-                    if let raw = PendingAuthTokenStore.loadDeviceBindToken() {
-                        let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
-                            ?? URL(string: raw).flatMap { DevicePairingLinkParser.extractToken(from: $0) }
-                        if let token, !token.isEmpty {
-                            navigationManager.pendingDeviceBindToken = token
-                            navigationManager.navigateTo(.joinDevice)
-                        }
-                    }
+                    PendingAuthTokenStore.clearDeviceBindToken()
+                    navigationManager.pendingDeviceBindToken = nil
                     if navigationManager.pendingFamilyInvitePayload != nil || navigationManager.pendingFamilyInviteCode != nil {
                         navigationManager.navigateTo(.invitationCode)
                     }
@@ -1425,6 +1420,14 @@ struct ALADDINApp: App {
                 .appContentTransition(.fade, value: navigationManager.currentScreen)
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    let iconStyle = AliveIconDiscStyle(rawValue: iconDiscStyleRaw) ?? AliveIconDiscStyle.defaultStyle
+                    if navigationManager.currentScreen == .main, iconStyle == .legacy {
+                        MainBottomBar()
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                    }
+                }
                 // Visual logger: только `applyRootChrome` → `visualLoggerOverlay()` (без дубля `.withVisualLogger()`, иначе два виджета и перехват касаний).
             }
             .navigationViewStyle(StackNavigationViewStyle())

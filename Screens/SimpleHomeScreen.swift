@@ -323,8 +323,8 @@ struct SimpleHomeScreen: View {
                     subtitleKey: "pay_pains_door_check_subtitle",
                     imageName: "SimpleHome_Door_Check",
                     identifier: "pay_pains_door_check",
-                    // Подпись «Scam Check» сидела на шаре и на лицах. Круг с подписью выше, боковые двери не двигаем.
-                    restOffset: CGSize(width: 0, height: -198),
+                    // Щит касается большого круга и не заезжает на «Добавить в семью». Боковые двери не двигаем.
+                    restOffset: CGSize(width: 0, height: -172),
                     pulsePhase: 0
                 ) {
                     navigationManager.navigateToAntifakeHub(tab: .text)

@@ -15,14 +15,8 @@ enum AliveIconDiscStyle: String, CaseIterable, Identifiable {
 
     static let storageKey = "aladdin_icon_disc_style"
 
-    /// DEBUG preview: Glyph (Золото). Release stays legacy until user picks in Settings.
-    static var defaultStyle: AliveIconDiscStyle {
-        #if DEBUG
-        return .aliveBlue
-        #else
-        return .legacy
-        #endif
-    }
+    /// Пока человек сам не выбрал стиль в настройках — «Классика».
+    static var defaultStyle: AliveIconDiscStyle { .legacy }
 
     static var current: AliveIconDiscStyle {
         let raw = UserDefaults.standard.string(forKey: storageKey) ?? defaultStyle.rawValue

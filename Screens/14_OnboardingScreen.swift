@@ -742,6 +742,8 @@ struct OnboardingScreen: View {
     // MARK: - State
 
     @State private var currentPage: Int = 0
+    /// Высота текста на каждой странице истории. Круг берёт то, что осталось, и не заходит на текст.
+    @State private var onboardingTextHeights: [String: CGFloat] = [:]
     /// Увеличивается при выборе языка — короткий графический «всплеск» (без новых строк локализации).
     @State private var languageSparkTick: Int = 0
     /// Вибрация шагов 2 и 3 только после жеста человека, не при автопереходе на старте.
@@ -1543,6 +1545,8 @@ struct OnboardingScreen: View {
                                 print("ℹ️ OnboardingScreen: Онбординг завершён без JWT — локальный режим до регистрации")
                             }
 
+                            PendingAuthTokenStore.clearDeviceBindToken()
+                            navigationManager.pendingDeviceBindToken = nil
                             navigationManager.navigateToHomeEntry(reason: "onboarding.finish")
                             print("✅ OnboardingScreen: Онбординг завершён, вход = \(navigationManager.currentScreen.rawValue)")
                         }
@@ -1757,15 +1761,51 @@ struct OnboardingScreen: View {
         .accessibilityHidden(true)
     }
 
-    private func storyCircles(_ spec: OnboardingCircleSpec) -> some View {
-        ZStack {
-            onboardingGlassCircle(imageName: spec.bigImage, outer: 270, contentZoom: spec.bigZoom)
-            onboardingGlassCircle(imageName: spec.smallImage, outer: 96, contentZoom: spec.smallZoom)
-                .offset(x: spec.smallOffset.width, y: spec.smallOffset.height)
+    /// Круг не больше 270 и не выше свободного места под текст и маленький кружок.
+    private func fittedStoryDiameter(height: CGFloat, textHeight: CGFloat, spec: OnboardingCircleSpec) -> CGFloat {
+        let available = max(0, height - textHeight - 8)
+        var diameter = min(270, available)
+        for _ in 0..<4 {
+            let scale = max(diameter, 1) / 270
+            let badge = max(56, 96 * scale)
+            let extra = max(0, abs(spec.smallOffset.height * scale) + badge / 2 - diameter / 2) + 8
+            diameter = min(270, max(0, available - extra))
         }
-        .frame(width: 270, height: 270)
-        .padding(.top, Spacing.m)
-        .padding(.bottom, 36)
+        return max(0, diameter)
+    }
+
+    private func storyHeightKey(_ story: OnboardingStory) -> String {
+        switch story {
+        case .family: return "family"
+        case .agent: return "agent"
+        case .parental: return "parental"
+        case .analytics: return "analytics"
+        case .kids: return "kids"
+        case .whereFamily: return "where"
+        case .check: return "check"
+        case .final: return "final"
+        }
+    }
+
+    private func storyCircles(_ spec: OnboardingCircleSpec, diameter: CGFloat, containerWidth: CGFloat) -> some View {
+        let scale = diameter / 270
+        let badge = max(56, 96 * scale)
+        var dx = spec.smallOffset.width * scale
+        let dy = spec.smallOffset.height * scale
+        let limit = max(0, containerWidth / 2 - badge / 2 - 6)
+        if abs(dx) > limit {
+            dx = limit * (dx < 0 ? -1 : 1)
+        }
+        let extraTop = max(0, -dy + badge / 2 - diameter / 2)
+        let extraBottom = max(0, dy + badge / 2 - diameter / 2)
+        return ZStack {
+            onboardingGlassCircle(imageName: spec.bigImage, outer: diameter, contentZoom: spec.bigZoom)
+            onboardingGlassCircle(imageName: spec.smallImage, outer: badge, contentZoom: spec.smallZoom)
+                .offset(x: dx, y: dy)
+        }
+        .frame(width: diameter, height: diameter)
+        .padding(.top, extraTop + 4)
+        .padding(.bottom, extraBottom + 4)
     }
 
     /// Одна и та же нижняя колонка на каждой странице истории, сразу над точками.
@@ -1787,18 +1827,32 @@ struct OnboardingScreen: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Одна колонка на всех страницах, включая финал. Круг сжимается, текст остаётся целиком.
     private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex _: Int, isActiveTab _: Bool) -> some View {
-        Group {
-            if page.story == .final, let spec = OnboardingCircleSpec.forStory(page.story) {
-                finalStoryLayout(spec: spec, title: page.title, description: page.description)
-            } else {
-                VStack(spacing: 0) {
-                    if let spec = OnboardingCircleSpec.forStory(page.story) {
-                        Spacer(minLength: Spacing.s)
-                        storyCircles(spec)
-                    }
-                    Spacer(minLength: 0)
-                    onboardingStoryText(title: page.title, description: page.description)
+        let key = storyHeightKey(page.story)
+        return GeometryReader { geo in
+            let textHeight = onboardingTextHeights[key] ?? 260
+            let diameter = OnboardingCircleSpec.forStory(page.story).map {
+                fittedStoryDiameter(height: geo.size.height, textHeight: textHeight, spec: $0)
+            } ?? 0
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                if let spec = OnboardingCircleSpec.forStory(page.story), diameter > 1 {
+                    storyCircles(spec, diameter: diameter, containerWidth: geo.size.width)
+                }
+                onboardingStoryText(title: page.title, description: page.description)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(key: OnboardingTextHeightKey.self, value: proxy.size.height)
+                        }
+                    )
+                Spacer(minLength: 0)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .onPreferenceChange(OnboardingTextHeightKey.self) { newValue in
+                guard newValue > 1 else { return }
+                if abs((onboardingTextHeights[key] ?? 0) - newValue) > 1 {
+                    onboardingTextHeights[key] = newValue
                 }
             }
         }
@@ -1807,45 +1861,14 @@ struct OnboardingScreen: View {
         .accessibilityLabel("Страница онбординга: \(page.title)")
     }
 
-    /// Финал. Круг остаётся 270, текст 24/18. На коротком телефоне едут только круг и заголовок.
-    /// Точки, «Начать» и правовая информация стоят ниже этой области и не уезжают.
-    private func finalStoryLayout(spec: OnboardingCircleSpec, title: String, description: String) -> some View {
-        GeometryReader { geo in
-            ScrollViewReader { proxy in
-                ScrollView(.vertical, showsIndicators: true) {
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 0)
-                        storyCircles(spec)
-                        onboardingStoryText(title: title, description: description)
-                            .id("finalOnboardingStoryText")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: geo.size.height)
-                }
-                .modifier(OnboardingBottomScrollAnchor())
-                .frame(width: geo.size.width, height: geo.size.height)
-                .onAppear {
-                    DispatchQueue.main.async {
-                        proxy.scrollTo("finalOnboardingStoryText", anchor: .bottom)
-                    }
-                }
-            }
-        }
-    }
-
 }
 
 // MARK: - Onboarding hero chrome (RTL / искры языка)
 
-/// На iOS 17 заголовок финала сразу над точками. На 15–16 то же делает scrollTo.
-private struct OnboardingBottomScrollAnchor: ViewModifier {
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 17.0, *) {
-            content.defaultScrollAnchor(.bottom)
-        } else {
-            content
-        }
+private struct OnboardingTextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 

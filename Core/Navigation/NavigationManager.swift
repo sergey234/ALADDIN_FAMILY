@@ -94,6 +94,22 @@ class NavigationManager: ObservableObject {
         appendLog("🏠 navigateToHomeEntry(\(screen)) | \(why) | role=\(role.isEmpty ? "∅" : role) newUI=\(newUI)")
         navigateToRoot(screen)
     }
+
+    /// Пять кнопок нижней полосы. С классической главной открывает раздел.
+    /// Назад возвращает на главную. На самих разделах полосы нет.
+    func openBottomTab(_ screen: ALADDINScreen) {
+        let tabs: Set<ALADDINScreen> = [.childRewards, .childInterface, .notifications, .profile, .devices]
+        guard tabs.contains(screen) else { return }
+        if currentScreen == screen { return }
+        if currentScreen == .main {
+            navigateTo(screen)
+            return
+        }
+        let home = Self.homeEntryScreen()
+        navigationStack = [home]
+        currentScreen = screen
+        appendLog("↔️ openBottomTab(\(screen.rawValue)) с главной \(home.rawValue)")
+    }
     
     // MARK: - Основные экраны (25)
     enum ALADDINScreen: String, CaseIterable {
