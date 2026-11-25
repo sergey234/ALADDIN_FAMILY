@@ -3,6 +3,8 @@ import SwiftUI
 struct ConsentModal: View {
     @Binding var isPresented: Bool
     let onConsentGiven: () -> Void
+    /// Close и «Не согласен» уходят с экрана регистрации, а не оставляют пустой фон.
+    var onCancel: (() -> Void)? = nil
     @State private var showFullConsent: Bool = false
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -13,7 +15,7 @@ struct ConsentModal: View {
                     HStack {
                         Spacer()
                         Button(localizationManager.localized("consent_modal_close")) {
-                            isPresented = false
+                            dismissWithoutConsent()
                         }
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
@@ -122,7 +124,7 @@ struct ConsentModal: View {
                         }
                         
                         Button(localizationManager.localized("consent_modal_decline")) {
-                            isPresented = false
+                            dismissWithoutConsent()
                         }
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.secondary)
@@ -135,6 +137,14 @@ struct ConsentModal: View {
         }
     }
     
+    private func dismissWithoutConsent() {
+        if let onCancel {
+            onCancel()
+        } else {
+            isPresented = false
+        }
+    }
+
     private func consentItem(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "checkmark.circle.fill")

@@ -69,6 +69,12 @@ struct MainScreenWithRegistration: View {
         }
     }
 
+    /// Close / Cancel / «Не согласен»: не оставляем пустой фон. Назад туда, откуда открыли (Aladdin start).
+    private func cancelRegistrationAndReturn() {
+        registrationVM.showConsentModal = false
+        navigationManager.goBack(reason: "registration cancelled")
+    }
+
     private func completeAuthLogin() {
         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         UserDefaults.standard.synchronize()
@@ -144,8 +150,8 @@ struct MainScreenWithRegistration: View {
            !registrationVM.showLetterModal,
            !registrationVM.showConsentModal {
             Button(localizationManager.localized("common_cancel")) {
-                print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
-                completeRegistration(isSuccess: false)
+                print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' — назад, без пустого экрана")
+                cancelRegistrationAndReturn()
             }
             .font(.system(size: 16, weight: .medium))
             .foregroundColor(.white)
@@ -334,6 +340,9 @@ struct MainScreenWithRegistration: View {
                     ),
                     onConsentGiven: {
                         registrationVM.acceptConsent()
+                    },
+                    onCancel: {
+                        cancelRegistrationAndReturn()
                     }
                 )
             }
